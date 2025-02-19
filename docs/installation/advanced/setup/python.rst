@@ -64,4 +64,3 @@ In order to install all dependencies to build the package, you should run from i
 .. _uv: https://pypi.org/project/uv/
 .. _pip: https://pypi.org/project/pip/
 .. _conda: https://anaconda.org/anaconda/conda
-.. _Graphviz: https://www.graphviz.org/

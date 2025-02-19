@@ -76,7 +76,7 @@ jobs:
     - name: Generate Code Coverage
       run: |
         lcov --directory . --capture --output-file coverage.info;
-        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' --output-file coverage.info;
+        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.venv/*' '*/.local/*' --output-file coverage.info;
         genhtml coverage.info --output-directory docs/coverage/
       working-directory: build/
     - name: Upload artifacts
@@ -97,11 +97,11 @@ jobs:
     - name: Install pairinteraction into virtual environment
       run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
     - name: Run pytest
-      run: uv run pytest
+      run: uv run --no-project pytest
     - name: Generate Code Coverage
       run: |
         lcov --directory . --capture --output-file coverage.info;
-        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' --output-file coverage.info;
+        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' '*/.venv/*' '*/.local/*' --output-file coverage.info;
         genhtml coverage.info --output-directory docs/coverage/
       working-directory: build/
     - name: Upload artifacts
@@ -122,10 +122,10 @@ jobs:
     - name: Install pairinteraction into virtual environment
       run: uv pip install .[test]
     - name: Run pytest with coverage
-      run: uv run coverage run -m pytest
+      run: uv run --no-project coverage run -m pytest
     - name: Generate Code Coverage
       run: |
-        uv run coverage lcov -o coverage.info
+        uv run --no-project coverage lcov -o coverage.info
         genhtml coverage.info --output-directory docs/coverage/
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
