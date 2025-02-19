@@ -33,5 +33,4 @@ This will start a local web server that serves the documentation at ``http://127
 
     On **Windows**, you have to replace the command :code:`make` by :code:`call make.bat`
 
-.. _pygraphviz: https://pygraphviz.github.io/
 .. _Sphinx: https://www.sphinx-doc.org/en/master/index.html

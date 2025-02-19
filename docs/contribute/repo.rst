@@ -32,7 +32,7 @@ If you are planning to only contribute to the python package an :ref:`automatic 
 
 If you are planning to contribute to the C++ backend it might be beneficial to do a :ref:`manual build <manual>`:
 
-    * Install the :ref:`build dependencies <system_setup>` for running the build system and a package manager for managing the Python dependencies. In addition, you need to install dependencies of the C++ backend. If you are using GNU/Linux or OS X, dependencies can be found in the Dockerfiles that are located in the :github:`docker branch <tree/docker/docker>`. If you are using Windows, you can use `VCPKG`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install the dependencies. Afterwards, create and activate a python environment and install the necessary build dependencies
+    * Install the :ref:`build dependencies <system_setup>` for running the build system and a package manager for managing the Python dependencies. In addition, you need to install dependencies of the C++ backend. If you are using GNU/Linux or OS X, dependencies can be found in the Dockerfiles that are located in the :github:`docker branch <tree/docker/docker>`. If you are using Windows, you can use `vcpkg`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install the dependencies. Afterwards, create and activate a python environment and install the necessary build dependencies
 
     .. code-block:: bash
 
@@ -104,4 +104,4 @@ Finally, initiate a pull request to merge your contributions with the main repos
 
 .. _cmake: https://cmake.org
 .. _uv: https://pypi.org/project/uv/
-.. _VCPKG: https://vcpkg.io
+.. _vcpkg: https://vcpkg.io
