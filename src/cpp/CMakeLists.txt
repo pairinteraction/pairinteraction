@@ -14,6 +14,8 @@ add_library(
   ./include/pairinteraction/database/AtomDescriptionByParameters.hpp
   ./include/pairinteraction/database/AtomDescriptionByRanges.hpp
   ./include/pairinteraction/database/Database.hpp
+  ./include/pairinteraction/database/GitHubDownloader.hpp
+  ./include/pairinteraction/database/ParquetManager.hpp
   ./include/pairinteraction/diagonalizer/diagonalize.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerEigen.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerFeast.hpp
@@ -70,6 +72,10 @@ add_library(
   ./src/basis/BasisPairCreator.test.cpp
   ./src/database/Database.cpp
   ./src/database/Database.test.cpp
+  ./src/database/GitHubDownloader.cpp
+  ./src/database/GitHubDownloader.test.cpp
+  ./src/database/ParquetManager.cpp
+  ./src/database/ParquetManager.test.cpp
   ./src/diagonalizer/diagonalize.cpp
   ./src/diagonalizer/DiagonalizerEigen.cpp
   ./src/diagonalizer/DiagonalizerFeast.cpp

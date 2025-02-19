@@ -113,9 +113,9 @@ jobs:
         python -m pip install --find-links=dist pairinteraction
 
     - name: Execute a test that downloads the database and runs checks
-      run: python -c "import pairinteraction"
-      # FIXME: Interacting with the GitHub API in the CI works reliably, only if an access token is used.
-      # run: python -c "import sys; from pairinteraction import run_module_tests; sys.exit(run_module_tests(download_missing=True))"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: python -c "import sys; from pairinteraction import run_module_tests; sys.exit(run_module_tests(download_missing=True))"
 
   test-install-from-sdist:
     name: Test installing the sdist
