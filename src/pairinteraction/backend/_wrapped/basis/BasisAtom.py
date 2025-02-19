@@ -4,11 +4,9 @@ import numpy as np
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.get_functions import get_cpp_operator_type, get_cpp_parity
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
-from pairinteraction.backend._wrapped.OperatorType import OperatorType
-from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
