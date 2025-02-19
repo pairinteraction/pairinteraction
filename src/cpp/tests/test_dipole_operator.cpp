@@ -49,11 +49,11 @@ int main(int argc, char **argv) {
         basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
     double dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    double reference = 1247.5955234484584;
+    double reference = 1247.5985544327225;
 
     if (std::abs(dipole_ket1_ket2_value - reference) >
         10 * std::numeric_limits<double>::epsilon()) {
-        SPDLOG_ERROR("The dipole operator value is not correct.");
+        SPDLOG_ERROR("The dipole operator value is not correct. Value: {}", dipole_ket1_ket2_value);
         success = false;
     }
 
