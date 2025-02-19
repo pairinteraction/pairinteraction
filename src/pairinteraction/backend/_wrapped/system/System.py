@@ -2,8 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
-from pairinteraction.backend._wrapped.get_functions import get_cpp_diagonalizer
+from pairinteraction.backend._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -69,12 +68,36 @@ class SystemBase(ABC, Generic[BasisType]):
     def diagonalize(
         self,
         diagonalizer: Diagonalizer = "Eigen",
+        float_type: FloatType = "float64",
         atol: float = 1e-6,
         sort_by_energy: bool = True,
         energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
         energy_unit: Optional[str] = None,
+        m0: Optional[int] = None,
     ) -> "Self":
-        cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
+        """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
+
+        This method computes the eigenvalues and eigenvectors of the Hamiltonian
+        and updates the internal basis of the system accordingly.
+
+        Args:
+            diagonalizer: The diagonalizer to use for the diagonalization.
+                Possible values are "Eigen", "Lapacke", "Feast",
+                defaults to "Eigen".
+            float_type: The floating point precision to use for the diagonalization.
+                Possible values are "float32", "float64", defaults to "float64".
+            atol: The absolute tolerance, used to determine which entries of the sparse eigenbasis to keep.
+                Defaults to 1e-6.
+            sort_by_energy: Whether to sort the eigenstates by energy. Defaults to True.
+            energy_range: A tuple specifying the energy range. Defaults to (None, None).
+            energy_unit: The unit for the energy values. Defaults to None.
+            m0: The search subspace size for the "Feast" diagonalizer.
+
+        Returns:
+            Self: The updated instance of the system.
+
+        """
+        cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp, float_type, m0=m0)
 
         min_energy_au, max_energy_au = energy_range
         if min_energy_au is not None:
