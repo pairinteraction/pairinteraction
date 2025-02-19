@@ -53,9 +53,9 @@ def delete_old_parquet_and_csv_files(path_target: Path, parquet_and_csv_files: d
         name, version_str = path.stem.rsplit("_v", 1)
         version = int(version_str)
         if name in parquet_and_csv_files:
-            if version < parquet_and_csv_files[name].version or path != parquet_and_csv_files[name].path:
+            if version < parquet_and_csv_files[name].version or parquet_and_csv_files[name].path.suffix == ".csv":
                 path.unlink()
-                logging.info(f"Deleted old parquet file: {path.name}")
+                logging.info(f"Deleted csv / old parquet file: {path.name}")
             elif version > parquet_and_csv_files[name].version:
                 raise ValueError(
                     f"Version of the table '{name}' in target directory is higher than in source directory."
@@ -220,6 +220,7 @@ def shrink() -> None:
 
     path_source = get_source_directory()
     parquet_files = load_parquet_and_csv_files(path_source)
+    # TODO only load the tables for a few species, which are used for testing
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
@@ -264,6 +265,14 @@ def shrink() -> None:
                         f"JOIN {state_db_name} AS s2 ON s.id_final = s2.id"
                     )
                     logging.debug(f"Shrunk table '{parquet_file.name}' based on '{state_db_name}'")
+
+        # Remove parquet files for which a recent version exists in the target directory
+        for path in list(path_target.glob("*.parquet")) + list(path_target.glob("*.csv")):
+            name, version_str = path.stem.rsplit("_v", 1)
+            version = int(version_str)
+            if name in parquet_files:
+                if version > parquet_files[name].version:
+                    parquet_files.pop(name)
 
         # Delete old parquet files from the target directory to keep it clean
         delete_old_parquet_and_csv_files(path_target, parquet_files)
