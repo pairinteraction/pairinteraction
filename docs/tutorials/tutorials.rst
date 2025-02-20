@@ -42,6 +42,7 @@ Here we show the usage of the API. The first tutorial serves as a quick start gu
    examples_python/stark_map
    examples_python/pair_potentials
    examples_python/overview
+   examples_python/lifetimes
 
 .. rubric:: Applications
 
