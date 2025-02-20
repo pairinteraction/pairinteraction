@@ -136,6 +136,8 @@ class QuantityAbstract(Generic[ValueType]):
         dimension: DimensionLike,
     ) -> "Self":
         if unit is None:
+            if np.isscalar(value) and np.all(value == 0):
+                return cls.from_base_unit(value, dimension)
             return cls.from_pint(value, dimension)
         return cls.from_unit(value, unit, dimension)
 

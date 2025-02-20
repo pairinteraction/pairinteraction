@@ -37,9 +37,9 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     database_dir = session.config.getoption("--database-dir")
 
     # Make it possible to overwrite the database in pytest test mode
-    test_mode = os.getenv("PARINTERACTION_TEST_MODE", "1")
-    os.environ["PARINTERACTION_TEST_MODE"] = "0"
+    test_mode = os.getenv("PAIRINTERACTION_TEST_MODE", "1")
+    os.environ["PAIRINTERACTION_TEST_MODE"] = "0"
     from pairinteraction.setup_test_mode import setup_test_mode
 
     setup_test_mode(download_missing, database_dir)
-    os.environ["PARINTERACTION_TEST_MODE"] = test_mode
+    os.environ["PAIRINTERACTION_TEST_MODE"] = test_mode

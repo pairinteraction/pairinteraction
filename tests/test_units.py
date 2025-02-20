@@ -24,6 +24,13 @@ def test_magnetic() -> None:
     zeeman_energy = -mu * B_z_pint
     assert zeeman_energy.dimensionality == BaseUnits["ENERGY"].dimensionality
 
+    # check against constructed Hamiltonian
+    basis = pi.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])
+    system = pi.SystemAtom(basis)
+    system.enable_diamagnetism(False).set_magnetic_field([0, 0, B_z_pint])
+    zeeman_energy_from_hamiltonian = system.get_hamiltonian("MHz")[0, 0] - ket.get_energy("MHz")
+    assert np.isclose(zeeman_energy_from_hamiltonian, zeeman_energy.to("MHz", "spectroscopy").magnitude)
+
 
 def test_electric_dipole() -> None:
     """Test electric dipole units."""
