@@ -52,6 +52,7 @@ dependencies = [
   "scipy >= 1.10",
   "pint >= 0.21.1",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
+  "mkl == 2025.0; sys_platform != 'darwin'",
 ]
 
 [project.optional-dependencies]
@@ -78,9 +79,6 @@ test = [
   "duckdb == 1.1.3",  # keep the version used here in sync with CMakeLists.txt
   "sympy >= 1.13.3",
   "matplotlib >= 3.8",
-]
-mkl = [
-  "mkl == 2025.0",
 ]
 
 [dependency-groups]
@@ -146,6 +144,7 @@ manylinux-x86_64-image = "ghcr.io/atom-pairinteraction/pairinteraction-manylinux
 config-settings."cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB" = "/opt/duckdb"
 inherit.environment = "append"
 environment.CXXFLAGS = "-march=x86-64-v3"
+repair-wheel-command = "auditwheel repair --exclude libmkl_core.so.2 --exclude libmkl_intel_lp64.so.2 --exclude libmkl_tbb_thread.so.2 -w {dest_dir} {wheel}"
 
 [[tool.cibuildwheel.overrides]]  # macosx overrides
 select = "*-macosx_*"
@@ -155,13 +154,13 @@ environment.MACOSX_DEPLOYMENT_TARGET = "13.0"
 [[tool.cibuildwheel.overrides]]  # windows overrides
 select = "*-win_*"
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
-repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 inherit.environment = "append"
 environment.CXXFLAGS = "/Ox /arch:AVX2"
 inherit.test-command = "prepend"
 test-command = [
   "cd /d {project}",  # /d is required for windows to change the drive, the second cd then does effectively nothing
 ]
+repair-wheel-command = "delvewheel repair --exclude mkl_core.2.dll --exclude mkl_tbb_thread.2.dll --ignore-in-wheel -w {dest_dir} {wheel}"
 
 [tool.check-wheel-contents]
 ignore = [
