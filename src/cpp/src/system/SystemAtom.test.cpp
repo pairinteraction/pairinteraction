@@ -53,7 +53,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
     eigensolver.compute(system.get_matrix());
     auto eigenvalues_eigen = eigensolver.eigenvalues();
-    auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+    auto eigenvalues_pairinteraction = system.get_eigenvalues();
     for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
         DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) < 1e-11);
     }
@@ -197,8 +197,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 }
 
 DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restrictions") {
-    double min_energy = 0.15335;
-    double max_energy = 0.15336;
+    double min_energy = 0.153355;
+    double max_energy = 0.153360;
 
     auto &database = Database::get_global_instance();
 
@@ -208,43 +208,70 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
+    // Diagonalize using the Eigen library
+    auto system = SystemAtom<double>(basis);
+    system.set_electric_field(
+        {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
+    eigensolver.compute(system.get_matrix());
+    auto eigenvalues_all = eigensolver.eigenvalues();
+    std::vector<double> eigenvalues_eigen;
+    for (int i = 0; i < eigenvalues_all.size(); ++i) {
+        if (eigenvalues_all[i] > min_energy && eigenvalues_all[i] < max_energy) {
+            eigenvalues_eigen.push_back(eigenvalues_all[i]);
+        }
+    }
+
+    // Create diagonalizer
     std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
-    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>());
+    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>(FloatType::FLOAT64));
 #ifdef WITH_LAPACKE
-    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>());
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>(FloatType::FLOAT64));
 #endif
 #ifdef WITH_MKL
-    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(5));
+    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(10, FloatType::FLOAT64));
 #endif
 
+    // Diagonalize using pairinteraction
     for (const auto &diagonalizer : diagonalizers) {
         auto system = SystemAtom<double>(basis);
-        system.set_electric_field({0.0001, 0, 0.0001});
-
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
-        eigensolver.compute(system.get_matrix());
-        auto eigenvalues_all = eigensolver.eigenvalues();
-        std::vector<double> eigenvalues_eigen;
-        for (int i = 0; i < eigenvalues_all.size(); ++i) {
-            if (eigenvalues_all[i] > min_energy && eigenvalues_all[i] < max_energy) {
-                eigenvalues_eigen.push_back(eigenvalues_all[i]);
-            }
-        }
+        system.set_electric_field(
+            {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
         system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
-        auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+        auto eigenvalues_pairinteraction = system.get_eigenvalues();
 
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
         std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());
         DOCTEST_MESSAGE(fmt::format("Eigenvalues: {}", fmt::join(eigenvalues_vector, ", ")));
 
-        DOCTEST_CHECK(eigenvalues_eigen.size() == 4);
-        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 4);
+        DOCTEST_CHECK(eigenvalues_eigen.size() == 8);
+        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 8);
         for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {
             DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-11);
         }
     }
 }
+
+#ifdef WITH_MKL
+#include <Eigen/Dense>
+#include <mkl.h>
+DOCTEST_TEST_CASE("diagonalization with mkl") {
+    for (size_t i = 0; i < 10; ++i) {
+        // Create a symmetric matrix
+        int n = 100;
+        Eigen::MatrixXd matrix = Eigen::MatrixXd::Random(n, n);
+        matrix = (matrix + matrix.transpose()).eval();
+        Eigen::VectorXd eigenvalues(n);
+
+        // Diagonalize the matrix
+        int info =
+            LAPACKE_dsyev(LAPACK_COL_MAJOR, 'V', 'U', n, matrix.data(), n, eigenvalues.data());
+        DOCTEST_CHECK(info == 0);
+    }
+}
+#endif
 
 DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy restrictions") {
     double min_energy = -1;
@@ -266,10 +293,11 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
 
     for (const auto &diagonalizer : diagonalizers) {
         auto system = SystemAtom<double>(basis);
-        system.set_electric_field({0.0001, 0, 0.0001});
+        system.set_electric_field(
+            {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
         system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
-        auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+        auto eigenvalues_pairinteraction = system.get_eigenvalues();
 
         DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 0);
     }

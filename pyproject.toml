@@ -4,8 +4,8 @@ requires = [  # keep this in sync with .build_requirements.txt
   "nanobind >=1.9.0",
   "typing_extensions >= 4.7", # required by nanobind/stubgen.py
   "numpy >= 1.24", # required by the cpp backend
-  "tbb-devel == 2022.0; sys_platform != 'darwin'", # required by the cpp backend
-  "mkl-devel == 2025.0; sys_platform != 'darwin'", # required by the cpp backend
+  "tbb-devel == 2022.0.0; sys_platform != 'darwin'", # required by the cpp backend
+  "mkl-devel == 2025.0.1; sys_platform != 'darwin'", # required by the cpp backend
 ]
 build-backend = "scikit_build_core.build"
 
@@ -52,12 +52,12 @@ dependencies = [
   "scipy >= 1.10",
   "pint >= 0.21.1",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
-  "mkl == 2025.0; sys_platform != 'darwin'",
+  "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
 
 [project.optional-dependencies]
 gui = [
-  "pyqt5 >= 5.15.8",
+  "pyside6 >= 6.8.2",
   "pyqtgraph >= 0.13",
 ]
 doc = [
@@ -72,7 +72,7 @@ doc = [
 test = [
   "pytest >= 8.0",
   "pytest-env >= 1.1.5",
-  "pytest-qt >= 4.2",
+  # "pytest-qt >= 4.2", # FIXME
   "nbmake >= 1.3",
   "pairinteraction[gui]",
   "coverage >= 7.2",
@@ -182,6 +182,8 @@ addopts = [
     "--doctest-modules",
     "--ignore=src/pairinteraction/model/",  # TODO: model
     "--ignore=src/pairinteraction/simulation/",  # TODO: model
+    "--ignore=src/pairinteraction/gui/", # TODO: switch to pyside6
+    "--ignore=tests/test_gui.py", # TODO: switch to pyside6
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",

@@ -89,8 +89,18 @@ if(MKL_FOUND AND WIN32)
     GLOB
     MKL_DLLS
     # Threading layer
+    "${MKL_ROOT}/bin/mkl_${MKL_THREADING}*.dll"
     "${MKL_ROOT}/redist/intel64/mkl_${MKL_THREADING}*.dll"
     # Computational layer
+    "${MKL_ROOT}/bin/mkl_core*.dll"
+    "${MKL_ROOT}/bin/mkl_def*.dll"
+    "${MKL_ROOT}/bin/mkl_mc*.dll"
+    "${MKL_ROOT}/bin/mkl_avx*.dll"
+    "${MKL_ROOT}/bin/mkl_vml_def*.dll"
+    "${MKL_ROOT}/bin/mkl_vml_mc*.dll"
+    "${MKL_ROOT}/bin/mkl_vml_avx*.dll"
+    "${MKL_ROOT}/bin/mkl_vml_cmpt*.dll"
+    "${MKL_ROOT}/bin/libimalloc.dll"
     "${MKL_ROOT}/redist/intel64/mkl_core*.dll"
     "${MKL_ROOT}/redist/intel64/mkl_def*.dll"
     "${MKL_ROOT}/redist/intel64/mkl_mc*.dll"

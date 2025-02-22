@@ -22,7 +22,7 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
 
-    assert(atol >= 0);
+    assert(atol > 0);
     assert(atol < 1);
 
     // Subtract the mean of the diagonal elements from the diagonal
