@@ -48,10 +48,10 @@ jobs:
             BUILD_ARGS: "-- --keep-going"
           - os: windows-2019
             distro: windows
-            EXTRA_CMAKE_ARGS: -G "Visual Studio 16 2019" -DPython_FIND_REGISTRY=LAST -DCMAKE_BUILD_TYPE=Release
+            EXTRA_CMAKE_ARGS: -G "Visual Studio 16 2019" -DPython3_FIND_REGISTRY=LAST
             CXXFLAGS: "/Ox /arch:AVX2"
             TEST_TARGET: "RUN_TESTS"
-            BUILD_ARGS: "--config Release"
+            BUILD_ARGS: "--config RelWithDebInfo"
 
     name: ${{ matrix.name || matrix.distro }}
     runs-on: ${{ matrix.os }}
@@ -77,7 +77,7 @@ jobs:
       uses: ./.github/actions/setup-uv-build-venv
 
     - name: Configure
-      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On ${{ matrix.EXTRA_CMAKE_ARGS }}
+      run: uv run --no-project cmake -S . -B build/ ${{ matrix.EXTRA_CMAKE_ARGS }}
 
     - name: Build
       run: cmake --build build/ ${{ matrix.BUILD_ARGS }}

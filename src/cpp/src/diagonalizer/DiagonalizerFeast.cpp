@@ -61,7 +61,7 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     Eigen::MatrixX<ScalarLim> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
     double targeted_trace_relative_error = 2 * atol;
-    double precision_feast = std::ceil(-std::log10(targeted_trace_relative_error));
+    int precision_feast = static_cast<int>(std::ceil(-std::log10(targeted_trace_relative_error)));
 
     std::vector<MKL_INT> fpm(128);
     feastinit(fpm.data());

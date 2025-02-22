@@ -1,24 +1,29 @@
 import os
 import platform
+from pathlib import Path
 
 
+# ---------------------------------------------------------------------------------------
 # Load the MKL library from the mkl pypi package
+# ---------------------------------------------------------------------------------------
 def _load_mkl() -> None:
     import ctypes
     import sys
     from functools import partial
     from importlib.metadata import PackageNotFoundError, files
-    from warnings import warn
 
-    try:
-        tbb_lib_file = next(p for p in files("pairinteraction") if "tbb" in p.stem).locate().resolve()
-    except (PackageNotFoundError, StopIteration):
-        raise RuntimeError("The tbb library could not be found.") from None
+    def get_library_file(package: str, substring: str) -> Path:
+        try:
+            return next(p for p in files(package) if substring in p.stem).locate().resolve()
+        except (PackageNotFoundError, StopIteration):
+            raise RuntimeError(f"The '{substring}' library could not be found.") from None
 
-    try:
-        mkl_lib_dir = next(p for p in files("mkl") if "mkl_core" in p.stem).locate().resolve().parent
-    except (PackageNotFoundError, StopIteration):
-        raise RuntimeError("The mkl library could not be found.") from None
+    def load_candidate(candidate: os.PathLike, loader: callable) -> None:
+        if candidate.exists():
+            loader(str(candidate))
+
+    tbb_lib_file = get_library_file("pairinteraction", "tbb")
+    mkl_lib_dir = get_library_file("mkl", "mkl_core").parent
 
     lib_file_names = [
         "mkl_core",  # must be loaded first
@@ -36,13 +41,6 @@ def _load_mkl() -> None:
         "mkl_vml_mc3",
     ]
 
-    def load_candidate(candidate: os.PathLike, loader: callable) -> None:
-        if candidate.exists():
-            try:
-                loader(str(candidate))
-            except Exception as e:
-                warn(f"Unable to load {candidate.name}: {e}", RuntimeWarning, stacklevel=2)
-
     if platform.system() == "Linux":
         # Under linux, the libraries must always be loaded manually in the address space
         load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
@@ -53,6 +51,14 @@ def _load_mkl() -> None:
     else:
         # Modify the dll search path
         os.add_dll_directory(str(mkl_lib_dir))
+
+        vcpkg_dirs = [
+            Path.cwd() / "vcpkg_installed/x64-windows/bin",
+            Path.cwd().parent / "vcpkg_installed/x64-windows/bin",
+            Path.cwd().parent.parent / "vcpkg_installed/x64-windows/bin",
+        ]
+        if directory := next((d for d in vcpkg_dirs if d.is_dir()), None):
+            os.add_dll_directory(str(directory))
 
         is_conda_cpython = platform.python_implementation() == "CPython" and (
             hasattr(ctypes.pythonapi, "Anaconda_GetVersion") or "packaged by conda-forge" in sys.version
@@ -75,7 +81,9 @@ if platform.system() in ["Linux", "Windows"]:
     _load_mkl()
 del _load_mkl
 
+# ---------------------------------------------------------------------------------------
 # Import pairinteraction
+# ---------------------------------------------------------------------------------------
 from pairinteraction import backend  # noqa: E402
 from pairinteraction.backend._backend import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH  # noqa: E402
 from pairinteraction.module_tests import run_module_tests  # noqa: E402
@@ -90,6 +98,8 @@ __all__ = [
 
 __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 
+# ---------------------------------------------------------------------------------------
 # Configure pairinteraction for running tests with a local database if requested
+# ---------------------------------------------------------------------------------------
 if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
     setup_test_mode()
