@@ -40,7 +40,7 @@ def timer() -> Generator[Callable[[], float], None, None]:
     yield lambda: (perf_counter_ns() - start) / 1e9
 
 
-def benchmark_pairinteraction(pi: Callable, name: str, settings: dict) -> list[BenchmarkResult]:
+def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings: dict) -> list[BenchmarkResult]:
     """Benchmark pairinteraction."""
     species = settings["species"]
     n = settings["n"]
@@ -83,6 +83,7 @@ def benchmark_pairinteraction(pi: Callable, name: str, settings: dict) -> list[B
         pi.diagonalize(
             pair_systems,
             diagonalizer=diagonalizer,
+            float_type=float_type,
             sort_by_energy=False,
             energy_range=(pair_energy - energy_range, pair_energy + energy_range),
             energy_unit="GHz",
@@ -130,6 +131,8 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     plt.savefig(output)
     plt.close()
 
+    logging.info(f"Plot saved to '{output}'")
+
 
 def run() -> None:
     """Run the benchmarking."""
@@ -170,13 +173,15 @@ def run() -> None:
 
     # Benchmark pairinteraction
     backends = {
-        "complex": pi_complex,
-        "real": pi_real,
+        "complex 64": [pi_complex, "float64"],
+        "complex 32": [pi_complex, "float32"],
+        "real 64": [pi_real, "float64"],
+        "real 32": [pi_real, "float32"],
     }
-    for name, module in backends.items():
-        logging.info(f"Benchmarking 'pairinteraction, {name}'")
-        for _ in range(args.reps):
-            all_results += benchmark_pairinteraction(module, name, settings)
+    for _ in range(args.reps):
+        for name, [module, float_type] in backends.items():
+            logging.info(f"Benchmarking 'pairinteraction, {name}'")
+            all_results += benchmark_pairinteraction(module, float_type, name, settings)
 
     # Generate meaningful output filenames
     hashed = sha256()
