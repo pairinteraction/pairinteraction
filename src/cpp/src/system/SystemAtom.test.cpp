@@ -258,6 +258,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 #include <Eigen/Dense>
 #include <mkl.h>
 DOCTEST_TEST_CASE("diagonalization with mkl") {
+    // We loop several times to check for memory errors
     for (size_t i = 0; i < 10; ++i) {
         // Create a symmetric matrix
         int n = 100;
