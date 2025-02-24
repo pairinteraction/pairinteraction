@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.system.System import System
 
 
-Diagonalizer = Literal["Eigen", "Lapacke", "Feast"]
+Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
 FloatType = Literal["float32", "float64"]
 OperatorType = Literal[
     "ZERO",
@@ -41,22 +41,22 @@ def get_cpp_diagonalizer(
     float_type: FloatType,
     m0: Optional[int] = None,
 ) -> UnionCPPDiagonalizer:
-    diagonalizer = diagonalizer.capitalize()
     if diagonalizer not in get_args(Diagonalizer):
         raise ValueError(f"Unknown diagonalizer '{diagonalizer}', should be one of {Diagonalizer}")
-    if diagonalizer == "Feast" and m0 is None:
-        raise ValueError("m0 must be specified for the 'Feast' diagonalizer")
-    elif diagonalizer != "Feast" and m0 is not None:
-        raise ValueError("m0 must not be specified if the diagonalizer is not 'Feast'")
+    if diagonalizer == "feast" and m0 is None:
+        raise ValueError("m0 must be specified for the 'feast' diagonalizer")
+    elif diagonalizer != "feast" and m0 is not None:
+        raise ValueError("m0 must not be specified if the diagonalizer is not 'feast'")
 
     type_ = get_type_of_system(cpp_system)
+    diagonalizer_ = "".join([s.capitalize() for s in diagonalizer.split("_")])
     try:
-        diagonalizer_class = getattr(_backend, f"Diagonalizer{diagonalizer}{type_}")
+        diagonalizer_class = getattr(_backend, f"Diagonalizer{diagonalizer_}{type_}")
     except AttributeError as err:
-        raise ValueError(f"Unknown diagonalizer 'Diagonalizer{diagonalizer}{type_}'") from err
+        raise ValueError(f"Unknown diagonalizer 'Diagonalizer{diagonalizer_}{type_}'") from err
 
     cpp_float_type = get_cpp_float_type(float_type)
-    if diagonalizer == "Feast":
+    if diagonalizer == "feast":
         return diagonalizer_class(m0=m0, float_type=cpp_float_type)
     return diagonalizer_class(float_type=cpp_float_type)
 

@@ -17,7 +17,7 @@ add_library(
   ./include/pairinteraction/diagonalizer/diagonalize.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerEigen.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerFeast.hpp
-  ./include/pairinteraction/diagonalizer/DiagonalizerLapacke.hpp
+  ./include/pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp
   ./include/pairinteraction/enums/FloatType.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
   ./include/pairinteraction/enums/Parity.hpp
@@ -71,7 +71,7 @@ add_library(
   ./src/diagonalizer/diagonalize.cpp
   ./src/diagonalizer/DiagonalizerEigen.cpp
   ./src/diagonalizer/DiagonalizerFeast.cpp
-  ./src/diagonalizer/DiagonalizerLapacke.cpp
+  ./src/diagonalizer/DiagonalizerLapackeEvd.cpp
   ./src/enums/Parity.test.cpp
   ./src/interfaces/DiagonalizerInterface.cpp
   ./src/interfaces/TransformationBuilderInterface.cpp

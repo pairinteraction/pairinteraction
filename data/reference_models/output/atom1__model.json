@@ -61,7 +61,7 @@
         "use_diamagnetism": true,
         "database_directory": null,
         "precision_sparse_matrices": 1e-10,
-        "diagonalization_method": "lapacke",
+        "diagonalization_method": "lapacke_evd",
         "path_cache": "./cache/",
         "diagonalize_threshold": 1e-10,
         "radial_wavefunction_method": "numerov"

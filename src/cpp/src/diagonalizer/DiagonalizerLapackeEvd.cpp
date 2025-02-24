@@ -1,4 +1,4 @@
-#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
 
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
@@ -39,7 +39,7 @@ lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, lapack_com
 
 template <typename Scalar>
 template <typename ScalarLim>
-EigenSystemH<Scalar> DiagonalizerLapacke<Scalar>::dispatch_eigh(
+EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::dispatch_eigh(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double atol) const {
     using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
@@ -59,7 +59,7 @@ EigenSystemH<Scalar> DiagonalizerLapacke<Scalar>::dispatch_eigh(
     if (info != 0) {
         if (info < 0) {
             throw std::invalid_argument(fmt::format("Diagonalization error: Argument {} to the "
-                                                    "LAPACKE routine had an illegal value.",
+                                                    "LAPACKE_EVD routine had an illegal value.",
                                                     -info));
         }
         throw std::runtime_error(fmt::format(
@@ -70,13 +70,13 @@ EigenSystemH<Scalar> DiagonalizerLapacke<Scalar>::dispatch_eigh(
 }
 
 template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FloatType float_type)
+DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
     : DiagonalizerInterface<Scalar>(float_type) {}
 
 template <typename Scalar>
 EigenSystemH<Scalar>
-DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                  double atol) const {
+DiagonalizerLapackeEvd<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                     double atol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, atol);
@@ -90,22 +90,21 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
 #else
 
 template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FloatType float_type)
+DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
     : DiagonalizerInterface<Scalar>(float_type) {
-    throw std::runtime_error(
-        "The LAPACKE routine is not available in this build. Please use a different diagonalizer.");
+    throw std::runtime_error("The LAPACKE_EVD routine is not available in this build. Please use a "
+                             "different diagonalizer.");
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                  double /*atol*/) const {
+EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::eigh(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*atol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 
 #endif // WITH_MKL || WITH_LAPACKE
 
 // Explicit instantiations
-template class DiagonalizerLapacke<double>;
-template class DiagonalizerLapacke<std::complex<double>>;
+template class DiagonalizerLapackeEvd<double>;
+template class DiagonalizerLapackeEvd<std::complex<double>>;
 } // namespace pairinteraction

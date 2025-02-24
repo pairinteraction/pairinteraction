@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 def diagonalize(
     systems: Sequence["System"],
-    diagonalizer: Diagonalizer = "Eigen",
+    diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     atol: float = 1e-6,
     sort_by_energy: bool = True,

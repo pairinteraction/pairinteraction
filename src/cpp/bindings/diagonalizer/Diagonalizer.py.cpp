@@ -2,7 +2,7 @@
 
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
-#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -44,12 +44,13 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
 
 template <typename T>
 static void declare_diagonalizer_lapacke(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "DiagonalizerLapacke" + type_name;
-    nb::class_<DiagonalizerLapacke<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
+    std::string pyclass_name = "DiagonalizerLapackeEvd" + type_name;
+    nb::class_<DiagonalizerLapackeEvd<T>, DiagonalizerInterface<T>> pyclass(m,
+                                                                            pyclass_name.c_str());
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerLapacke<T>::eigh, nb::const_));
+                 &DiagonalizerLapackeEvd<T>::eigh, nb::const_));
 }
 
 template <typename T>

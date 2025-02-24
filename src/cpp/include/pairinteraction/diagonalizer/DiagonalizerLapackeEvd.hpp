@@ -9,11 +9,11 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class DiagonalizerLapacke : public DiagonalizerInterface<Scalar> {
+class DiagonalizerLapackeEvd : public DiagonalizerInterface<Scalar> {
 public:
     using typename DiagonalizerInterface<Scalar>::real_t;
 
-    DiagonalizerLapacke(FloatType float_type = FloatType::FLOAT64);
+    DiagonalizerLapackeEvd(FloatType float_type = FloatType::FLOAT64);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               double atol) const override;
 
@@ -23,6 +23,6 @@ private:
                                        double atol) const;
 };
 
-extern template class DiagonalizerLapacke<double>;
-extern template class DiagonalizerLapacke<std::complex<double>>;
+extern template class DiagonalizerLapackeEvd<double>;
+extern template class DiagonalizerLapackeEvd<std::complex<double>>;
 } // namespace pairinteraction

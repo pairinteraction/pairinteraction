@@ -5,7 +5,7 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
-#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
@@ -141,7 +141,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     DOCTEST_SUBCASE("Double precision") {
         diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
-        diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<std::complex<double>>>());
+        diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvd<std::complex<double>>>());
 #endif
 #ifdef WITH_MKL
         diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
@@ -154,7 +154,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             std::make_unique<DiagonalizerEigen<std::complex<double>>>(FloatType::FLOAT32));
 #ifdef WITH_LAPACKE
         diagonalizers.push_back(
-            std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FloatType::FLOAT32));
+            std::make_unique<DiagonalizerLapackeEvd<std::complex<double>>>(FloatType::FLOAT32));
 #endif
 #ifdef WITH_MKL
         diagonalizers.push_back(
@@ -227,7 +227,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
     std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
     diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>(FloatType::FLOAT64));
 #ifdef WITH_LAPACKE
-    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>(FloatType::FLOAT64));
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvd<double>>(FloatType::FLOAT64));
 #endif
 #ifdef WITH_MKL
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(10, FloatType::FLOAT64));
@@ -289,7 +289,7 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
     std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
     diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>());
 #ifdef WITH_LAPACKE
-    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>());
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvd<double>>());
 #endif
 
     for (const auto &diagonalizer : diagonalizers) {

@@ -67,7 +67,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def diagonalize(
         self,
-        diagonalizer: Diagonalizer = "Eigen",
+        diagonalizer: Diagonalizer = "eigen",
         float_type: FloatType = "float64",
         atol: float = 1e-6,
         sort_by_energy: bool = True,
@@ -82,8 +82,8 @@ class SystemBase(ABC, Generic[BasisType]):
 
         Args:
             diagonalizer: The diagonalizer to use for the diagonalization.
-                Possible values are "Eigen", "Lapacke", "Feast",
-                defaults to "Eigen".
+                Possible values are "eigen", "lapacke_evd", "lapacke_evr", "feast",
+                defaults to "eigen".
             float_type: The floating point precision to use for the diagonalization.
                 Possible values are "float32", "float64", defaults to "float64".
             atol: The absolute tolerance, used to determine which entries of the sparse eigenbasis to keep.
@@ -91,7 +91,7 @@ class SystemBase(ABC, Generic[BasisType]):
             sort_by_energy: Whether to sort the eigenstates by energy. Defaults to True.
             energy_range: A tuple specifying the energy range. Defaults to (None, None).
             energy_unit: The unit for the energy values. Defaults to None.
-            m0: The search subspace size for the "Feast" diagonalizer.
+            m0: The search subspace size for the "feast" diagonalizer.
 
         Returns:
             Self: The updated instance of the system.

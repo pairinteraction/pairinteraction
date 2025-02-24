@@ -166,7 +166,7 @@ def run() -> None:
         "distances_in_um": np.linspace(1, 10, 100).tolist(),
         "order": 3,
         "download_missing": args.download_missing,
-        "diagonalizer": "Lapacke",
+        "diagonalizer": "lapacke_evd",
     }
 
     all_results: list[BenchmarkResult] = []

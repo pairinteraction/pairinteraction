@@ -22,14 +22,14 @@ def test_energy_range() -> None:
 
     # Diagonalize the systems for different distances in parallel and get all eigenvalues
     system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
-    pi.diagonalize(system_pairs, diagonalizer="Eigen", sort_by_energy=True)
+    pi.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
     eigenvalues_all = [system.get_eigenvalues(unit="GHz") for system in system_pairs]
 
     # Diagonalize the systems for different distances in parallel and get only the eigenvalues in an energy range
     system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
     pi.diagonalize(
         system_pairs,
-        diagonalizer="Eigen",
+        diagonalizer="eigen",
         sort_by_energy=True,
         energy_range=(pair_energy - 5, pair_energy + 5),
         energy_unit="GHz",

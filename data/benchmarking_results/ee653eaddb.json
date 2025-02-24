@@ -112,5 +112,5 @@
     ],
     "order": 3,
     "download_missing": false,
-    "diagonalizer": "Lapacke"
+    "diagonalizer": "lapacke_evd"
 }

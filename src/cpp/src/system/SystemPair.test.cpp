@@ -7,7 +7,7 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
-#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"

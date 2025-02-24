@@ -23,8 +23,8 @@ class ModelNumerics(BaseModel):
     precision_sparse_matrices: float = Field(default=1e-6, ge=0, le=1)
     fuzziness_in_database_search: float = Field(default=1e-1, ge=0)
 
-    diagonalization_method: Literal["lapacke", "feast_dense", "feast_sparse", "auto", "cuda"] = (
-        "lapacke"  # TODO NEW: remove cuda for new version
+    diagonalization_method: Literal["lapacke_evd", "feast_dense", "feast_sparse", "auto", "cuda"] = (
+        "lapacke_evd"  # TODO NEW: remove cuda for new version
     )
     diagonalization_eigenspace_size: Optional[int] = Field(default=None, ge=1)
 

@@ -17,7 +17,7 @@ def test_diamagnetism() -> None:
     system = pi.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").enable_diamagnetism(True)
 
     # Diagonalize the system
-    system = system.diagonalize(diagonalizer="Eigen", sort_by_energy=True)
+    system = system.diagonalize(diagonalizer="eigen", sort_by_energy=True)
 
     # Get eigenvalues and the overlap with |ket>
     overlaps = system.basis.get_overlaps(ket)
