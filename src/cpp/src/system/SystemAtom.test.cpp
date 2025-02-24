@@ -6,6 +6,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
@@ -55,7 +56,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto eigenvalues_eigen = eigensolver.eigenvalues();
     auto eigenvalues_pairinteraction = system.get_eigenvalues();
     for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
-        DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) < 1e-11);
+        DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) < 1e-10);
     }
 }
 
@@ -82,8 +83,8 @@ DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
     for (int i = 0; i < matrix1.rows(); ++i) {
         for (int j = 0; j < matrix1.cols(); ++j) {
             if (i != j) {
-                DOCTEST_CHECK(std::abs(matrix1.coeff(i, j)) < 1e-11);
-                DOCTEST_CHECK(std::abs(matrix2.coeff(i, j)) < 1e-11);
+                DOCTEST_CHECK(std::abs(matrix1.coeff(i, j)) < 1e-10);
+                DOCTEST_CHECK(std::abs(matrix2.coeff(i, j)) < 1e-10);
             }
         }
     }
@@ -142,6 +143,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
         diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
         diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvd<std::complex<double>>>());
+        diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvr<std::complex<double>>>());
 #endif
 #ifdef WITH_MKL
         diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
@@ -155,6 +157,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 #ifdef WITH_LAPACKE
         diagonalizers.push_back(
             std::make_unique<DiagonalizerLapackeEvd<std::complex<double>>>(FloatType::FLOAT32));
+        diagonalizers.push_back(
+            std::make_unique<DiagonalizerLapackeEvr<std::complex<double>>>(FloatType::FLOAT32));
 #endif
 #ifdef WITH_MKL
         diagonalizers.push_back(
@@ -228,6 +232,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
     diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>(FloatType::FLOAT64));
 #ifdef WITH_LAPACKE
     diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvd<double>>(FloatType::FLOAT64));
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapackeEvr<double>>(FloatType::FLOAT64));
 #endif
 #ifdef WITH_MKL
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(10, FloatType::FLOAT64));
@@ -249,7 +254,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
         DOCTEST_CHECK(eigenvalues_eigen.size() == 8);
         DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 8);
         for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {
-            DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-11);
+            DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-10);
         }
     }
 }

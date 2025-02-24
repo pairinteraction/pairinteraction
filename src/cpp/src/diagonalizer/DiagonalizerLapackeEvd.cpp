@@ -49,21 +49,20 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::dispatch_eigh(
     Eigen::MatrixX<ScalarLim> evecs = this->template subtract_mean<ScalarLim>(matrix, shift, atol);
 
     // Diagonalize the shifted matrix
-    lapack_int info{}; // will contain return codes
-    char jobz = 'V';   // eigenvalues and eigenvectors are computed
-    char uplo = 'U';   // full matrix is stored, upper is used
+    char jobz = 'V'; // eigenvalues and eigenvectors are computed
+    char uplo = 'U'; // full matrix is stored, upper is used
 
     Eigen::VectorX<real_lim_t> evals(dim);
-    info = evd(LAPACK_COL_MAJOR, jobz, uplo, dim, evecs.data(), dim, evals.data());
+    lapack_int info = evd(LAPACK_COL_MAJOR, jobz, uplo, dim, evecs.data(), dim, evals.data());
 
     if (info != 0) {
         if (info < 0) {
             throw std::invalid_argument(fmt::format("Diagonalization error: Argument {} to the "
-                                                    "LAPACKE_EVD routine had an illegal value.",
+                                                    "lapacke_evd routine had an illegal value.",
                                                     -info));
         }
         throw std::runtime_error(fmt::format(
-            "Diagonalization error: The LAPACK routine failed with error code {}.", info));
+            "Diagonalization error: The lapacke_evd routine failed with error code {}.", info));
     }
 
     return {evecs.sparseView(1, atol).template cast<Scalar>(), this->add_mean(evals, shift)};
@@ -92,7 +91,7 @@ DiagonalizerLapackeEvd<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Ro
 template <typename Scalar>
 DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
     : DiagonalizerInterface<Scalar>(float_type) {
-    throw std::runtime_error("The LAPACKE_EVD routine is not available in this build. Please use a "
+    throw std::runtime_error("The lapacke_evd routine is not available in this build. Please use a "
                              "different diagonalizer.");
 }
 
