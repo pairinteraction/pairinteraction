@@ -16,7 +16,7 @@ def test_energy() -> None:
     # Energy of Stark shifted state
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5))
 
-    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
+    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="eigen")
 
     energy_perturbed = system.get_corresponding_energy(ket, unit="GHz")
 
@@ -45,7 +45,7 @@ def test_electric_dipole_matrix_element() -> None:
     system = (
         pi.SystemAtom(basis)
         .set_electric_field([1, 0, 1], unit="V/cm")
-        .diagonalize(diagonalizer="Eigen", sort_by_energy=True)
+        .diagonalize(diagonalizer="eigen", sort_by_energy=True)
     )
 
     state = system.basis.get_corresponding_state(ket_initial)
