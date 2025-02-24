@@ -123,7 +123,7 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-# Find duckdb
+# Find duckdb  # keep the version used here in sync with pyproject.toml
 include(FetchContent)
 if(WIN32)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-windows-amd64.zip)
