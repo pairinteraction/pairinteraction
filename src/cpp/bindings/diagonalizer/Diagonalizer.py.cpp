@@ -3,6 +3,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -43,7 +44,7 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
 }
 
 template <typename T>
-static void declare_diagonalizer_lapacke(nb::module_ &m, std::string const &type_name) {
+static void declare_diagonalizer_lapacke_evd(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "DiagonalizerLapackeEvd" + type_name;
     nb::class_<DiagonalizerLapackeEvd<T>, DiagonalizerInterface<T>> pyclass(m,
                                                                             pyclass_name.c_str());
@@ -51,6 +52,17 @@ static void declare_diagonalizer_lapacke(nb::module_ &m, std::string const &type
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerLapackeEvd<T>::eigh, nb::const_));
+}
+
+template <typename T>
+static void declare_diagonalizer_lapacke_evr(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "DiagonalizerLapackeEvr" + type_name;
+    nb::class_<DiagonalizerLapackeEvr<T>, DiagonalizerInterface<T>> pyclass(m,
+                                                                            pyclass_name.c_str());
+    pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
+                 &DiagonalizerLapackeEvr<T>::eigh, nb::const_));
 }
 
 template <typename T>
@@ -83,8 +95,10 @@ void bind_diagonalizer(nb::module_ &m) {
     declare_diagonalizer_eigen<std::complex<double>>(m, "Complex");
     declare_diagonalizer_feast<double>(m, "Real");
     declare_diagonalizer_feast<std::complex<double>>(m, "Complex");
-    declare_diagonalizer_lapacke<double>(m, "Real");
-    declare_diagonalizer_lapacke<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_lapacke_evd<double>(m, "Real");
+    declare_diagonalizer_lapacke_evd<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_lapacke_evr<double>(m, "Real");
+    declare_diagonalizer_lapacke_evr<std::complex<double>>(m, "Complex");
 
     declare_diagonalize<SystemAtom<double>>(m, "SystemAtomReal");
     declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplex");

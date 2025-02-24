@@ -8,6 +8,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
