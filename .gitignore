@@ -24,7 +24,7 @@ PRINCIPLES-FOR-AI.md
 bin/
 __pycache__/
 obj/
-/build*/
+build/
 .ruff_cache/
 vcpkg_installed/
 .venv/
