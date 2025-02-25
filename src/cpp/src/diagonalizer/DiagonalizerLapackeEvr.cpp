@@ -75,9 +75,9 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::dispatch_eigh(
     real_lim_t vl = (min_eigenvalue.value_or(-1) - shift) / scaling; // Lower eval bounds if 'V'
     real_lim_t vu = (max_eigenvalue.value_or(1) - shift) / scaling;  // Upper eval bounds if 'V'
 
-    Eigen::VectorX<real_lim_t> evals(dim);     // Eigenvalues
-    Eigen::MatrixX<ScalarLim> evecs(dim, dim); // Eigenvectors
-    std::vector<lapack_int> isuppz(2 * dim);   // Workspace
+    Eigen::VectorX<real_lim_t> evals(dim);                        // Eigenvalues
+    Eigen::MatrixX<ScalarLim> evecs(dim, dim);                    // Eigenvectors
+    std::vector<lapack_int> isuppz(static_cast<size_t>(2 * dim)); // Workspace
     lapack_int info =
         evr(LAPACK_COL_MAJOR, jobz, range_char, uplo, dim, shifted_matrix.data(), dim, vl, vu, il,
             iu, atol_evr, &m, evals.data(), evecs.data(), dim, isuppz.data());
