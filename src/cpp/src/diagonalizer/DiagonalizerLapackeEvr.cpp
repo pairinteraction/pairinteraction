@@ -64,12 +64,6 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::dispatch_eigh(
     real_lim_t scaling = shifted_matrix.norm();
     shifted_matrix /= scaling; // This seems to increase the numerical stability of lapacke_evr
 
-    // Check whether the accuracy of the eigenvalues can be reached
-    if (2 * atol <
-        dim * std::numeric_limits<real_lim_t>::epsilon() * shifted_matrix.template lpNorm<1>()) {
-        SPDLOG_WARN("The specified tolerance might not be reached by the lapacke_evr routine.");
-    }
-
     // Diagonalize the shifted matrix
     lapack_int m = 0;                        // Number of eigenvalues found
     char jobz = 'V';                         // Compute eigenvectors
