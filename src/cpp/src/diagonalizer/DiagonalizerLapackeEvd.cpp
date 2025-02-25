@@ -16,7 +16,7 @@
 #endif
 
 namespace pairinteraction {
-#if defined WITH_MKL || defined WITH_LAPACKE
+#if defined(WITH_MKL) || defined(WITH_LAPACKE)
 lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, float *a, lapack_int lda,
                float *w) {
     return LAPACKE_ssyevd(matrix_layout, jobz, uplo, n, a, lda, w);

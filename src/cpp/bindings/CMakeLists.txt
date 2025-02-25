@@ -36,6 +36,8 @@ nanobind_add_module(
   tools/run_unit_tests.py.hpp
   tools/run_unit_tests.py.cpp
   binding.cpp
+  info.py.hpp
+  info.py.cpp
   version.py.hpp
   version.py.cpp)
 
