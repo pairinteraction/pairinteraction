@@ -22,13 +22,14 @@ def _fix_ssl() -> None:
         os.add_dll_directory(str(directory))
 
 
-def _load_mkl(system: str) -> None:
+def _load_mkl(system: str) -> None:  # noqa: C901
     import ctypes
     import platform
     import sys
     from functools import partial
     from importlib.metadata import PackageNotFoundError, files
     from pathlib import Path
+    from warnings import warn
 
     def get_library_file(package: str, substring: str) -> Path:
         try:
@@ -37,10 +38,11 @@ def _load_mkl(system: str) -> None:
             raise RuntimeError(f"The '{substring}' library could not be found.") from None
 
     def load_candidate(candidate: os.PathLike, loader: callable) -> None:
-        if candidate.exists():
+        try:
             loader(str(candidate))
+        except Exception as e:
+            warn(f"Unable to load {candidate.name}: {e}", RuntimeWarning, stacklevel=2)
 
-    tbb_lib_file = get_library_file("pairinteraction", "tbb")
     mkl_lib_dir = get_library_file("mkl", "mkl_core").parent
 
     mkl_lib_file_names = [
@@ -61,7 +63,12 @@ def _load_mkl(system: str) -> None:
 
     if system == "Linux":
         # Under linux, the libraries must always be loaded manually in the address space
+        try:
+            tbb_lib_file = get_library_file("tbb", "tbb")
+        except RuntimeError:
+            tbb_lib_file = get_library_file("pairinteraction", "tbb")
         load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
+
         for lib in mkl_lib_file_names:
             candidate = mkl_lib_dir / f"lib{lib}.so.2"
             load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
