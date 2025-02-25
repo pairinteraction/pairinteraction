@@ -5,6 +5,7 @@
 #include "./enums/OperatorType.py.hpp"
 #include "./enums/Parity.py.hpp"
 #include "./enums/TransformationType.py.hpp"
+#include "./info.py.hpp"
 #include "./interfaces/DiagonalizerInterface.py.hpp"
 #include "./interfaces/TransformationBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
@@ -56,4 +57,7 @@ NB_MODULE(_backend, m) // NOLINT
 
     // version
     bind_version(m);
+
+    // info
+    bind_info(m);
 }

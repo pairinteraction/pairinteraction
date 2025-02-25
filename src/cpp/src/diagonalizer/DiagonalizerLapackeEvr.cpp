@@ -17,7 +17,7 @@
 #endif
 
 namespace pairinteraction {
-#if defined WITH_MKL || defined WITH_LAPACKE
+#if defined(WITH_MKL) || defined(WITH_LAPACKE)
 lapack_int evr(int matrix_layout, char jobz, char range, char uplo, lapack_int n, float *a,
                lapack_int lda, float vl, float vu, lapack_int il, lapack_int iu, float abstol,
                lapack_int *m, float *w, float *z, lapack_int ldz, lapack_int *isuppz) {
