@@ -61,7 +61,7 @@ gui = [
   "pyqtgraph >= 0.13",
 ]
 doc = [
-  "sphinx >= 7",
+  "sphinx < 8.2", # FIXME
   "sphinx-rtd-theme >= 2.0",
   "nbsphinx >= 0.9",
   "nbconvert >= 7.8",

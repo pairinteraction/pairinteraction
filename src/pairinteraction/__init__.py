@@ -6,8 +6,12 @@ from typing import Union
 # ---------------------------------------------------------------------------------------
 # Load shared libraries
 # ---------------------------------------------------------------------------------------
-def _load_vcpkg() -> None:
+def _fix_ssl() -> None:
+    from importlib.metadata import files
     from pathlib import Path
+
+    if next((p for p in files("pairinteraction") if "ssl" in p.stem), None):
+        return
 
     vcpkg_dirs = [
         Path.cwd() / "vcpkg_installed/x64-windows/bin",
@@ -86,7 +90,7 @@ def _load_mkl(system: str) -> None:
 
 system = platform.system()
 if system == "Windows":
-    _load_vcpkg()
+    _fix_ssl()
     _load_mkl(system)
 elif system == "Linux":
     _load_mkl(system)
@@ -141,4 +145,4 @@ if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
 
 # Remove symbols imported for internal use.
 # Note that we do not delete setup_test_mode, because it is also used in tests/conftest.py.
-del platform, _load_vcpkg, _load_mkl
+del platform, _fix_ssl, _load_mkl
