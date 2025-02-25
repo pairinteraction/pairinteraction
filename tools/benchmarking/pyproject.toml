@@ -18,7 +18,7 @@ build-backend = "setuptools.build_meta"
 benchmark = "benchmarking:run"
 
 [tool.uv.sources]
-pairinteraction = { path = "../../" } # alternatively: { index = "test-pypi" }
+pairinteraction = { index = "test-pypi" }
 
 [[tool.uv.index]]
 name = "test-pypi"

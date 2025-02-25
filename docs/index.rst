@@ -104,6 +104,7 @@ Utility Tools
     overview.rst
     installation/installation.rst
     tutorials/tutorials.rst
+    modules.rst
     references/references.rst
 
 .. toctree::
@@ -113,21 +114,16 @@ Utility Tools
 
     contribute/ways.rst
     contribute/repo.rst
-
-.. toctree::
-    :maxdepth: 2
-    :caption: References
-    :hidden:
-
-    modules.rst
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Utility Tools
-    :hidden:
-
-    utility/mqdt.rst
     utility/databases.rst
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Utility Tools [External Links]
+    :hidden:
+
+    mqdt.rst <http://mqdt.pairinteraction.org>
+    ryd-numerov <http://numerov.pairinteraction.org>
+
 
 Credits
 =======

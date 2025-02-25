@@ -4,8 +4,8 @@
     "l": 0,
     "j": 0.5,
     "m": 0.5,
-    "delta_n": 3,
-    "delta_l": 3,
+    "delta_n": 4,
+    "delta_l": 4,
     "delta_energy_in_GHz": 25,
     "energy_range_in_GHz": 2.5,
     "distances_in_um": [
