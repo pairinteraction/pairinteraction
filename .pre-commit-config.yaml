@@ -24,6 +24,7 @@ repos:
     rev: v0.6.13
     hooks:
       - id: cmake-format
+        args: ["--first-comment-is-literal"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.3

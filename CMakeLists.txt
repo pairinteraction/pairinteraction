@@ -1,5 +1,5 @@
-# SPDX-FileCopyrightText: 2024 Sebastian Weber, Henri Menke, and contributors. All rights reserved.
-# SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers. All rights reserved.
+# SPDX-License-Identifier: LGPL-3.0-or-later
 
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
