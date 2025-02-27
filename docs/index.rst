@@ -2,7 +2,7 @@
 Pairinteraction — A Rydberg Interaction Calculator
 **************************************************
 
-|gh-workflow| |coverage-cpp-ctest| |coverage-cpp-pytest| |coverage-python-pytest| |pypi| |arxiv| |license-lgpl| |license-gpl|
+|gh-workflow| |coverage-cpp-ctest| |coverage-cpp-pytest| |coverage-python-pytest| |pypi| |arxiv| |license-lgpl|
 
 .. image:: banner.jpg
   :alt: The pairinteraction software
@@ -25,7 +25,6 @@ interface can be started by executing ``start_pairinteraction_gui`` from the com
 
 .. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
 .. _LGPL v3: https://www.gnu.org/licenses/lgpl-3.0.html
-.. _GPL v3: https://www.gnu.org/licenses/gpl-3.0.html
 .. _Intel Simplified Software License: https://software.intel.com/en-us/license/intel-simplified-software-license
 
 .. role::  raw-html(raw)
@@ -146,7 +145,5 @@ the `Institute of Physics`_ of the University of Rostock in Germany, and the `De
 License
 =======
 
-The pairinteraction library without the graphical user interface
-is licensed under `LGPL v3`_.
-The graphical user interface as well as the combined work of the pairinteraction
-library and the graphical user interface is licensed under `GPL v3`_.
+The pairinteraction library and the graphical user interface
+are licensed under `LGPL v3`_.

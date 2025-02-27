@@ -144,7 +144,4 @@ rst_epilog = f"""
 .. |license-lgpl| image:: /images/license-lgpl.svg
              :target: https://www.gnu.org/licenses/lgpl-3.0.html
              :alt: License LGPL v3
-.. |license-gpl| image:: /images/license-gpl.svg
-             :target: https://www.gnu.org/licenses/gpl-3.0.html
-             :alt: License GPL v3
 """
