@@ -1,0 +1,31 @@
+# Since the mypy pre-commit cannot automatically install all the dependencies, we add an additional mypy workflow.
+name: Type Checking
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CLICOLOR_FORCE: 1
+  VERBOSE: 1
+  CXXFLAGS: "-march=x86-64-v3"
+
+jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install .[mypy]
+    - name: Run mypy
+      run: uv run --no-project mypy . --warn-unused-ignores --disallow-subclassing-any --warn-return-any

@@ -101,7 +101,7 @@ necessary steps:
 
   .. code-block:: bash
 
-      pip install -e .[test,doc]
+      pip install -e .[tests,docs]
 
   Or, you can build solely the C++ backend using ``cmake``. This manual approach is recommended if you are planning to
   contribute to the C++ backend because it allows for a faster build more fine-grained control.

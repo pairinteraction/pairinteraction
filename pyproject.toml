@@ -9,6 +9,7 @@ requires = [  # keep this in sync with .build_requirements.txt
 ]
 build-backend = "scikit_build_core.build"
 
+
 [project]
 name = "pairinteraction"
 dynamic = ["version"]
@@ -53,13 +54,12 @@ dependencies = [
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
   "mplcursors >= 0.6",
-  "numpy >= 1.24",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
 
 [project.optional-dependencies]
-doc = [
+docs = [
   "sphinx < 8.2", # FIXME
   "sphinx-rtd-theme >= 2.0",
   "nbsphinx >= 0.9",
@@ -69,7 +69,7 @@ doc = [
   "sphinx-autobuild >= 2021.3",
   "myst-parser >= 3.0",
 ]
-test = [
+tests = [
   "pytest >= 8.0",
   "pytest-env >= 1.1.5",
   # "pytest-qt >= 4.2", # FIXME
@@ -78,9 +78,14 @@ test = [
   "duckdb == 1.1.3",  # keep the version used here in sync with CMakeLists.txt
   "sympy >= 1.13.3",
 ]
+mypy = [
+  "mypy >= 1.14",
+  "types-colorama >= 0.4.15.12",
+  "pyside6-stubs >= 6.7.3.0",
+]
 
 [dependency-groups]
-dev = ["pairinteraction[doc,test]"]
+dev = ["pairinteraction[docs,tests,mypy]"]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
@@ -88,6 +93,7 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
 pairinteraction = "pairinteraction.cli:main"
+
 
 [tool.scikit-build]
 cmake.build-type = "RelWithDebInfo"
@@ -120,6 +126,7 @@ VERSION_PATCH \s* =? \s* (?P<patch>\d+)
 '''
 result = "{major}.{minor}.{patch}"
 
+
 [tool.cibuildwheel]
 build = [  # for python >= 3.12 only one stable abi wheel is built, which is then tested against all specified python versions
   "cp3{9,10,11,12,13}-manylinux_x86_64",
@@ -129,7 +136,7 @@ build = [  # for python >= 3.12 only one stable abi wheel is built, which is the
 ]
 build-frontend = "build[uv]"
 build-verbosity = 1
-test-extras = ["test"]
+test-extras = ["tests"]
 test-requires = ["check-wheel-contents>=0.6"]
 test-command = [
   "cd {project}",
@@ -161,6 +168,7 @@ test-command = [
 ]
 repair-wheel-command = "delvewheel repair --exclude mkl_core.2.dll --exclude mkl_tbb_thread.2.dll --ignore-in-wheel -w {dest_dir} {wheel}"
 
+
 [tool.check-wheel-contents]
 ignore = [
   "W004",  # check-wheel-contents does not like some .so files inside pairinteraction.libs
@@ -168,6 +176,7 @@ ignore = [
   "W010",  # for windows the pairinteraction.libs folder might not contain a python module
 ]
 toplevel = ["pairinteraction", "pairinteraction_gui", "pairinteraction.libs"]
+
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -189,11 +198,13 @@ log_cli_level = "INFO"
 log_cli_format = "[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"
 log_cli_date_format = "%H:%M:%S"
 
+
 [tool.sonar]
 projectKey = "pairinteraction_pairinteraction"
 organization = "pairinteraction"
 python.version = 3
 sources = ["src"]
+
 
 [tool.ruff]
 line-length = 120
@@ -214,3 +225,20 @@ mccabe.max-complexity = 10
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-wrap-aliases = true
+
+
+[tool.mypy]
+exclude = [
+    "^tests/.*$",
+    "^tools/.*$",
+]
+strict = true
+disallow_untyped_decorators = false
+disallow_untyped_calls = false
+warn_unused_ignores = false  # fails for pre-commit, eneabled in the ci
+disallow_subclassing_any = false  # fails for pre-commit, eneabled in the ci
+warn_return_any = false  # fails for pre-commit, eneabled in the ci
+
+[[tool.mypy.overrides]]
+module = "mplcursors"
+ignore_missing_imports = true

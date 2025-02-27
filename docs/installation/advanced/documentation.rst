@@ -11,7 +11,7 @@ In order to install all dependencies to smoothly run Sphinx_, you should first r
 
 .. code-block:: bash
 
-    pip install .[doc]
+    pip install .[docs]
 
 In order to build the documentation once, you can run
 
