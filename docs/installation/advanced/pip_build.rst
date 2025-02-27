@@ -50,7 +50,7 @@ First run
 
 .. code-block:: bash
 
-    pip install .[test]
+    pip install .[tests]
 
 to install the relevant packages for your python environment. Tests of the Python library and graphical user interface
 can be run by executing:

@@ -27,7 +27,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install .[doc]
+      run: uv pip install .[docs]
     - name: Build documentation
       working-directory: docs/
       run: uv run make html SPHINXOPTS="-W --keep-going"  # TODO also use -n in the future
@@ -95,7 +95,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
+      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[tests]
     - name: Run pytest
       run: uv run --no-project pytest
     - name: Generate Code Coverage
@@ -120,7 +120,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install .[test]
+      run: uv pip install .[tests]
     - name: Run pytest with coverage
       run: uv run --no-project coverage run -m pytest
     - name: Generate Code Coverage

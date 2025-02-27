@@ -15,10 +15,10 @@ not produce the desired result. If you are a user trying to install \
 this package, consider using the following install command inside \
 the root directory of the repository:
 =====================================================================
-  $ pip install .[test,doc]
+  $ pip install .[tests,docs]
 =====================================================================
-Where the arguments 'test' (installs dependencies for running tests) \
-and 'doc' (installs dependencies for building the documentation) \
+Where the arguments 'tests' (installs dependencies for running tests) \
+and 'docs' (installs dependencies for building the documentation) \
 are optional and can be omitted. \
 
 Optionally: Set up a virtual environment and activate it to install \

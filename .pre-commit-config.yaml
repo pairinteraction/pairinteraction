@@ -47,3 +47,11 @@ repos:
         args: ["--line-length", "120"]
         exclude: 'docs/_template'
         types_or: [rst]
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint >= 0.21.1"]
+        args: ["--ignore-missing-imports"]
+        exclude: '^tests/.*|^tools/.*'
