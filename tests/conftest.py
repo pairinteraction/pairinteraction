@@ -14,7 +14,7 @@ def pytest_addoption(parser: "Parser") -> None:
     parser.addoption(
         "--database-dir",
         action="store",
-        default=None,
+        default="",
         help="Path to the database directory",
     )
     parser.addoption("--download-missing", action="store_true", default=False, help="Download missing database files")
@@ -39,7 +39,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     # Make it possible to overwrite the database in pytest test mode
     test_mode = os.getenv("PAIRINTERACTION_TEST_MODE", "1")
     os.environ["PAIRINTERACTION_TEST_MODE"] = "0"
-    from pairinteraction import setup_test_mode
+    from pairinteraction import _setup_test_mode
 
-    setup_test_mode(download_missing, database_dir)
+    _setup_test_mode(download_missing, database_dir)
     os.environ["PAIRINTERACTION_TEST_MODE"] = test_mode
