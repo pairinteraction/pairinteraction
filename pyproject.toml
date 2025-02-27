@@ -58,7 +58,6 @@ dependencies = [
 [project.optional-dependencies]
 gui = [
   "pyside6 >= 6.8.2",
-  "pyqtgraph >= 0.13",
 ]
 doc = [
   "sphinx < 8.2", # FIXME
@@ -89,7 +88,7 @@ Homepage = "https://www.pairinteraction.org"
 Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
-start_pairinteraction_gui = "pairinteraction.gui.start_pairinteraction_gui:main"
+pairinteraction_gui = "pairinteraction_gui:main"
 
 [tool.scikit-build]
 cmake.build-type = "RelWithDebInfo"
@@ -180,10 +179,6 @@ addopts = [
     "--import-mode=importlib",
     # "--nbmake",  # only run nbmake locally and in one dedicated CI job
     "--doctest-modules",
-    "--ignore=src/pairinteraction/model/",  # TODO: model
-    "--ignore=src/pairinteraction/simulation/",  # TODO: model
-    "--ignore=src/pairinteraction/gui/", # TODO: switch to pyside6
-    "--ignore=tests/test_gui.py", # TODO: switch to pyside6
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",
@@ -208,8 +203,6 @@ flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"src/pairinteraction/gui/app.py" = ["E402"]
-"src/pairinteraction/gui/*.py" = ["ANN", "N802", "S301", "C901"]
 "tests/*.py" = ["ANN"]
 "src/pairinteraction/backend/_wrapped/*.py" = ["N999"]
 

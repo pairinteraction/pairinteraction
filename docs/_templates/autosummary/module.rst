@@ -1,13 +1,6 @@
 {{ name | escape | underline }}
 Full {{ objtype }} path: {{ fullname | escape }}
 
-{% set pydantic_models = [] %}
-{% for item in members %}
-   {% if item.startswith('BaseModel') or item.startswith('Model') and not item.endswith(']') %}
-      {% set _ = pydantic_models.append(item) %}
-   {% endif %}
-{%- endfor %}
-
 .. workaround to ignore generic classes like AtomSQDT[int]
 {% set filtered_classes = [] %}
 {% for item in classes %}
@@ -47,19 +40,6 @@ Full {{ objtype }} path: {{ fullname | escape }}
 .. autosummary::
    :toctree: .
    {% for item in classes %}
-      {{ item }}
-   {%- endfor %}
-{% endif %}
-
-{% if pydantic_models %}
-.. rubric:: {{ _('Pydantic Models') }}
-
-.. inheritance-diagram:: {{ fullname }}
-    :parts: 1
-
-.. autosummary::
-   :toctree: .
-   {% for item in pydantic_models %}
       {{ item }}
    {%- endfor %}
 {% endif %}
