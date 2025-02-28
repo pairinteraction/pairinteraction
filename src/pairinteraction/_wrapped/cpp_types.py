@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union, get_args
 
-from pairinteraction.backend import _backend
+from pairinteraction import _backend
 
 if TYPE_CHECKING:
-    from pairinteraction.backend._wrapped.system.System import System
+    from pairinteraction._wrapped.system.System import System
 
 
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]

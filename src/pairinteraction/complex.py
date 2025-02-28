@@ -1,4 +1,4 @@
-from pairinteraction.backend._wrapped import (
+from pairinteraction._wrapped import (
     BasisAtomComplex as BasisAtom,
     BasisPairComplex as BasisPair,
     Database,

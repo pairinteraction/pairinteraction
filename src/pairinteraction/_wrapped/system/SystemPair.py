@@ -1,9 +1,9 @@
 from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.BasisPair import BasisPairComplex, BasisPairReal
-from pairinteraction.backend._wrapped.system.System import SystemBase
+from pairinteraction import _backend
+from pairinteraction._wrapped.basis.BasisPair import BasisPairComplex, BasisPairReal
+from pairinteraction._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class SystemPairBase(SystemBase[BasisType]):
         You can set the distance (vector) between the atoms afterwards via the corresponding methods.
 
         Examples:
-            >>> import pairinteraction.backend.real as pi
+            >>> import pairinteraction.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
@@ -47,7 +47,7 @@ class SystemPairBase(SystemBase[BasisType]):
             -2.19974
 
         Args:
-            basis: The :class:`pairinteraction.backend.real.BasisPair` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.real.BasisPair` object that describes the basis of the system.
 
         """
         super().__init__(basis)

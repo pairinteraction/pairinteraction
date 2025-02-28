@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import pairinteraction.backend.real as pi
+import pairinteraction.real as pi
 
 
 def test_energy_range() -> None:

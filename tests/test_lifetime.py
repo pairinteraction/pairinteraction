@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from scipy.optimize import curve_fit
 
-import pairinteraction.backend.real as pi
+import pairinteraction.real as pi
 from pairinteraction import ureg
 
 

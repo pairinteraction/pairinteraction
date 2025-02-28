@@ -2,11 +2,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, overload
 
 import numpy as np
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.Basis import BasisBase
-from pairinteraction.backend._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
+from pairinteraction import _backend
+from pairinteraction._wrapped.basis.Basis import BasisBase
+from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction._wrapped.database.Database import Database
+from pairinteraction._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class BasisAtomBase(BasisBase[KetAtom]):
         i.e. the number of kets is equal to the number of states.
 
         Examples:
-            >>> import pairinteraction.backend.real as pi
+            >>> import pairinteraction.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
             >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")

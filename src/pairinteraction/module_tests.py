@@ -1,7 +1,7 @@
 import os
 from typing import Union
 
-from pairinteraction.backend._backend import run_unit_tests
+from pairinteraction._backend import run_unit_tests
 
 
 def run_module_tests(download_missing: bool = False, database_dir: Union[str, "os.PathLike[str]"] = "") -> int:

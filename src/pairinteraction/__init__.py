@@ -106,13 +106,14 @@ elif system == "Linux":
 # ---------------------------------------------------------------------------------------
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
-from pairinteraction import backend  # noqa: E402
-from pairinteraction.backend._backend import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH  # noqa: E402
+from pairinteraction import complex, real  # noqa: E402
+from pairinteraction._backend import VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH  # noqa: E402
 from pairinteraction.module_tests import run_module_tests  # noqa: E402
 from pairinteraction.units import ureg  # noqa: E402
 
 __all__ = [
-    "backend",
+    "complex",
+    "real",
     "run_module_tests",
     "ureg",
 ]
@@ -126,7 +127,7 @@ __version__ = f"{VERSION_MAJOR}.{VERSION_MINOR}.{VERSION_PATCH}"
 def setup_test_mode(download_missing: bool = False, database_dir: Union[str, "os.PathLike[str]", None] = None) -> None:
     from pathlib import Path
 
-    from pairinteraction.backend._wrapped import Database
+    from pairinteraction._wrapped import Database
 
     PAIRINTERACTION_DIR = Path(__file__).parent
     CWD = Path.cwd()

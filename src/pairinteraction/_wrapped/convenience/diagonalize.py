@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.cpp_types import (
+from pairinteraction import _backend
+from pairinteraction._wrapped.cpp_types import (
     Diagonalizer,
     FloatType,
     get_cpp_diagonalize,
@@ -13,7 +13,7 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
-    from pairinteraction.backend._wrapped.system.System import System
+    from pairinteraction._wrapped.system.System import System
 
     Quantity = TypeVar("Quantity", float, PlainQuantity[float])
 

@@ -4,16 +4,16 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 
 import numpy as np
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
-from pairinteraction.backend._wrapped.system.System import SystemBase
+from pairinteraction import _backend
+from pairinteraction._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
+from pairinteraction._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
-    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
+    from pairinteraction._wrapped.ket.KetAtom import KetAtom
     from pairinteraction.units import Array
 
 BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
@@ -34,7 +34,7 @@ class SystemAtomBase(SystemBase[BasisType]):
         You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.
 
         Examples:
-            >>> import pairinteraction.backend.real as pi
+            >>> import pairinteraction.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis)
@@ -49,7 +49,7 @@ class SystemAtomBase(SystemBase[BasisType]):
             -75.51823
 
         Args:
-            basis: The :class:`pairinteraction.backend.real.BasisAtom` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.real.BasisAtom` object that describes the basis of the system.
 
         """
         super().__init__(basis)

@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
-from pairinteraction.backend import _backend
+from pairinteraction import _backend
 
 if TYPE_CHECKING:
     import os

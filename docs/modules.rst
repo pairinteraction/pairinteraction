@@ -9,7 +9,7 @@ This Python interface can be accessed via the ``pairinteraction`` module by impo
 
 .. code-block:: python
 
-    import pairinteraction.backend.real as pi
+    import pairinteraction.real as pi
 
 Alternatively, the same functionality can be accessed for using complex data type by replacing ``real`` with ``complex``.
 These four submodules are completely identical in their functionality, but only differ in the data type they use in the C++ backend.
@@ -19,14 +19,14 @@ All the available classes, methods and functions are documented here for the ``r
     :toctree: _autosummary/modules
     :recursive:
 
-    pairinteraction.backend.real
+    pairinteraction.real
 
 
 .. note::
 
     For advanced users and developers:
-    The Python classes are defined inside ``pairinteraction.backend._wrapped`` and then aliased to the ``pairinteraction.backend.real`` and ``pairinteraction.backend.complex`` namespaces.
-    The bare C++ functionality is bound to Python using `nanobind`_, all the original bound C++ classes and functions can be accessed via the ``pairinteraction.backend._backend`` namespace.
+    The Python classes are defined inside ``pairinteraction._wrapped`` and then aliased to the ``pairinteraction.real`` and ``pairinteraction.complex`` namespaces.
+    The bare C++ functionality is bound to Python using `nanobind`_, all the original bound C++ classes and functions can be accessed via the ``pairinteraction._backend`` namespace.
 
 
 .. _nanobind: https://github.com/wjakob/nanobind
