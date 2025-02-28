@@ -20,30 +20,31 @@ void LoggerBridge::QueueSink::sink_it_(const spdlog::details::log_msg &msg) {
     spdlog::memory_buf_t buf;
     this->formatter_->format(msg, buf);
     std::string text = fmt::to_string(buf);
-    int lvl = 20; // default INFO level
+    LogEntry entry;
     switch (msg.level) {
     case spdlog::level::trace:
-        lvl = 0;
+        entry.level = 0;
         break;
     case spdlog::level::debug:
-        lvl = 10;
+        entry.level = 10;
         break;
     case spdlog::level::info:
-        lvl = 20;
+        entry.level = 20;
         break;
     case spdlog::level::warn:
-        lvl = 30;
+        entry.level = 30;
         break;
     case spdlog::level::err:
-        lvl = 40;
+        entry.level = 40;
         break;
     case spdlog::level::critical:
-        lvl = 50;
+        entry.level = 50;
         break;
     default:
         break;
     }
-    parent->log_queue.push({lvl, text});
+    entry.message = text;
+    parent->log_queue.push(std::move(entry));
 }
 
 void LoggerBridge::QueueSink::flush_() {}

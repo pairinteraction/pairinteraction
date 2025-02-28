@@ -16,12 +16,12 @@ def _extract_cpp_backend_log_fields(message: str) -> dict[str, str]:
     )
     match = re.match(pattern, message.strip(), re.DOTALL)
     if not match:
-        raise ValueError(f"Could not parse log message: {message}")
+        raise RuntimeError(f"Could not parse log message: {message}")
     return match.groupdict()
 
 
 def _log_cpp_backend_record(level: int, message: str) -> None:
-    logger = logging.getLogger()
+    logger = logging.getLogger("cpp")
     fields = _extract_cpp_backend_log_fields(message)
     created = datetime.datetime.strptime(fields["timestamp"], "%Y-%m-%d %H:%M:%S.%f").timestamp()
     record = logging.LogRecord(
@@ -57,7 +57,7 @@ def decorate_module_with_flush_logs(module: object) -> None:
     for name, obj in vars(module).items():
         if inspect.isclass(obj):
             for attr_name, attr in vars(obj).items():
-                if callable(attr) and not attr_name.startswith("_"):
+                if callable(attr):
                     setattr(obj, attr_name, _flush_logs_after(attr))
-        elif callable(obj) and not name.startswith("_"):
+        elif callable(obj):
             setattr(module, name, _flush_logs_after(obj))
