@@ -23,7 +23,7 @@ void setup() {
         throw std::runtime_error("Log path is not a directory.");
     }
 
-    std::filesystem::path logfile = logdir / "backend.log";
+    std::filesystem::path logfile = logdir / "cpp.log";
 
     static std::once_flag flag_default_logger;
     std::call_once(flag_default_logger, [&logfile] {

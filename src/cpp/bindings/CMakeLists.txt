@@ -38,6 +38,8 @@ nanobind_add_module(
   binding.cpp
   info.py.hpp
   info.py.cpp
+  LoggerBridge.cpp
+  LoggerBridge.hpp
   version.py.hpp
   version.py.cpp)
 

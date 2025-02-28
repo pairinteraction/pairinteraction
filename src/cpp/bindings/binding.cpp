@@ -1,3 +1,4 @@
+#include "./LoggerBridge.hpp"
 #include "./basis/Basis.py.hpp"
 #include "./database/Database.py.hpp"
 #include "./diagonalizer/Diagonalizer.py.hpp"
@@ -13,16 +14,26 @@
 #include "./system/System.py.hpp"
 #include "./tools/run_unit_tests.py.hpp"
 #include "./version.py.hpp"
-#include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
+
+namespace nb = nanobind;
+
+// create an instance of the logger bridge
+LoggerBridge logger_bridge;
 
 NB_MODULE(_backend, m) // NOLINT
 {
     // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types
     nanobind::set_leak_warnings(false);
 
-    pairinteraction::setup();
+    // wrap the get_pending_logs method of the logger bridge instance
+    nb::class_<LoggerBridge::LogEntry>(m, "LogEntry")
+        .def_ro("level", &LoggerBridge::LogEntry::level)
+        .def_ro("message", &LoggerBridge::LogEntry::message);
+    m.def("get_pending_logs", []() { return logger_bridge.get_pending_logs(); });
 
     // enums
     bind_operator_type(m);

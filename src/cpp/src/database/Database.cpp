@@ -639,156 +639,156 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 auto min_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (std::sqrt(-1 / (2 * min_energy)) - 1 >
                     std::sqrt(-1 / (2 * description.range_energy.min()))) {
-                    SPDLOG_WARN("No state found with the requested minimum energy. Requested: {}, "
-                                "found: {}.",
-                                description.range_energy.min(), min_energy);
+                    SPDLOG_DEBUG("No state found with the requested minimum energy. Requested: {}, "
+                                 "found: {}.",
+                                 description.range_energy.min(), min_energy);
                 }
                 auto max_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (std::sqrt(-1 / (2 * max_energy)) + 1 <
                     std::sqrt(-1 / (2 * description.range_energy.max()))) {
-                    SPDLOG_WARN("No state found with the requested maximum energy. Requested: {}, "
-                                "found: {}.",
-                                description.range_energy.max(), max_energy);
+                    SPDLOG_DEBUG("No state found with the requested maximum energy. Requested: {}, "
+                                 "found: {}.",
+                                 description.range_energy.max(), max_energy);
                 }
             }
             if (description.range_quantum_number_f.is_finite()) {
                 auto min_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_f > description.range_quantum_number_f.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number f. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_f.min(), min_f);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number f. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_f.min(), min_f);
                 }
                 auto max_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_f < description.range_quantum_number_f.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number f. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_f.max(), max_f);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number f. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_f.max(), max_f);
                 }
             }
             if (description.range_quantum_number_m.is_finite()) {
                 auto min_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_m > description.range_quantum_number_m.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number m. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_m.min(), min_m);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number m. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_m.min(), min_m);
                 }
                 auto max_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_m < description.range_quantum_number_m.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number m. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_m.max(), max_m);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number m. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_m.max(), max_m);
                 }
             }
             if (description.range_quantum_number_n.is_finite()) {
                 auto min_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
                 if (min_n > description.range_quantum_number_n.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number n. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_n.min(), min_n);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number n. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_n.min(), min_n);
                 }
                 auto max_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
                 if (max_n < description.range_quantum_number_n.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number n. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_n.max(), max_n);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number n. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_n.max(), max_n);
                 }
             }
             if (description.range_quantum_number_nu.is_finite()) {
                 auto min_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_nu - 1 > description.range_quantum_number_nu.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number nu. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_nu.min(), min_nu);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number nu. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_nu.min(), min_nu);
                 }
                 auto max_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_nu + 1 < description.range_quantum_number_nu.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number nu. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_nu.max(), max_nu);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number nu. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_nu.max(), max_nu);
                 }
             }
             if (description.range_quantum_number_nui.is_finite()) {
                 auto min_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_nui - 1 > description.range_quantum_number_nui.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number nui. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_nui.min(), min_nui);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number nui. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_nui.min(), min_nui);
                 }
                 auto max_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_nui + 1 < description.range_quantum_number_nui.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number nui. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_nui.max(), max_nui);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number nui. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_nui.max(), max_nui);
                 }
             }
             if (description.range_quantum_number_l.is_finite()) {
                 auto min_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_l - 1 > description.range_quantum_number_l.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number l. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_l.min(), min_l);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number l. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_l.min(), min_l);
                 }
                 auto max_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_l + 1 < description.range_quantum_number_l.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number l. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_l.max(), max_l);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number l. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_l.max(), max_l);
                 }
             }
             if (description.range_quantum_number_s.is_finite()) {
                 auto min_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_s - 1 > description.range_quantum_number_s.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number s. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_s.min(), min_s);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number s. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_s.min(), min_s);
                 }
                 auto max_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_s + 1 < description.range_quantum_number_s.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number s. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_s.max(), max_s);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number s. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_s.max(), max_s);
                 }
             }
             if (description.range_quantum_number_j.is_finite()) {
                 auto min_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_j - 1 > description.range_quantum_number_j.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number j. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_j.min(), min_j);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number j. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_j.min(), min_j);
                 }
                 auto max_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_j + 1 < description.range_quantum_number_j.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number j. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_j.max(), max_j);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number j. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_j.max(), max_j);
                 }
             }
             if (description.range_quantum_number_l_ryd.is_finite()) {
                 auto min_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_l_ryd - 1 > description.range_quantum_number_l_ryd.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number l_ryd. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_l_ryd.min(), min_l_ryd);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number l_ryd. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_l_ryd.min(), min_l_ryd);
                 }
                 auto max_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_l_ryd + 1 < description.range_quantum_number_l_ryd.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number l_ryd. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_l_ryd.max(), max_l_ryd);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number l_ryd. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_l_ryd.max(), max_l_ryd);
                 }
             }
             if (description.range_quantum_number_j_ryd.is_finite()) {
                 auto min_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_j_ryd - 1 > description.range_quantum_number_j_ryd.min()) {
-                    SPDLOG_WARN("No state found with the requested minimum quantum number j_ryd. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_j_ryd.min(), min_j_ryd);
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number j_ryd. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_j_ryd.min(), min_j_ryd);
                 }
                 auto max_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (max_j_ryd + 1 < description.range_quantum_number_j_ryd.max()) {
-                    SPDLOG_WARN("No state found with the requested maximum quantum number j_ryd. "
-                                "Requested: {}, found: {}.",
-                                description.range_quantum_number_j_ryd.max(), max_j_ryd);
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number j_ryd. "
+                                 "Requested: {}, found: {}.",
+                                 description.range_quantum_number_j_ryd.max(), max_j_ryd);
                 }
             }
         }

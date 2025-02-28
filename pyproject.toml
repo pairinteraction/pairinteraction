@@ -183,6 +183,10 @@ env = [
     "QT_QPA_PLATFORM=offscreen",
     "PAIRINTERACTION_TEST_MODE=1",
 ]
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(levelname)-8s [%(asctime)s.%(msecs)03d] [%(filename)s:%(lineno)d] %(message)s"
+log_cli_date_format = "%H:%M:%S"
 
 [tool.sonar]
 projectKey = "pairinteraction_pairinteraction"
