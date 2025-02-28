@@ -9,7 +9,7 @@
 class LoggerBridge {
 public:
     struct LogEntry {
-        int level;
+        int level = 20;
         std::string message;
     };
 

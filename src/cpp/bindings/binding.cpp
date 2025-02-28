@@ -21,19 +21,17 @@
 
 namespace nb = nanobind;
 
-// create an instance of the logger bridge
-LoggerBridge logger_bridge;
-
 NB_MODULE(_backend, m) // NOLINT
 {
     // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types
     nanobind::set_leak_warnings(false);
 
     // wrap the get_pending_logs method of the logger bridge instance
+    static LoggerBridge bridge;
     nb::class_<LoggerBridge::LogEntry>(m, "LogEntry")
         .def_ro("level", &LoggerBridge::LogEntry::level)
         .def_ro("message", &LoggerBridge::LogEntry::message);
-    m.def("get_pending_logs", []() { return logger_bridge.get_pending_logs(); });
+    m.def("get_pending_logs", []() { return bridge.get_pending_logs(); });
 
     // enums
     bind_operator_type(m);
