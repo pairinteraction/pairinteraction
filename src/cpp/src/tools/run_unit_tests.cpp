@@ -12,8 +12,6 @@
 #include <filesystem>
 #include <httplib.h>
 #include <mutex>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
 // Create a reporter for doctest that logs to spdlog
@@ -106,11 +104,11 @@ struct LoggingReporter : public ConsoleReporter {
 
         if (p.numTestCasesFailed > 0) {
             for (std::string line; std::getline(ss, line);) {
-                spdlog::error(line);
+                SPDLOG_ERROR(line);
             }
         } else {
             for (std::string line; std::getline(ss, line);) {
-                spdlog::info(line);
+                SPDLOG_INFO(line);
             }
         }
     }
@@ -129,45 +127,45 @@ struct LoggingReporter : public ConsoleReporter {
         if (opt.duration) {
             std::stringstream ss;
             ss << std::setprecision(6) << std::fixed << st.seconds << " s: " << tc->m_name;
-            spdlog::info(ss.str());
+            SPDLOG_INFO(ss.str());
         }
 
         if ((st.failure_flags & TestCaseFailureReason::Timeout) != 0) {
             std::stringstream ss;
             ss << Color::Red << "Test case exceeded time limit of " << std::setprecision(6)
                << std::fixed << tc->m_timeout << "!" << Color::None;
-            spdlog::error(ss.str());
+            SPDLOG_ERROR(ss.str());
         }
 
         if ((st.failure_flags & TestCaseFailureReason::ShouldHaveFailedButDidnt) != 0) {
             std::stringstream ss;
             ss << Color::Red << "Should have failed but didn't! Marking it as failed!"
                << Color::None;
-            spdlog::error(ss.str());
+            SPDLOG_ERROR(ss.str());
         } else if ((st.failure_flags & TestCaseFailureReason::ShouldHaveFailedAndDid) != 0) {
             std::stringstream ss;
             ss << Color::Yellow << "Failed as expected so marking it as not failed" << Color::None;
-            spdlog::warn(ss.str());
+            SPDLOG_WARN(ss.str());
         } else if ((st.failure_flags & TestCaseFailureReason::CouldHaveFailedAndDid) != 0) {
             std::stringstream ss;
             ss << Color::Yellow << "Allowed to fail so marking it as not failed" << Color::None;
-            spdlog::warn(ss.str());
+            SPDLOG_WARN(ss.str());
         } else if ((st.failure_flags & TestCaseFailureReason::DidntFailExactlyNumTimes) != 0) {
             std::stringstream ss;
             ss << Color::Red << "Didn't fail exactly " << tc->m_expected_failures
                << " times so marking it as failed!" << Color::None;
-            spdlog::error(ss.str());
+            SPDLOG_ERROR(ss.str());
         } else if ((st.failure_flags & TestCaseFailureReason::FailedExactlyNumTimes) != 0) {
             std::stringstream ss;
             ss << Color::Yellow << "Failed exactly " << tc->m_expected_failures
                << " times as expected so marking it as not failed!" << Color::None;
-            spdlog::warn(ss.str());
+            SPDLOG_WARN(ss.str());
         }
 
         if ((st.failure_flags & TestCaseFailureReason::TooManyFailedAsserts) != 0) {
             std::stringstream ss;
             ss << Color::Red << "Aborting - too many failed asserts!" << Color::None;
-            spdlog::error(ss.str());
+            SPDLOG_ERROR(ss.str());
         }
     }
 
@@ -188,7 +186,7 @@ struct LoggingReporter : public ConsoleReporter {
         ss << Color::Red << (e.is_crash ? "test case CRASHED: " : "test case THREW exception: ")
            << Color::None << e.error_string;
         for (std::string line; std::getline(ss, line);) {
-            spdlog::error(loc + line);
+            SPDLOG_ERROR(loc + line);
         }
     }
 
@@ -209,11 +207,11 @@ struct LoggingReporter : public ConsoleReporter {
         fulltext_log_assert_to_stream(ss, rb);
         if (rb.m_failed) {
             for (std::string line; std::getline(ss, line);) {
-                spdlog::error(loc + line);
+                SPDLOG_ERROR(loc + line);
             }
         } else {
             for (std::string line; std::getline(ss, line);) {
-                spdlog::info(loc + line);
+                SPDLOG_INFO(loc + line);
             }
         }
 
@@ -239,7 +237,7 @@ struct LoggingReporter : public ConsoleReporter {
                                      "MESSAGE")
            << ": " << Color::None << mb.m_string;
         for (std::string line; std::getline(ss, line);) {
-            spdlog::info(loc + line);
+            SPDLOG_INFO(loc + line);
         }
 
         log_contexts();
@@ -264,29 +262,6 @@ namespace pairinteraction {
 int run_unit_tests(int argc, char **argv, bool download_missing, bool use_cache,
                    std::filesystem::path database_dir) {
 
-    // Configure a logger for the tests
-    std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
-
-    if (!std::filesystem::exists(logdir)) {
-        std::filesystem::create_directories(logdir);
-    } else if (!std::filesystem::is_directory(logdir)) {
-        throw std::runtime_error("Log path is not a directory.");
-    }
-
-    std::filesystem::path logfile = logdir / "test.log";
-
-    auto console_sink =
-        std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
-    auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile.string(), true);
-    auto doctest_logger =
-        std::make_shared<spdlog::logger>(spdlog::logger("doctest", {console_sink, file_sink}));
-    doctest_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] %v");
-
-    const char *log_level = std::getenv("SPDLOG_LEVEL");
-    if (log_level != nullptr) {
-        spdlog::set_level(spdlog::level::from_str(log_level));
-    }
-
     // Setup the tests
     doctest::Context ctx;
     ctx.setOption("abort-after", 5);
@@ -299,51 +274,45 @@ int run_unit_tests(int argc, char **argv, bool download_missing, bool use_cache,
     ctx.setOption("reporters", "logging");
     ctx.setOption("no-intro", true);
 
-    // Set the doctest logger as the default logger
-    auto original_logger = spdlog::default_logger();
-    spdlog::set_default_logger(doctest_logger);
-
     // Log the version and system information
-    spdlog::info("Version of pairinteraction: {}.{}.{}", VERSION_MAJOR, VERSION_MINOR,
-                 VERSION_PATCH);
-    spdlog::info("Operating system: {}", OS_NAME);
+    SPDLOG_INFO("Version of pairinteraction: {}.{}.{}", VERSION_MAJOR, VERSION_MINOR,
+                VERSION_PATCH);
+    SPDLOG_INFO("Operating system: {}", OS_NAME);
 
     // Create a global database instance and run the tests
     Database::get_global_instance(download_missing, use_cache, std::move(database_dir));
     int exitcode = ctx.run();
 
-    spdlog::info("Log: {}", logfile.string());
+    std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
+    SPDLOG_INFO("The log was stored to {}", logdir.string());
 
     if (exitcode != 0) {
         if (download_missing) {
             httplib::Client client("https://www.github.com");
             auto res = client.Head("/");
             if (!res) {
-                spdlog::error(
+                SPDLOG_ERROR(
                     "Test failed. Please check your internet connection. An internet "
                     "connection is required to download databases of atomic states and matrix "
-                    "elements if they are not available locally.",
-                    logfile.string());
+                    "elements if they are not available locally. The log was stored to {}",
+                    logdir.string());
             } else {
-                spdlog::error(
+                SPDLOG_ERROR(
                     "Tests failed. Consider creating an issue on "
                     "https://github.com/pairinteraction/pairinteraction/issues, attaching the "
-                    "log.",
-                    logfile.string());
+                    "log. The log was stored to {}",
+                    logdir.string());
             }
         } else {
-            spdlog::error(
+            SPDLOG_ERROR(
                 "Tests failed. Consider creating an issue on "
                 "https://github.com/pairinteraction/pairinteraction/issues, attaching the "
                 "log. If the tests failed because of unavailable states or "
                 "matrix elements, consider downloading missing databases by calling "
-                "the test function with 'download_missing = true'.",
-                logfile.string());
+                "the test function with 'download_missing = true'. The log was stored to {}",
+                logdir.string());
         }
     }
-
-    // Reset the default logger
-    spdlog::set_default_logger(original_logger);
 
     return exitcode;
 };
