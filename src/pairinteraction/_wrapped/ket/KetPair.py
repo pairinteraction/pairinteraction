@@ -1,7 +1,7 @@
 from typing import Any, ClassVar, Union
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.ket.Ket import KetBase
+from pairinteraction import _backend
+from pairinteraction._wrapped.ket.Ket import KetBase
 
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
@@ -19,7 +19,7 @@ class KetPairBase(KetBase):
         Therefore for different pair systems the KetPair objects are not necessarily orthogonal anymore.
 
         Currently one cannot create a KetPair object directly, but they are used in the background when creating a
-        :class:`pairinteraction.backend.real.BasisPair` object.
+        :class:`pairinteraction.real.BasisPair` object.
         """
         raise NotImplementedError("KetPair objects cannot be created directly.")
 

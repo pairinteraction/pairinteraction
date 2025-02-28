@@ -1,4 +1,4 @@
-import pairinteraction.backend.real as pi
+import pairinteraction.real as pi
 
 
 def test_ket() -> None:

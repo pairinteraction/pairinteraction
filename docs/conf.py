@@ -90,11 +90,11 @@ autodoc_type_aliases = {}  # make type aliases nicer
 
 
 def setup(app: Sphinx) -> None:
-    # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.real
+    # trick sphinx autodoc to fully document the classes inside pairinteraction.real
     # instead of just saying 'alias of ...'
     all_pi_types = [
-        pairinteraction.backend.real,
-        pairinteraction.backend.complex,
+        pairinteraction.real,
+        pairinteraction.complex,
     ]
     for pi in all_pi_types:
         for obj_name in dir(pi):

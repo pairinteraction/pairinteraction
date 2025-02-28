@@ -1,6 +1,6 @@
 """Execute the module tests."""
 
-import pairinteraction.backend.real as pi
+import pairinteraction.real as pi
 from pairinteraction import run_module_tests
 
 

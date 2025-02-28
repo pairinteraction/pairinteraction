@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 
 import numpy as np
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.Basis import BasisBase
-from pairinteraction.backend._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction.backend._wrapped.ket.KetPair import (
+from pairinteraction import _backend
+from pairinteraction._wrapped.basis.Basis import BasisBase
+from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction._wrapped.ket.KetPair import (
     KetPair,
     KetPairComplex,
     KetPairReal,
@@ -17,9 +17,9 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
 
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
-    from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtom
+    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
+    from pairinteraction._wrapped.ket.KetAtom import KetAtom
+    from pairinteraction._wrapped.system.SystemAtom import SystemAtom
     from pairinteraction.units import Array
 
 KetPairType = TypeVar("KetPairType", bound=KetPair)
@@ -53,7 +53,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         and d is the number of basis states (after applying the restrictions).
 
         Examples:
-            >>> import pairinteraction.backend.real as pi
+            >>> import pairinteraction.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()

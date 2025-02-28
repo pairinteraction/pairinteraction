@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
+from pairinteraction import _backend
+from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -12,8 +12,8 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction.backend._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
+    from pairinteraction._wrapped.basis.BasisPair import BasisPair
     from pairinteraction.units import Array
 
     Quantity = TypeVar("Quantity", float, PlainQuantity[float])

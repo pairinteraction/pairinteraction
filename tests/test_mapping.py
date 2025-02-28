@@ -3,7 +3,7 @@
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 
-import pairinteraction.backend.real as pi
+import pairinteraction.real as pi
 
 
 def test_mapping() -> None:

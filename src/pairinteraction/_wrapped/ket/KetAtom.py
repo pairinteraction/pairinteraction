@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, Literal, Optional, Union, overload
 import numpy as np
 from scipy.special import exprel
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.cpp_types import OperatorType, Parity, get_cpp_parity
-from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.ket.Ket import KetBase
+from pairinteraction import _backend
+from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_parity
+from pairinteraction._wrapped.database.Database import Database
+from pairinteraction._wrapped.ket.Ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -65,7 +65,7 @@ class KetAtom(KetBase):
             whose expectation value is closest to the provided value.
 
         Examples:
-            >>> import pairinteraction.backend.real as pi
+            >>> import pairinteraction.real as pi
             >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
             ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
@@ -193,7 +193,7 @@ class KetAtom(KetBase):
         q: int,
         unit: Optional[str] = None,
     ):
-        from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomReal
+        from pairinteraction._wrapped.basis.BasisAtom import BasisAtomReal
 
         basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
@@ -349,8 +349,8 @@ class KetAtom(KetBase):
         which_transitions: Literal["spontaneous", "black_body"],
         temperature_au: Union[float, None] = None,
     ) -> tuple[list["KetAtom"], np.ndarray]:
-        from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomReal
-        from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomReal
+        from pairinteraction._wrapped.basis.BasisAtom import BasisAtomReal
+        from pairinteraction._wrapped.system.SystemAtom import SystemAtomReal
 
         assert which_transitions in ["spontaneous", "black_body"]
 

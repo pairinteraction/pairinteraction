@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Optional, Union, get_args, overload
 
-from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.cpp_types import Parity
+from pairinteraction import _backend
+from pairinteraction._wrapped.cpp_types import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
