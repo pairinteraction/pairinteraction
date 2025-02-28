@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Optional, Union, get_args, overload
+from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, get_args, overload
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.cpp_types import Parity
@@ -38,15 +38,21 @@ class KetBase(ABC):
         return obj
 
     def __str__(self) -> str:
-        return self.label
+        return self.get_label("ket")
 
     def __repr__(self) -> str:
-        return self.label
+        return self.get_label("raw")
 
-    @property
-    def label(self) -> str:
+    def get_label(self, format: Literal["ket", "bra", "raw"]) -> str:
         """Label representing the ket."""
-        return self._cpp.get_label()
+        raw = self._cpp.get_label()
+        if format == "raw":
+            return raw
+        if format == "ket":
+            return f"|{raw}⟩"
+        if format == "bra":
+            return f"⟨{raw}|"
+        raise ValueError(f"Unknown format {format}")
 
     @property
     def m(self) -> float:

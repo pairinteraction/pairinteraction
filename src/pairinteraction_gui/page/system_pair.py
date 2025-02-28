@@ -20,6 +20,8 @@ class SystemPairPage(SimulationPage):
     title = "System Pair"
     tooltip = "Configure and analyze pair systems"
 
+    plotwidget: PlotEnergies
+
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
         self.layout().addWidget(self.plotwidget)
@@ -85,7 +87,9 @@ class SystemPairPage(SimulationPage):
             self.systems.append(system)
 
         if self.plotwidget.energy_range.isChecked():
-            kwargs["energy_range"] = self.plotwidget.energy_range.values()
+            ket_pair_energy = sum(ket.get_energy("GHz") for ket in self.kets)
+            _energies = self.plotwidget.energy_range.values()
+            kwargs["energy_range"] = (ket_pair_energy + v for v in _energies)
             kwargs["energy_unit"] = "GHz"
 
         pi.diagonalize(self.systems, **kwargs)

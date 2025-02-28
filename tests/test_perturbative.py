@@ -176,8 +176,9 @@ def test_resonance_detection(caplog):
         (pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom(species="Rb", n=61, l=1, j=0.5, m=0.5))
     ]
     with pytest.warns(RuntimeWarning, match="divide by zero encountered in divide"):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as excinfo:
             with caplog.at_level(logging.CRITICAL):
                 H_eff, _ = perturbative.get_effective_hamiltonian_from_system(
                     ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
                 )
+            assert "Perturbative Calculation not possible due to resonances." in str(excinfo.value)

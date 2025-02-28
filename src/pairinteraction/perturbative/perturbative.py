@@ -347,9 +347,8 @@ def _check_for_resonances(
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
-        scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
-            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding
-            eigenvector
+        Eigenvectors in perturbation theory due to interaction with states out of the model space,
+            returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.

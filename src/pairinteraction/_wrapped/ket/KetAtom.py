@@ -71,12 +71,12 @@ class KetAtom(KetBase):
             >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
             ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
             >>> print(ket_sqdt)
-            Rb:60,S_1/2,1/2
+            |Rb:60,S_1/2,1/2⟩
             >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
             >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
             ('Yb174_mqdt', 60.049, 1.0, 1.0)
             >>> print(ket_mqdt)
-            Yb174:S=0.4,nu=60.0,L=1.0,J=1,1
+            |Yb174:S=0.4,nu=60.0,L=1.0,J=1,1⟩
 
         Args:
             species: See attribute.

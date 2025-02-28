@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication
 from pairinteraction_gui.main_window import MainWindow
 
 
-def run_app() -> int:
+def main() -> int:
     """Run the PairInteraction GUI application.
 
     Returns:
@@ -27,7 +27,7 @@ def run_app() -> int:
     window = MainWindow()
     window.show()
 
-    return app.exec()
+    return sys.exit(app.exec())
 
 
 def allow_ctrl_c(app: QApplication) -> None:
@@ -59,4 +59,4 @@ def allow_ctrl_c(app: QApplication) -> None:
 
 
 if __name__ == "__main__":
-    run_app()
+    main()

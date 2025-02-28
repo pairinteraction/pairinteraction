@@ -65,7 +65,7 @@ class KetBaseConfig(BaseConfig):
     def setupWidget(self) -> None:
         self.species_combo: list[QComboBox] = []
         self.stacked_qn: list[NamedStackedWidget[QnBase]] = []
-        self.state_label: list[QLabel] = []
+        self.ket_label: list[QLabel] = []
 
     def postSetupWidget(self) -> None:
         self.layout().addStretch(30)
@@ -96,16 +96,16 @@ class KetBaseConfig(BaseConfig):
                 item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))
         self.layout().addWidget(stacked_qn)
 
-        # Add a label to display the current quantum state
-        state_label = QLabel()
-        state_label.setStyleSheet(self._label_style_sheet)
-        state_label.setWordWrap(True)
-        self.layout().addWidget(state_label)
+        # Add a label to display the current ket
+        ket_label = QLabel()
+        ket_label.setStyleSheet(self._label_style_sheet)
+        ket_label.setWordWrap(True)
+        self.layout().addWidget(ket_label)
 
         # Store the widgets for later access
         self.species_combo.append(species_combo)
         self.stacked_qn.append(stacked_qn)
-        self.state_label.append(state_label)
+        self.ket_label.append(ket_label)
         self.on_qnitem_changed(atom)
 
     def get_species(self, atom: int) -> str:
@@ -148,21 +148,19 @@ class KetBaseConfig(BaseConfig):
         self.on_qnitem_changed(atom)
 
     def on_qnitem_changed(self, atom: int) -> None:
-        """Update the quantum state label with current values."""
+        """Update the ket label with current values."""
         try:
             ket = self.get_ket_atom(atom)
-            self.state_label[atom].setText(ket.label)
-            self.state_label[atom].setStyleSheet(self._label_style_sheet)
+            self.ket_label[atom].setText(str(ket))
+            self.ket_label[atom].setStyleSheet(self._label_style_sheet)
         except Exception as err:
             if isinstance(err, NoStateFoundError):
-                self.state_label[atom].setText("No state found. Please select different quantum numbers.")
+                self.ket_label[atom].setText("No ket found. Please select different quantum numbers.")
             elif isinstance(err, DatabaseMissingError):
-                self.state_label[atom].setText(
-                    "Database required but not downloaded. Please select a different species."
-                )
+                self.ket_label[atom].setText("Database required but not downloaded. Please select a different species.")
             else:
-                self.state_label[atom].setText(str(err))
-            self.state_label[atom].setStyleSheet(self._label_style_sheet_error)
+                self.ket_label[atom].setText(str(err))
+            self.ket_label[atom].setStyleSheet(self._label_style_sheet_error)
 
 
 class KetAtomConfig(KetBaseConfig):
@@ -294,7 +292,7 @@ class QnMQDT(QnBase):
         spin_boxes["nu"] = DoubleSpinBox(
             self, vmin=1, vdefault=60, vstep=1, tooltip="Effective principal quantum number nu"
         )
-        spin_boxes["s"] = DoubleSpinBox(self, vstep=0.1, tooltip="Spin s")
+        spin_boxes["s"] = DoubleSpinBox(self, vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
         spin_boxes["j"] = DoubleSpinBox(self, vstep=1, tooltip="Total angular momentum j")
 
         if self.m_is_int:

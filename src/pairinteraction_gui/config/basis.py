@@ -78,7 +78,7 @@ class BasisBaseConfig(BaseConfig):
         """Update the quantum state label with current values."""
         try:
             basis = self.get_basis(atom)
-            self.basis_label[atom].setText(str(basis))
+            self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
             self.basis_label[atom].setStyleSheet(self._label_style_sheet)
         except Exception as err:
             if isinstance(err, NoStateFoundError):

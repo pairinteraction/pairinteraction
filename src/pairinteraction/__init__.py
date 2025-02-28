@@ -29,8 +29,6 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
         except StopIteration as err:
             raise RuntimeError(f"The '{substring}' library could not be found.") from err
 
-
-
     def load_candidate(candidate: Path, loader: Callable) -> None:
         try:
             loader(str(candidate))
