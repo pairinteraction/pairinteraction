@@ -191,4 +191,4 @@ def test_obtaining_kets(species: str) -> None:
         "Yb174_mqdt": "Yb174:S=0.0,nu=55.7,L=0.0,J=0,0",
         "Yb171_mqdt": "Yb171:S=0.3,nu=55.7,L=0.0,F=1/2,1/2",
         "Yb173_mqdt": "Yb173:S=0.4,nu=56.4,L=0.0,F=5/2,5/2",
-    }[species] == str(ket)
+    }[species] == repr(ket)

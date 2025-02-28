@@ -52,7 +52,7 @@ class BasisAtomBase(BasisBase[KetAtom]):
             >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
             >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
             >>> print(basis)
-            BasisAtomReal object with 140 states and 140 kets
+            BasisAtomReal(n=(57, 63), l=(0, 3), energy=(1008911.9215883961, 1009111.9215883961), energy_unit=GHz)
 
         Args:
             species: The species of the atom.
@@ -73,26 +73,38 @@ class BasisAtomBase(BasisBase[KetAtom]):
         """
         creator = self._cpp_creator()
         creator.set_species(species)
-        if f is not None:
-            creator.restrict_quantum_number_f(*f)
-        if m is not None:
-            creator.restrict_quantum_number_m(*m)
-        if parity is not None:
-            creator.restrict_parity(get_cpp_parity(parity))
+        self.species = species
+
+        self._qns: dict[str, tuple[float, float]] = {}
         if n is not None:
             creator.restrict_quantum_number_n(*n)
+            self._qns["n"] = n
         if nu is not None:
             creator.restrict_quantum_number_nu(*nu)
-        if l is not None:
-            creator.restrict_quantum_number_l(*l)
+            self._qns["nu"] = nu
         if s is not None:
             creator.restrict_quantum_number_s(*s)
+            self._qns["s"] = s
+        if l is not None:
+            creator.restrict_quantum_number_l(*l)
+            self._qns["l"] = l
         if j is not None:
+            self._qns["j"] = j
             creator.restrict_quantum_number_j(*j)
+        if f is not None:
+            creator.restrict_quantum_number_f(*f)
+            self._qns["f"] = f
+        if m is not None:
+            creator.restrict_quantum_number_m(*m)
+            self._qns["m"] = m
+        if parity is not None:
+            creator.restrict_parity(get_cpp_parity(parity))
         if energy is not None:
             min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "ENERGY").to_base_unit()
             max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "ENERGY").to_base_unit()
             creator.restrict_energy(min_energy_au, max_energy_au)
+            self._energy = energy
+            self._energy_unit = energy_unit
         if database is None:
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
@@ -100,7 +112,20 @@ class BasisAtomBase(BasisBase[KetAtom]):
         if additional_kets is not None:
             for ket in additional_kets:
                 creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]
+            self._additional_kets = additional_kets
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
+
+    def __repr__(self) -> str:
+        args = ""
+        if hasattr(self, "_qns"):
+            args += ", ".join(f"{k}={v}" for k, v in self._qns.items())
+        if hasattr(self, "_energy"):
+            args += f", energy=({self._energy[0]}, {self._energy[1]}), energy_unit={self._energy_unit}"
+        if hasattr(self, "_additional_kets"):
+            args += f", additional_kets={self._additional_kets}"
+        if len(args) == 0:
+            args += f"{self.kets[0]} ... {self.kets[-1]}"
+        return f"{type(self).__name__}({args})"
 
     @overload
     def get_amplitudes(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...

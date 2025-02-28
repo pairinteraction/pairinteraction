@@ -15,6 +15,8 @@ class SystemAtomPage(SimulationPage):
     title = "System Atom"
     tooltip = "Configure and analyze single atom systems"
 
+    plotwidget: PlotEnergies
+
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
         self.layout().addWidget(self.plotwidget)
@@ -33,7 +35,8 @@ class SystemAtomPage(SimulationPage):
         self.ket = self.ket_config.get_ket_atom(0)
         kwargs: dict[str, Any] = {}
         if self.plotwidget.energy_range.isChecked():
-            kwargs["energy_range"] = self.plotwidget.energy_range.values()
+            _energies = self.plotwidget.energy_range.values()
+            kwargs["energy_range"] = (self.ket.get_energy("GHz") + v for v in _energies)
             kwargs["energy_unit"] = "GHz"
         if self.plotwidget.fast_mode.isChecked():
             kwargs["diagonalizer"] = "lapacke_evr"

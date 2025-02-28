@@ -33,7 +33,7 @@ def test_starkmap(generate_reference: bool) -> None:
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(len(electric_fields)))
 
     # Compare to reference data
-    kets = [str(ket) for ket in systems[0].basis.kets]
+    kets = [repr(ket) for ket in systems[0].basis.kets]
     eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in systems])
     eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in systems])
 

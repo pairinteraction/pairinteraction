@@ -89,7 +89,7 @@ Homepage = "https://www.pairinteraction.org"
 Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
-pairinteraction_gui = "pairinteraction_gui:main"
+start_pairinteraction_gui = "pairinteraction_gui:main"
 
 [tool.scikit-build]
 cmake.build-type = "RelWithDebInfo"
@@ -169,7 +169,7 @@ ignore = [
   "W201",  # for macos there is no pairinteraction.libs folder
   "W010",  # for windows the pairinteraction.libs folder might not contain a python module
 ]
-toplevel = ["pairinteraction", "pairinteraction.libs"]
+toplevel = ["pairinteraction", "pairinteraction_gui", "pairinteraction.libs"]
 
 [tool.pytest.ini_options]
 testpaths = [

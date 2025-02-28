@@ -67,8 +67,8 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
-        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-50, suffix="GHz")
-        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=50, suffix="GHz")
+        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-0.5, suffix="GHz")
+        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=0.5, suffix="GHz")
         self.energy_range = RangeItem(
             self, "Calculate the energies from", min_spinbox, max_spinbox, "GHz", checked=False
         )
@@ -108,16 +108,21 @@ class PlotEnergies(PlotWidget):
         inds: NDArray[Any] = np.argwhere(o > min_overlap).flatten()
         inds = inds[np.argsort(o[inds])]
 
-        log_o = np.log(o[inds])
-        alpha: NDArray[Any]
-        if log_o.max() - log_o.min() < 1e-10:
-            alpha = np.ones_like(log_o)
-        else:
-            alpha = 1 - log_o / np.log(min_overlap)
-            alpha[alpha < 0] = 0
-            alpha[alpha > 1] = 1
+        if len(inds) > 0:
+            log_o = np.log(o[inds])
+            alpha: NDArray[Any]
+            if log_o.max() - log_o.min() < 1e-10:
+                alpha = np.ones_like(log_o)
+            else:
+                alpha = 1 - log_o / np.log(min_overlap)
+                alpha[alpha < 0] = 0
+                alpha[alpha > 1] = 1
 
-        ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")
+            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")
+
+        ylim = ax.get_ylim()
+        if abs(ylim[1] - ylim[0]) < 1e-2:
+            ax.set_ylim(ylim[0] - 1e-2, ylim[1] + 1e-2)
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 
 from pairinteraction_gui.config import BaseConfig
+from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.qobjects.events import show_status_tip
 from pairinteraction_gui.worker import THREADPOOL, Worker
@@ -36,6 +37,8 @@ class BasePage(WidgetV):
 
 class SimulationPage(BasePage):
     """Base class for all simulation pages in this application."""
+
+    plotwidget: PlotWidget
 
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
@@ -72,6 +75,7 @@ class SimulationPage(BasePage):
 
     def _thread_calculate(self) -> None:
         self.findChild(QPushButton, "Calculate").setEnabled(False)
+        self.plotwidget.clear()
         worker = Worker(self.calculate)
         worker.signals.finished.connect(self.calculate_finished)
         THREADPOOL.start(worker)
