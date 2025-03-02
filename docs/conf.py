@@ -37,12 +37,16 @@ extensions = [
     "nbsphinx",
     "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
+    "myst_parser",
 ]
 autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 4
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 master_doc = "index"
 pygments_style = "sphinx"  # syntax highlighting
 todo_include_todos = False
@@ -111,37 +115,3 @@ repo_slug = os.getenv("GITHUB_REPOSITORY", "pairinteraction/pairinteraction")
 extlinks = {
     "github": (f"https://github.com/{repo_slug}/%s", None),
 }
-
-
-# -- Epilog at the end of every source file -------------------------------------------------
-if repo_slug == "pairinteraction/pairinteraction":
-    pypi_image = "https://img.shields.io/pypi/v/pairinteraction.svg?color=orange"
-    pypi_target = "https://pypi.org/project/pairinteraction/"
-else:
-    pypi_image = "https://img.shields.io/badge/pypi-TestPyPI-orange.svg?style=flat"
-    pypi_target = "https://test.pypi.org/project/pairinteraction/"
-user, repo = repo_slug.split("/")
-
-rst_epilog = f"""
-.. |gh-workflow| image:: https://github.com/{repo_slug}/actions/workflows/python-wheel.yml/badge.svg
-           :target: https://github.com/{repo_slug}/actions/workflows/python-wheel.yml
-           :alt: Python Wheel
-.. |coverage-cpp-ctest| image:: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
-             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-ctest/html/index.html
-             :alt: C++ Coverage - ctest
-.. |coverage-cpp-pytest| image:: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
-             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-pytest/html/index.html
-             :alt: C++ Coverage - pytest
-.. |coverage-python-pytest| image:: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
-             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/python-pytest/html/index.html
-             :alt: Python Coverage - pytest
-.. |pypi| image:: {pypi_image}
-          :target: {pypi_target}
-          :alt: PyPI Package
-.. |arxiv| image:: /images/arXiv-badge.svg
-           :target: https://arxiv.org/abs/1612.08053
-           :alt: arXiv:1612.08053
-.. |license-lgpl| image:: /images/license-lgpl.svg
-             :target: https://www.gnu.org/licenses/lgpl-3.0.html
-             :alt: License LGPL v3
-"""

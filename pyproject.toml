@@ -71,6 +71,7 @@ doc = [
   "jupyter >= 1.1",
   "sphinx_autodoc_typehints >= 1.24",
   "sphinx-autobuild >= 2021.3",
+  "myst-parser >= 3.0",
 ]
 test = [
   "pytest >= 8.0",

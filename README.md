@@ -1,9 +1,30 @@
 # Pairinteraction - Calculating Properties of Rydberg Atoms
 
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
+<!-- [![PyPI Package][pypi-svg]][pypi-link]  add again when we have a release on pypi -->
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
+[![CI Workflow][gh-workflow-svg]][gh-workflow-link]
+[![C++ Coverage - ctest][coverage-cpp-ctest-svg]][coverage-cpp-ctest-link]
+[![C++ Coverage - pytest][coverage-cpp-pytest-svg]][coverage-cpp-pytest-link]
+[![Python Coverage - pytest][coverage-python-pytest-svg]][coverage-python-pytest-link]
 
-**Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions bellow v1.0. Breaking changes can occur until the software reaches v2.0.**
+[arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
+[arXiv-link]: https://arxiv.org/abs/1612.08053
+[license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
+[license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
+[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
+[pypi-link]: https://pypi.org/project/pairinteraction/
+[gh-workflow-svg]: https://github.com/atom-pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
+[gh-workflow-link]: https://github.com/atom-pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
+[coverage-cpp-ctest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
+[coverage-cpp-ctest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-ctest/html/index.html
+[coverage-cpp-pytest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
+[coverage-cpp-pytest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-pytest/html/index.html
+[coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
+[coverage-python-pytest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/python-pytest/html/index.html
+
+
+**Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
 
 The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip:
 
@@ -17,17 +38,24 @@ You can use the pairinteraction software [as a Python library][tutorial-link], o
 pairinteraction gui
 ```
 
+[tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
+
+
 ## Highlights
 
 * For calculating Rydberg pair potentials, the software uses a similar approach as the [old version of pairinteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.9), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
 
-  ![benchmarking results](data/benchmarking_results/0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png "Benchmarking results")
+  ![benchmarking results][benchmark-results-link]
 
-  *Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. When supported, symmetries where used to reduce the Hilbert space size. See the [benchmarking tool](tools/benchmarking).*
+  *Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. When supported, symmetries where used to reduce the Hilbert space size. See the [benchmarking tool][benchmark-tool].*
 
 * The software uses single-channel quantum defect theory (SQDT) and also **multi-channel quantum defect theory (MQDT)** for the accurate description of atoms.
 
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
+
+[benchmark-results-link]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/data/benchmarking_results/0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
+[benchmark-tool]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/tools/benchmarking
+
 
 ## How to Cite
 
@@ -60,6 +88,7 @@ The identifier can be used to specify an atomic species in the pairinteraction s
 
 </details>
 
+[journal-link]: https://doi.org/10.1088/1361-6455/aa743a
 [10.1103/PhysRevA.34.2889]: https://doi.org/10.1103/PhysRevA.34.2889
 [10.1017/CBO9780511524530]: https://doi.org/10.1017/CBO9780511524530
 [10.1103/PhysRevA.45.4720]: https://doi.org/10.1103/PhysRevA.45.4720
@@ -79,6 +108,44 @@ The identifier can be used to specify an atomic species in the pairinteraction s
 [10.1016/j.cpc.2020.107814]: https://doi.org/10.1016/j.cpc.2020.107814
 [10.1088/1361-6455/ab4c22]: https://doi.org/10.1088/1361-6455/ab4c22
 [10.48550/arXiv.2406.01482]: https://doi.org/10.48550/arXiv.2406.01482
+
+## Documentation
+
+**User Guide**
+
+- [Installation] - Whether you prefer an installation via pip or compiling from source, we've got all the information you need.
+
+- [Tutorials] - Covering both the graphical user interface and the Python library,
+these tutorials enable you to leverage pairinteraction for your projects.
+
+- [API Reference] - Documentation of classes and functions of pairinteraction's Python library.
+
+- [Publications] - Find out more about the theory behind pairinteraction and how to cite it and the quantum defects you use.
+
+**Contributor Guide**
+
+- [Ways to Contribute] - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
+
+- [Developer Informations] - Find out how pairinteraction is structured and how to extend it.
+
+- [Database Format] - Explore the database that we use for storing atomic states and matrix elements.
+
+**Utility Tools [External Links]**
+
+- [MQDT.jl] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
+
+- [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
+
+[Installation]: https://www.pairinteraction.org/pairinteraction/sphinx/html/installation.html
+[Tutorials]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials.html
+[API Reference]: https://www.pairinteraction.org/pairinteraction/sphinx/html/reference.html
+[Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications.html
+[Ways to Contribute]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribution.html
+[Developer Informations]: https://www.pairinteraction.org/pairinteraction/sphinx/html/architecture.html
+[Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/database.html
+[mqdt.jl]: https://github.com/pairinteraction/mqdt.jl/
+[ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
+
 
 ## Contributors
 
@@ -102,7 +169,6 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 [MUNIQC-Atoms]: https://www.quantentechnologien.de/forschung/foerderung/quantencomputer-demonstrationsaufbauten/muniqc-atoms.html
 [Atom Computing]: https://atom-computing.com/
 [5th Institute of Physics]: https://www.pi5.uni-stuttgart.de/
-
 [Sebastian Weber]: https://github.com/seweber
 [Johannes Mögerle]: https://github.com/johannes-moegerle
 [Henri Menke]: https://github.com/hmenke
@@ -110,15 +176,9 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 [Eduard Braun]: https://github.com/EduardJBraun
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
+[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html
+
 
 ## License
 
 The pairinteraction software is licensed under [LGPL v3][license-lgpl-link].
-
-[arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
-[arXiv-link]: https://arxiv.org/abs/1612.08053
-[license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
-[license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
-[journal-link]: https://doi.org/10.1088/1361-6455/aa743a
-[tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
-[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html

@@ -39,7 +39,7 @@ rmdir /S /Q %SOURCEDIR%\_autosummary
 goto default
 
 :livehtml
-sphinx-autobuild -b html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O% --watch ..\src\pairinteraction\
+sphinx-autobuild -b html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O% --watch ..\src\pairinteraction\ --watch ..\README.md
 goto end
 
 :help
