@@ -72,7 +72,7 @@ jobs:
           ./pyproject.toml
           ./.build_requirements.txt
 
-    - uses: pypa/cibuildwheel@v2.22
+    - uses: pypa/cibuildwheel@v2.23
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
 
@@ -82,9 +82,9 @@ jobs:
         brew fetch --force --bottle-tag=arm64_ventura spdlog cpp-httplib doctest nlohmann-json eigen tbb lapack fmt openssl gcc
         brew reinstall $(brew --cache --bottle-tag=arm64_ventura spdlog cpp-httplib doctest nlohmann-json eigen tbb lapack fmt openssl gcc)
 
-    - uses: pypa/cibuildwheel@v2.22  # Note: This will reuse the previously build stub files
+    - uses: pypa/cibuildwheel@v2.23  # Note: This will reuse the previously build stub files
       if: ${{ matrix.os == 'macos-13' }}
-      name: Run pypa/cibuildwheel@v2.22 for macOS arm64
+      name: Run pypa/cibuildwheel@v2.23 for macOS arm64
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
         CIBW_ARCHS_MACOS: 'arm64'
