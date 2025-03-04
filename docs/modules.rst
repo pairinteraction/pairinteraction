@@ -20,6 +20,7 @@ All the available classes, methods and functions are documented here for the ``r
     :recursive:
 
     pairinteraction.real
+    pairinteraction.perturbative
 
 
 .. note::

@@ -69,19 +69,19 @@ def _create_system_pair_sample():
 # test for mathematic functionality
 def test_perturbative_calculation():
     H = sparse.csr_matrix([[0, 1, 1, 0, 2], [1, 1, 0, 1, 3], [1, 0, 10, 1, 0], [0, 1, 1, 11, 1], [2, 3, 0, 1, 12]])
-    model_space_indices = np.array([0, 1])
+    model_space_indices = [0, 1]
 
-    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H=H, model_space_indices=model_space_indices, order=0)
+    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=0)
 
     assert np.any(H_eff == np.array([[0, 0], [0, 1]]))
     assert _check_sparse_matrices_equal(eig_perturb, sparse.eye(2, 5, k=0, format="csr"))
 
-    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H=H, model_space_indices=model_space_indices, order=1)
+    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=1)
 
     assert np.any(H_eff == np.array([[0, 1], [1, 1]]))
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]]))
 
-    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H=H, model_space_indices=model_space_indices, order=2)
+    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=2)
     a_00 = 0 + 1 * 1 / (0 - 10) + 2 * 2 / (0 - 12)
     a_01 = 1 + 2 * 3 / (0 - 12)
     a_10 = 1 + 3 * 2 / (1 - 12)
@@ -101,7 +101,7 @@ def test_perturbative_calculation():
     )
     assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
 
-    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H=H, model_space_indices=model_space_indices, order=3)
+    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=3)
     a_00 -= 2 * 3 * 1 / ((0 - 12) * (1 - 12))
     a_01 += (
         1 * 1 * 1 / ((1 - 10) * (1 - 11))
@@ -151,7 +151,7 @@ def test_c3_coefficient():
     C3 = perturbative.get_c3_from_system(
         system_pair=system_pair, ket_tuple_list=ket_tuple_list, unit="planck_constant * gigahertz * micrometer^3"
     )
-    assert np.isclose(-0.5 * C3.magnitude, 3.1515)
+    assert np.isclose(-0.5 * C3, 3.1515)
 
 
 # # calculate and check that C6 coefficient is correct
@@ -163,7 +163,7 @@ def test_c6_coefficient():
     C6 = perturbative.get_c6_from_system(
         ket_tuple=(ket_atom, ket_atom), system_pair=system_pair, unit="planck_constant * gigahertz * micrometer^6"
     )
-    assert np.isclose(C6.magnitude, 167.92)
+    assert np.isclose(C6, 167.92)
 
 
 # check that resonance is correctly detected

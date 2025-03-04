@@ -159,7 +159,7 @@ class QuantityAbstract(Generic[ValueType]):
 
     def to_base_unit(self) -> ValueType:
         """Return the value of the quantity in the base unit."""
-        return self.to_pint().magnitude
+        return self.to_pint().to_base_units().magnitude
 
     def to_pint_or_unit(self, unit: Optional[str]) -> Union[ValueType, PlainQuantity[ValueType]]:
         if unit is None:
