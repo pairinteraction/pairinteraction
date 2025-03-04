@@ -10,11 +10,10 @@ from pairinteraction._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
-
-    from pairinteraction.units import Array
 
 UnionCPPBasisAtom = Union[_backend.BasisAtomReal, _backend.BasisAtomComplex]
 UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_backend.BasisAtomCreatorComplex]]
@@ -104,7 +103,7 @@ class BasisAtomBase(BasisBase[KetAtom]):
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
     @overload
-    def get_amplitudes(self, ket_or_basis: KetAtom) -> "np.ndarray[Any,Any]": ...
+    def get_amplitudes(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...
 
     @overload
     def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
@@ -113,7 +112,7 @@ class BasisAtomBase(BasisBase[KetAtom]):
         return self._cpp.get_amplitudes(ket_or_basis._cpp)
 
     @overload
-    def get_overlaps(self, ket_or_basis: KetAtom) -> "np.ndarray[Any,Any]": ...
+    def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
@@ -122,10 +121,14 @@ class BasisAtomBase(BasisBase[KetAtom]):
         return self._cpp.get_overlaps(ket_or_basis._cpp)
 
     @overload
-    def get_matrix_elements(self, ket_or_basis: KetAtom, operator: OperatorType, q: int) -> "PlainQuantity[Array]": ...
+    def get_matrix_elements(
+        self, ket_or_basis: KetAtom, operator: OperatorType, q: int
+    ) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
-    def get_matrix_elements(self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: str) -> "Array": ...
+    def get_matrix_elements(
+        self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: str
+    ) -> "NDArray[Any]": ...
 
     @overload
     def get_matrix_elements(

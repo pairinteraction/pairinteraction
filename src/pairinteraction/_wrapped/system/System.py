@@ -6,15 +6,13 @@ from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    import numpy as np
-    import numpy.typing as npt
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
     from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.basis.BasisPair import BasisPair
-    from pairinteraction.units import Array
 
     Quantity = TypeVar("Quantity", float, PlainQuantity[float])
 
@@ -130,10 +128,10 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
 
     @overload
-    def get_eigenvalues(self) -> "PlainQuantity[Array]": ...
+    def get_eigenvalues(self) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
-    def get_eigenvalues(self, unit: str) -> "npt.NDArray[np.floating[Any]]": ...
+    def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
 
     def get_eigenvalues(self, unit: Optional[str] = None):
         eigenvalues_au = self._cpp.get_eigenvalues()

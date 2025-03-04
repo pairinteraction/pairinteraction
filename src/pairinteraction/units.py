@@ -1,5 +1,5 @@
-from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
+from collections.abc import Collection, Iterable
+from typing import TYPE_CHECKING, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from pint import UnitRegistry
@@ -7,10 +7,9 @@ from pint.facets.plain import PlainQuantity
 from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainUnit
     from typing_extensions import Self
-
-    Array = np.ndarray[Any, Any]
 
 ureg = UnitRegistry(system="atomic")
 
@@ -29,10 +28,12 @@ Dimension = Literal[
     "ELECTRIC_QUADRUPOLE_ZERO",
     "ELECTRIC_OCTUPOLE",
     "MAGNETIC_DIPOLE",
+    "C3",
+    "C6",
     "ARBITRARY",
     "ZERO",
 ]
-DimensionLike = Union[Dimension, tuple[Dimension, Dimension]]
+DimensionLike = Union[Dimension, Iterable[Dimension]]
 
 # au_time = atomic_unit_of_time; au_current = atomic_unit_of_current; m_e = electron_mass
 _CommonUnits: dict[Dimension, str] = {
@@ -50,6 +51,8 @@ _CommonUnits: dict[Dimension, str] = {
     "ELECTRIC_QUADRUPOLE_ZERO": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
     "ELECTRIC_OCTUPOLE": "e * a0^3",  # 1 e * a0^3 = 1 au_current * au_time * bohr ** 3
     "MAGNETIC_DIPOLE": "hbar e / m_e",  # 1 hbar e / m_e = 1 au_current * bohr ** 2
+    "C3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
+    "C6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
     "ARBITRARY": "",  # 1 dimensionless
     "ZERO": "",  # 1 dimensionless
 }
@@ -64,7 +67,7 @@ BaseContexts: dict[Dimension, Context] = {
     "ENERGY": "spectroscopy",
 }
 
-ValueType = TypeVar("ValueType", bound=Union[float, "Array", "csr_matrix"])
+ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
 
 
 class QuantityAbstract(Generic[ValueType]):
@@ -174,15 +177,11 @@ class QuantityScalar(QuantityAbstract[float]):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
 
-class QuantityArray(QuantityAbstract["Array"]):
+class QuantityArray(QuantityAbstract["NDArray"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not isinstance(magnitude, Collection):
-            raise TypeError(f"value must be an Array (or a Collection), not {type(magnitude)}")
-        if not all(np.isscalar(v) for v in magnitude):
-            raise TypeError(
-                f"values must be a a list of scalars, not {type(magnitude)=}, {[type(v) for v in magnitude]=}"
-            )
+            raise TypeError(f"value must be an np.ndarray (or a Collection), not {type(magnitude)}")
 
 
 class QuantitySparse(QuantityAbstract["csr_matrix"]):
