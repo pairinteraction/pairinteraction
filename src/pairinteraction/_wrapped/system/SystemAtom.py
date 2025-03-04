@@ -10,11 +10,11 @@ from pairinteraction._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
-    from pairinteraction.units import Array
 
 BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
@@ -56,7 +56,7 @@ class SystemAtomBase(SystemBase[BasisType]):
 
     def set_electric_field(
         self: "Self",
-        electric_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
+        electric_field: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         electric_field_au = [
@@ -67,7 +67,7 @@ class SystemAtomBase(SystemBase[BasisType]):
 
     def set_magnetic_field(
         self: "Self",
-        magnetic_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
+        magnetic_field: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         magnetic_field_au = [

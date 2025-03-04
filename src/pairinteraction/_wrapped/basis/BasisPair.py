@@ -14,13 +14,13 @@ from pairinteraction._wrapped.ket.KetPair import (
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
 
     from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
     from pairinteraction._wrapped.system.SystemAtom import SystemAtom
-    from pairinteraction.units import Array
 
 KetPairType = TypeVar("KetPairType", bound=KetPair)
 KetPairLike = Union[KetPair, Iterable["KetAtom"]]
@@ -92,7 +92,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         self._cpp = creator.create()
 
     @overload
-    def get_amplitudes(self, ket_or_basis: KetPairLike) -> "np.ndarray[Any,Any]": ...
+    def get_amplitudes(self, ket_or_basis: KetPairLike) -> "NDArray[Any]": ...
 
     @overload
     def get_amplitudes(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
@@ -106,7 +106,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         return self._cpp.get_amplitudes(*ket_or_basis_cpp)
 
     @overload
-    def get_overlaps(self, ket_or_basis: KetPairLike) -> "np.ndarray[Any,Any]": ...
+    def get_overlaps(self, ket_or_basis: KetPairLike) -> "NDArray[Any]": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
@@ -122,12 +122,12 @@ class BasisPairBase(BasisBase[KetPairType]):
     @overload
     def get_matrix_elements(
         self, ket_or_basis: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int]
-    ) -> "PlainQuantity[Array]": ...
+    ) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
     def get_matrix_elements(
         self, ket_or_basis: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
-    ) -> "Array": ...
+    ) -> "NDArray[Any]": ...
 
     @overload
     def get_matrix_elements(

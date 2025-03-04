@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
 
 import numpy as np
 from scipy.special import exprel
@@ -10,6 +10,7 @@ from pairinteraction._wrapped.ket.Ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
+    from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
@@ -204,13 +205,13 @@ class KetAtom(KetBase):
     @overload
     def get_spontaneous_transition_rates(
         self,
-    ) -> tuple[list["KetAtom"], "PlainQuantity[np.ndarray]"]: ...
+    ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
     def get_spontaneous_transition_rates(
         self,
         unit: str,
-    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
     def get_spontaneous_transition_rates(
         self,
@@ -237,7 +238,7 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
-    ) -> tuple[list["KetAtom"], "PlainQuantity[np.ndarray]"]: ...
+    ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
     def get_black_body_transition_rates(
@@ -245,7 +246,7 @@ class KetAtom(KetBase):
         temperature: "PlainQuantity[float]",
         *,
         unit: str,
-    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
     @overload
     def get_black_body_transition_rates(
@@ -253,7 +254,7 @@ class KetAtom(KetBase):
         temperature: float,
         temperature_unit: str,
         unit: str,
-    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
     def get_black_body_transition_rates(
         self,
@@ -348,7 +349,7 @@ class KetAtom(KetBase):
         self,
         which_transitions: Literal["spontaneous", "black_body"],
         temperature_au: Union[float, None] = None,
-    ) -> tuple[list["KetAtom"], np.ndarray]:
+    ) -> tuple[list["KetAtom"], "NDArray[Any]"]:
         from pairinteraction._wrapped.basis.BasisAtom import BasisAtomReal
         from pairinteraction._wrapped.system.SystemAtom import SystemAtomReal
 
