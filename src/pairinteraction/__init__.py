@@ -167,7 +167,11 @@ del _setup_logging
 # ---------------------------------------------------------------------------------------
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
-from pairinteraction import complex, real  # noqa: E402
+from pairinteraction import (  # noqa: E402
+    complex,
+    perturbative,
+    real,
+)
 from pairinteraction._backend import (  # noqa: E402
     VERSION_MAJOR as _VERSION_MAJOR,
     VERSION_MINOR as _VERSION_MINOR,
@@ -178,6 +182,7 @@ from pairinteraction.units import ureg  # noqa: E402
 
 __all__ = [
     "complex",
+    "perturbative",
     "real",
     "run_module_tests",
     "ureg",

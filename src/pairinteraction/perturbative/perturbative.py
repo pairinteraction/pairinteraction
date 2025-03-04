@@ -1,31 +1,58 @@
 import logging
 from collections.abc import Iterable
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import numpy as np
-import pint
 from scipy import sparse
 
-import pairinteraction.complex as pi_complex
-import pairinteraction.real as pi_real
-from pairinteraction.units import ureg
+from pairinteraction.units import QuantityArray, QuantityScalar
 
-SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
-KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+    from pint.facets.plain import PlainQuantity
 
+    from pairinteraction import (
+        complex as pi_complex,
+        real as pi_real,
+    )
+
+    KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
+    SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
 
 logger = logging.getLogger(__name__)
 
 
+@overload
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: list[tuple[KetAtom, KetAtom]],
-    system_pair: SystemPair,
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    system_pair: "SystemPair",
     order: int = 2,
-    required_overlap: Optional[float] = None,
+    required_overlap: float = 0,
+    print_above_admixture: float = 1e-2,
+) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
+
+
+@overload
+def get_effective_hamiltonian_from_system(
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    system_pair: "SystemPair",
+    order: int = 2,
+    required_overlap: float = 0,
+    print_above_admixture: float = 1e-2,
+    *,
+    unit: str,
+) -> tuple["NDArray[Any]", sparse.csr_matrix]: ...
+
+
+def get_effective_hamiltonian_from_system(
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    system_pair: "SystemPair",
+    order: int = 2,
+    required_overlap: float = 0,
     print_above_admixture: float = 1e-2,
     unit: Optional[str] = None,
-) -> tuple[Union[np.ndarray, pint.Quantity], sparse.csr_matrix]:
-    """Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
+) -> tuple[Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"], sparse.csr_matrix]:
+    r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
 
     This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
     Hamiltonian is calculated. The whole Hamiltonian is taken from a pair system.
@@ -39,60 +66,65 @@ def get_effective_hamiltonian_from_system(
         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
             Default is second order.
-        unit: Unit in which the effective Hamiltonian is calculated. Default is GHz.
         required_overlap: If set, the code checks for validity of a perturbative treatment.
             Error is thrown if the perturbed eigenstate has less overlap than this value with the
             unperturbed eigenstate.
         print_above_admixture: If due to a resonance a state in the model space obtains an admixture larger than this
             value with a different basis state, the resonant states are logged.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
-        pint.Quantity: effective Hamiltonian as a mxm matrix with unit, where m is the length of `ket_tuple_list`.
-        scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
-            space, returned as a sparse matrix in compressed row format. Each row represents the corresponding
-            eigenvector.
+        - Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`.
+        - Eigenvectors in perturbation theory due to interaction with states out of the model space, returned as
+          a sparse matrix in compressed row format. Each row represents the corresponding eigenvector.
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
 
     """
     assert isinstance(ket_tuple_list, Iterable)
-    model_space_indices = _get_model_space_indices(ket_tuple_list, system_pair)
-    if unit:
-        H = system_pair.get_hamiltonian(unit=unit)
-    else:
-        H = system_pair.get_hamiltonian().magnitude
-    H_eff, eig_vec_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order)
-    if required_overlap:
-        if required_overlap <= 0 or required_overlap > 1:
-            raise ValueError("Required overlap has to be a positive real number between zero and one.")
+    model_inds = _get_model_inds(ket_tuple_list, system_pair)
+    H_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
+    H_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(H_au, model_inds, order)
+    if not 0 <= required_overlap <= 1:
+        raise ValueError("Required overlap has to be a positive real number between zero and one.")
+    if required_overlap > 0:
+        _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap, print_above_admixture)
 
-        _check_for_resonances(
-            model_space_indices, eig_vec_perturb, system_pair, required_overlap, print_above_admixture
-        )
-    if unit:
-        return H_eff, eig_vec_perturb
-    else:
-        return ureg.Quantity(H_eff, units="bohr^2 * electron_mass/atomic_unit_of_time^2"), eig_vec_perturb
+    H_eff = QuantityArray.from_base_unit(H_eff_au, "ENERGY").to_pint_or_unit(unit)
+    return H_eff, eigvec_perturb
+
+
+@overload
+def get_c3_from_system(
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    system_pair: "SystemPair",
+) -> float: ...
+
+
+@overload
+def get_c3_from_system(
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair", unit: str
+) -> "PlainQuantity[float]": ...
 
 
 def get_c3_from_system(
-    ket_tuple_list: list[tuple[KetAtom, KetAtom]], system_pair: SystemPair, unit: Optional[str] = None
-) -> pint.Quantity:
-    r"""Calculate the $C_3$ coefficient for a list of two 2-tuples of single atom ket states.
+    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair", unit: Optional[str] = None
+) -> Union[float, "PlainQuantity[float]"]:
+    r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.
 
-    This function calculates the $C_3$ coefficient in the desired unit. The input is a list of two 2-tuples of
-    single atom ket states. We use the convention $\Delta E = \frac{C_3}{r^3}$.
+    This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of
+    single atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.
 
     Args:
-        ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)], the $C_3$ coefficient is caluculated
-        for (a,b)->(c,d).
-        If there are not exactly two tuples in the list, a ValueError is raised.
+        ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)],
+            the :math:`C_3` coefficient is calculated for (a,b)->(c,d).
+            If there are not exactly two tuples in the list, a ValueError is raised.
         system_pair: The pair system that is used for the calculation.
-        unit: Unit of of the $C_3$ coeffcient.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
-        ureg.Quantity: The $C_3$ coefficient with its unit. If a unit is specified, the value in this unit is returned.
+        The :math:`C_3` coefficient with its unit.
 
     Raises:
         ValueError: If a list of not exactly two tuples of single atom states is given.
@@ -101,32 +133,42 @@ def get_c3_from_system(
     assert isinstance(ket_tuple_list, Iterable)
     if len(ket_tuple_list) != 2:
         raise ValueError("C3 coefficient can be calculated only between two 2-atom states.")
-    # ket_tuple_list = list(itertools.product(ket_tuple_list, ket_tuple_list))[1:3]
-    vector = np.array([comp.magnitude for comp in system_pair.distance_vector])
-    r = ureg.Quantity(np.linalg.norm(vector), units="bohr")
+
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    C3 = H_eff[0, 1] * r**3
-    if unit:
-        C3 = C3.to(unit)
-    return C3
+    R = system_pair.get_distance()
+    C3 = H_eff[0, 1] * R**3
+    return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
+
+
+@overload
+def get_c6_from_system(
+    ket_tuple: tuple["KetAtom", "KetAtom"],
+    system_pair: "SystemPair",
+) -> float: ...
+
+
+@overload
+def get_c6_from_system(
+    ket_tuple: tuple["KetAtom", "KetAtom"], system_pair: "SystemPair", unit: str
+) -> "PlainQuantity[float]": ...
 
 
 def get_c6_from_system(
-    ket_tuple: tuple[KetAtom, KetAtom], system_pair: SystemPair, unit: Optional[str] = None
-) -> pint.Quantity:
-    r"""Calculate the $C_6$ coefficient for a given tuple of ket states.
+    ket_tuple: tuple["KetAtom", "KetAtom"], system_pair: "SystemPair", unit: Optional[str] = None
+) -> Union[float, "PlainQuantity[float]"]:
+    r"""Calculate the :math:`C_6` coefficient for a given tuple of ket states.
 
-    This function calculates the $C_6$ coefficient in the desired unit. The input is a 2-tuple of single atom ket
+    This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single atom ket
     states.
 
     Args:
         ket_tuple: The input is a tuple repeating the same single atom state in the format (a,a).
         If a tuple with not exactly two identical states is given, a ValueError is raised.
         system_pair: The pair system that is used for the calculation.
-        unit: Desired unit of of the $C_6$ coeffcient.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
-        ureg.Quantity: The $C_6$ coefficient with its unit. If a unit is specified, the value in this unit is returned.
+        The :math:`C_6` coefficient. If a unit is specified, the value in this unit is returned.
 
     Raises:
         ValueError: If a tuple with more than two single atom states is given.
@@ -136,20 +178,18 @@ def get_c6_from_system(
     if len(ket_tuple) != 2:
         # @Johannes: Add a fast comparison for ket states that gives true for the same state.
         raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
-    vector = np.array([comp.magnitude for comp in system_pair.distance_vector])
-    r = ureg.Quantity(np.linalg.norm(vector), units="bohr")
+
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    C6 = (H_eff - H_0)[0, 0] * r**6
-    if unit:
-        C6 = C6.to(unit)
-    return C6
+    R = system_pair.get_distance()
+    C6 = (H_eff - H_0)[0, 0] * R**6
+    return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
-    H: sparse.csr_matrix, model_space_indices: np.ndarray, order: int = 2
-) -> tuple[np.ndarray, sparse.csr_matrix]:
-    """Calculate the perturbative Hamiltonian at a given order.
+    H: sparse.csr_matrix, model_inds: list[int], order: int = 2
+) -> tuple["NDArray[Any]", sparse.csr_matrix]:
+    r"""Calculate the perturbative Hamiltonian at a given order.
 
     This function takes a Hamiltonian as a sparse matrix which is diagonal in the unperturbed basis
     and list of indices spanning up the model space.
@@ -158,50 +198,48 @@ def _calculate_perturbative_hamiltonian(
 
     Args:
         H: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
-        model_space_indices: List of indices corresponding to the states that span up the model space.
+        model_inds: List of indices corresponding to the states that span up the model space.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
         Default is second order.
 
     Returns:
-        np.ndarray: effective Hamiltonian as a mxm matrix, where m is the length of `ket_tuple_list`
+        Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
         scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
         space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector.
 
     """
-    if order < 0 or order > 3 or int(order) != order:
-        raise ValueError("Perturbation theory is only implemented up to the third order.")
-    other_indices = np.setdiff1d(np.arange(H.shape[0]), model_space_indices)
-    m = len(model_space_indices)
-    n = len(other_indices)
-    all_indices = np.append(model_space_indices, other_indices)
-    all_indices_positions = np.argsort(all_indices)
+    if order not in [0, 1, 2, 3]:
+        raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
+
+    m_inds: NDArray[Any] = np.array(model_inds)
+    o_inds: NDArray[Any] = np.setdiff1d(np.arange(H.shape[0]), m_inds)
+    m = len(m_inds)
+    n = len(o_inds)
 
     H0 = H.diagonal()
-    H0_m = H0[model_space_indices]
+    H0_m = H0[m_inds]
     H_eff = sparse.diags(H0_m, format="csr")
-    eig_vec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])[
-        :, all_indices_positions
-    ]
+    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])
 
     if order >= 1:
         V = H - sparse.diags(H0)
-        V_mm = V[np.ix_(model_space_indices, model_space_indices)]
+        V_mm = V[np.ix_(m_inds, m_inds)]
         H_eff += V_mm
 
     if order >= 2:
-        H0_e = H0[other_indices]
-        V_me = V[np.ix_(model_space_indices, other_indices)]
+        H0_e = H0[o_inds]
+        V_me = V[np.ix_(m_inds, o_inds)]
         deltaE_em = 1 / (H0_m[np.newaxis, :] - H0_e[:, np.newaxis])
         H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
         addition_mm = sparse.csr_matrix((m, m))
         addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
-        eig_vec_perturb += sparse.hstack([addition_mm, addition_me])[:, all_indices_positions]
+        eigvec_perturb += sparse.hstack([addition_mm, addition_me])
 
     if order >= 3:
         diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]
         diff = np.where(diff == 0, np.inf, diff)
         deltaE_mm = 1 / diff
-        V_ee = V[np.ix_(other_indices, other_indices)]
+        V_ee = V[np.ix_(o_inds, o_inds)]
         if m > 1:
             logger.warning(
                 "At third order, the eigenstates are currently only valid when only one state is in the model space."
@@ -221,14 +259,20 @@ def _calculate_perturbative_hamiltonian(
         addition_me_2 = sparse.csr_matrix(
             ((V_me.conj().T @ ((V_mm.conj().T).multiply(deltaE_mm))).multiply(deltaE_em)).T
         )
-        eig_vec_perturb += sparse.hstack([addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2])[
-            :, all_indices_positions
-        ]
+        eigvec_perturb += sparse.hstack([addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2])
 
-    return (0.5 * (H_eff + H_eff.conj().T)).todense(), eig_vec_perturb
+    # resort eigvec to original order
+    all_inds = np.append(m_inds, o_inds)
+    all_inds_positions = np.argsort(all_inds)
+    eigvec_perturb = eigvec_perturb[:, all_inds_positions]
+
+    # include the hermitian conjugate part of the effective Hamiltonian
+    H_eff = 0.5 * (H_eff + H_eff.conj().T)
+
+    return H_eff.todense(), eigvec_perturb
 
 
-def _get_model_space_indices(ket_tuple_list: list[tuple[KetAtom, KetAtom]], system_pair: SystemPair) -> np.ndarray:
+def _get_model_inds(ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair") -> list[int]:
     """Get the indices of all ket tuples in the basis of pair system.
 
     This function takes a list of 2-tuples of ket states, and a pair system holding the entire basis.
@@ -239,27 +283,27 @@ def _get_model_space_indices(ket_tuple_list: list[tuple[KetAtom, KetAtom]], syst
         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.
 
     Returns:
-        np.ndarray: List of indices corresponding to the states that span up the model space.
+        List of indices corresponding to the states that span up the model space.
 
     """
-    model_space_indices = []
+    model_inds = []
     for kets in ket_tuple_list:
         overlap = system_pair.basis.get_overlaps(kets)
         index = np.argmax(overlap)
         if overlap[index] < 0.5:
             raise ValueError("The pairstate |" + str(kets[0]) + ">|" + str(kets[1]) + "> cannot be identified uniquely")
-        model_space_indices.append(index)
-    return np.array(model_space_indices)
+        model_inds.append(int(index))
+    return model_inds
 
 
 def _check_for_resonances(
-    model_space_indices: np.ndarray,
-    eig_vec_perturb: sparse.csr_matrix,
-    system_pair: SystemPair,
+    model_inds: list[int],
+    eigvec_perturb: sparse.csr_matrix,
+    system_pair: "SystemPair",
     required_overlap: float,
     print_above_admixture: float,
 ) -> None:
-    """Check for resonance between the states in the model space and other states.
+    r"""Check for resonance between the states in the model space and other states.
 
     This function takes the perturbed eigenvectors of the perturbation theory as an input.
     If the overlap of the perturbed eigenstate with its corresponding unperturbed state are too small,
@@ -268,8 +312,8 @@ def _check_for_resonances(
     model space, to allow perturbation theory.
 
     Args:
-        model_space_indices: List of indices corresponding to the states that span up the model space.
-        eig_vec_perturb: Sparse representation of the perturbed eigenstates in the desired order of
+        model_inds: List of indices corresponding to the states that span up the model space.
+        eigvec_perturb: Sparse representation of the perturbed eigenstates in the desired order of
         perturbation theory. Each row corresponds to the eigestate according to `state model indices.`
         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
@@ -280,7 +324,7 @@ def _check_for_resonances(
         this value with a different basis state, the resonant states are logged.
 
     Returns:
-        np.ndarray: effective Hamiltonian as a mxm matrix, where m is the length of `ket_tuple_list`
+        Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
         scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
         space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector.
 
@@ -288,9 +332,10 @@ def _check_for_resonances(
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
 
     """
-    overlaps = (eig_vec_perturb.multiply(eig_vec_perturb.conj())).real
-    for i, j in zip(np.arange(len(model_space_indices)), model_space_indices):
-        vector_norm = sparse.linalg.norm(overlaps[i])
+    overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real
+    error_flag = False
+    for i, j in zip(range(len(model_inds)), model_inds):
+        vector_norm = sparse.linalg.norm(overlaps[i, :])
         overlap = overlaps[i, j] / vector_norm
         if overlap < required_overlap:
             error_flag = True
@@ -299,7 +344,7 @@ def _check_for_resonances(
                 + str(system_pair.basis.kets[j])
                 + ">."
             )
-            indices = sparse.find(overlaps[i] >= print_above_admixture * vector_norm)[1]
+            indices = sparse.find(overlaps[i, :] >= print_above_admixture * vector_norm)[1]
             for index in indices:
                 if index != j:
                     logger.error(
