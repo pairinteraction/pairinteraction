@@ -3,6 +3,8 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/AtomDescriptionByParameters.hpp"
 #include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/database/GitHubDownloader.hpp"
+#include "pairinteraction/database/ParquetManager.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -16,11 +18,8 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #include <fstream>
-#include <future>
-#include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
-#include <regex>
 #include <spdlog/spdlog.h>
 #include <system_error>
 
@@ -28,32 +27,30 @@ namespace pairinteraction {
 Database::Database() : Database(default_download_missing) {}
 
 Database::Database(bool download_missing)
-    : Database(download_missing, default_wigner_in_memory, default_database_dir) {}
+    : Database(download_missing, default_use_cache, default_database_dir) {}
 
 Database::Database(std::filesystem::path database_dir)
-    : Database(default_download_missing, default_wigner_in_memory, std::move(database_dir)) {}
+    : Database(default_download_missing, default_use_cache, std::move(database_dir)) {}
 
-Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem::path database_dir)
-    : _download_missing(download_missing), _wigner_in_memory(wigner_in_memory),
-      _database_dir(std::move(database_dir)), db(std::make_unique<duckdb::DuckDB>(nullptr)),
+Database::Database(bool download_missing, bool use_cache, std::filesystem::path database_dir)
+    : download_missing_(download_missing), use_cache_(use_cache),
+      database_dir_(std::move(database_dir)), db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
 
-    if (_database_dir.empty()) {
-        _database_dir = default_database_dir;
+    if (database_dir_.empty()) {
+        database_dir_ = default_database_dir;
     }
-
-    const std::regex parquet_regex(R"(^(\w+)_v(\d+)\.parquet$)");
 
     // Ensure the database directory exists
-    if (!std::filesystem::exists(_database_dir)) {
-        std::filesystem::create_directories(_database_dir);
+    if (!std::filesystem::exists(database_dir_)) {
+        std::filesystem::create_directories(database_dir_);
     }
-    _database_dir = std::filesystem::canonical(_database_dir);
-    if (!std::filesystem::is_directory(_database_dir)) {
-        throw std::filesystem::filesystem_error("Cannot access database", _database_dir.string(),
+    database_dir_ = std::filesystem::canonical(database_dir_);
+    if (!std::filesystem::is_directory(database_dir_)) {
+        throw std::filesystem::filesystem_error("Cannot access database", database_dir_.string(),
                                                 std::make_error_code(std::errc::not_a_directory));
     }
-    SPDLOG_INFO("Using database directory: {}", _database_dir.string());
+    SPDLOG_INFO("Using database directory: {}", database_dir_.string());
 
     // Ensure that the config directory exists
     std::filesystem::path configdir = paths::get_pairinteraction_config_directory();
@@ -122,175 +119,6 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         file << doc.dump(4);
     }
 
-    // Get a dictionary of locally available tables
-    for (const auto &entry : std::filesystem::directory_iterator(_database_dir)) {
-        if (entry.is_regular_file()) {
-            std::smatch parquet_match;
-            std::string filename = entry.path().filename().string();
-            if (std::regex_match(filename, parquet_match, parquet_regex)) {
-                std::string name = parquet_match[1].str();
-                std::string version_str = parquet_match[2].str();
-                if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
-                    int version = std::stoi(version_str);
-                    if (tables.count(name) == 0 || version > tables[name].local_version) {
-                        tables[name].local_version = version;
-                        tables[name].local_path = entry.path();
-                    }
-                }
-            }
-        }
-    }
-
-    // Create a client
-    if (_download_missing) {
-        httpclient = std::make_unique<httplib::Client>(database_repo_host);
-        httpclient->set_follow_location(true);
-        httpclient->set_connection_timeout(1, 0); // seconds
-        httpclient->set_read_timeout(60, 0);      // seconds
-        httpclient->set_write_timeout(1, 0);      // seconds
-        httpclient->enable_server_certificate_verification(false);
-    }
-
-    // Get a dictionary of remotely available tables
-    if (_download_missing) {
-// Call the different endpoints asynchronously
-#if HTTPLIB_USES_STD_STRING
-        httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
-            &httplib::Client::Get;
-#else
-        httplib::Result (httplib::Client::*gf)(const char *, const httplib::Headers &) =
-            &httplib::Client::Get;
-#endif
-
-        std::vector<std::future<httplib::Result>> futures;
-        std::vector<std::filesystem::path> filenames;
-
-        for (const auto &database_repo_path : database_repo_paths) {
-            // Get the last modified date of the last JSON response
-            std::string lastmodified;
-            filenames.push_back(_database_dir /
-                                ("latest_" +
-                                 std::to_string(std::hash<std::string>{}(database_repo_path)) +
-                                 ".json"));
-            if (std::filesystem::exists(filenames.back())) {
-                std::ifstream file(filenames.back());
-                nlohmann::json doc = nlohmann::json::parse(file, nullptr, false);
-                if (!doc.is_discarded() && doc.contains("last-modified")) {
-                    lastmodified = doc["last-modified"].get<std::string>();
-                }
-            }
-
-            // Create a get request conditioned on the last-modified date
-            httplib::Headers headers;
-            if (lastmodified.empty()) {
-                headers = {{"X-GitHub-Api-Version", "2022-11-28"},
-                           {"Accept", "application/vnd.github+json"}};
-            } else {
-                // We have to add some "Authorization" header to avoid an increase in rate limits
-                // used even if a 304 is returned, see also
-                // https://stackoverflow.com/questions/60885496/github-304-responses-seem-to-count-against-rate-limit.
-                // To try it out manually, you can run "curl
-                // https://api.github.com/repos/pairinteraction/database-sqdt/releases/latest
-                // --include --header 'if-modified-since: Wed, 08 Jan 2025 22:04:41 GMT'
-                // --header 'Authorization:
-                // avoids-an-increase-in-ratelimits-used-if-304-is-returned'".
-                headers = {
-                    {"X-GitHub-Api-Version", "2022-11-28"},
-                    {"Accept", "application/vnd.github+json"},
-                    {"Authorization", "avoids-an-increase-in-ratelimits-used-if-304-is-returned"},
-                    {"if-modified-since", lastmodified}};
-            }
-            futures.push_back(std::async(std::launch::async, gf, httpclient.get(),
-                                         database_repo_path.c_str(), headers));
-        }
-
-        // Process the results
-        for (size_t i = 0; i < database_repo_paths.size(); i++) {
-            SPDLOG_INFO("Accessing database repository path: {}", database_repo_paths[i]);
-            auto res = futures[i].get();
-
-            // Check if the request was successful
-            if (!res) {
-                // If github returns a 304 status code without returning a body,
-                // it is "!res && res.error() != httplib::Error::Unknown"
-                // because httplib thinks that github's http response is not
-                // correct, see also https://github.com/yhirose/cpp-httplib/issues/1477.
-                if (res.error() != httplib::Error::Unknown ||
-                    !std::filesystem::exists(filenames[i])) {
-                    throw std::runtime_error(
-                        fmt::format("Access error, status {}.", fmt::streamed(res.error())));
-                }
-            } else {
-                if ((res->status == 403 || res->status == 429) &&
-                    res->has_header("x-ratelimit-remaining") &&
-                    res->get_header_value("x-ratelimit-remaining") == "0") {
-                    int waittime = -1;
-                    if (res->has_header("retry-after")) {
-                        waittime = std::stoi(res->get_header_value("retry-after"));
-                    } else if (res->has_header("x-ratelimit-reset")) {
-                        waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
-                            static_cast<int>(time(nullptr));
-                    }
-                    throw std::runtime_error(
-                        fmt::format("Access error downloading overview of available tables, rate "
-                                    "limit exceeded. "
-                                    "You should not retry until after {} seconds.",
-                                    waittime));
-                    // TODO implement a mechanism to not retry until after the waittime
-                }
-
-                if (res->status != 200) {
-                    throw std::runtime_error(fmt::format("Access error, status {}.", res->status));
-                }
-            }
-
-            // Parse and store the JSON response together with the last-modified date
-            nlohmann::json doc;
-            if (!res || res->status == 304) {
-                SPDLOG_INFO("Using cached overview of available tables.");
-                std::ifstream file(filenames[i]);
-                doc = nlohmann::json::parse(file);
-            } else {
-                std::string remaining = res->has_header("x-ratelimit-remaining")
-                    ? res->get_header_value("x-ratelimit-remaining")
-                    : "?";
-                SPDLOG_INFO("Using downloaded overview of available tables.");
-                doc = nlohmann::json::parse(res->body);
-                if (res->has_header("last-modified")) {
-                    doc["last-modified"] = res->get_header_value("last-modified");
-                }
-                std::ofstream file(filenames[i]);
-                file << doc;
-            }
-
-            // Process the assets
-            for (auto &asset : doc["assets"]) {
-                std::smatch parquet_match;
-                auto filename = asset["name"].get<std::string>();
-                if (std::regex_match(filename, parquet_match, parquet_regex)) {
-                    std::string name = parquet_match[1].str();
-                    std::string version_str = parquet_match[2].str();
-                    if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
-                        int version = std::stoi(version_str);
-                        if (tables.count(name) == 0 || version > tables[name].remote_version) {
-                            tables[name].remote_version = version;
-                            tables[name].remote_path = asset["url"].get<std::string>().erase(0, 22);
-                        }
-                    }
-                }
-            }
-        }
-
-        // Get the remaining rate limit
-        auto res = httpclient->Get(
-            "/rate_limit",
-            {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/vnd.github+json"}});
-        std::string remaining = res && res->has_header("x-ratelimit-remaining")
-            ? res->get_header_value("x-ratelimit-remaining")
-            : "?";
-        SPDLOG_INFO("In this hour, you can still request {} database tables.", remaining);
-    }
-
     // Limit the memory usage of duckdb's buffer manager
     {
         auto result = con->Query("PRAGMA max_memory = '8GB';");
@@ -299,89 +127,28 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         }
     }
 
-    // Load the Wigner 3j symbols table into memory
-    if (_wigner_in_memory) {
-        ensure_presence_of_table("wigner");
-        auto result = con->Query(fmt::format(R"(CREATE TEMP TABLE 'wigner' AS SELECT * FROM '{}')",
-                                             tables.at("wigner").local_path.string()));
-
-        if (result->HasError()) {
-            throw cpptrace::runtime_error("Error creating table: " + result->GetError());
-        }
-
-        tables.at("wigner").local_path = "wigner";
+    // Instantiate a database manager that provides access to database tables. If a table
+    // is outdated/not available locally, it will be downloaded if download_missing_ is true.
+    if (!download_missing_) {
+        database_repo_paths.clear();
     }
+    downloader = std::make_unique<GitHubDownloader>();
+    manager = std::make_unique<ParquetManager>(database_dir_, *downloader, database_repo_paths,
+                                               *con, use_cache_);
+    manager->scan_local();
+    manager->scan_remote();
 
-    // Print availability of tables
-    auto species_availability = get_availability_of_species();
-    auto wigner_availability = get_availability_of_wigner_table();
-    SPDLOG_INFO("Availability of database tables for species and Wigner 3j symbols:");
-    for (const auto &s : species_availability) {
-        SPDLOG_INFO("* {} (locally available: {}, up to date: {}, fully downloaded: {})", s.name,
-                    s.locally_available, s.up_to_date, s.fully_downloaded);
+    // Print versions of tables
+    std::istringstream iss(manager->get_versions_info());
+    for (std::string line; std::getline(iss, line);) {
+        SPDLOG_INFO(line);
     }
-    SPDLOG_INFO("* Wigner 3j symbols (locally available: {}, up to date: {})",
-                wigner_availability.locally_available, wigner_availability.up_to_date);
 }
 
 Database::~Database() = default;
 
-std::vector<Database::AvailabilitySpecies> Database::get_availability_of_species() {
-    std::vector<AvailabilitySpecies> availability;
-
-    // Get a list of all available species
-    for (const auto &[name, table] : tables) {
-        // Ensure that the table is a states table
-        if (name.size() < 7 || name.substr(name.size() - 7) != "_states") {
-            continue;
-        }
-
-        // Read off the species name
-        std::string species_name = name.substr(0, name.size() - 7);
-
-        // Append the species
-        availability.push_back({species_name, table.local_version != -1,
-                                table.local_version >= table.remote_version,
-                                table.local_version != -1});
-    }
-
-    // Check whether all tables are downloaded and the downloaded tables up to date
-    std::vector<std::string> identifier_of_tables = {"states",
-                                                     "matrix_elements_d",
-                                                     "matrix_elements_q",
-                                                     "matrix_elements_o",
-                                                     "matrix_elements_mu",
-                                                     "matrix_elements_q0"};
-    for (auto &a : availability) {
-        for (const auto &identifier : identifier_of_tables) {
-            std::string name = a.name + "_" + identifier;
-            if (tables.count(name) > 0) {
-                if (tables[name].local_version == -1) {
-                    a.fully_downloaded = false;
-                } else if (tables[name].local_version < tables[name].remote_version) {
-                    a.up_to_date = false;
-                }
-            }
-        }
-    }
-
-    return availability;
-}
-
-Database::AvailabilityWigner Database::get_availability_of_wigner_table() {
-    std::string name = "wigner";
-    if (tables.count(name) == 0) {
-        return {false, false};
-    }
-    return {tables[name].local_version != -1,
-            tables[name].local_version >= tables[name].remote_version};
-}
-
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
-
-    ensure_presence_of_table(species + "_states");
-
     // Check that the specifications are valid
     if (!description.quantum_number_m.has_value()) {
         throw std::invalid_argument("The quantum number m must be specified.");
@@ -528,7 +295,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
         exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
-        orderby, tables.at(species + "_states").local_path.string(), where));
+        orderby, manager->get_path(species + "_states"), where));
 
     if (result->HasError()) {
         throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
@@ -690,8 +457,6 @@ template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>>
 Database::get_basis(const std::string &species, const AtomDescriptionByRanges &description,
                     std::vector<size_t> additional_ket_ids) {
-    ensure_presence_of_table(species + "_states");
-
     // Describe the states
     std::string where = "(";
     std::string separator;
@@ -798,7 +563,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
             id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-            tables.at(species + "_states").local_path.string(), where));
+            manager->get_path(species + "_states"), where));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error creating table: " + result->GetError());
@@ -1197,19 +962,13 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
             outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
 
         } else {
-            std::string species = initial_basis->get_species();
-
-            ensure_presence_of_table("wigner");
-            if (specifier != "energy") {
-                ensure_presence_of_table(species + "_" + specifier);
-            }
-
             // Check that the specifications are valid
             if (std::abs(q) > kappa) {
                 throw std::invalid_argument("Invalid q.");
             }
 
             // Ask the database for the operator
+            std::string species = initial_basis->get_species();
             duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
             if (specifier != "energy") {
                 result = con->Query(fmt::format(
@@ -1246,8 +1005,8 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                     w.f_initial = s1.f AND w.m_initial = s1.m AND
                     w.f_final = s2.f AND w.m_final = s2.m
                     ORDER BY row ASC, col ASC)",
-                    id_of_kets, tables.at("wigner").local_path.string(), kappa, q,
-                    tables.at(species + "_" + specifier).local_path.string()));
+                    id_of_kets, manager->get_path("wigner"), kappa, q,
+                    manager->get_path(species + "_" + specifier)));
             } else {
                 result = con->Query(fmt::format(
                     R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
@@ -1317,9 +1076,11 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         initial_basis->get_coefficients();
 }
 
-bool Database::get_download_missing() const { return _download_missing; }
+bool Database::get_download_missing() const { return download_missing_; }
 
-std::filesystem::path Database::get_database_dir() const { return _database_dir; }
+bool Database::get_use_cache() const { return use_cache_; }
+
+std::filesystem::path Database::get_database_dir() const { return database_dir_; }
 
 oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>> &
 Database::get_matrix_elements_cache() {
@@ -1329,107 +1090,15 @@ Database::get_matrix_elements_cache() {
     return matrix_elements_cache;
 }
 
-void Database::ensure_presence_of_table(const std::string &name) {
-
-    // Check that the table is present if download_missing is false
-    if (!_download_missing) {
-        if (tables.count(name) == 0) {
-            throw std::runtime_error("No database `" + name +
-                                     "` found. Try setting download_missing to true.");
-        }
-        if (tables[name].local_version == -1) {
-            throw std::runtime_error("Database `" + name +
-                                     "` is not downloaded. Try setting download_missing to true.");
-        }
-        return;
-    }
-
-    // Check that the table was in the overview of tables
-    if (tables.count(name) == 0) {
-        throw std::runtime_error("No database `" + name + "` found.");
-    }
-
-    // Check if the table is up to date
-    {
-        std::shared_lock<std::shared_mutex> lock(mtx_tables);
-        if (tables[name].local_version >= tables[name].remote_version) {
-            return;
-        }
-    }
-
-    // Else acquire a unique lock for updating the table
-    std::unique_lock<std::shared_mutex> lock(mtx_tables);
-
-    // Re-check if the table is up to date because another thread might have updated it
-    if (tables[name].local_version >= tables[name].remote_version) {
-        return;
-    }
-
-    {
-        // Request the table
-        SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
-                    tables[name].local_version, tables[name].remote_version);
-        auto res = httpclient->Get(
-            tables[name].remote_path.string().c_str(),
-            {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
-
-        // Check the response
-        if (!res || res->status != 200) {
-            throw std::runtime_error(fmt::format("Error accessing `{}`: {}",
-                                                 tables[name].remote_path.string(),
-                                                 fmt::streamed(res.error())));
-        }
-
-        if ((res->status == 403 || res->status == 429) &&
-            res->has_header("x-ratelimit-remaining") &&
-            res->get_header_value("x-ratelimit-remaining") == "0") {
-            int waittime = -1;
-            if (res->has_header("retry-after")) {
-                waittime = std::stoi(res->get_header_value("retry-after"));
-            } else if (res->has_header("x-ratelimit-reset")) {
-                waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
-                    static_cast<int>(time(nullptr));
-            }
-            throw std::runtime_error(
-                fmt::format("Access error downloading table, rate limit exceeded. "
-                            "You should not retry until after {} seconds.",
-                            waittime));
-            // TODO implement a mechanism to not retry until after the waittime
-        }
-
-        // Save the table
-        if (tables[name].local_version != -1) {
-            std::filesystem::remove(tables[name].local_path);
-        }
-        tables[name].local_version = tables[name].remote_version;
-        tables[name].local_path = _database_dir /
-            (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
-        std::ofstream out(tables[name].local_path, std::ios::binary);
-        out << res->body;
-        out.close();
-
-        assert(tables[name].local_version != -1);
-    }
-
-    // Get the remaining rate limit
-    auto res = httpclient->Get(
-        "/rate_limit",
-        {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/vnd.github+json"}});
-    std::string remaining = res && res->has_header("x-ratelimit-remaining")
-        ? res->get_header_value("x-ratelimit-remaining")
-        : "?";
-    SPDLOG_INFO("In this hour, you can still request {} database tables.", remaining);
-}
-
 Database &Database::get_global_instance() {
-    return get_global_instance_without_checks(default_download_missing, default_wigner_in_memory,
+    return get_global_instance_without_checks(default_download_missing, default_use_cache,
                                               default_database_dir);
 }
 
 Database &Database::get_global_instance(bool download_missing) {
-    Database &database = get_global_instance_without_checks(
-        download_missing, default_wigner_in_memory, default_database_dir);
-    if (download_missing != database._download_missing) {
+    Database &database = get_global_instance_without_checks(download_missing, default_use_cache,
+                                                            default_database_dir);
+    if (download_missing != database.download_missing_) {
         throw std::invalid_argument(
             "The 'download_missing' argument must not change between calls to the method.");
     }
@@ -1441,35 +1110,35 @@ Database &Database::get_global_instance(std::filesystem::path database_dir) {
         database_dir = default_database_dir;
     }
     Database &database = get_global_instance_without_checks(default_download_missing,
-                                                            default_wigner_in_memory, database_dir);
+                                                            default_use_cache, database_dir);
     if (!std::filesystem::exists(database_dir) ||
-        std::filesystem::canonical(database_dir) != database._database_dir) {
+        std::filesystem::canonical(database_dir) != database.database_dir_) {
         throw std::invalid_argument(
             "The 'database_dir' argument must not change between calls to the method.");
     }
     return database;
 }
 
-Database &Database::get_global_instance(bool download_missing, bool wigner_in_memory,
+Database &Database::get_global_instance(bool download_missing, bool use_cache,
                                         std::filesystem::path database_dir) {
     if (database_dir.empty()) {
         database_dir = default_database_dir;
     }
     Database &database =
-        get_global_instance_without_checks(download_missing, wigner_in_memory, database_dir);
-    if (download_missing != database._download_missing ||
-        wigner_in_memory != database._wigner_in_memory || !std::filesystem::exists(database_dir) ||
-        std::filesystem::canonical(database_dir) != database._database_dir) {
+        get_global_instance_without_checks(download_missing, use_cache, database_dir);
+    if (download_missing != database.download_missing_ || use_cache != database.use_cache_ ||
+        !std::filesystem::exists(database_dir) ||
+        std::filesystem::canonical(database_dir) != database.database_dir_) {
         throw std::invalid_argument(
-            "The 'download_missing', 'wigner_in_memory' and 'database_dir' arguments must not "
+            "The 'download_missing', 'use_cache' and 'database_dir' arguments must not "
             "change between calls to the method.");
     }
     return database;
 }
 
-Database &Database::get_global_instance_without_checks(bool download_missing, bool wigner_in_memory,
+Database &Database::get_global_instance_without_checks(bool download_missing, bool use_cache,
                                                        std::filesystem::path database_dir) {
-    static Database database(download_missing, wigner_in_memory, std::move(database_dir));
+    static Database database(download_missing, use_cache, std::move(database_dir));
     return database;
 }
 

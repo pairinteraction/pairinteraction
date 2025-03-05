@@ -10,8 +10,8 @@ using namespace pairinteraction;
 
 void bind_run_unit_tests(nb::module_ &m) {
     m.def("run_unit_tests",
-          [](bool download_missing, bool wigner_in_memory, std::filesystem::path database_dir) {
-              return run_unit_tests(0, nullptr, download_missing, wigner_in_memory,
+          [](bool download_missing, bool use_cache, std::filesystem::path database_dir) {
+              return run_unit_tests(0, nullptr, download_missing, use_cache,
                                     std::move(database_dir));
           });
 }

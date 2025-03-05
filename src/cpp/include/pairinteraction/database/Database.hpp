@@ -8,19 +8,13 @@
 #include <filesystem>
 #include <memory>
 #include <oneapi/tbb.h>
-#include <shared_mutex>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace duckdb {
 class DuckDB;
 class Connection;
 } // namespace duckdb
-
-namespace httplib {
-class Client;
-} // namespace httplib
 
 namespace pairinteraction {
 enum class OperatorType;
@@ -34,31 +28,21 @@ class KetAtom;
 template <typename Scalar>
 class BasisAtom;
 
+class GitHubDownloader;
+
+class ParquetManager;
+
 class Database {
 public:
-    struct AvailabilitySpecies {
-        std::string name;
-        bool locally_available;
-        bool up_to_date;
-        bool fully_downloaded;
-    };
-
-    struct AvailabilityWigner {
-        bool locally_available;
-        bool up_to_date;
-    };
-
     Database();
     Database(bool download_missing);
     Database(std::filesystem::path database_dir);
-    Database(bool download_missing, bool wigner_in_memory, std::filesystem::path database_dir);
+    Database(bool download_missing, bool use_cache, std::filesystem::path database_dir);
     ~Database();
-    std::vector<AvailabilitySpecies> get_availability_of_species();
-    AvailabilityWigner get_availability_of_wigner_table();
     static Database &get_global_instance();
     static Database &get_global_instance(bool download_missing);
     static Database &get_global_instance(std::filesystem::path database_dir);
-    static Database &get_global_instance(bool download_missing, bool wigner_in_memory,
+    static Database &get_global_instance(bool download_missing, bool use_cache,
                                          std::filesystem::path database_dir);
 
     std::shared_ptr<const KetAtom> get_ket(const std::string &species,
@@ -76,6 +60,7 @@ public:
                         int q);
 
     bool get_download_missing() const;
+    bool get_use_cache() const;
     std::filesystem::path get_database_dir() const;
 
 private:
@@ -91,29 +76,26 @@ private:
         "/repos/pairinteraction/database-sqdt/releases/latest",
         "/repos/pairinteraction/database-mqdt/releases/latest"};
 
-    bool _download_missing;
-    bool _wigner_in_memory;
-    std::filesystem::path _database_dir;
+    bool download_missing_;
+    bool use_cache_;
+    std::filesystem::path database_dir_;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
-    std::unique_ptr<httplib::Client> httpclient;
-    std::unordered_map<std::string, Table> tables;
-    std::shared_mutex mtx_tables;
+    std::unique_ptr<GitHubDownloader> downloader;
+    std::unique_ptr<ParquetManager> manager;
 
     static constexpr bool default_download_missing{false};
-    static constexpr bool default_wigner_in_memory{true};
+    static constexpr bool default_use_cache{true};
     static const std::filesystem::path default_database_dir;
 
     static oneapi::tbb::concurrent_unordered_map<std::string,
                                                  Eigen::SparseMatrix<double, Eigen::RowMajor>> &
     get_matrix_elements_cache();
 
-    static Database &get_global_instance_without_checks(bool download_missing,
-                                                        bool wigner_in_memory,
+    static Database &get_global_instance_without_checks(bool download_missing, bool use_cache,
                                                         std::filesystem::path database_dir);
 
     void ensure_presence_of_table(const std::string &name);
-    void ensure_quantum_number_n_is_allowed(const std::string &name);
 };
 
 // Extern template declarations

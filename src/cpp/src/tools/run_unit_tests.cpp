@@ -261,7 +261,7 @@ constexpr std::string_view OS_NAME =
 #endif
 
 namespace pairinteraction {
-int run_unit_tests(int argc, char **argv, bool download_missing, bool wigner_in_memory,
+int run_unit_tests(int argc, char **argv, bool download_missing, bool use_cache,
                    std::filesystem::path database_dir) {
 
     // Configure a logger for the tests
@@ -309,7 +309,7 @@ int run_unit_tests(int argc, char **argv, bool download_missing, bool wigner_in_
     spdlog::info("Operating system: {}", OS_NAME);
 
     // Create a global database instance and run the tests
-    Database::get_global_instance(download_missing, wigner_in_memory, std::move(database_dir));
+    Database::get_global_instance(download_missing, use_cache, std::move(database_dir));
     int exitcode = ctx.run();
 
     spdlog::info("Log: {}", logfile.string());

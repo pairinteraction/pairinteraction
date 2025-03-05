@@ -18,21 +18,21 @@ class Database:
     def __init__(
         self,
         download_missing: bool = False,
-        wigner_in_memory: bool = True,
+        use_cache: bool = True,
         database_dir: Union[str, "os.PathLike[str]"] = "",
     ) -> None:
         """Create a new database instance with the given parameters.
 
         Args:
             download_missing: Whether to download missing databases if needed. Default False.
-            wigner_in_memory: Whether to load the Wigner 3j symbols table into memory. Default True.
+            use_cache: Whether to load the Wigner 3j symbols table into memory. Default True.
             database_dir: The directory where the databases are stored.
                 Default "", i.e. use the default directory (the user's cache directory).
 
         """
-        self._cpp = CPPDatabase(download_missing, wigner_in_memory, database_dir)
+        self._cpp = CPPDatabase(download_missing, use_cache, database_dir)
         self.download_missing = download_missing
-        self.wigner_in_memory = wigner_in_memory
+        self.use_cache = use_cache
         self.database_dir = database_dir
 
     @classmethod
@@ -44,7 +44,7 @@ class Database:
     def initialize_global_database(
         cls,
         download_missing: bool = False,
-        wigner_in_memory: bool = True,
+        use_cache: bool = True,
         database_dir: Union[str, "os.PathLike[str]"] = "",
     ) -> None:
         """Initialize the global database with the given parameters.
@@ -52,10 +52,10 @@ class Database:
         The arguments are the same as for the constructor of this class.
         """
         if cls._global_database is None:
-            cls._global_database = cls(download_missing, wigner_in_memory, database_dir)
+            cls._global_database = cls(download_missing, use_cache, database_dir)
         elif (
             cls._global_database.download_missing == download_missing
-            and cls._global_database.wigner_in_memory == wigner_in_memory
+            and cls._global_database.use_cache == use_cache
             and cls._global_database.database_dir == database_dir
         ):
             pass  # already initialized with the same parameters
