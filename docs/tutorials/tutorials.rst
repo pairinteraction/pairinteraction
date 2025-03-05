@@ -43,6 +43,8 @@ Here we show the usage of the API. The first tutorial serves as a quick start gu
    examples_python/pair_potentials
    examples_python/overview
    examples_python/lifetimes
+   examples_python/perturbative_c3_c6
+   examples_python/perturbative_h_eff
 
 .. rubric:: Applications
 
