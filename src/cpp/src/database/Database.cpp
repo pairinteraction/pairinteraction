@@ -1317,6 +1317,10 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         initial_basis->get_coefficients();
 }
 
+bool Database::get_download_missing() const { return _download_missing; }
+
+std::filesystem::path Database::get_database_dir() const { return _database_dir; }
+
 oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>> &
 Database::get_matrix_elements_cache() {
     static oneapi::tbb::concurrent_unordered_map<std::string,

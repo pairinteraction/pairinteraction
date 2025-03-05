@@ -1,5 +1,6 @@
 #include "pairinteraction/database/ParquetManager.hpp"
 
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/database/GitHubDownloader.hpp"
 
 #include <doctest/doctest.h>
@@ -10,13 +11,10 @@
 namespace pairinteraction {
 class MockDownloader : public GitHubDownloader {
 public:
-    explicit MockDownloader() : GitHubDownloader() {}
-
-    std::future<GitHubDownloader::Result> download(const std::string &remote_url,
-                                                   const std::string & /*if_modified_since*/ = "",
-                                                   bool /*use_octet_stream*/ = false) override {
+    std::future<GitHubDownloader::Result>
+    download(const std::string &remote_url, const std::string & /*if_modified_since*/ = "",
+             bool /*use_octet_stream*/ = false) const override {
         GitHubDownloader::Result result;
-        result.success = true;
         result.status_code = 200;
         result.rate_limit.remaining = 60;
         result.rate_limit.reset_time = 2147483647;
@@ -43,7 +41,7 @@ public:
     }
 };
 
-TEST_CASE("ParquetManager basic functionality with mocked downloader") {
+TEST_CASE("ParquetManager functionality with mocked downloader") {
     MockDownloader downloader;
     auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
     std::filesystem::create_directories(test_dir);
@@ -90,23 +88,21 @@ TEST_CASE("ParquetManager basic functionality with mocked downloader") {
     std::filesystem::remove_all(test_dir);
 }
 
-DOCTEST_TEST_CASE(
-    "ParquetManager basic functionality with github downloader" *
-    doctest::skip(true)) { // TODO skip if !Database::get_global_instance().download_missing()
+DOCTEST_TEST_CASE("ParquetManager functionality with github downloader") {
+    if (!Database::get_global_instance().get_download_missing()) {
+        DOCTEST_MESSAGE("Skipping test because download_missing is false.");
+        return;
+    }
     GitHubDownloader downloader;
-    auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
 
     std::vector<std::string> repo_paths = {"/repos/pairinteraction/database-sqdt/releases/latest",
                                            "/repos/pairinteraction/database-mqdt/releases/latest"};
-    ParquetManager manager(test_dir, downloader, repo_paths);
+    ParquetManager manager(Database::get_global_instance().get_database_dir(), downloader,
+                           repo_paths);
     manager.scan_local();
     manager.scan_remote();
 
-    CHECK(manager.get_path("Rb_states").rfind(test_dir / "Rb_states_v", 0) == 0);
-    // TODO check only that the database overview has been downloaded correctly. Downloading a full
-    // table takes too long.
-
-    std::filesystem::remove_all(test_dir);
+    DOCTEST_MESSAGE("\n" << manager.get_versions_info());
 }
 
 } // namespace pairinteraction

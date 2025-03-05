@@ -75,6 +75,9 @@ public:
                         std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type,
                         int q);
 
+    bool get_download_missing() const;
+    std::filesystem::path get_database_dir() const;
+
 private:
     struct Table {
         std::filesystem::path local_path{""};

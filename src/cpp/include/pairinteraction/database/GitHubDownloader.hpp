@@ -19,20 +19,18 @@ public:
 
     class Result {
     public:
-        bool success;
-        int status_code;
+        int status_code = 400;
         std::string last_modified;
         std::string body;
         RateLimit rate_limit;
     };
 
-public:
     GitHubDownloader();
     virtual ~GitHubDownloader();
     virtual std::future<Result> download(const std::string &remote_url,
                                          const std::string &if_modified_since = "",
-                                         bool use_octet_stream = false);
-    RateLimit get_rate_limit();
+                                         bool use_octet_stream = false) const;
+    RateLimit get_rate_limit() const;
     std::string get_host() const;
 
 private:
