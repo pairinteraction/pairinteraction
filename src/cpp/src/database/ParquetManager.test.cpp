@@ -4,6 +4,7 @@
 #include "pairinteraction/database/GitHubDownloader.hpp"
 
 #include <doctest/doctest.h>
+#include <duckdb.hpp>
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -47,10 +48,12 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
     std::filesystem::create_directories(test_dir);
     std::ofstream(test_dir / "wigner_v1.parquet").close();
     std::ofstream(test_dir / "wigner_v2.parquet").close();
+    duckdb::DuckDB db(nullptr);
+    duckdb::Connection con(db);
 
     SUBCASE("Check missing table") {
         std::vector<std::string> repo_paths;
-        ParquetManager manager(test_dir, downloader, repo_paths);
+        ParquetManager manager(test_dir, downloader, repo_paths, con, false);
         manager.scan_local();
         manager.scan_remote();
 
@@ -60,7 +63,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
 
     SUBCASE("Check version parsing") {
         std::vector<std::string> repo_paths;
-        ParquetManager manager(test_dir, downloader, repo_paths);
+        ParquetManager manager(test_dir, downloader, repo_paths, con, false);
         manager.scan_local();
         manager.scan_remote();
 
@@ -72,7 +75,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         std::vector<std::string> repo_paths = {"/test/repo/path"};
         std::ofstream(test_dir / "wigner_v1.parquet").close();
         std::ofstream(test_dir / "wigner_v2.parquet").close();
-        ParquetManager manager(test_dir, downloader, repo_paths);
+        ParquetManager manager(test_dir, downloader, repo_paths, con, false);
         manager.scan_local();
         manager.scan_remote();
 
@@ -94,15 +97,27 @@ DOCTEST_TEST_CASE("ParquetManager functionality with github downloader") {
         return;
     }
     GitHubDownloader downloader;
+    duckdb::DuckDB db(nullptr);
+    duckdb::Connection con(db);
 
     std::vector<std::string> repo_paths = {"/repos/pairinteraction/database-sqdt/releases/latest",
                                            "/repos/pairinteraction/database-mqdt/releases/latest"};
     ParquetManager manager(Database::get_global_instance().get_database_dir(), downloader,
-                           repo_paths);
+                           repo_paths, con, Database::get_global_instance().get_use_cache());
     manager.scan_local();
     manager.scan_remote();
 
-    DOCTEST_MESSAGE("\n" << manager.get_versions_info());
+    std::string info = manager.get_versions_info();
+
+    // Check that all species are present
+    std::vector<std::string> should_contain = {
+        "Cs",        "K",          "Li",           "Na",
+        "Rb",        "Sr87_mqdt",  "Sr88_singlet", "Sr88_triplet",
+        "Sr88_mqdt", "Yb171_mqdt", "Yb173_mqdt",   "Yb174_mqdt",
+        "wigner"};
+    for (const auto &substr : should_contain) {
+        DOCTEST_CHECK(info.find(substr) != std::string::npos);
+    }
 }
 
 } // namespace pairinteraction

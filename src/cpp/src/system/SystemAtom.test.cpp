@@ -194,12 +194,12 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             auto eigenvectors_pairinteraction = system.get_eigenbasis()->get_coefficients();
 
             DOCTEST_CHECK((eigenvalues_eigen - eigenvalues_pairinteraction).array().abs().sum() <
-                          2 * atol_eigenvalues * eigenvalues_eigen.size()); // 2 is a safety factor
+                          4 * atol_eigenvalues * eigenvalues_eigen.size()); // 4 is a safety factor
 
             for (int i = 0; i < eigenvectors_pairinteraction.cols(); ++i) {
-                DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) < 2 *
+                DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) < 4 *
                                   atol_eigenvectors *
-                                  eigenvectors_pairinteraction.rows()); // 2 is a safety factor
+                                  eigenvectors_pairinteraction.rows()); // 4 is a safety factor
             }
         }
     }

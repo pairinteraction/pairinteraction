@@ -2,7 +2,9 @@
 
 #include "pairinteraction/database/GitHubDownloader.hpp"
 
+#include <cpptrace/cpptrace.hpp>
 #include <ctime>
+#include <duckdb.hpp>
 #include <filesystem>
 #include <fmt/core.h>
 #include <fstream>
@@ -25,22 +27,24 @@ std::string format_time(std::time_t time_val) {
 
 namespace pairinteraction {
 ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDownloader &downloader,
-                               std::vector<std::string> repo_paths)
-    : directory(std::move(directory)), downloader(downloader), repo_paths(std::move(repo_paths)) {
+                               std::vector<std::string> repo_paths, duckdb::Connection &con,
+                               bool use_cache)
+    : directory_(std::move(directory)), downloader(downloader), repo_paths_(std::move(repo_paths)),
+      con(con), use_cache_(use_cache) {
     // Ensure the local directory exists
-    if (!std::filesystem::exists(this->directory)) {
-        std::filesystem::create_directories(this->directory);
+    if (!std::filesystem::exists(directory_)) {
+        std::filesystem::create_directories(directory_);
     }
 
     // If repo paths are provided, check the GitHub rate limit
-    if (!repo_paths.empty()) {
+    if (!repo_paths_.empty()) {
         auto rate_limit = downloader.get_rate_limit();
         if (rate_limit.remaining <= 0) {
-            throw std::runtime_error(fmt::format("Rate limit reached, resets at {}.",
-                                                 format_time(rate_limit.reset_time)));
+            react_on_rate_limit_reached(rate_limit.reset_time);
+        } else {
+            SPDLOG_INFO("Remaining GitHub API requests: {}. Rate limit resets at {}.",
+                        rate_limit.remaining, format_time(rate_limit.reset_time));
         }
-        SPDLOG_INFO("Remaining GitHub API requests: {}. Rate limit resets at {}.",
-                    rate_limit.remaining, format_time(rate_limit.reset_time));
     }
 }
 
@@ -51,16 +55,16 @@ void ParquetManager::scan_remote() {
     std::vector<std::filesystem::path> cache_files;
     std::vector<nlohmann::json> cached_docs;
 
-    futures.reserve(repo_paths.size());
-    cache_files.reserve(repo_paths.size());
-    cached_docs.reserve(repo_paths.size());
+    futures.reserve(repo_paths_.size());
+    cache_files.reserve(repo_paths_.size());
+    cached_docs.reserve(repo_paths_.size());
 
     // For each repo path, load its cached JSON (or an empty JSON) and issue the download
-    for (const auto &remote_endpoint : repo_paths) {
+    for (const auto &remote_endpoint : repo_paths_) {
         // Generate a unique cache filename per endpoint
         std::string cache_filename =
             "homepage_cache_" + std::to_string(std::hash<std::string>{}(remote_endpoint)) + ".json";
-        std::filesystem::path cache_file = directory / cache_filename;
+        std::filesystem::path cache_file = directory_ / cache_filename;
         cache_files.push_back(cache_file);
 
         // Load cached JSON from file if it exists
@@ -90,7 +94,7 @@ void ParquetManager::scan_remote() {
 
     // Process downloads for each repo path
     for (size_t i = 0; i < futures.size(); ++i) {
-        const auto &remote_endpoint = repo_paths[i];
+        const auto &remote_endpoint = repo_paths_[i];
         auto result = futures[i].get();
         const auto &cache_file = cache_files[i];
         const auto &cached_doc = cached_docs[i];
@@ -116,10 +120,8 @@ void ParquetManager::scan_remote() {
             doc = cached_doc;
             SPDLOG_INFO("Using cached overview of available tables from {}.", remote_endpoint);
         } else if (result.status_code == 403 || result.status_code == 429) {
-            throw std::runtime_error(fmt::format("Failed to download overview of available tables "
-                                                 "from {}: rate limit reached, resets at {}.",
-                                                 remote_endpoint,
-                                                 format_time(result.rate_limit.reset_time)));
+            react_on_rate_limit_reached(result.rate_limit.reset_time);
+            return;
         } else {
             throw std::runtime_error(fmt::format(
                 "Failed to download overview of available tables from {}: status code {}.",
@@ -144,7 +146,7 @@ void ParquetManager::scan_remote() {
                     std::string remote_url = asset["url"].get<std::string>();
                     const std::string host = downloader.get_host();
                     remote_table_files[table_name] = {remote_url.erase(0, host.size()),
-                                                      remote_version};
+                                                      remote_version, false};
                 }
             }
         }
@@ -155,7 +157,7 @@ void ParquetManager::scan_local() {
     local_table_files.clear();
 
     // Iterate over files in the directory to update local_table_files
-    for (const auto &entry : std::filesystem::directory_iterator(directory)) {
+    for (const auto &entry : std::filesystem::directory_iterator(directory_)) {
         if (entry.is_regular_file()) {
             std::string filename = entry.path().filename().string();
             std::smatch match;
@@ -164,21 +166,22 @@ void ParquetManager::scan_local() {
                 int version = std::stoi(match[2].str());
                 auto it = local_table_files.find(table_name);
                 if (it == local_table_files.end() || version > it->second.version) {
-                    local_table_files[table_name] = {entry.path().string(), version};
+                    local_table_files[table_name] = {entry.path().string(), version, false};
                 }
             }
         }
     }
 }
 
-std::string ParquetManager::get_path(const std::string &table_name) {
-    // Get local version if available
-    int local_version = -1;
-    auto local_it = local_table_files.find(table_name);
-    if (local_it != local_table_files.end()) {
-        local_version = local_it->second.version;
-    }
+void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
+    repo_paths_.clear();
+    remote_table_files.clear();
+    SPDLOG_WARN("Rate limit reached, resets at {}. The download of database tables is disabled.",
+                format_time(reset_time));
+}
 
+std::unordered_map<std::string, ParquetManager::ParquetFileInfo>::iterator
+ParquetManager::update_table(const std::string &table_name) {
     // Get remote version if available
     int remote_version = -1;
     auto remote_it = remote_table_files.find(table_name);
@@ -186,40 +189,97 @@ std::string ParquetManager::get_path(const std::string &table_name) {
         remote_version = remote_it->second.version;
     }
 
-    // If a newer remote version exists, update the local file
-    if (remote_version > local_version) {
-        SPDLOG_INFO("Updating table {} from version {} to version {}.", table_name, local_version,
-                    remote_version);
-
-        // Download the remote file.
-        auto futureResult = downloader.download(remote_it->second.path, "", true);
-        auto result = futureResult.get();
-        if (result.status_code == 403 || result.status_code == 429) {
-            throw std::runtime_error(
-                fmt::format("Failed to download table {}: rate limit reached, resets at {}.",
-                            table_name, format_time(result.rate_limit.reset_time)));
+    // Get local version if available and check if it is up-to-date
+    {
+        int local_version = -1;
+        std::shared_lock<std::shared_mutex> lock(mtx_local_table_files);
+        auto local_it = local_table_files.find(table_name);
+        if (local_it != local_table_files.end()) {
+            local_version = local_it->second.version;
         }
-        if (result.status_code != 200) {
-            throw std::runtime_error(fmt::format("Failed to download table {}: status code {}.",
-                                                 table_name, result.status_code));
+        if (local_version >= remote_version) {
+            return local_it;
         }
+    }
 
-        // Save the downloaded file locally
-        std::string local_file_path =
-            (directory / (table_name + "_v" + std::to_string(remote_version) + ".parquet"))
-                .string();
-        std::ofstream out(local_file_path, std::ios::binary);
-        if (!out) {
-            throw std::runtime_error(fmt::format("Failed to open {} for writing", local_file_path));
+    // If it is not up-to-date, acquire a unique lock for updating the table
+    std::unique_lock<std::shared_mutex> lock(mtx_local_table_files);
+
+    // Re-check if the table is up to date because another thread might have updated it
+    int local_version = -1;
+    auto local_it = local_table_files.find(table_name);
+    if (local_it != local_table_files.end()) {
+        local_version = local_it->second.version;
+    }
+    if (local_version >= remote_version) {
+        return local_it;
+    }
+
+    SPDLOG_INFO("Updating table {} from version {} to version {}.", table_name, local_version,
+                remote_version);
+
+    // Download the remote file
+    auto result = downloader.download(remote_it->second.path, "", true).get();
+    if (result.status_code == 403 || result.status_code == 429) {
+        react_on_rate_limit_reached(result.rate_limit.reset_time);
+        return local_it;
+    }
+    if (result.status_code != 200) {
+        throw std::runtime_error(fmt::format("Failed to download table {}: status code {}.",
+                                             table_name, result.status_code));
+    }
+
+    // Save the downloaded file locally
+    std::string local_file_path =
+        (directory_ / (table_name + "_v" + std::to_string(remote_version) + ".parquet")).string();
+    std::ofstream out(local_file_path, std::ios::binary);
+    if (!out) {
+        throw std::runtime_error(fmt::format("Failed to open {} for writing", local_file_path));
+    }
+    out << result.body;
+    out.close();
+
+    // Update the internal mapping
+    return local_table_files
+        .insert_or_assign(table_name, ParquetFileInfo{local_file_path, remote_version, false})
+        .first;
+}
+
+void ParquetManager::cache_table(
+    std::unordered_map<std::string, ParquetFileInfo>::iterator local_it) {
+    // Check if the table is already cached
+    {
+        std::shared_lock<std::shared_mutex> lock(mtx_local_table_files);
+        if (local_it->second.cached) {
+            return;
         }
-        out << result.body;
-        out.close();
+    }
 
-        // Update the internal mapping
-        local_it =
-            local_table_files
-                .insert_or_assign(table_name, ParquetFileInfo{local_file_path, remote_version})
-                .first;
+    // Acquire a unique lock for caching the table
+    std::unique_lock<std::shared_mutex> lock(mtx_local_table_files);
+
+    // Re-check if the table is already cached because another thread might have cached it
+    if (local_it->second.cached) {
+        return;
+    }
+
+    // Cache the table in memory
+    auto result = con.Query(fmt::format(R"(CREATE TEMP TABLE '{}' AS SELECT * FROM '{}')",
+                                        local_it->first, local_it->second.path));
+    if (result->HasError()) {
+        throw cpptrace::runtime_error("Error creating table: " + result->GetError());
+    }
+    local_it->second.path = local_it->first;
+    local_it->second.cached = true;
+}
+
+std::string ParquetManager::get_path(const std::string &table_name) {
+    // Update the local table if a newer version is available remotely
+    auto local_it = this->update_table(table_name);
+
+    // Cache the local table in memory if requested
+    if (use_cache_) {
+        this->cache_table(local_it);
     }
 
     // Return the path to the local table file
@@ -231,7 +291,7 @@ std::string ParquetManager::get_path(const std::string &table_name) {
 
 std::string ParquetManager::get_versions_info() const {
     // Helper lambda returns the version string if available
-    auto get_version = [this](const auto &map, const std::string &table) -> int {
+    auto get_version = [](const auto &map, const std::string &table) -> int {
         if (auto it = map.find(table); it != map.end()) {
             return it->second.version;
         }
@@ -250,9 +310,7 @@ std::string ParquetManager::get_versions_info() const {
     // Output versions info
     std::ostringstream oss;
     oss << " " << std::left << std::setw(33) << "Table" << std::left << std::setw(7) << "Local"
-        << "  "
-        << "Remote"
-        << "\n";
+        << "  Remote\n";
     oss << std::string(1 + 33 + 7 + 2 + 7, '-') << "\n";
     for (const auto &table : tables) {
         int local_version = get_version(local_table_files, table);
