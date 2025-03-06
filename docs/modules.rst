@@ -11,10 +11,9 @@ This Python interface can be accessed via the ``pairinteraction`` module by impo
 Alternatively, the same functionality can be accessed for using complex data type by replacing ``real`` with ``complex``.
 The two submodules are completely identical in their functionality, but only differ in the data type they use.
 
-All the available classes, methods and functions are documented below for the ``real`` data type, but the same classes, methods and functions are available for the complex data types as well.
+All the available classes, methods and functions are documented below:
 
-
-.. currentmodule:: pairinteraction.real
+.. currentmodule:: pairinteraction._wrapped
 
 .. rubric:: Database
 .. autosummary::

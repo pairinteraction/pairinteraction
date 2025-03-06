@@ -1,8 +1,6 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 
-from sphinx.application import Sphinx
-
 import pairinteraction
 
 # -- Project information -----------------------------------------------------
@@ -80,21 +78,6 @@ autosummary_ignore_module_all = False
 autodoc_class_signature = "mixed"  # combine class and __init__ doc
 autodoc_typehints = "both"
 autodoc_type_aliases = {}  # make type aliases nicer
-
-
-def setup(app: Sphinx) -> None:
-    # trick sphinx autodoc to fully document the classes inside pairinteraction.real
-    # instead of just saying 'alias of ...'
-    all_pi_types = [
-        pairinteraction.real,
-        pairinteraction.complex,
-    ]
-    for pi in all_pi_types:
-        for obj_name in dir(pi):
-            obj = getattr(pi, obj_name)
-            name = getattr(obj, "__name__", "")
-            if any(name.endswith(suffix) for suffix in ["Real", "Complex"]):
-                obj.__name__ = obj_name
 
 
 # -- Options for extlinks -------------------------------------------------
