@@ -41,6 +41,9 @@ def main() -> None:
         system_two.setConservedMomentaUnderRotation([int(2 * m)])
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setConservedParityUnderPermutation(pi.ODD)
+        # The parity under inversion and permutation being odd implies that the product
+        # of the parities of the state of the atoms (-1)^(l1+l2) is conserved to be
+        # odd * odd = even.
         system_two.setOrder(order)
         system_two.setDistance(np.min(distances))
         system_two.buildHamiltonian()
