@@ -36,20 +36,4 @@ The following jupyter notebooks show how the pairinteraction Python API can be a
 Tutorials - Graphical User Interface
 ------------------------------------
 
-.. rubric:: Introduction
-
-Here we introduce how the GUI of pairinteraction can be used to calculate interactions between Rydberg atoms and energy shifts in the presence of applied fields.
-
-.. toctree::
-   :maxdepth: 1
-
-   examples_gui/introduction/gui_introduction
-
-.. rubric:: Applications
-
-The following tutorial provides a more sophisticated example on how the GUI can be used for research.
-
-.. toctree::
-   :maxdepth: 1
-
-   examples_gui/macrodimers/macrodimers
+Coming soon...

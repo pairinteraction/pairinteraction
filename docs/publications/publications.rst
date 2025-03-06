@@ -1,5 +1,5 @@
-References
-==========
+Publications
+============
 
 If you use pairinteraction in your research, please cite the following publication:
 

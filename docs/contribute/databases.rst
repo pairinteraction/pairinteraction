@@ -1,5 +1,5 @@
-Databases
-=========
+Database Format
+===============
 
 The pairinteraction software constructs Hamiltonians from matrix elements that are stored in databases. This design enables the inclusion of new atomic species and even molecules into the software without requiring modifying the code of the software itself. To leverage the software's capabilities for a new species, users only need to supply an appropriate database.
 
@@ -16,9 +16,6 @@ To date, our databases cover alkali metal atoms and a few alkaline earth metal a
 .. _ryd-numerov: http://numerov.pairinteraction.org
 .. _mqdt.jl: http://mqdt.pairinteraction.org
 
-
-The Database Format
--------------------
 
 The databases store tables of states and matrix elements of a set of fundamental operators. We have chosen the set of operators such that it allows to efficiently construct more complex operators such as the operator for dipole-dipole interaction.
 
