@@ -84,7 +84,17 @@ class KetBase(ABC):
     @overload
     def get_energy(self, unit: str) -> float: ...
 
-    def get_energy(self, unit: Optional[str] = None):
+    def get_energy(self, unit: Optional[str] = None) -> Union[float, "PlainQuantity[float]"]:
+        """Get the energy of the ket in the given unit.
+
+        Args:
+            unit: The unit to which to convert the energy to.
+                Default None will return a `pint.Quantity`.
+
+        Returns:
+            The energy as float if a unit was given, otherwise a `pint.Quantity`.
+
+        """
         energy_au = self._cpp.get_energy()
         energy = QuantityScalar.from_base_unit(energy_au, "ENERGY")
         return energy.to_pint_or_unit(unit)

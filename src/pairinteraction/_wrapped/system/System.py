@@ -33,15 +33,16 @@ class SystemBase(ABC, Generic[BasisType]):
     The fields and interactions can then be set afterwards.
 
     All system objects share a few common attributes and methods, that are defined in this base class, e.g.:
-    - the basis of the system,
-    - the matrix stored as scipy sparse matrix, which represents the Hamiltonian,
-    - ...
+        - the basis of the system,
+        - the matrix stored as scipy sparse matrix, which represents the Hamiltonian,
+        - ...
+
     """
 
     _cpp: UnionCPPSystem
     _cpp_type: ClassVar[UnionTypeCPPSystem]
     _basis: BasisType
-    _TypeBasis: type[BasisType]  # should by ClassVar, but cannot be nested yet
+    _TypeBasis: type[BasisType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, basis: BasisType) -> None:
         self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
@@ -79,17 +80,18 @@ class SystemBase(ABC, Generic[BasisType]):
         and updates the internal basis of the system accordingly.
 
         Args:
-            diagonalizer: The diagonalizer to use for the diagonalization.
-                Possible values are "eigen", "lapacke_evd", "lapacke_evr", "feast",
-                defaults to "eigen".
-            float_type: The floating point precision to use for the diagonalization.
-                Possible values are "float32", "float64", defaults to "float64".
-            atol: The absolute tolerance, used to determine which entries of the sparse eigenbasis to keep.
-                Defaults to 1e-6.
-            sort_by_energy: Whether to sort the eigenstates by energy. Defaults to True.
-            energy_range: A tuple specifying the energy range. Defaults to (None, None).
-            energy_unit: The unit for the energy values. Defaults to None.
-            m0: The search subspace size for the "feast" diagonalizer.
+            systems: A list of `SystemAtom` or `SystemPair` objects.
+            diagonalizer: The diagonalizer method to use. Defaults to "eigen".
+            float_type: The floating point precision to use for the diagonalization. Defaults to "float64".
+            atol: The absolute tolerance allowed for eigenenergies and vectors
+                Smaller values are set to 0 in the sparse eigenbasis. Defaults to 1e-6.
+            sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
+            energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
+                Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
+                The accuracy of the eigenvalues is not affected by this, but not all eigenvalues will be calculated.
+                Defaults to (None, None), i.e. calculate all eigenvalues.
+            energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
+            m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 
         Returns:
             Self: The updated instance of the system.

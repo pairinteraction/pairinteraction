@@ -13,6 +13,16 @@ CPPDatabase = _backend.Database
 
 
 class Database:
+    """Class for a handling the databases for the pairinteraction package.
+
+    The Databases are used to store the atomic states, their energies, and their matrix elements to other states.
+    The databases are stored in the user's cache directory by default, but can be stored in a different directory.
+    When running pairinteraction for the first time, the databases have to be downloaded from the internet
+    (e.g. by explicitly passing `download_missing=True` to the constructor).
+    Once the databases are downloaded, the user usually does not have to interact with the Database class directly.
+
+    """
+
     _global_database: ClassVar[Optional["Database"]] = None
 
     def __init__(

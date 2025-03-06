@@ -20,6 +20,23 @@ UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_
 
 
 class BasisAtom(BasisBase[KetAtom]):
+    """Basis for a single atom.
+
+    Add all KetAtom objects that match the given quantum numbers to the basis.
+    The initial coefficients matrix is a unit matrix, i.e. the first basis state is the first ket, etc.
+    The BasisAtom coefficients matrix will always be square,
+    i.e. the number of kets is equal to the number of states.
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+        >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
+        >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
+        >>> print(basis)
+        BasisAtom(n=(57, 63), l=(0, 3), energy=(1008911.9216, 1009111.9216), energy_unit=GHz)
+
+    """
+
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
@@ -40,19 +57,6 @@ class BasisAtom(BasisBase[KetAtom]):
         additional_kets: Optional[list[KetAtom]] = None,
     ) -> None:
         """Create a basis for a single atom.
-
-        Add all KetAtom objects that match the given quantum numbers to the basis.
-        The initial coefficients matrix is a unit matrix, i.e. the first basis state is the first ket, etc.
-        The BasisAtom coefficients matrix will always be square,
-        i.e. the number of kets is equal to the number of states.
-
-        Examples:
-            >>> import pairinteraction.real as pi
-            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-            >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
-            >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
-            >>> print(basis)
-            BasisAtom(n=(57, 63), l=(0, 3), energy=(1008911.9216, 1009111.9216), energy_unit=GHz)
 
         Args:
             species: The species of the atom.

@@ -8,7 +8,7 @@ This Python interface can be accessed via the ``pairinteraction`` module by impo
 
     import pairinteraction.real as pi
 
-Alternatively, the same functionality can be accessed for using complex data type by replacing ``real`` with ``complex``.
+Alternatively, the same functionality can be accessed using complex data types via ``import pairinteraction.complex as pi``.
 The two submodules are completely identical in their functionality, but only differ in the data type they use.
 
 All the available classes, methods and functions are documented below:
@@ -39,8 +39,8 @@ All the available classes, methods and functions are documented below:
       BasisPair
       SystemPair
 
-.. rubric:: Convenience Functions
 
+.. rubric:: Convenience Functions
 .. autosummary::
    :toctree: _autosummary/
 

@@ -24,29 +24,33 @@ logger = logging.getLogger(__name__)
 
 
 class SystemAtom(SystemBase[BasisType]):
+    """System of a single atom.
+
+    Use the given BasisAtom object to create the system object.
+    You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+        >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
+        >>> system = pi.SystemAtom(basis)
+        >>> system = system.set_magnetic_field([0, 0, 1], unit="gauss")
+        >>> system = system.set_electric_field([0.1, 0, 0.1], unit="V/cm")
+        >>> system = system.enable_diamagnetism(True)
+        >>> print(system)
+        SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
+        >>> system = system.diagonalize()
+        >>> eigenvalues = system.get_eigenvalues(unit="GHz")
+        >>> print(f"{eigenvalues[0] - ket.get_energy(unit='GHz'):.5f}")
+        -75.51823
+
+    """
+
     _cpp: UnionCPPSystemAtom
     _cpp_type: ClassVar[UnionTypeCPPSystemAtom]
 
     def __init__(self, basis: BasisType) -> None:
         """Create a system object for a single atom.
-
-        Use the given BasisAtom object to create the system object.
-        You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.
-
-        Examples:
-            >>> import pairinteraction.real as pi
-            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-            >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
-            >>> system = pi.SystemAtom(basis)
-            >>> system = system.set_magnetic_field([0, 0, 1], unit="gauss")
-            >>> system = system.set_electric_field([0.1, 0, 0.1], unit="V/cm")
-            >>> system = system.enable_diamagnetism(True)
-            >>> print(system)
-            SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
-            >>> system = system.diagonalize()
-            >>> eigenvalues = system.get_eigenvalues(unit="GHz")
-            >>> print(f"{eigenvalues[0] - ket.get_energy(unit='GHz'):.5f}")
-            -75.51823
 
         Args:
             basis: The :class:`pairinteraction.real.BasisAtom` object that describes the basis of the system.

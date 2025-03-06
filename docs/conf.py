@@ -84,7 +84,7 @@ autodoc_default_options = {
     "member-order": "bysource",
     "inherited-members": True,  # include inherited members
     "undoc-members": True,  # include members without docstrings
-    "class-doc-from": "init",
+    "class-doc-from": "class",
 }
 
 

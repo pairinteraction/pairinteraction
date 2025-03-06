@@ -16,6 +16,49 @@ if TYPE_CHECKING:
 
 
 class KetAtom(KetBase):
+    """Ket for an atomic basis state.
+
+    Each KetAtom object uniquely represents a single atomic basis state
+    (and therefore all KetAtom objects are orthogonal).
+    When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
+    which uniquely define a single atomic basis state (this always includes providing a magnetic quantum number m).
+
+    SQDT (Single Channel Quantum Defect Theory) for one valence electron (alkali atoms):
+        The quantum numbers n (int), l (int), j (half-int) and m (half-int)
+        should be used to define the desired atomic basis state.
+        All other quantum numbers are trivially derived from these:
+        s = 1/2, f = j (we neglect hyperfine interaction for SQDT),
+        nu = n - delta, l_ryd = l, j_ryd = j.
+
+    SQDT (Single Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+        The quantum numbers n (int), l_ryd (int), j (int) and m (int)
+        should be used to define the desired atomic basis state.
+        The spin quantum number s is taken from the species label,
+        which must end either with "_singlet" (s=0) or "_triplet" (s=1).
+        Again we neglect hyperfine interaction, thus f = j. And nu = n - delta.
+        All other quantum numbers are not necessarily eigenvalues anymore and are given as expectation values.
+
+    MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+        The quantum numbers nu (float), f (int or half-int) and m (int or half-int) are still good quantum numbers.
+        All other quantum numbers (like l, s, j, l_ryd, j_ryd) are not necessarily eigenvalues anymore.
+        You can still provide them to specify the atomic basis state,
+        whose expectation value is closest to the provided value.
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+        >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
+        ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
+        >>> print(ket_sqdt)
+        |Rb:60,S_1/2,1/2⟩
+        >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
+        >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
+        ('Yb174_mqdt', 60.049, 1.0, 1.0)
+        >>> print(ket_mqdt)
+        |Yb174:S=0.4,nu=60.0,L=1.0,J=1,1⟩
+
+    """
+
     _cpp: _backend.KetAtom  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetAtomCreator
 
@@ -38,45 +81,6 @@ class KetAtom(KetBase):
         database: Optional[Database] = None,
     ) -> None:
         """Create a single atomic canonical basis state, which is defined by its species and quantum numbers.
-
-        Each KetAtom object uniquely represents a single atomic basis state
-        (and therefore all KetAtom objects are orthogonal).
-        When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
-        which uniquely define a single atomic basis state (this always includes providing a magnetic quantum number m).
-
-        SQDT (Single Channel Quantum Defect Theory) for one valence electron (alkali atoms):
-            The quantum numbers n (int), l (int), j (half-int) and m (half-int)
-            should be used to define the desired atomic basis state.
-            All other quantum numbers are trivially derived from these:
-            s = 1/2, f = j (we neglect hyperfine interaction for SQDT),
-            nu = n - delta, l_ryd = l, j_ryd = j.
-
-        SQDT (Single Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
-            The quantum numbers n (int), l_ryd (int), j (int) and m (int)
-            should be used to define the desired atomic basis state.
-            The spin quantum number s is taken from the species label,
-            which must end either with "_singlet" (s=0) or "_triplet" (s=1).
-            Again we neglect hyperfine interaction, thus f = j. And nu = n - delta.
-            All other quantum numbers are not necessarily eigenvalues anymore and are given as expectation values.
-
-        MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
-            The quantum numbers nu (float), f (int or half-int) and m (int or half-int) are still good quantum numbers.
-            All other quantum numbers (like l, s, j, l_ryd, j_ryd) are not necessarily eigenvalues anymore.
-            You can still provide them to specify the atomic basis state,
-            whose expectation value is closest to the provided value.
-
-        Examples:
-            >>> import pairinteraction.real as pi
-            >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-            >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
-            ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
-            >>> print(ket_sqdt)
-            |Rb:60,S_1/2,1/2⟩
-            >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
-            >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
-            ('Yb174_mqdt', 60.049, 1.0, 1.0)
-            >>> print(ket_mqdt)
-            |Yb174:S=0.4,nu=60.0,L=1.0,J=1,1⟩
 
         Args:
             species: See attribute.
@@ -203,6 +207,18 @@ class KetAtom(KetBase):
         q: int,
         unit: Optional[str] = None,
     ):
+        """Get the matrix element between two atomic basis states from the database.
+
+        Args:
+            ket: The second atomic basis state to calculate the matrix element with.
+            operator: The operator, for which to calculate the matrix element.
+            q: The index for the matrix element.
+            unit: The unit to return the matrix element in. Default None will return a `pint.Quantity`.
+
+        Returns:
+            The matrix element between the two states in the given unit or as a `pint.Quantity`.
+
+        """
         from pairinteraction._wrapped.basis.BasisAtom import BasisAtomReal
 
         basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
@@ -232,7 +248,7 @@ class KetAtom(KetBase):
 
         Args:
             unit: The unit to which to convert the result.
-                Default None will return a pint quantity.
+                Default None will return a `pint.Quantity`.
 
         Returns:
             The relevant states and the transition rates.
@@ -279,9 +295,9 @@ class KetAtom(KetBase):
         Args:
             temperature: The temperature, for which to calculate the black body transition rates.
             temperature_unit: The unit of the temperature.
-                Default None will assume the temperature is given as pint quantity.
+                Default None will assume the temperature is given as `pint.Quantity`.
             unit: The unit to which to convert the result.
-                Default None will return a pint quantity.
+                Default None will return a `pint.Quantity`.
 
         Returns:
             The relevant states and the transition rates.
@@ -336,9 +352,9 @@ class KetAtom(KetBase):
             temperature: The temperature, for which to calculate the black body transition rates.
                 Default None will not include black body transitions.
             temperature_unit: The unit of the temperature.
-                Default None will assume the temperature is given as pint quantity.
+                Default None will assume the temperature is given as `pint.Quantity`.
             unit: The unit to which to convert the result.
-                Default None will return a pint quantity.
+                Default None will return a `pint.Quantity`.
 
         Returns:
             The lifetime of the state.
