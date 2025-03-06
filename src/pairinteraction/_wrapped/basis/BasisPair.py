@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
     from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
+    from pairinteraction._wrapped.ket.KetAtom import KetAtom  # noqa: F401  # required fo sphinx for KetPairLike
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
     from pairinteraction._wrapped.system.SystemAtom import SystemAtom
 
