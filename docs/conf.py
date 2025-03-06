@@ -75,9 +75,17 @@ autosummary_ignore_module_all = False
 
 
 # -- Options for autodoc -------------------------------------------
-autodoc_class_signature = "mixed"  # combine class and __init__ doc
+add_module_names = False  # don't add module names to members
+autodoc_class_signature = "separated"  # "mixed": combine class and __init__ doc, "separated": separate them
 autodoc_typehints = "both"
 autodoc_type_aliases = {}  # make type aliases nicer
+autodoc_default_options = {
+    "members": True,
+    "member-order": "bysource",
+    "inherited-members": True,  # include inherited members
+    "undoc-members": True,  # include members without docstrings
+    "class-doc-from": "init",
+}
 
 
 # -- Options for extlinks -------------------------------------------------
