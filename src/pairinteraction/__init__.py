@@ -20,10 +20,18 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
                 raise RuntimeError(f"Installation database records of '{package}' are missing.")
             file_path = Path(next(p for p in package_files if substring in p.stem).locate())
             return file_path.resolve()
-        except (PackageNotFoundError, StopIteration):
-            raise RuntimeError(f"The '{substring}' library could not be found.") from None
+        except PackageNotFoundError as err:
+            # Also look in the current directory for the library (used by pyinstaller)
+            for p in Path(__file__).parent.glob("*"):
+                if substring in p.stem:
+                    return p.resolve()
+            raise RuntimeError(f"The '{package}' package could not be found.") from err
+        except StopIteration as err:
+            raise RuntimeError(f"The '{substring}' library could not be found.") from err
 
-    def load_candidate(candidate: os.PathLike[str], loader: Callable) -> None:
+
+
+    def load_candidate(candidate: Path, loader: Callable) -> None:
         try:
             loader(str(candidate))
         except Exception as e:
