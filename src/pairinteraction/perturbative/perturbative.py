@@ -99,13 +99,13 @@ def get_effective_hamiltonian_from_system(
 def get_c3_from_system(
     ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
     system_pair: "SystemPair",
-) -> float: ...
+) -> "PlainQuantity[float]": ...
 
 
 @overload
 def get_c3_from_system(
     ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair", unit: str
-) -> "PlainQuantity[float]": ...
+) -> float: ...
 
 
 def get_c3_from_system(
@@ -144,13 +144,13 @@ def get_c3_from_system(
 def get_c6_from_system(
     ket_tuple: tuple["KetAtom", "KetAtom"],
     system_pair: "SystemPair",
-) -> float: ...
+) -> "PlainQuantity[float]": ...
 
 
 @overload
 def get_c6_from_system(
     ket_tuple: tuple["KetAtom", "KetAtom"], system_pair: "SystemPair", unit: str
-) -> "PlainQuantity[float]": ...
+) -> float: ...
 
 
 def get_c6_from_system(
