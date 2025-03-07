@@ -24,8 +24,8 @@ public:
             // This is the repo path request, return JSON with assets
             nlohmann::json assets = nlohmann::json::array();
             nlohmann::json asset;
-            asset["name"] = "wigner_v3.parquet";
-            asset["url"] = "https://api.github.com/test/path/wigner_v3.parquet";
+            asset["name"] = "wigner_v1.2.parquet";
+            asset["url"] = "https://api.github.com/test/path/wigner_v1.2.parquet";
             assets.push_back(asset);
             nlohmann::json response;
             response["assets"] = assets;
@@ -45,9 +45,9 @@ public:
 TEST_CASE("ParquetManager functionality with mocked downloader") {
     MockDownloader downloader;
     auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
-    std::filesystem::create_directories(test_dir);
-    std::ofstream(test_dir / "wigner_v1.parquet").close();
-    std::ofstream(test_dir / "wigner_v2.parquet").close();
+    std::filesystem::create_directories(test_dir / "tables");
+    std::ofstream(test_dir / "tables" / "wigner_v1.0.parquet").close();
+    std::ofstream(test_dir / "tables" / "wigner_v1.1.parquet").close();
     duckdb::DuckDB db(nullptr);
     duckdb::Connection con(db);
 
@@ -57,8 +57,8 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_local();
         manager.scan_remote();
 
-        CHECK_THROWS_WITH_AS(manager.get_path("missing_table"), "Table missing_table not found.",
-                             std::runtime_error);
+        CHECK_THROWS_WITH_AS(manager.get_path("", "missing_table"),
+                             "Table missing_table not found.", std::runtime_error);
     }
 
     SUBCASE("Check version parsing") {
@@ -67,20 +67,18 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_local();
         manager.scan_remote();
 
-        std::string expected = (test_dir / "wigner_v2.parquet").string();
-        CHECK(manager.get_path("wigner") == expected);
+        std::string expected = (test_dir / "tables" / "wigner_v1.1.parquet").string();
+        CHECK(manager.get_path("", "wigner") == expected);
     }
 
     SUBCASE("Check update table") {
         std::vector<std::string> repo_paths = {"/test/repo/path"};
-        std::ofstream(test_dir / "wigner_v1.parquet").close();
-        std::ofstream(test_dir / "wigner_v2.parquet").close();
         ParquetManager manager(test_dir, downloader, repo_paths, con, false);
         manager.scan_local();
         manager.scan_remote();
 
-        std::string expected = (test_dir / "wigner_v3.parquet").string();
-        CHECK(manager.get_path("wigner") == expected);
+        std::string expected = (test_dir / "tables" / "wigner_v1.2.parquet").string();
+        CHECK(manager.get_path("", "wigner") == expected);
 
         std::ifstream in(expected, std::ios::binary);
         std::stringstream buffer;

@@ -72,7 +72,7 @@ if(WIN32)
     COMMAND_EXPAND_LISTS)
 endif()
 
-install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction)
+install(IMPORTED_RUNTIME_ARTIFACTS duckdb::duckdb DESTINATION pairinteraction)
 install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction)
 install(TARGETS backend DESTINATION pairinteraction)
 
