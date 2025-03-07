@@ -131,6 +131,16 @@ class KetAtom(KetBase):
         self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
         self._database = database
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, KetAtom):
+            raise NotImplementedError
+        if (self.species != other.species) or (self.m != other.m):
+            return False
+        return all(
+            getattr(self, attr) == getattr(other, attr)
+            for attr in ["n", "nu", "l", "s", "j", "l_ryd", "j_ryd", "f"]
+        )
+
     @property
     def database(self) -> Database:
         """The database used for this object."""
