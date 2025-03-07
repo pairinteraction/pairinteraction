@@ -105,9 +105,7 @@ def get_c3_from_system(
 
 
 @overload
-def get_c3_from_system(
-    ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: str
-) -> float: ...
+def get_c3_from_system(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: str) -> float: ...
 
 
 def get_c3_from_system(
@@ -217,8 +215,8 @@ def _calculate_perturbative_hamiltonian(
 
     This function takes a Hamiltonian as a sparse matrix which is diagonal in the unperturbed basis
     and list of indices spanning up the model space.
-    It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the perturbed
-    eigenstates due to interactions with the exterior space in the desired order of perturbation theory.
+    It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the
+    perturbed eigenstates due to interactions with the exterior space in the desired order of perturbation theory.
 
     Args:
         H: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
@@ -229,7 +227,8 @@ def _calculate_perturbative_hamiltonian(
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
         Eigenvectors in perturbation theory due to interaction with states out of the model
-            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector
+            space, returned as a sparse matrix in compressed row format. Each row represent the
+            corresponding eigenvector
 
     """
     if order not in [0, 1, 2, 3]:
@@ -349,7 +348,8 @@ def _check_for_resonances(
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
         scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
-            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector
+            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding
+            eigenvector
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.

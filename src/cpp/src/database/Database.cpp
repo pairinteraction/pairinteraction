@@ -1005,7 +1005,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                     w.f_initial = s1.f AND w.m_initial = s1.m AND
                     w.f_final = s2.f AND w.m_final = s2.m
                     ORDER BY row ASC, col ASC)",
-                    id_of_kets, manager->get_path("", "wigner"), kappa, q,
+                    id_of_kets, manager->get_path("misc", "wigner"), kappa, q,
                     manager->get_path(species, specifier)));
             } else {
                 result = con->Query(fmt::format(

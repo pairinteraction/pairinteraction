@@ -294,9 +294,7 @@ ParquetManager::update_table(const std::string &species, const std::string &tabl
             throw std::runtime_error("Failed to initialize zip archive.");
         }
 
-        int file_count = mz_zip_reader_get_num_files(&zip_archive);
-
-        for (mz_uint i = 0; i < file_count; i++) {
+        for (mz_uint i = 0; i < mz_zip_reader_get_num_files(&zip_archive); i++) {
             mz_zip_archive_file_stat file_stat;
             if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat)) {
                 throw std::runtime_error("Failed to get file stat from zip archive.");
