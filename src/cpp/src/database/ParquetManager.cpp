@@ -141,33 +141,22 @@ void ParquetManager::scan_remote() {
             std::string name = asset["name"].get<std::string>();
             std::smatch match;
 
-            std::string key;
-            bool is_dir = false;
+            if (std::regex_match(name, match, remote_regex) && match.size() == 4) {
+                std::string key = match[1].str();
+                int version_major = std::stoi(match[2].str());
+                int version_minor = std::stoi(match[3].str());
 
-            if (std::regex_match(name, match, zip_regex) && match.size() == 4) {
-                key = match[1].str();
-                is_dir = true;
-            } else if (std::regex_match(name, match, parquet_regex) && match.size() == 4) {
-                key = match[1].str();
-            }
+                if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
+                    throw std::runtime_error("Pairinteraction is incompatible with the database "
+                                             "repositories. Consider upgrading pairinteraction.");
+                }
 
-            if (key.empty()) {
-                continue;
-            }
-
-            int version_major = std::stoi(match[2].str());
-            int version_minor = std::stoi(match[3].str());
-
-            if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
-                throw std::runtime_error("Pairinteraction is incompatible with the database "
-                                         "repositories. Consider upgrading pairinteraction.");
-            }
-
-            auto it = remote_asset_info.find(key);
-            if (it == remote_asset_info.end() || version_minor > it->second.version_minor) {
-                std::string remote_url = asset["url"].get<std::string>();
-                const std::string host = downloader.get_host();
-                remote_asset_info[key] = {remote_url.erase(0, host.size()), is_dir, version_minor};
+                auto it = remote_asset_info.find(key);
+                if (it == remote_asset_info.end() || version_minor > it->second.version_minor) {
+                    std::string remote_url = asset["url"].get<std::string>();
+                    const std::string host = downloader.get_host();
+                    remote_asset_info[key] = {version_minor, remote_url.erase(0, host.size())};
+                }
             }
         }
     }
@@ -175,52 +164,32 @@ void ParquetManager::scan_remote() {
 
 void ParquetManager::scan_local() {
     local_asset_info.clear();
-    local_table_info.clear();
 
     // Iterate over files in the directory to update local_asset_info
     for (const auto &entry : std::filesystem::directory_iterator(directory_ / "tables")) {
         std::string name = entry.path().filename().string();
         std::smatch match;
 
-        std::string key;
-        bool is_dir = false;
+        if (entry.is_directory() && std::regex_match(name, match, local_regex) &&
+            match.size() == 4) {
+            std::string key = match[1].str();
+            int version_major = std::stoi(match[2].str());
+            int version_minor = std::stoi(match[3].str());
 
-        if (entry.is_directory() && std::regex_match(name, match, dir_regex) && match.size() == 4) {
-            key = match[1].str();
-            is_dir = true;
-        } else if (entry.is_regular_file() && std::regex_match(name, match, parquet_regex) &&
-                   match.size() == 4) {
-            key = match[1].str();
-        }
+            if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
+                continue;
+            }
 
-        if (key.empty()) {
-            continue;
-        }
-
-        int version_major = std::stoi(match[2].str());
-        int version_minor = std::stoi(match[3].str());
-
-        if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
-            continue;
-        }
-
-        auto it = local_asset_info.find(key);
-        if (it == local_asset_info.end() || version_minor > it->second.version_minor) {
-            local_asset_info[key] = {entry.path().string(), is_dir, version_minor};
-        }
-    }
-
-    // Store path to table files
-    for (const auto &info : local_asset_info) {
-        if (info.second.is_dir) {
-            for (const auto &entry : std::filesystem::directory_iterator(info.second.path)) {
-                if (entry.is_regular_file() && entry.path().extension() == ".parquet") {
-                    std::string name = info.first + "_" + entry.path().stem().string();
-                    local_table_info[name] = {entry.path().string(), false};
+            auto it = local_asset_info.find(key);
+            if (it == local_asset_info.end() || version_minor > it->second.version_minor) {
+                local_asset_info[key].version_minor = version_minor;
+                for (const auto &subentry : std::filesystem::directory_iterator(entry)) {
+                    if (subentry.is_regular_file() && subentry.path().extension() == ".parquet") {
+                        local_asset_info[key].paths[subentry.path().stem().string()] = {
+                            subentry.path().string(), false};
+                    }
                 }
             }
-        } else {
-            local_table_info[info.first] = {info.second.path, false};
         }
     }
 }
@@ -232,11 +201,7 @@ void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
                 format_time(reset_time));
 }
 
-std::unordered_map<std::string, ParquetManager::PathInfo>::iterator
-ParquetManager::update_table(const std::string &species, const std::string &table) {
-    std::string name = species.empty() ? table : species + "_" + table;
-    std::string key = species.empty() ? table : species;
-
+void ParquetManager::update_local_asset(const std::string &key) {
     // Get remote version if available
     int remote_version = -1;
     auto remote_it = remote_asset_info.find(key);
@@ -253,7 +218,7 @@ ParquetManager::update_table(const std::string &species, const std::string &tabl
             local_version = local_it->second.version_minor;
         }
         if (local_version >= remote_version) {
-            return local_table_info.find(name);
+            return;
         }
     }
 
@@ -267,92 +232,71 @@ ParquetManager::update_table(const std::string &species, const std::string &tabl
         local_version = local_it->second.version_minor;
     }
     if (local_version >= remote_version) {
-        return local_table_info.find(name);
+        return;
     }
 
     // Download the remote file
-    std::string endpoint = remote_it->second.path;
+    std::string endpoint = remote_it->second.endpoint;
     SPDLOG_INFO("Downloading {}_v{}.{} from {}", key, COMPATIBLE_DATABASE_VERSION_MAJOR,
                 remote_version, endpoint);
 
     auto result = downloader.download(endpoint, "", true).get();
     if (result.status_code == 403 || result.status_code == 429) {
         react_on_rate_limit_reached(result.rate_limit.reset_time);
-        return local_table_info.find(name);
+        return;
     }
     if (result.status_code != 200) {
         throw std::runtime_error(fmt::format("Failed to download table {}: status code {}.",
                                              endpoint, result.status_code));
     }
 
-    // Unzip the downloaded file if it is a zip file
-    if (remote_it->second.is_dir) {
-        mz_zip_archive zip_archive{};
-        mz_bool status =
-            mz_zip_reader_init_mem(&zip_archive, result.body.data(), result.body.size(), 0);
-        if (!status) {
-            throw std::runtime_error("Failed to initialize zip archive.");
-        }
-
-        for (mz_uint i = 0; i < mz_zip_reader_get_num_files(&zip_archive); i++) {
-            mz_zip_archive_file_stat file_stat;
-            if (!mz_zip_reader_file_stat(&zip_archive, i, &file_stat)) {
-                throw std::runtime_error("Failed to get file stat from zip archive.");
-            }
-
-            // Skip directories
-            if (file_stat.m_filename[strlen(file_stat.m_filename) - 1] == '/') {
-                continue;
-            }
-
-            auto path = directory_ / "tables" / file_stat.m_filename;
-            SPDLOG_INFO("Storing table to {}", path.string());
-
-            // Extract the file to memory
-            std::vector<char> buffer(file_stat.m_uncomp_size);
-            if (!mz_zip_reader_extract_to_mem(&zip_archive, i, buffer.data(), buffer.size(), 0)) {
-                throw std::runtime_error(
-                    fmt::format("Failed to extract {}.", file_stat.m_filename));
-            }
-
-            // Ensure the parent directory exists
-            std::filesystem::create_directories(path.parent_path());
-
-            // Save the extracted file
-            std::ofstream out(path.string(), std::ios::binary);
-            if (!out) {
-                throw std::runtime_error(
-                    fmt::format("Failed to open {} for writing", path.string()));
-            }
-            out.write(buffer.data(), buffer.size());
-            out.close();
-
-            // Update the local asset/table info
-            local_asset_info[species] = {path.parent_path().string(), false, remote_version};
-            local_table_info[species + "_" + path.stem().string()] = {path.string(), false};
-        }
-
-        mz_zip_reader_end(&zip_archive);
-
-        return local_table_info.find(name);
+    // Unzip the downloaded file
+    mz_zip_archive zip_archive{};
+    mz_bool status =
+        mz_zip_reader_init_mem(&zip_archive, result.body.data(), result.body.size(), 0);
+    if (status == 0) {
+        throw std::runtime_error("Failed to initialize zip archive.");
     }
 
-    // Else directly save the downloaded file
-    std::string version = "v" + std::to_string(COMPATIBLE_DATABASE_VERSION_MAJOR) + "." +
-        std::to_string(remote_version);
-    auto path = directory_ / "tables" / (name + "_" + version + ".parquet");
-    SPDLOG_INFO("Storing table to {}", path.string());
+    for (mz_uint i = 0; i < mz_zip_reader_get_num_files(&zip_archive); i++) {
+        mz_zip_archive_file_stat file_stat;
+        if (mz_zip_reader_file_stat(&zip_archive, i, &file_stat) == 0) {
+            throw std::runtime_error("Failed to get file stat from zip archive.");
+        }
 
-    std::ofstream out(path.string(), std::ios::binary);
-    if (!out) {
-        throw std::runtime_error(fmt::format("Failed to open {} for writing", path.string()));
+        // Skip directories
+        const char *filename = static_cast<const char *>(file_stat.m_filename);
+        size_t len = std::strlen(filename);
+        if (len > 0 && filename[len - 1] == '/') {
+            continue;
+        }
+
+        auto path = directory_ / "tables" / file_stat.m_filename;
+        SPDLOG_INFO("Storing table to {}", path.string());
+
+        // Extract the file to memory
+        std::vector<char> buffer(file_stat.m_uncomp_size);
+        if (mz_zip_reader_extract_to_mem(&zip_archive, i, buffer.data(), buffer.size(), 0) == 0) {
+            throw std::runtime_error(fmt::format("Failed to extract {}.", file_stat.m_filename));
+        }
+
+        // Ensure the parent directory exists
+        std::filesystem::create_directories(path.parent_path());
+
+        // Save the extracted file
+        std::ofstream out(path.string(), std::ios::binary);
+        if (!out) {
+            throw std::runtime_error(fmt::format("Failed to open {} for writing", path.string()));
+        }
+        out.write(buffer.data(), buffer.size());
+        out.close();
+
+        // Update the local asset/table info
+        local_asset_info[key].version_minor = remote_version;
+        local_asset_info[key].paths[path.stem().string()] = {path.string(), false};
     }
-    out << result.body;
-    out.close();
 
-    // Update the local asset/table info
-    local_asset_info[key] = {path.string(), false, remote_version};
-    return local_table_info.insert_or_assign(name, PathInfo{path.string(), false}).first;
+    mz_zip_reader_end(&zip_archive);
 }
 
 void ParquetManager::cache_table(std::unordered_map<std::string, PathInfo>::iterator table_it) {
@@ -373,24 +317,41 @@ void ParquetManager::cache_table(std::unordered_map<std::string, PathInfo>::iter
     }
 
     // Cache the table in memory
-    auto result = con.Query(fmt::format(R"(CREATE TEMP TABLE '{}' AS SELECT * FROM '{}')",
-                                        table_it->first, table_it->second.path));
-    if (result->HasError()) {
-        throw cpptrace::runtime_error("Error creating table: " + result->GetError());
+    std::string table_name;
+    {
+        auto result = con.Query(R"(SELECT UUID()::varchar)");
+        if (result->HasError()) {
+            throw cpptrace::runtime_error("Error selecting a unique table name: " +
+                                          result->GetError());
+        }
+        table_name =
+            duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
     }
-    table_it->second.path = table_it->first;
+
+    {
+        auto result = con.Query(fmt::format(R"(CREATE TEMP TABLE '{}' AS SELECT * FROM '{}')",
+                                            table_name, table_it->second.path));
+        if (result->HasError()) {
+            throw cpptrace::runtime_error("Error creating table: " + result->GetError());
+        }
+    }
+
+    table_it->second.path = table_name;
     table_it->second.cached = true;
 }
 
-std::string ParquetManager::get_path(const std::string &species, const std::string &table) {
-    std::string name = species.empty() ? table : species + "_" + table;
-
+std::string ParquetManager::get_path(const std::string &key, const std::string &table) {
     // Update the local table if a newer version is available remotely
-    auto table_it = this->update_table(species, table);
+    this->update_local_asset(key);
 
     // Ensure availability of the local table file
-    if (table_it == local_table_info.end()) {
-        throw std::runtime_error("Table " + name + " not found.");
+    auto asset_it = local_asset_info.find(key);
+    if (asset_it == local_asset_info.end()) {
+        throw std::runtime_error("Table " + key + "_" + table + " not found.");
+    }
+    auto table_it = asset_it->second.paths.find(table);
+    if (table_it == asset_it->second.paths.end()) {
+        throw std::runtime_error("Table " + key + "_" + table + " not found.");
     }
 
     // Cache the local table in memory if requested

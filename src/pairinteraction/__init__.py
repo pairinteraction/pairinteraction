@@ -138,7 +138,7 @@ def _setup_test_mode(download_missing: bool = False, database_dir: str = "") -> 
             CWD.parent.parent.parent / "data" / "database",  # for pytest jupyter notebooks
         ]
         try:
-            database_dir = next(str(d) for d in possible_dirs if any((d / "tables").glob("wigner*.parquet")))
+            database_dir = next(str(d) for d in possible_dirs if any(d.rglob("wigner.parquet")))
         except StopIteration:
             raise FileNotFoundError("Could not find database directory") from None
 
