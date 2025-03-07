@@ -165,12 +165,22 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/richgel999/miniz
   GIT_TAG        0c30a001bc3c70770a8742ff00899e662f040c75
 )
-FetchContent_GetProperties(miniz)
-if(NOT miniz_POPULATED)
-  FetchContent_Populate(miniz)
-endif()
-add_library(miniz::miniz INTERFACE IMPORTED)
-target_include_directories(miniz::miniz INTERFACE ${miniz_SOURCE_DIR} ${miniz_BINARY_DIR})
+FetchContent_MakeAvailable(miniz)
+add_library(miniz::miniz ALIAS miniz)
+# FetchContent_Declare(
+#   miniz
+#   URL https://github.com/richgel999/miniz/releases/download/3.0.2/miniz-3.0.2.zip
+#   URL_HASH MD5=0604f14151944ff984444b04c5c760e5
+# )
+# FetchContent_GetProperties(miniz)
+# if(NOT miniz_POPULATED)
+#   FetchContent_Populate(miniz)
+# endif()
+# add_library(miniz OBJECT
+#   ${miniz_SOURCE_DIR}/miniz.c
+# )
+# target_include_directories(miniz PUBLIC ${miniz_SOURCE_DIR})
+# add_library(miniz::miniz ALIAS miniz)
 
 # Find Cpptrace
 find_package(cpptrace QUIET)

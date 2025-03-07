@@ -89,7 +89,9 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
     std::filesystem::remove_all(test_dir);
 }
 
-DOCTEST_TEST_CASE("ParquetManager functionality with github downloader") {
+DOCTEST_TEST_CASE("ParquetManager functionality with github downloader" * doctest::skip(true)) {
+    // TODO This test is currently skipped because not all tables are yet available
+
     if (!Database::get_global_instance().get_download_missing()) {
         DOCTEST_MESSAGE("Skipping test because download_missing is false.");
         return;

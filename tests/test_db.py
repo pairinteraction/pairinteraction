@@ -89,9 +89,15 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
     # Get the latest parquet files from the database directory
     parquet_files = {}
     parquet_versions = {}
-    for path in list(Path(database.database_dir).glob("*.parquet")):
-        name, version_str = path.stem.rsplit("_v", 1)
-        version = Version(version_str)
+    for path in list(Path(database.database_dir).rglob("*.parquet")):
+        if len(path.stem.rsplit("_v", 1)) == 2:
+            name, version_str = path.stem.rsplit("_v", 1)
+            version = Version(version_str)
+        else:
+            species, version_str = path.parent.name.rsplit("_v", 1)
+            table = path.stem
+            name = f"{species}_{table}"
+            version = Version(version_str)
         if name not in parquet_files or version > parquet_versions[name]:
             parquet_files[name] = path
             parquet_versions[name] = version
