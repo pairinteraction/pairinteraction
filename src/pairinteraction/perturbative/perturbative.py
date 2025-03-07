@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Iterable
+from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import numpy as np
@@ -15,8 +15,10 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
+    from pairinteraction._wrapped.ket.KetPair import KetPairLike
 
     KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
+    KetPair = Union[pi_real.KetPair, pi_complex.KetPair]
     SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
 
 logger = logging.getLogger(__name__)
@@ -24,32 +26,29 @@ logger = logging.getLogger(__name__)
 
 @overload
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
     order: int = 2,
-    required_overlap: float = 0,
-    print_above_admixture: float = 1e-2,
+    required_overlap: float = 0.9,
 ) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
 
 
 @overload
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
     order: int = 2,
-    required_overlap: float = 0,
-    print_above_admixture: float = 1e-2,
+    required_overlap: float = 0.9,
     *,
     unit: str,
 ) -> tuple["NDArray[Any]", sparse.csr_matrix]: ...
 
 
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
     order: int = 2,
-    required_overlap: float = 0,
-    print_above_admixture: float = 1e-2,
+    required_overlap: float = 0.9,
     unit: Optional[str] = None,
 ) -> tuple[Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"], sparse.csr_matrix]:
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
@@ -69,8 +68,6 @@ def get_effective_hamiltonian_from_system(
         required_overlap: If set, the code checks for validity of a perturbative treatment.
             Error is thrown if the perturbed eigenstate has less overlap than this value with the
             unperturbed eigenstate.
-        print_above_admixture: If due to a resonance a state in the model space obtains an admixture larger than this
-            value with a different basis state, the resonant states are logged.
         unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
@@ -82,14 +79,19 @@ def get_effective_hamiltonian_from_system(
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
 
     """
-    assert isinstance(ket_tuple_list, Iterable)
+    if np.isinf(system_pair.get_distance().magnitude):
+        raise ValueError(
+            "Pair system is initialized without a distance. "
+            "Please set a distance for calculating an effective Hamiltonian."
+        )
+
     model_inds = _get_model_inds(ket_tuple_list, system_pair)
     H_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
     H_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(H_au, model_inds, order)
     if not 0 <= required_overlap <= 1:
         raise ValueError("Required overlap has to be a positive real number between zero and one.")
     if required_overlap > 0:
-        _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap, print_above_admixture)
+        _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
 
     H_eff = QuantityArray.from_base_unit(H_eff_au, "ENERGY").to_pint_or_unit(unit)
     return H_eff, eigvec_perturb
@@ -97,19 +99,19 @@ def get_effective_hamiltonian_from_system(
 
 @overload
 def get_c3_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]],
+    ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
 ) -> "PlainQuantity[float]": ...
 
 
 @overload
 def get_c3_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair", unit: str
+    ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: str
 ) -> float: ...
 
 
 def get_c3_from_system(
-    ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair", unit: Optional[str] = None
+    ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: Optional[str] = None
 ) -> Union[float, "PlainQuantity[float]"]:
     r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.
 
@@ -130,31 +132,39 @@ def get_c3_from_system(
         ValueError: If a list of not exactly two tuples of single atom states is given.
 
     """
-    assert isinstance(ket_tuple_list, Iterable)
     if len(ket_tuple_list) != 2:
         raise ValueError("C3 coefficient can be calculated only between two 2-atom states.")
 
-    H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
     R = system_pair.get_distance()
+    if np.isinf(R.magnitude):
+        logger.warning(
+            "Pair system is initialized without a distance. "
+            "Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum."
+        )
+        old_distance_vector = system_pair.get_distance_vector()
+        system_pair.set_distance_vector([0, 0, 20], "micrometer")
+        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
+        system_pair.set_distance_vector(old_distance_vector)
+        return C3
+
+    H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
     C3 = H_eff[0, 1] * R**3
     return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
 
 
 @overload
 def get_c6_from_system(
-    ket_tuple: tuple["KetAtom", "KetAtom"],
+    ket_tuple: "KetPairLike",
     system_pair: "SystemPair",
 ) -> "PlainQuantity[float]": ...
 
 
 @overload
-def get_c6_from_system(
-    ket_tuple: tuple["KetAtom", "KetAtom"], system_pair: "SystemPair", unit: str
-) -> float: ...
+def get_c6_from_system(ket_tuple: "KetPairLike", system_pair: "SystemPair", unit: str) -> float: ...
 
 
 def get_c6_from_system(
-    ket_tuple: tuple["KetAtom", "KetAtom"], system_pair: "SystemPair", unit: Optional[str] = None
+    ket_tuple: "KetPairLike", system_pair: "SystemPair", unit: Optional[str] = None
 ) -> Union[float, "PlainQuantity[float]"]:
     r"""Calculate the :math:`C_6` coefficient for a given tuple of ket states.
 
@@ -174,14 +184,28 @@ def get_c6_from_system(
         ValueError: If a tuple with more than two single atom states is given.
 
     """
-    assert isinstance(ket_tuple, Iterable)
     if len(ket_tuple) != 2:
-        # @Johannes: Add a fast comparison for ket states that gives true for the same state.
         raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
+    if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:
+        raise ValueError(
+            "If you want to calculate 2nd order perturbations of two different states a and b, "
+            "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
+        )
+
+    R = system_pair.get_distance()
+    if np.isinf(R.magnitude):
+        logger.warning(
+            "Pair system is initialized without a distance. "
+            "Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum."
+        )
+        old_distance_vector = system_pair.get_distance_vector()
+        system_pair.set_distance_vector([0, 0, 20], "micrometer")
+        C6 = get_c6_from_system(ket_tuple, system_pair, unit)
+        system_pair.set_distance_vector(old_distance_vector)
+        return C6
 
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    R = system_pair.get_distance()
     C6 = (H_eff - H_0)[0, 0] * R**6
     return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
 
@@ -200,12 +224,12 @@ def _calculate_perturbative_hamiltonian(
         H: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
         model_inds: List of indices corresponding to the states that span up the model space.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
-        Default is second order.
+            Default is second order.
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
-        scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
-        space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector.
+        Eigenvectors in perturbation theory due to interaction with states out of the model
+            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector
 
     """
     if order not in [0, 1, 2, 3]:
@@ -272,7 +296,7 @@ def _calculate_perturbative_hamiltonian(
     return H_eff.todense(), eigvec_perturb
 
 
-def _get_model_inds(ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pair: "SystemPair") -> list[int]:
+def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
     """Get the indices of all ket tuples in the basis of pair system.
 
     This function takes a list of 2-tuples of ket states, and a pair system holding the entire basis.
@@ -290,8 +314,10 @@ def _get_model_inds(ket_tuple_list: list[tuple["KetAtom", "KetAtom"]], system_pa
     for kets in ket_tuple_list:
         overlap = system_pair.basis.get_overlaps(kets)
         index = np.argmax(overlap)
+        if overlap[index] == 0:
+            raise ValueError(f"The pairstate {kets} is not part of the basis of the pair system.")
         if overlap[index] < 0.5:
-            raise ValueError("The pairstate |" + str(kets[0]) + ">|" + str(kets[1]) + "> cannot be identified uniquely")
+            raise ValueError(f"The pairstate {kets} cannot be identified uniquely (max overlap: {overlap[index]}).")
         model_inds.append(int(index))
     return model_inds
 
@@ -301,7 +327,6 @@ def _check_for_resonances(
     eigvec_perturb: sparse.csr_matrix,
     system_pair: "SystemPair",
     required_overlap: float,
-    print_above_admixture: float,
 ) -> None:
     r"""Check for resonance between the states in the model space and other states.
 
@@ -314,19 +339,17 @@ def _check_for_resonances(
     Args:
         model_inds: List of indices corresponding to the states that span up the model space.
         eigvec_perturb: Sparse representation of the perturbed eigenstates in the desired order of
-        perturbation theory. Each row corresponds to the eigestate according to `state model indices.`
+            perturbation theory. Each row corresponds to the eigestate according to `state model indices.`
         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
-        Default is second order.
+            Default is second order.
         required_overlap: If set, the code checks for validity of a perturbative treatment.
-        Error is thrown if the perturbed eigenstate has less overlap than this value with the unperturbed eigenstate.
-        print_above_admixture: If due to a resonance a state in the model space obtains an admixture larger than
-        this value with a different basis state, the resonant states are logged.
+            Error is thrown if the perturbed eigenstate has less overlap than this value with the unperturbed eigenstate
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
         scipy.sparse.csr_matrix: eigenvectors in perturbation theory due to interaction with states out of the model
-        space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector.
+            space, returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
@@ -337,27 +360,25 @@ def _check_for_resonances(
     for i, j in zip(range(len(model_inds)), model_inds):
         vector_norm = sparse.linalg.norm(overlaps[i, :])
         overlap = overlaps[i, j] / vector_norm
-        if overlap < required_overlap:
-            error_flag = True
+        if overlap >= required_overlap:
+            continue
+        error_flag = True
+        print_above_admixture = (1 - required_overlap) * 0.05
+        indices = sparse.find(overlaps[i, :] >= print_above_admixture * vector_norm)[1]
+        logger.error(
+            "The state %s has resonances with the following states, please consider adding them to your model space:",
+            system_pair.basis.kets[j],
+        )
+        for index in indices:
+            if index == j:
+                continue
             logger.error(
-                "Error. Perturbative Calculation not possible due to resonance of state |"
-                + str(system_pair.basis.kets[j])
-                + ">."
+                "  - %s with admixture %.3f",
+                system_pair.basis.kets[index],
+                overlaps[i, index] / vector_norm,
             )
-            indices = sparse.find(overlaps[i, :] >= print_above_admixture * vector_norm)[1]
-            for index in indices:
-                if index != j:
-                    logger.error(
-                        "The error occurs due to a resonance between the states |"
-                        + str(system_pair.basis.kets[j])
-                        + "> and |"
-                        + str(system_pair.basis.kets[index])
-                        + ">. Please include |"
-                        + str(system_pair.basis.kets[index])
-                        + "> also in your model space."
-                    )
     if error_flag:
         raise ValueError(
-            "Perturbation Theory impossible due to resonances with states not encountered in the model space."
-            " See above for further details."
+            "Error. Perturbative Calculation not possible due to resonances. "
+            "Add more states to the model space or adapt your required overlap."
         )

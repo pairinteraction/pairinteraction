@@ -1,10 +1,16 @@
-from typing import Any, ClassVar, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Union
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.ket.Ket import KetBase
 
+if TYPE_CHECKING:
+    from pairinteraction._wrapped.ket.KetAtom import KetAtom
+
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
+
+KetPairLike = Union["KetPair", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
 
 
 class KetPairBase(KetBase):
