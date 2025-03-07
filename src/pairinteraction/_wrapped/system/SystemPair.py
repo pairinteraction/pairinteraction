@@ -69,7 +69,10 @@ class SystemPairBase(SystemBase[BasisType]):
         unit: Optional[str] = None,
     ) -> "Self":
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
+        distance_unit = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_pint() for v in distance]
         self._cpp.set_distance_vector(distance_au)
+        self.distance_vector = distance_unit
+
         return self
 
 
