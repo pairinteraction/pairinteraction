@@ -17,7 +17,13 @@ class GitHubDownloader;
 
 class ParquetManager {
 public:
-    struct LocalPathInfo {
+    struct AssetInfo {
+        std::string path;
+        bool is_dir = false;
+        int version_minor = -1;
+    };
+
+    struct PathInfo {
         std::string path;
         bool cached = false;
     };
@@ -31,23 +37,22 @@ public:
 
 private:
     void react_on_rate_limit_reached(std::time_t reset_time);
-    std::unordered_map<std::string, LocalPathInfo>::iterator
-    update_table(const std::string &species, const std::string &table);
-    void cache_table(std::unordered_map<std::string, LocalPathInfo>::iterator local_it);
+    std::unordered_map<std::string, PathInfo>::iterator update_table(const std::string &species,
+                                                                     const std::string &table);
+    void cache_table(std::unordered_map<std::string, PathInfo>::iterator path_it);
 
     std::filesystem::path directory_;
     const GitHubDownloader &downloader;
     std::vector<std::string> repo_paths_;
     duckdb::Connection &con;
     bool use_cache_;
-    std::unordered_map<std::string, int> table_local_versions;
-    std::unordered_map<std::string, int> table_remote_versions;
-    std::unordered_map<std::string, LocalPathInfo> table_local_paths;
-    std::unordered_map<std::string, std::string> table_remote_paths; // TODO combine
-    std::regex web_regex = std::regex(R"(^(\w+)_v(\d+)\.(\d+)\.(?:parquet|zip)$)");
-    std::regex file_regex = std::regex(R"(^(\w+)_v(\d+)\.(\d+)\.parquet$)");
-    std::regex dir_regex = std::regex(R"(^(\w+)_v(\d+)\.(\d+)$)");
-    std::shared_mutex mtx_local_table_files;
+    std::unordered_map<std::string, AssetInfo> remote_asset_info;
+    std::unordered_map<std::string, AssetInfo> local_asset_info;
+    std::unordered_map<std::string, PathInfo> local_table_info;
+    std::regex parquet_regex{R"(^(\w+)_v(\d+)\.(\d+)\.parquet$)"};
+    std::regex zip_regex{R"(^(\w+)_v(\d+)\.(\d+)\.zip$)"};
+    std::regex dir_regex{R"(^(\w+)_v(\d+)\.(\d+)$)"};
+    std::shared_mutex mtx_local;
 };
 
 } // namespace pairinteraction
