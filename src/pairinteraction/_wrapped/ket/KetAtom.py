@@ -137,8 +137,7 @@ class KetAtom(KetBase):
         if (self.species != other.species) or (self.m != other.m):
             return False
         return all(
-            getattr(self, attr) == getattr(other, attr)
-            for attr in ["n", "nu", "l", "s", "j", "l_ryd", "j_ryd", "f"]
+            getattr(self, attr) == getattr(other, attr) for attr in ["n", "nu", "l", "s", "j", "l_ryd", "j_ryd", "f"]
         )
 
     @property
