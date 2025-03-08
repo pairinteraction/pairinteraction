@@ -202,7 +202,7 @@ add_subdirectory(src/cpp)
 add_subdirectory(src/cpp/bindings)
 add_subdirectory(src/cpp/docs)
 
-list(APPEND CMAKE_CTEST_ARGUMENTS "--verbose")
+list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 include(CTest)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
