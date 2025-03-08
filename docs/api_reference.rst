@@ -45,3 +45,14 @@ All the available classes, methods and functions are documented below:
    :toctree: _autosummary/
 
       diagonalize
+
+
+.. currentmodule:: pairinteraction
+
+.. rubric:: Perturbative Calculations
+.. autosummary::
+   :toctree: _autosummary/
+
+      perturbative.get_c3_from_system
+      perturbative.get_c6_from_system
+      perturbative.get_effective_hamiltonian_from_system
