@@ -20,11 +20,31 @@
 #include <stdexcept>
 #include <string>
 
+namespace fs = std::filesystem;
+using json = nlohmann::json;
+
 std::string format_time(std::time_t time_val) {
     std::tm *ptm = std::localtime(&time_val);
     std::ostringstream oss;
     oss << std::put_time(ptm, "%Y-%m-%d %H:%M:%S");
     return oss.str();
+}
+
+json load_json(const fs::path &file) {
+    std::ifstream in(file);
+    in.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+    json doc;
+    in >> doc;
+    return doc;
+}
+
+void save_json(const fs::path &file, const json &doc) {
+    std::ofstream out(file);
+    if (!out) {
+        throw std::runtime_error(fmt::format("Failed to open {} for writing", file.string()));
+    }
+    out << doc;
+    out.close();
 }
 
 namespace pairinteraction {
@@ -35,7 +55,7 @@ ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDown
       con(con), use_cache_(use_cache) {
     // Ensure the local directory exists
     if (!std::filesystem::exists(directory_ / "tables")) {
-        std::filesystem::create_directories(directory_ / "tables");
+        fs::create_directories(directory_ / "tables");
     }
 
     // If repo paths are provided, check the GitHub rate limit
@@ -53,36 +73,33 @@ ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDown
 void ParquetManager::scan_remote() {
     remote_asset_info.clear();
 
-    std::vector<std::future<GitHubDownloader::Result>> futures;
-    std::vector<std::filesystem::path> cache_files;
-    std::vector<nlohmann::json> cached_docs;
-
-    futures.reserve(repo_paths_.size());
-    cache_files.reserve(repo_paths_.size());
-    cached_docs.reserve(repo_paths_.size());
+    struct RepoDownload {
+        std::string endpoint;
+        fs::path cache_file;
+        json cached_doc;
+        std::future<GitHubDownloader::Result> future;
+    };
+    std::vector<RepoDownload> downloads;
+    downloads.reserve(repo_paths_.size());
 
     // For each repo path, load its cached JSON (or an empty JSON) and issue the download
-    for (const auto &remote_endpoint : repo_paths_) {
+    for (const auto &endpoint : repo_paths_) {
         // Generate a unique cache filename per endpoint
         std::string cache_filename =
-            "homepage_cache_" + std::to_string(std::hash<std::string>{}(remote_endpoint)) + ".json";
-        std::filesystem::path cache_file = directory_ / cache_filename;
-        cache_files.push_back(cache_file);
+            "homepage_cache_" + std::to_string(std::hash<std::string>{}(endpoint)) + ".json";
+        auto cache_file = directory_ / cache_filename;
 
         // Load cached JSON from file if it exists
-        nlohmann::json cached_doc;
+        json cached_doc;
         if (std::filesystem::exists(cache_file)) {
             try {
-                std::ifstream in(cache_file);
-                in.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-                in >> cached_doc;
+                cached_doc = load_json(cache_file);
             } catch (const std::exception &e) {
-                SPDLOG_WARN("Error reading or parsing {}: {}; using empty JSON.",
-                            cache_file.string(), e.what());
-                cached_doc = nlohmann::json{};
+                SPDLOG_WARN("Error reading {}: {}. Discarding homepage cache.", cache_file.string(),
+                            e.what());
+                cached_doc = json{};
             }
         }
-        cached_docs.push_back(cached_doc);
 
         // Extract the last-modified header from the cached JSON if available
         std::string last_modified;
@@ -91,49 +108,40 @@ void ParquetManager::scan_remote() {
         }
 
         // Issue the asynchronous download using the cached last-modified value.
-        futures.push_back(downloader.download(remote_endpoint, last_modified));
+        downloads.push_back(
+            {endpoint, cache_file, cached_doc, downloader.download(endpoint, last_modified)});
     }
 
     // Process downloads for each repo path
-    for (size_t i = 0; i < futures.size(); ++i) {
-        const auto &remote_endpoint = repo_paths_[i];
-        auto result = futures[i].get();
-        const auto &cache_file = cache_files[i];
-        const auto &cached_doc = cached_docs[i];
-
-        nlohmann::json doc;
+    for (auto &dl : downloads) {
+        auto result = dl.future.get();
+        json doc;
         if (result.status_code == 200) {
-            doc = nlohmann::json::parse(result.body, nullptr, /*allow_exceptions=*/false);
+            doc = json::parse(result.body, nullptr, /*allow_exceptions=*/false);
             doc["last-modified"] = result.last_modified;
-            std::ofstream out(cache_file);
-            if (!out) {
-                throw std::runtime_error(
-                    fmt::format("Failed to open {} for writing", cache_file.string()));
-            }
-            out << doc;
-            out.close();
-            SPDLOG_INFO("Using downloaded overview of available tables from {}.", remote_endpoint);
+            save_json(dl.cache_file, doc);
+            SPDLOG_INFO("Using downloaded overview of available tables from {}.", dl.endpoint);
         } else if (result.status_code == 304) {
-            if (cached_doc.is_null() || cached_doc.empty()) {
+            if (dl.cached_doc.is_null() || dl.cached_doc.empty()) {
                 throw std::runtime_error(
                     fmt::format("Received 304 Not Modified but cached response {} does not exist.",
-                                cache_file.string()));
+                                dl.cache_file.string()));
             }
-            doc = cached_doc;
-            SPDLOG_INFO("Using cached overview of available tables from {}.", remote_endpoint);
+            doc = dl.cached_doc;
+            SPDLOG_INFO("Using cached overview of available tables from {}.", dl.endpoint);
         } else if (result.status_code == 403 || result.status_code == 429) {
             react_on_rate_limit_reached(result.rate_limit.reset_time);
             return;
         } else {
             throw std::runtime_error(fmt::format(
                 "Failed to download overview of available tables from {}: status code {}.",
-                remote_endpoint, result.status_code));
+                dl.endpoint, result.status_code));
         }
 
         // Validate the JSON response
         if (doc.is_discarded() || !doc.contains("assets")) {
             throw std::runtime_error(fmt::format(
-                "Failed to parse remote JSON or missing 'assets' key from {}.", remote_endpoint));
+                "Failed to parse remote JSON or missing 'assets' key from {}.", dl.endpoint));
         }
 
         // Update remote_asset_info based on the asset entries
@@ -161,7 +169,7 @@ void ParquetManager::scan_remote() {
     }
 
     // Ensure that scan_remote was successful
-    if (!futures.empty() && remote_asset_info.empty()) {
+    if (!downloads.empty() && remote_asset_info.empty()) {
         throw std::runtime_error(
             "No compatible database tables were found in the remote repositories. Consider "
             "upgrading pairinteraction to a newer version.");
@@ -172,7 +180,7 @@ void ParquetManager::scan_local() {
     local_asset_info.clear();
 
     // Iterate over files in the directory to update local_asset_info
-    for (const auto &entry : std::filesystem::directory_iterator(directory_ / "tables")) {
+    for (const auto &entry : fs::directory_iterator(directory_ / "tables")) {
         std::string name = entry.path().filename().string();
         std::smatch match;
 
@@ -189,7 +197,7 @@ void ParquetManager::scan_local() {
             auto it = local_asset_info.find(key);
             if (it == local_asset_info.end() || version_minor > it->second.version_minor) {
                 local_asset_info[key].version_minor = version_minor;
-                for (const auto &subentry : std::filesystem::directory_iterator(entry)) {
+                for (const auto &subentry : fs::directory_iterator(entry)) {
                     if (subentry.is_regular_file() && subentry.path().extension() == ".parquet") {
                         local_asset_info[key].paths[subentry.path().stem().string()] = {
                             subentry.path().string(), false};
@@ -286,7 +294,7 @@ void ParquetManager::update_local_asset(const std::string &key) {
         }
 
         // Ensure the parent directory exists
-        std::filesystem::create_directories(path.parent_path());
+        fs::create_directories(path.parent_path());
 
         // Save the extracted file
         std::ofstream out(path.string(), std::ios::binary);
@@ -399,13 +407,9 @@ std::string ParquetManager::get_versions_info() const {
         int local_version = get_version(local_asset_info, table);
         int remote_version = get_version(remote_asset_info, table);
 
-        std::string comparator = "==";
-        if (local_version < remote_version) {
-            comparator = "<";
-        } else if (local_version > remote_version) {
-            comparator = ">";
-        }
-
+        std::string comparator = (local_version < remote_version)
+            ? "<"
+            : ((local_version > remote_version) ? ">" : "==");
         std::string local_version_str = local_version == -1
             ? "N/A"
             : "v" + std::to_string(COMPATIBLE_DATABASE_VERSION_MAJOR) + "." +
