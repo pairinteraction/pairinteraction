@@ -113,7 +113,7 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
     # Obtain a matrix element of the magnetic dipole operator (for the chosen kets, it is non-zero iff initial != final)
     kappa, q = 1, 0
     wigner_element = fetch_wigner_element(
-        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["wigner"]
+        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["misc_wigner"]
     )
     assert np.isclose(
         wigner_element,
@@ -134,7 +134,7 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
 
     kappa, q = 0, 0
     wigner_element = fetch_wigner_element(
-        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["wigner"]
+        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["misc_wigner"]
     )
     assert np.isclose(
         wigner_element,
@@ -146,7 +146,7 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
 
     kappa, q = 2, 0
     wigner_element = fetch_wigner_element(
-        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["wigner"]
+        f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files["misc_wigner"]
     )
     assert np.isclose(
         wigner_element,
