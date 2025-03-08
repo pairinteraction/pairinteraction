@@ -23,7 +23,7 @@ UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.Syst
 logger = logging.getLogger(__name__)
 
 
-class SystemAtomBase(SystemBase[BasisType]):
+class SystemAtom(SystemBase[BasisType]):
     _cpp: UnionCPPSystemAtom
     _cpp_type: ClassVar[UnionTypeCPPSystemAtom]
 
@@ -96,16 +96,13 @@ class SystemAtomBase(SystemBase[BasisType]):
         return self.get_eigenvalues(unit)[idx]
 
 
-class SystemAtomReal(SystemAtomBase[BasisAtomReal]):
+class SystemAtomReal(SystemAtom[BasisAtomReal]):
     _cpp: _backend.SystemAtomReal  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemAtomReal
     _TypeBasis = BasisAtomReal
 
 
-class SystemAtomComplex(SystemAtomBase[BasisAtomComplex]):
+class SystemAtomComplex(SystemAtom[BasisAtomComplex]):
     _cpp: _backend.SystemAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemAtomComplex
     _TypeBasis = BasisAtomComplex
-
-
-SystemAtom = SystemAtomBase[Any]

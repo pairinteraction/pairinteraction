@@ -18,7 +18,7 @@ UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 
 
-class SystemPairBase(SystemBase[BasisType]):
+class SystemPair(SystemBase[BasisType]):
     _cpp: UnionCPPSystemPair
     _cpp_type: ClassVar[UnionTypeCPPSystemPair]
 
@@ -93,16 +93,13 @@ class SystemPairBase(SystemBase[BasisType]):
         return QuantityScalar.from_base_unit(float(distance), "DISTANCE").to_pint_or_unit(unit)
 
 
-class SystemPairReal(SystemPairBase[BasisPairReal]):
+class SystemPairReal(SystemPair[BasisPairReal]):
     _cpp: _backend.SystemPairReal  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemPairReal
     _TypeBasis = BasisPairReal
 
 
-class SystemPairComplex(SystemPairBase[BasisPairComplex]):
+class SystemPairComplex(SystemPair[BasisPairComplex]):
     _cpp: _backend.SystemPairComplex  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemPairComplex
     _TypeBasis = BasisPairComplex
-
-
-SystemPair = SystemPairBase[Any]

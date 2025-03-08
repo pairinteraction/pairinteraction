@@ -29,7 +29,7 @@ UnionCPPBasisPair = Union[_backend.BasisPairReal, _backend.BasisPairComplex]
 UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_backend.BasisPairCreatorComplex]]
 
 
-class BasisPairBase(BasisBase[KetPairType]):
+class BasisPair(BasisBase[KetPairType]):
     _cpp: UnionCPPBasisPair
     _cpp_creator: ClassVar[UnionTypeCPPBasisPairCreator]
 
@@ -165,16 +165,13 @@ class BasisPairBase(BasisBase[KetPairType]):
         return matrix_elements.to_pint_or_unit(unit)
 
 
-class BasisPairReal(BasisPairBase[KetPairReal]):
+class BasisPairReal(BasisPair[KetPairReal]):
     _cpp: _backend.BasisPairReal  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisPairCreatorReal
     _TypeKet = KetPairReal
 
 
-class BasisPairComplex(BasisPairBase[KetPairComplex]):
+class BasisPairComplex(BasisPair[KetPairComplex]):
     _cpp: _backend.BasisPairComplex  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisPairCreatorComplex
     _TypeKet = KetPairComplex
-
-
-BasisPair = BasisPairBase[Any]

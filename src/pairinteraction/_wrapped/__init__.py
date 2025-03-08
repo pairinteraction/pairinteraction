@@ -1,10 +1,10 @@
 from pairinteraction._wrapped.basis.BasisAtom import (
-    BasisAtomBase,
+    BasisAtom,
     BasisAtomComplex,
     BasisAtomReal,
 )
 from pairinteraction._wrapped.basis.BasisPair import (
-    BasisPairBase,
+    BasisPair,
     BasisPairComplex,
     BasisPairReal,
 )
@@ -13,41 +13,41 @@ from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, Operator
 from pairinteraction._wrapped.database.Database import Database
 from pairinteraction._wrapped.ket.KetAtom import KetAtom
 from pairinteraction._wrapped.ket.KetPair import (
-    KetPairBase,
+    KetPair,
     KetPairComplex,
     KetPairReal,
 )
 from pairinteraction._wrapped.system.SystemAtom import (
-    SystemAtomBase,
+    SystemAtom,
     SystemAtomComplex,
     SystemAtomReal,
 )
 from pairinteraction._wrapped.system.SystemPair import (
-    SystemPairBase,
+    SystemPair,
     SystemPairComplex,
     SystemPairReal,
 )
 
 __all__ = [
-    "BasisAtomBase",
+    "BasisAtom",
     "BasisAtomComplex",
     "BasisAtomReal",
-    "BasisPairBase",
+    "BasisPair",
     "BasisPairComplex",
     "BasisPairReal",
     "Database",
     "Diagonalizer",
     "FloatType",
     "KetAtom",
-    "KetPairBase",
+    "KetPair",
     "KetPairComplex",
     "KetPairReal",
     "OperatorType",
     "Parity",
-    "SystemAtomBase",
+    "SystemAtom",
     "SystemAtomComplex",
     "SystemAtomReal",
-    "SystemPairBase",
+    "SystemPair",
     "SystemPairComplex",
     "SystemPairReal",
     "diagonalize",

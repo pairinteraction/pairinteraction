@@ -13,7 +13,7 @@ UnionTypeCPPKetPairCreator = Any
 KetPairLike = Union["KetPair", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
 
 
-class KetPairBase(KetBase):
+class KetPair(KetBase):
     _cpp: UnionCPPKetPair  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator]
 
@@ -30,14 +30,11 @@ class KetPairBase(KetBase):
         raise NotImplementedError("KetPair objects cannot be created directly.")
 
 
-class KetPairReal(KetPairBase):
+class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
-class KetPairComplex(KetPairBase):
+class KetPairComplex(KetPair):
     _cpp: _backend.KetPairComplex  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
-
-
-KetPair = KetPairBase

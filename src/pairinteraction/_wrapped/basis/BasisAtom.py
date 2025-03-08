@@ -19,7 +19,7 @@ UnionCPPBasisAtom = Union[_backend.BasisAtomReal, _backend.BasisAtomComplex]
 UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_backend.BasisAtomCreatorComplex]]
 
 
-class BasisAtomBase(BasisBase[KetAtom]):
+class BasisAtom(BasisBase[KetAtom]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
@@ -175,16 +175,13 @@ class BasisAtomBase(BasisBase[KetAtom]):
         return matrix_elements.to_pint_or_unit(unit)
 
 
-class BasisAtomReal(BasisAtomBase):
+class BasisAtomReal(BasisAtom):
     _cpp: _backend.BasisAtomReal  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorReal
     _TypeKet = KetAtom
 
 
-class BasisAtomComplex(BasisAtomBase):
+class BasisAtomComplex(BasisAtom):
     _cpp: _backend.BasisAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplex
     _TypeKet = KetAtom
-
-
-BasisAtom = BasisAtomBase
