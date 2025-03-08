@@ -1,12 +1,12 @@
 .. _automatic:
 
-Automatic Build
+Build using pip
 ===============
 
 **1. Setup**
 
 
-For the automatic build, you do not need to build the C++ backend manually, but you can work with python only. In order to so, you first have to :ref:`setup your python environment <python_setup>`.
+For the build via pip, you do not need to build the C++ backend manually, but you can work with python only. In order to so, you first have to :ref:`setup your python environment <python_setup>`.
 All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_.
 
 .. note::

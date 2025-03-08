@@ -1,7 +1,7 @@
 .. _manual:
 
-Manual Build
-============
+Build using cmake
+=================
 
 Build process
 -------------

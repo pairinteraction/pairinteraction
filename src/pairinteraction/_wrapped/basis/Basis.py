@@ -20,14 +20,14 @@ UnionTypeCPPBasisCreator = Any
 class BasisBase(ABC, Generic[KetType]):
     """Base class for all Basis objects.
 
-    The basis objects are meant to represent a set of kets, that span a Hilbert space
-    and store a coefficient matrix, that describe the basis states in terms of the kets.
+    The basis objects are meant to represent a set of kets, that span a Hilbert space and store a coefficient matrix,
+    that describe the basis states in terms of the kets.
 
     All basis objects share a few common attributes and methods, that are defined in this base class, e.g.:
-    - the number of kets and states,
-    - the kets of the basis,
-    - the coefficients stored as scipy sparse matrix,
-    - ...
+        - the number of kets and states,
+        - the kets of the basis,
+        - the coefficients stored as scipy sparse matrix,
+        - ...
     """
 
     _cpp: UnionCPPBasis

@@ -3,64 +3,79 @@
 Python Setup
 ============
 
-In order to install the python library, you will need a python environment where you can install all dependencies, especially if you also want to test changes in a :ref:`manual build process <manual>`, or when :ref:`building the documentation <Documentation>` on your own device. Therefore, you first will need to install python on your system. In addition, you will also need a package management system to create virtual environments, such that you can avoid package conflicts with packages you may need for different software projects.
+In order to install the python library, it is recommended to create a python virtual environment where you can install all dependencies.
+Therefore, you will first need a package management system to create the python environment.
+This way, you can avoid package conflicts with packages you may need for different software projects.
 In general, we recommend using `uv`_ due to its speed, but as many users are familiar with `conda`_, we also describe its usage as well.
 
 
 uv
 --
 
-Creating and activating a virtual environment that is able to use all pip functionality with `uv`_ can be done by running the following commands at the root directory of the pairinteraction repository:
+To install `uv`_ please follow the instructions on the `uv installation page <https://docs.astral.sh/uv/getting-started/installation/>`_.
+No further requirements (like installing python) are needed, as `uv`_ takes care of everything for you.
+
+Creating a virtual environment with `uv`_ can be done via
 
 .. code-block:: bash
 
-    uv venv --python=3.9 .venv
+    uv venv .venv --python 3.10
+
+This will create a folder `.venv/` which contains all information on the virtual environment.
+Note, that you can choose a different python version by simply changing the version number.
+
+To activate the virtual environment, you can run
+
+.. code-block:: bash
+
+    # For Linux and MacOS users
     source .venv/bin/activate
 
-For Windows users the second command to activate the virtual environment is different: :code:`.venv/Scripts/activate` .
+    # For Windows users
+    .venv\Scripts\activate
 
-This will create a folder .venv in the pairinteraction directoy which contains all information on the virtual environment.
-In order to install all dependencies to build the package, you should run
+In order to install all build dependencies for pairinteraction, run
 
 .. code-block:: bash
 
     uv pip install -r .build_requirements.txt
 
-.. note::
-    If you want to install all dependencies from the `pyproject.toml` file, you should use the following commands, which are different from the usual pip commands:
+inside the pairinteraction repository.
 
-    .. code-block:: bash
+If in addition you want to install all dependencies from the `pyproject.toml` file, you can use the following commands:
 
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install -r requirements.txt
+.. code-block:: bash
+
+    uv pip compile pyproject.toml --all-extras > requirements.txt
+    uv pip install -r requirements.txt
+
+.. _uv: https://docs.astral.sh/uv/
 
 
 Conda
 -----
 
+To install `conda`_ please follow the instructions on the `conda installation page <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_.
+
 Creating and activating a virtual environment that is able to use all pip functionality with `conda`_ can be done by running the following commands:
 
 .. code-block:: bash
 
-    conda create --name venv python=3.9
+    conda create --name venv python=3.10
     conda activate venv
     conda install pip-tools
 
-In order to install all dependencies to build the package, you should run from inside the conda environment and the root directory of the pairinteraction repository
+In order to install all dependencies to build the package, you can run from inside the conda environment and the root directory of the pairinteraction repository
 
 .. code-block:: bash
 
     pip install -r .build_requirements.txt
 
-.. note::
-    If you want to install all dependencies from the `pyproject.toml` file, you should use the following commands:
+If in addition you want to install all dependencies from the `pyproject.toml` file, you should use the following commands:
 
-    .. code-block:: bash
+.. code-block:: bash
 
-        pip-compile pyproject.toml --all-extras --output-file=requirements.txt
-        pip install -r requirements.txt
+    pip-compile pyproject.toml --all-extras --output-file=requirements.txt
+    pip install -r requirements.txt
 
-
-.. _uv: https://pypi.org/project/uv/
-.. _pip: https://pypi.org/project/pip/
 .. _conda: https://anaconda.org/anaconda/conda
