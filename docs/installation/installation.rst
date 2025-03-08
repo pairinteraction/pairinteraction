@@ -17,15 +17,27 @@ Alternatively, you can also run ``uv pip install pairinteraction`` or ``conda in
 if you are using the `uv`_ or `conda`_ package manager, respectively.
 
 This gives you access to the pairinteraction Python library.
-For examples on how to use it, visit the :ref:`tutorial-api` section of the documentation.
+Before starting to use the pairinteraction library, we recommend running the following commands in the terminal
+to ensure that the package is correctly installed:
 
+.. code-block:: bash
 
+    # print the current version of the pairinteraction library
+    pairinteraction --version
+
+    # run a module test to check if everything is working correctly
+    pairinteraction test
+
+    # download the databases for the species you want to use (e.g. Rb and Yb174_mqdt)
+    pairinteraction download Rb Yb174_mqdt
+
+For examples on how to use the pairinteraction package, visit the :ref:`tutorial-api` section of the documentation.
 
 In addition, a graphical user interface of pairinteraction is installed and can be started by executing
 
 .. code-block:: bash
 
-    start_pairinteraction_gui
+    pairinteraction gui
 
 from the command line.
 This allows you to do some common and basic calculations without writing any code.
