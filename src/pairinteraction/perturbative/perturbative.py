@@ -265,7 +265,7 @@ def _calculate_perturbative_hamiltonian(
         V_ee = V[np.ix_(o_inds, o_inds)]
         if m > 1:
             logger.warning(
-                "At third order, the eigenstates are currently only valid when only one state is in the model space."
+                "At third order, the eigenstates are currently only valid when only one state is in the model space. "
                 "Take care with interpreation of the perturbed eigenvectors."
             )
         H_eff += V_me @ (
@@ -372,11 +372,8 @@ def _check_for_resonances(
         for index in indices:
             if index == j:
                 continue
-            logger.error(
-                "  - %s with admixture %.3f",
-                system_pair.basis.kets[index],
-                overlaps[i, index] / vector_norm,
-            )
+            admixture = 1 if np.isinf(overlaps[i, index]) else overlaps[i, index] / vector_norm
+            logger.error(f"  - {system_pair.basis.kets[index]} with admixture {admixture:.3f}")
     if error_flag:
         raise ValueError(
             "Error. Perturbative Calculation not possible due to resonances. "
