@@ -202,6 +202,8 @@ add_subdirectory(src/cpp)
 add_subdirectory(src/cpp/bindings)
 add_subdirectory(src/cpp/docs)
 
+list(APPEND CMAKE_CTEST_ARGUMENTS "--verbose")
+
 include(CTest)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(src/cpp/tests)
