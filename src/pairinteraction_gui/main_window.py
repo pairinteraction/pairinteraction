@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
         dockwidget.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea)
         dockwidget.setTitleBarWidget(QWidget())  # This removes the title bar
 
-        dockwidget.setMinimumWidth(300)
+        dockwidget.setMinimumWidth(350)
         dockwidget.setStyleSheet("""
             QToolBox {
                 background-color: white;
@@ -120,22 +120,18 @@ class MainWindow(QMainWindow):
                 border-radius: 5px;
             }
             QToolBox::tab {
-                background-color: #e9ecef;
+                background-color: #343a40;
                 border: 1px solid #dee2e6;
                 border-radius: 4px;
-                color: #212529;
+                color: #f8f9fa;
                 font-weight: bold;
                 font-size: 15px;
             }
             QToolBox::tab:selected {
                 background-color: #007bff;
-                color: white;
             }
             QToolBox::tab:hover:!selected {
-                background-color: #f8f9fa;
-            }
-            QToolBox QScrollArea {
-                background-color: white;
+                background-color: #495057;
             }
             QLabel {
                 color: black;
@@ -176,10 +172,11 @@ class MainWindow(QMainWindow):
             }
             QToolButton {
                 border: none;
-                border-radius: 6px;
                 padding: 8px;
                 margin: 5px;
                 color: #f8f9fa;
+                font-weight: bold;
+                font-size: 15px;
             }
             QToolButton:hover {
                 background-color: #495057;

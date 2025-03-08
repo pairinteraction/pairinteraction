@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 class BasisBaseConfig(BaseConfig):
     """Section for configuring the basis."""
 
+    title = "Basis"
     page: Union["SystemAtomPage", "SystemPairPage"]
 
     _label_style_sheet = """
@@ -116,16 +117,12 @@ class BasisBaseConfig(BaseConfig):
 
 
 class BasisAtomConfig(BasisBaseConfig):
-    title = "Basis Atom"
-
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneBasisAtom()
 
 
 class BasisPairConfig(BasisBaseConfig):
-    title = "Basis Pair"
-
     def setupWidget(self) -> None:
         super().setupWidget()
 

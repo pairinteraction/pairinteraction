@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class SystemPairPage(SimulationPage):
     """Page for configuring and analyzing pair systems."""
 
-    title = "System Pair"
+    title = "Two Atoms"
     tooltip = "Configure and analyze pair systems"
 
     plotwidget: PlotEnergies

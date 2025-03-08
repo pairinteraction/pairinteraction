@@ -3,9 +3,11 @@ import time
 from pathlib import Path
 from typing import Optional
 
-from PySide6.QtGui import QHideEvent, QShowEvent
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
     QHBoxLayout,
+    QLabel,
     QPushButton,
     QToolBox,
 )
@@ -43,6 +45,15 @@ class SimulationPage(BasePage):
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
+        # Setup loading animation
+        self.loading_label = QLabel(self)
+        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
+        self.loading_movie = QMovie(str(gif_path))
+        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
+        self.loading_label.setMovie(self.loading_movie)
+        self.loading_label.setAlignment(Qt.AlignCenter)
+        self.loading_label.hide()
+
         # Control panel below the plot
         control_layout = QHBoxLayout()
         calculate_button = QPushButton("Calculate")
@@ -76,15 +87,26 @@ class SimulationPage(BasePage):
     def _thread_calculate(self) -> None:
         self.findChild(QPushButton, "Calculate").setEnabled(False)
         self.plotwidget.clear()
+        self.start_gif()
         worker = Worker(self.calculate)
         worker.signals.finished.connect(self.calculate_finished)
         THREADPOOL.start(worker)
+
+    def start_gif(self) -> None:
+        self.loading_label.setGeometry((self.width() - 100) // 2, (self.height() - 100) // 2, 100, 100)
+        self.loading_label.show()
+        self.loading_movie.start()
+
+    def end_gif(self) -> None:
+        self.loading_movie.stop()
+        self.loading_label.hide()
 
     def calculate(self) -> None:
         self._start_time = time.perf_counter()
         show_status_tip(self, "Calculating... Please wait.", logger=logger)
 
     def calculate_finished(self) -> None:
+        self.end_gif()
         time_needed = time.perf_counter() - self._start_time
         show_status_tip(self, f"Calculation finished after {time_needed:.2f} seconds.", logger=logger)
         self.findChild(QPushButton, "Calculate").setEnabled(True)
