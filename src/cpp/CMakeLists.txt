@@ -114,7 +114,7 @@ target_link_libraries(
   pairinteraction
   PUBLIC $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>
          doctest::doctest
-         duckdb::duckdb
+         duckdb
          Eigen3::Eigen
          httplib::httplib
          nlohmann_json::nlohmann_json
@@ -122,7 +122,7 @@ target_link_libraries(
          TBB::tbb
          fmt::fmt
          cpptrace::cpptrace
-         miniz::miniz
+         miniz
          $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
          $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>

@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
-project(pairinteraction CXX)
+project(pairinteraction CXX C)
 if(NOT SKBUILD)
   message(
     WARNING
@@ -150,37 +150,30 @@ FetchContent_GetProperties(duckdb)
 if(NOT duckdb_POPULATED)
   FetchContent_Populate(duckdb)
 endif()
-add_library(duckdb::duckdb SHARED IMPORTED)
-target_include_directories(duckdb::duckdb INTERFACE ${duckdb_SOURCE_DIR})
+add_library(duckdb SHARED IMPORTED)
+target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
 set_target_properties(
-  duckdb::duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
-                    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb::duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
+  duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
+                    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
 if(WIN32)
-  set_target_properties(duckdb::duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
+  set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
 endif()
 
 # Find miniz
 FetchContent_Declare(
   miniz
-  GIT_REPOSITORY https://github.com/richgel999/miniz
-  GIT_TAG        0c30a001bc3c70770a8742ff00899e662f040c75
+  URL https://github.com/richgel999/miniz/releases/download/3.0.2/miniz-3.0.2.zip
+  URL_HASH MD5=0604f14151944ff984444b04c5c760e5
 )
-FetchContent_MakeAvailable(miniz)
-add_library(miniz::miniz ALIAS miniz)
-# FetchContent_Declare(
-#   miniz
-#   URL https://github.com/richgel999/miniz/releases/download/3.0.2/miniz-3.0.2.zip
-#   URL_HASH MD5=0604f14151944ff984444b04c5c760e5
-# )
-# FetchContent_GetProperties(miniz)
-# if(NOT miniz_POPULATED)
-#   FetchContent_Populate(miniz)
-# endif()
-# add_library(miniz OBJECT
-#   ${miniz_SOURCE_DIR}/miniz.c
-# )
-# target_include_directories(miniz PUBLIC ${miniz_SOURCE_DIR})
-# add_library(miniz::miniz ALIAS miniz)
+FetchContent_GetProperties(miniz)
+if(NOT miniz_POPULATED)
+  FetchContent_Populate(miniz)
+endif()
+add_library(miniz STATIC ${miniz_SOURCE_DIR}/miniz.h  ${miniz_SOURCE_DIR}/miniz.c)
+if(UNIX)
+  target_compile_definitions(miniz PUBLIC _LARGEFILE64_SOURCE)
+endif()
+target_include_directories(miniz SYSTEM PUBLIC ${miniz_SOURCE_DIR})
 
 # Find Cpptrace
 find_package(cpptrace QUIET)
