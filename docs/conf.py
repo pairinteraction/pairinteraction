@@ -17,14 +17,6 @@ release = version  # The full version, including alpha/beta/rc tags, use via |re
 language = "en"
 
 
-def write_labels(app: Sphinx, event: str) -> None:
-    labels = app.env.domaindata["std"]["labels"]
-    os.makedirs("_build", exist_ok=True)
-    with open("_build/labels.txt", "w") as f:
-        for label, node in labels.items():
-            f.write(f"{label}: {node[1]}\n")
-
-
 # -- General configuration ---------------------------------------------------
 extensions = [
     "sphinx.ext.autodoc",
@@ -33,16 +25,13 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
-    "sphinx.ext.autosectionlabel",
     "nbsphinx",
     "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
     "myst_parser",
 ]
-autosectionlabel_prefix_document = True
-autosectionlabel_maxdepth = 4
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
+exclude_patterns = ["docs", "_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
@@ -106,8 +95,6 @@ def setup(app: Sphinx) -> None:
             name = getattr(obj, "__name__", "")
             if any(name.endswith(suffix) for suffix in ["Real", "Complex"]):
                 obj.__name__ = obj_name
-    # add list of all labels for debugging purposes
-    app.connect("build-finished", write_labels)
 
 
 # -- Options for extlinks -------------------------------------------------
@@ -115,3 +102,8 @@ repo_slug = os.getenv("GITHUB_REPOSITORY", "pairinteraction/pairinteraction")
 extlinks = {
     "github": (f"https://github.com/{repo_slug}/%s", None),
 }
+
+
+# -- Epilog at the end of every source file -------------------------------------------------
+rst_epilog = """
+"""

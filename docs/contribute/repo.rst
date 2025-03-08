@@ -27,7 +27,7 @@ Familiarize yourself with the repository's architecture. The software is divided
 
 Before implementing any changes, :ref:`build the software from source <advanced>` to guarantee the build system is functioning on your computer. Follow the :ref:`installation <installation>` section of the documentation for detailed steps. In the following we provide a brief summary of the necessary steps:
 
-If you are planning to only contribute to the python package an :ref:`automatic build <automatic>` should be sufficient. Therefore, install a :ref:`python package manager <python_setup>` and create a virtual environment
+If you are planning to only contribute to the python package an :ref:`automatic build <automatic>` should be sufficient. Therefore, install a :ref:`python package manager <python_setup>` and create a virtual environment.
 
 
 If you are planning to contribute to the C++ backend it might be beneficial to do a :ref:`manual build <manual>`:

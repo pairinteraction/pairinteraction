@@ -5,13 +5,17 @@ The pairinteraction software constructs Hamiltonians from matrix elements that a
 
 The currently available databases are hosted on GitHub and are downloaded by pairinteraction when needed. Within our GitHub organization, we manage two database repositories:
 
-* `database-sqdt`_: States and matrix elements calculated by single-channel quantum defect theory.
-* `database-mqdt`_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool :doc:`mqdt`.
+* `database-sqdt`_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool `ryd-numerov`_.
+* `database-mqdt`_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool `mqdt.jl`_.
 
 .. _database-sqdt: https://github.com/pairinteraction/database-sqdt
 .. _database-mqdt: https://github.com/pairinteraction/database-mqdt
 
 To date, our databases cover alkali metal atoms and a few alkaline earth metal atoms. Nonetheless, our generic database format is equally suited for Rydberg states of other atoms and even molecules. If you are interested in contributing to the databases, please contact us.
+
+.. _ryd-numerov: http://numerov.pairinteraction.org
+.. _mqdt.jl: http://mqdt.pairinteraction.org
+
 
 The Database Format
 -------------------
