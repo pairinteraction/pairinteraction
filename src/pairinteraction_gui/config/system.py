@@ -22,6 +22,7 @@ class SystemBaseConfig(BaseConfig):
     margin = (5, 15, 5, 5)
     spacing = 10
 
+    title = "System"
     page: Union["SystemAtomPage", "SystemPairPage"]
 
     def postSetupWidget(self) -> None:
@@ -88,8 +89,6 @@ class SystemBaseConfig(BaseConfig):
 
 
 class SystemAtomConfig(SystemBaseConfig):
-    title = "System Atom"
-
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
@@ -97,8 +96,6 @@ class SystemAtomConfig(SystemBaseConfig):
 
 
 class SystemPairConfig(SystemBaseConfig):
-    title = "System Pair"
-
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
@@ -199,10 +196,10 @@ class RangeDistance(RangeBase):
         self.items = []
 
         min_spinbox = DoubleSpinBox(
-            self, vmin=0, vmax=999, vdefault=5, tooltip=f"Minimum distance in {parse_html('mu')}"
+            self, vmin=0, vmax=999, vdefault=3, tooltip=f"Minimum distance in {parse_html('mu')}"
         )
         max_spinbox = DoubleSpinBox(
-            self, vmin=0, vmax=999, vdefault=15, tooltip=f"Maximum distance in {parse_html('mu')}"
+            self, vmin=0, vmax=999, vdefault=10, tooltip=f"Maximum distance in {parse_html('mu')}"
         )
 
         item = RangeItem(self, "R", min_spinbox, max_spinbox, unit=parse_html("mu"))

@@ -44,6 +44,8 @@ SpeciesTypes = Literal["sqdt_duplet", "sqdt_singlet", "sqdt_triplet", "mqdt_half
 class KetBaseConfig(BaseConfig):
     """Section for configuring the ket of interest."""
 
+    title = "State of Interest"
+
     _label_style_sheet = """
         background-color: #f8f9fa;
         color: #212529;
@@ -164,16 +166,12 @@ class KetBaseConfig(BaseConfig):
 
 
 class KetAtomConfig(KetBaseConfig):
-    title = "Ket Atom of Interest"
-
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
 
 
 class KetLifetimesConfig(KetBaseConfig):
-    title = "Ket Atom of Interest"
-
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
@@ -222,8 +220,6 @@ class KetLifetimesConfig(KetBaseConfig):
 
 
 class KetPairConfig(KetBaseConfig):
-    title = "Ket Pair of Interest"
-
     def setupWidget(self) -> None:
         super().setupWidget()
 
@@ -233,6 +229,10 @@ class KetPairConfig(KetBaseConfig):
         self.layout().addStretch(2)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneKetAtom()
+
+        # set some better defaults
+        n_spinbox = self.stacked_qn[1].getNamedWidget("sqdt_duplet").findChild(IntSpinBox, "n")
+        n_spinbox.setValue(81)
 
 
 class QnBase(WidgetV):
@@ -265,7 +265,7 @@ class QnSQDT(QnBase):
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
 
-        spin_boxes["n"] = IntSpinBox(self, vmin=1, vdefault=60, tooltip="Principal quantum number n")
+        spin_boxes["n"] = IntSpinBox(self, vmin=1, vdefault=80, tooltip="Principal quantum number n")
 
         spin_boxes["l"] = IntSpinBox(self, tooltip="Orbital angular momentum l")
 
@@ -290,7 +290,7 @@ class QnMQDT(QnBase):
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
         spin_boxes["nu"] = DoubleSpinBox(
-            self, vmin=1, vdefault=60, vstep=1, tooltip="Effective principal quantum number nu"
+            self, vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
         )
         spin_boxes["s"] = DoubleSpinBox(self, vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
         spin_boxes["j"] = DoubleSpinBox(self, vstep=1, tooltip="Total angular momentum j")

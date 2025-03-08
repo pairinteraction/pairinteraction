@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtWidgets import QFrame, QLabel, QScrollArea, QVBoxLayout, QWidget
 
 from pairinteraction_gui.page.base_page import BasePage
+
+images_dir = Path(__file__).parent.parent / "images"
 
 
 class AboutPage(BasePage):
@@ -65,7 +69,7 @@ class AboutPage(BasePage):
 
         # Benchmark image
         image_label = QLabel()
-        pixmap = QPixmap("./0845d67063_1.3.0-cp312-linux_12th-gen-intel(r)-core(tm)-i7-1260p_reps4.png")
+        pixmap = QPixmap(images_dir / "0845d67063_1.3.0-cp312-linux_12th-gen-intel(r)-core(tm)-i7-1260p_reps4.png")
         scaled_pixmap = pixmap.scaled(
             800, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )

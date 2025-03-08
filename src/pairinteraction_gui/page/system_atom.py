@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class SystemAtomPage(SimulationPage):
     """Page for configuring and analyzing single atom systems."""
 
-    title = "System Atom"
+    title = "One Atom"
     tooltip = "Configure and analyze single atom systems"
 
     plotwidget: PlotEnergies
