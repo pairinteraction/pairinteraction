@@ -146,7 +146,7 @@ def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str]
         except StopIteration:
             raise FileNotFoundError("Could not find database directory") from None
 
-    Database.initialize_global_database(download_missing, True, Path(database_dir))
+    Database.initialize_global_database(download_missing, True, database_dir)
 
 
 if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":

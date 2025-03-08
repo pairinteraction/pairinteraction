@@ -283,14 +283,25 @@ void ParquetManager::update_local_asset(const std::string &key) {
             continue;
         }
 
+        // Ensure that the filename matches the expectations
+        std::string dir = fs::path(filename).parent_path().string();
+        std::string stem = fs::path(filename).stem().string();
+        std::string suffix = fs::path(filename).extension().string();
+        std::smatch match;
+        if (!std::regex_match(dir, match, local_regex) || match.size() != 4 ||
+            suffix != ".parquet") {
+            throw std::runtime_error(
+                fmt::format("Unexpected filename {} in zip archive.", filename));
+        }
+
         // Construct the path to store the table
-        auto path = directory_ / "tables" / file_stat.m_filename;
+        auto path = directory_ / "tables" / dir / (stem + suffix);
         SPDLOG_INFO("Storing table to {}", path.string());
 
         // Extract the file to memory
         std::vector<char> buffer(file_stat.m_uncomp_size);
         if (mz_zip_reader_extract_to_mem(&zip_archive, i, buffer.data(), buffer.size(), 0) == 0) {
-            throw std::runtime_error(fmt::format("Failed to extract {}.", file_stat.m_filename));
+            throw std::runtime_error(fmt::format("Failed to extract {}.", filename));
         }
 
         // Ensure the parent directory exists
