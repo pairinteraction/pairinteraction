@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 import numpy as np
@@ -9,9 +10,11 @@ import pairinteraction.real as pi
 from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
 
 
-# define efficient equality function for sparse matrices
+# ---------------------------------------------------------------------------------------
+# Helper functions
+# ---------------------------------------------------------------------------------------
 def _check_sparse_matrices_equal(A: sparse.csr_matrix, B: sparse.csr_matrix) -> Union[np.bool, bool]:
-    """Check for equality of sparse matrices.
+    """Check for equality of sparse matrices efficiently.
 
     This functions compares two sparse matrices in compressed sparse row format on their equality.
 
@@ -66,8 +69,11 @@ def _create_system_pair_sample():
     return system_pair
 
 
-# test for mathematic functionality
-def test_perturbative_calculation():
+# ---------------------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------------------
+def test_perturbative_calculation(caplog):
+    """Test of mathematic functionality."""
     H = sparse.csr_matrix([[0, 1, 1, 0, 2], [1, 1, 0, 1, 3], [1, 0, 10, 1, 0], [0, 1, 1, 11, 1], [2, 3, 0, 1, 12]])
     model_space_indices = [0, 1]
 
@@ -101,7 +107,8 @@ def test_perturbative_calculation():
     )
     assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
 
-    H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=3)
+    with caplog.at_level(logging.ERROR):
+        H_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=3)
     a_00 -= 2 * 3 * 1 / ((0 - 12) * (1 - 12))
     a_01 += (
         1 * 1 * 1 / ((1 - 10) * (1 - 11))
@@ -138,10 +145,8 @@ def test_perturbative_calculation():
     assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
 
 
-# check that dispersion coefficients are correctly calculated
-
-
 def test_c3_coefficient():
+    """Test whether dispersion coefficients are correctly calculated."""
     system_pair = _create_system_pair_sample()
 
     ket_tuple_list = [
@@ -154,10 +159,8 @@ def test_c3_coefficient():
     assert np.isclose(-0.5 * C3, 3.1515)
 
 
-# # calculate and check that C6 coefficient is correct
-
-
 def test_c6_coefficient():
+    """Test whether the C6 coefficient is correct."""
     system_pair = _create_system_pair_sample()
     ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     C6 = perturbative.get_c6_from_system(
@@ -166,16 +169,15 @@ def test_c6_coefficient():
     assert np.isclose(C6, 167.92)
 
 
-# check that resonance is correctly detected
-
-
-def test_resonance_detection():
+def test_resonance_detection(caplog):
+    """Test whether resonance is correctly detected."""
     system_pair = _create_system_pair_sample()
     ket_tuple_list = [
         (pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom(species="Rb", n=61, l=1, j=0.5, m=0.5))
     ]
     with pytest.warns(RuntimeWarning, match="divide by zero encountered in divide"):
         with pytest.raises(ValueError):
-            H_eff, _ = perturbative.get_effective_hamiltonian_from_system(
-                ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
-            )
+            with caplog.at_level(logging.CRITICAL):
+                H_eff, _ = perturbative.get_effective_hamiltonian_from_system(
+                    ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
+                )
