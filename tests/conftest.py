@@ -36,10 +36,12 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     download_missing = session.config.getoption("--download-missing")
     database_dir = session.config.getoption("--database-dir")
 
-    # Make it possible to overwrite the database in pytest test mode
-    test_mode = os.getenv("PAIRINTERACTION_TEST_MODE", "1")
+    # Disable the test mode of pairinteraction that would call _setup_test_mode
+    # automatically. This would be necessary for testing the jupyter notebooks
+    # but we want to call _setup_test_mode manually.
     os.environ["PAIRINTERACTION_TEST_MODE"] = "0"
+
+    # Call _setup_test_mode manually with the given options
     from pairinteraction import _setup_test_mode
 
     _setup_test_mode(download_missing, database_dir)
-    os.environ["PAIRINTERACTION_TEST_MODE"] = test_mode

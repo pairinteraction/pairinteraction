@@ -1,3 +1,7 @@
+import os
+from typing import Optional
+
+
 def _setup_dynamic_libaries() -> None:  # noqa: C901
     import os
     import platform
@@ -121,7 +125,7 @@ _setup_dynamic_libaries()
 # ---------------------------------------------------------------------------------------
 # Configure pairinteraction for running tests with a local database if requested
 # ---------------------------------------------------------------------------------------
-def _setup_test_mode(download_missing: bool = False, database_dir: str = "") -> None:
+def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str] = None) -> None:
     from pathlib import Path
 
     from pairinteraction._wrapped import Database
@@ -129,7 +133,7 @@ def _setup_test_mode(download_missing: bool = False, database_dir: str = "") -> 
     PAIRINTERACTION_DIR = Path(__file__).parent
     CWD = Path.cwd()
 
-    if database_dir == "":
+    if database_dir is None:
         possible_dirs = [
             PAIRINTERACTION_DIR.parent.parent / "data" / "database",  # if local editable install
             CWD / "data" / "database",  # normal pytest mode
@@ -145,9 +149,7 @@ def _setup_test_mode(download_missing: bool = False, database_dir: str = "") -> 
     Database.initialize_global_database(download_missing, True, Path(database_dir))
 
 
-import os as _os  # noqa: E402
-
-if _os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
+if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
     _setup_test_mode()
 
 
@@ -195,5 +197,4 @@ __version__ = f"{_VERSION_MAJOR}.{_VERSION_MINOR}.{_VERSION_PATCH}"
 # Clean up namespace
 # ---------------------------------------------------------------------------------------
 del _VERSION_MAJOR, _VERSION_MINOR, _VERSION_PATCH
-del _os
 del _setup_dynamic_libaries  #  don't delete _setup_test_mode, since it is used in tests/conftest.py

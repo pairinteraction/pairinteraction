@@ -147,8 +147,7 @@ void ParquetManager::scan_remote() {
                 int version_minor = std::stoi(match[3].str());
 
                 if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
-                    throw std::runtime_error("Pairinteraction is incompatible with the database "
-                                             "repositories. Consider upgrading pairinteraction.");
+                    continue;
                 }
 
                 auto it = remote_asset_info.find(key);
@@ -159,6 +158,13 @@ void ParquetManager::scan_remote() {
                 }
             }
         }
+    }
+
+    // Ensure that scan_remote was successful
+    if (!futures.empty() && remote_asset_info.empty()) {
+        throw std::runtime_error(
+            "No compatible database tables were found in the remote repositories. Consider "
+            "upgrading pairinteraction to a newer version.");
     }
 }
 
@@ -252,9 +258,7 @@ void ParquetManager::update_local_asset(const std::string &key) {
 
     // Unzip the downloaded file
     mz_zip_archive zip_archive{};
-    mz_bool status =
-        mz_zip_reader_init_mem(&zip_archive, result.body.data(), result.body.size(), 0);
-    if (status == 0) {
+    if (mz_zip_reader_init_mem(&zip_archive, result.body.data(), result.body.size(), 0) == 0) {
         throw std::runtime_error("Failed to initialize zip archive.");
     }
 
@@ -271,6 +275,7 @@ void ParquetManager::update_local_asset(const std::string &key) {
             continue;
         }
 
+        // Construct the path to store the table
         auto path = directory_ / "tables" / file_stat.m_filename;
         SPDLOG_INFO("Storing table to {}", path.string());
 
@@ -288,7 +293,7 @@ void ParquetManager::update_local_asset(const std::string &key) {
         if (!out) {
             throw std::runtime_error(fmt::format("Failed to open {} for writing", path.string()));
         }
-        out.write(buffer.data(), buffer.size());
+        out.write(buffer.data(), static_cast<std::streamsize>(buffer.size()));
         out.close();
 
         // Update the local asset/table info
@@ -383,18 +388,22 @@ std::string ParquetManager::get_versions_info() const {
 
     // Output versions info
     std::ostringstream oss;
-    oss << " " << std::left << std::setw(33) << "Asset" << std::left << std::setw(8) << "Local"
-        << "  Remote\n";
-    oss << std::string(1 + 33 + 8 + 2 + 7, '-') << "\n";
+
+    oss << " ";
+    oss << std::left << std::setw(17) << "Asset";
+    oss << std::left << std::setw(6 + 4) << "Local";
+    oss << std::left << std::setw(7) << "Remote\n";
+    oss << std::string(35, '-') << "\n";
+
     for (const auto &table : tables) {
         int local_version = get_version(local_asset_info, table);
         int remote_version = get_version(remote_asset_info, table);
 
-        std::string comparator = "==  ";
+        std::string comparator = "==";
         if (local_version < remote_version) {
-            comparator = "<   ";
+            comparator = "<";
         } else if (local_version > remote_version) {
-            comparator = ">   ";
+            comparator = ">";
         }
 
         std::string local_version_str = local_version == -1
@@ -406,8 +415,11 @@ std::string ParquetManager::get_versions_info() const {
             : "v" + std::to_string(COMPATIBLE_DATABASE_VERSION_MAJOR) + "." +
                 std::to_string(remote_version);
 
-        oss << " " << std::left << std::setw(33) << table << std::left << std::setw(6)
-            << local_version_str << comparator << remote_version_str << "\n";
+        oss << " ";
+        oss << std::left << std::setw(17) << table;
+        oss << std::left << std::setw(6) << local_version_str;
+        oss << std::left << std::setw(4) << comparator;
+        oss << std::left << std::setw(7) << remote_version_str << "\n";
     }
     return oss.str();
 }

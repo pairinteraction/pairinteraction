@@ -23,7 +23,8 @@ DOCTEST_TEST_CASE("Get rate limit with GitHubDownloader") {
 }
 
 DOCTEST_TEST_CASE("Download content with GitHubDownloader" * doctest::skip(true)) {
-    // This test is skipped by default because the request counts towards the GitHub rate limit
+    // This test is skipped by default because the request always counts towards the GitHub rate
+    // limit because it is never cached
 
     if (!Database::get_global_instance().get_download_missing()) {
         DOCTEST_MESSAGE("Skipping test because download_missing is false.");
