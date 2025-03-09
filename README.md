@@ -11,7 +11,11 @@ The *pairinteraction* software calculates properties of Rydberg atoms. The softw
 pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
 ```
 
-The graphical user interface can be started by executing ``pairinteraction gui`` from the command line.
+You can use the pairinteraction software [as a Python library][tutorial-link], or you can launch the graphical user interface from the command line:
+
+```bash
+pairinteraction gui
+```
 
 ## Highlights
 
@@ -25,15 +29,16 @@ The graphical user interface can be started by executing ``pairinteraction gui``
 
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
-## Please Cite
+## How to Cite
+
+If you use pairinteraction in your research, please cite our tutorial paper:
 
 > Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
 
-The pairinteraction software relies on quantum defects provided by the community.
-Please consider citing relevant publications for your atomic species alongside pairinteraction.
+Pairinteraction relies on quantum defects provided by the community. Consider citing relevant publications for your atomic species alongside pairinteraction.
 
 <details>
-<summary>Click to expand the table of quantum defect references</summary>
+<summary><b>Click to expand for quantum defect references</b></summary>
 
 | Element | Model                 | Identifier     | References                                                                                                                                                   |
 |---------|-----------------------|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,6 +80,37 @@ The identifier can be used to specify an atomic species in the pairinteraction s
 [10.1088/1361-6455/ab4c22]: https://doi.org/10.1088/1361-6455/ab4c22
 [10.48550/arXiv.2406.01482]: https://doi.org/10.48550/arXiv.2406.01482
 
+## Contributors
+
+The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
+
+The software is maintained by:
+* [Sebastian Weber]
+* [Johannes Mögerle]
+
+In addition, the following people contributed significantly to the current and/or previous versions of the software:
+* [Henri Menke]
+* [Frederic Hummel] - jl-mqdt, a Julia package for multi-channel quantum defect theory, matrix elements
+* [Eduard Braun] - Perturbative calculations, installation instructions for Windows
+* [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet ported to the new version)*
+* [Simon Hollerith] - Documentation of the graphical user interface *(not yet ported to the new versionn)*
+
+We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information.
+
+[Institute for Theoretical Physics III]: https://www.itp3.uni-stuttgart.de/
+[QRydDemo]: https://www.quantentechnologien.de/forschung/foerderung/quantenprozessoren-und-technologien-fuer-quantencomputer/qryddemo.html
+[MUNIQC-Atoms]: https://www.quantentechnologien.de/forschung/foerderung/quantencomputer-demonstrationsaufbauten/muniqc-atoms.html
+[Atom Computing]: https://atom-computing.com/
+[5th Institute of Physics]: https://www.pi5.uni-stuttgart.de/
+
+[Sebastian Weber]: https://github.com/seweber
+[Johannes Mögerle]: https://github.com/johannes-moegerle
+[Henri Menke]: https://github.com/hmenke
+[Frederic Hummel]: https://github.com/frederic-atom
+[Eduard Braun]: https://github.com/EduardJBraun
+[Johannes Block]: https://github.com/johblock
+[Simon Hollerith]: https://github.com/SimonHollerith
+
 ## License
 
 The pairinteraction software is licensed under [LGPL v3][license-lgpl-link].
@@ -84,3 +120,5 @@ The pairinteraction software is licensed under [LGPL v3][license-lgpl-link].
 [license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
 [license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
+[tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
+[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html
