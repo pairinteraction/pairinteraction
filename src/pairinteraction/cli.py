@@ -1,5 +1,6 @@
 import argparse
 import logging
+import shutil
 import sys
 
 from colorama import Fore, Style, just_fix_windows_console
@@ -10,8 +11,15 @@ from pairinteraction import __version__
 def main() -> int:
     """Entry point for the pairinteraction CLI."""
     parser = argparse.ArgumentParser(
-        description="Pairinteraction CLI: download database tables, launch the GUI, or run tests",
-        epilog="Example: pairinteraction --log-level INFO gui",
+        description="Pairinteraction CLI: launch the GUI, run tests, or manage the cache",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=(
+            "Examples:\n"
+            "  pairinteraction --log-level INFO gui\n"
+            "  pairinteraction --log-level INFO test\n"
+            "  pairinteraction download Rb Cs\n"
+            "  pairinteraction purge"
+        ),
     )
     parser.add_argument("--version", action="version", version=f"pairinteraction v{__version__}")
     parser.add_argument(
@@ -22,11 +30,6 @@ def main() -> int:
     )
     subparsers = parser.add_subparsers(dest="command", help="available commands", required=True)
 
-    # Download command
-    download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
-    download_parser.add_argument("species", nargs="+", help="list of species to download data for")
-    download_parser.set_defaults(func=lambda args: download_databases(args.species))
-
     # GUI command
     gui_parser = subparsers.add_parser("gui", help="launch the graphical user interface")
     gui_parser.set_defaults(func=lambda args: start_gui())
@@ -34,6 +37,15 @@ def main() -> int:
     # Test command
     test_parser = subparsers.add_parser("test", help="run module tests")
     test_parser.set_defaults(func=lambda args: run_module_tests())
+
+    # Download command
+    download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
+    download_parser.add_argument("species", nargs="+", help="list of species to download data for")
+    download_parser.set_defaults(func=lambda args: download_databases(args.species))
+
+    # Purge command
+    purge_parser = subparsers.add_parser("purge", help="delete all cached data")
+    purge_parser.set_defaults(func=lambda args: purge_cache())
 
     args = parser.parse_args()
 
@@ -70,11 +82,36 @@ def setup_logging(level_str: str) -> None:
     logging.basicConfig(level=getattr(logging, level_str.upper()), handlers=[handler])
 
 
+def start_gui() -> int:
+    """Launch the graphical user interface."""
+    from pairinteraction_gui import main as gui_main
+
+    print("Launching the graphical user interface...")
+    gui_main()
+    return 0
+
+
+def run_module_tests() -> int:
+    """Run the module tests."""
+    from pairinteraction import run_module_tests
+
+    print("Running module tests...")
+    exit_code = run_module_tests(download_missing=True)
+    if exit_code:
+        print(Fore.RED + "Tests failed." + Style.RESET_ALL)
+    else:
+        print(Fore.GREEN + "Tests passed." + Style.RESET_ALL)
+    return exit_code
+
+
 def download_databases(species_list: list[str]) -> int:
     """Download the required data files for the specified species."""
     import pairinteraction.real as pi
+    from pairinteraction._backend import get_cache_directory
 
-    pi.Database.initialize_global_database(download_missing=True)
+    database_dir = get_cache_directory() / "database"
+
+    pi.Database.initialize_global_database(download_missing=True, use_cache=False, database_dir=database_dir)
     database = pi.Database.get_global_database()
 
     is_wigner_downloaded = False
@@ -102,26 +139,25 @@ def download_databases(species_list: list[str]) -> int:
     return exit_code
 
 
-def start_gui() -> int:
-    """Launch the graphical user interface."""
-    from pairinteraction_gui import main as gui_main
+def purge_cache() -> int:
+    """Delete all cached data."""
+    from pairinteraction._backend import get_cache_directory
 
-    print("Launching the graphical user interface...")
-    gui_main()
+    cache_dir = get_cache_directory()
+
+    confirmation = input("Are you sure you want to delete all cached data? (y/N): ")
+    if confirmation.lower() not in ["y", "yes"]:
+        print(Fore.YELLOW + "Aborted deletion of cache." + Style.RESET_ALL)
+        return 0
+
+    print("Deleting cached data...")
+    try:
+        shutil.rmtree(cache_dir)
+    except Exception as e:
+        print(Fore.RED + f"Error while deleting cache: {e}" + Style.RESET_ALL)
+        return 1
+    print(Fore.GREEN + "Cache deleted." + Style.RESET_ALL)
     return 0
-
-
-def run_module_tests() -> int:
-    """Run the module tests."""
-    from pairinteraction import run_module_tests
-
-    print("Running module tests...")
-    exit_code = run_module_tests()
-    if exit_code:
-        print(Fore.RED + "Tests failed." + Style.RESET_ALL)
-    else:
-        print(Fore.GREEN + "Tests passed." + Style.RESET_ALL)
-    return exit_code
 
 
 if __name__ == "__main__":
