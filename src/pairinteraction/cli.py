@@ -1,11 +1,10 @@
 import argparse
-import logging
 import shutil
 import sys
 
-from colorama import Fore, Style, just_fix_windows_console
+from colorama import Fore, Style
 
-from pairinteraction import __version__
+from pairinteraction import __version__, configure_logging
 
 
 def main() -> int:
@@ -49,37 +48,9 @@ def main() -> int:
 
     args = parser.parse_args()
 
-    setup_logging(args.log_level)
+    configure_logging(args.log_level)
 
     return args.func(args)
-
-
-def setup_logging(level_str: str) -> None:
-    """Set up logging with a consistent format."""
-
-    class ColoredFormatter(logging.Formatter):
-        COLORS = {
-            "DEBUG": Fore.BLUE,
-            "INFO": Fore.GREEN,
-            "WARNING": Fore.YELLOW,
-            "ERROR": Fore.RED,
-            "CRITICAL": Fore.RED + Style.BRIGHT,
-        }
-
-        def format(self, record: logging.LogRecord) -> str:
-            record.levelname = f"{self.COLORS.get(record.levelname, '')}{record.levelname}{Style.RESET_ALL}"
-            return super().format(record)
-
-    just_fix_windows_console()
-
-    handler = logging.StreamHandler()
-    handler.setFormatter(
-        ColoredFormatter(
-            "%(levelname)s [%(asctime)s.%(msecs)03d] [%(filename)s:%(lineno)d] %(message)s", datefmt="%H:%M:%S"
-        )
-    )
-
-    logging.basicConfig(level=getattr(logging, level_str.upper()), handlers=[handler])
 
 
 def start_gui() -> int:
