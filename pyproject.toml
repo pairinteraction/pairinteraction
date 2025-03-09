@@ -50,6 +50,7 @@ dependencies = [
   "numpy >= 1.24",
   "scipy >= 1.10",
   "pint >= 0.21.1",
+  "colorama >= 0.3.4",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.0.1; sys_platform != 'darwin'",
   "pairinteraction[gui]",
@@ -89,7 +90,7 @@ Homepage = "https://www.pairinteraction.org"
 Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
-start_pairinteraction_gui = "pairinteraction_gui:main"
+pairinteraction = "pairinteraction.cli:main"
 
 [tool.scikit-build]
 cmake.build-type = "RelWithDebInfo"
