@@ -11,6 +11,7 @@
 #include "./interfaces/TransformationBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
 #include "./operator/Operator.py.hpp"
+#include "./paths.py.hpp"
 #include "./system/System.py.hpp"
 #include "./tools/run_unit_tests.py.hpp"
 #include "./version.py.hpp"
@@ -63,6 +64,9 @@ NB_MODULE(_backend, m) // NOLINT
 
     // tools
     bind_run_unit_tests(m);
+
+    // paths
+    bind_paths(m);
 
     // version
     bind_version(m);

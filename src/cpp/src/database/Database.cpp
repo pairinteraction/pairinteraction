@@ -53,7 +53,7 @@ Database::Database(bool download_missing, bool use_cache, std::filesystem::path 
     SPDLOG_INFO("Using database directory: {}", database_dir_.string());
 
     // Ensure that the config directory exists
-    std::filesystem::path configdir = paths::get_pairinteraction_config_directory();
+    std::filesystem::path configdir = paths::get_config_directory();
     if (!std::filesystem::exists(configdir)) {
         std::filesystem::create_directories(configdir);
     } else if (!std::filesystem::is_directory(configdir)) {
@@ -1144,7 +1144,7 @@ Database &Database::get_global_instance_without_checks(bool download_missing, bo
 
 struct database_dir_noexcept : std::filesystem::path {
     explicit database_dir_noexcept() noexcept try : std
-        ::filesystem::path(paths::get_pairinteraction_cache_directory() / "database") {}
+        ::filesystem::path(paths::get_cache_directory() / "database") {}
     catch (...) {
         SPDLOG_ERROR("Error getting the pairinteraction cache directory.");
         std::terminate();

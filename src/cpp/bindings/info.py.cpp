@@ -2,6 +2,8 @@
 
 #include "./info.py.hpp"
 
+#include <nanobind/nanobind.h>
+
 namespace nb = nanobind;
 using namespace pairinteraction;
 
