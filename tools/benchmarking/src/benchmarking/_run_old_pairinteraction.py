@@ -1,8 +1,7 @@
-#!/usr/bin/env -S uv run --script
 # /// script
 # requires-python = "==3.9"
 # dependencies = [
-# "pairinteraction==0.9.9",
+# "pairinteraction==0.9.8a0",
 # "numpy",
 # ]
 # ///
