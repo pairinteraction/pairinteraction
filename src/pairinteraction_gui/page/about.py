@@ -69,7 +69,7 @@ class AboutPage(BasePage):
 
         # Benchmark image
         image_label = QLabel()
-        pixmap = QPixmap(images_dir / "0845d67063_1.3.0-cp312-linux_12th-gen-intel(r)-core(tm)-i7-1260p_reps4.png")
+        pixmap = QPixmap(images_dir / "0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png")
         scaled_pixmap = pixmap.scaled(
             800, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )
@@ -81,7 +81,7 @@ class AboutPage(BasePage):
         caption = QLabel(
             "<p style='font-size: 12px; color: #666; text-align: center;'>"
             "Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms "
-            "for 100 different internuclear distances on a i7-1260P CPU. "
+            "for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. "
             "The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. "
             "When supported, symmetries where used to reduce the Hilbert space size. "
             "See the <a href='https://github.com/pairinteraction/pairinteraction/tree/master/tools/benchmarking' "

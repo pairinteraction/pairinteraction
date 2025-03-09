@@ -94,14 +94,20 @@ def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings
 def benchmark_external_script(script_path: Path, name: str, settings: dict) -> list[BenchmarkResult]:
     """Benchmark external script."""
     try:
-        proc_result = subprocess.run(  # noqa: S602
-            f"{script_path} '{json.dumps(settings)}'", shell=True, capture_output=True, text=True, check=True
+        proc_result = subprocess.run(  # noqa: S603
+            ["uv", "run", "--script", script_path, json.dumps(settings)],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
         )
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"External script '{script_path}' failed with error:\n{e.stderr}") from e
 
     output = proc_result.stdout.strip()
-    json_line = next(line for line in reversed(output.splitlines()) if line.startswith("{") and line.endswith("}"))
+    try:
+        json_line = next(line for line in reversed(output.splitlines()) if line.startswith("{") and line.endswith("}"))
+    except StopIteration as e:
+        raise RuntimeError(f"Unable to extract benchmarking results. Output of the subprocess: '{output}'") from e
     data = json.loads(json_line)
 
     logging.info(f"Number of kets: {data['number_of_kets']}")
