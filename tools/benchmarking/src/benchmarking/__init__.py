@@ -17,12 +17,12 @@ import pandas as pd
 import seaborn as sns
 from cpuinfo import get_cpu_info
 
-import pairinteraction
 import pairinteraction.complex as pi_complex
 import pairinteraction.real as pi_real
 from benchmarking.timer import timer
+from pairinteraction import __version__, configure_logging
 
-logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", handlers=[logging.StreamHandler()])
+configure_logging("INFO")
 
 
 @dataclass
@@ -284,7 +284,7 @@ def run() -> None:
     hashed = sha256()
     hashed.update(json.dumps(settings, sort_keys=True).encode())
     system = {"Linux": "linux", "Windows": "win", "Darwin": "macosx"}.get(platform.system(), "unknown")
-    identifier = f"{pairinteraction.__version__}-cp{sys.version_info.major}{sys.version_info.minor}-{system}"
+    identifier = f"{__version__}-cp{sys.version_info.major}{sys.version_info.minor}-{system}"
     cpuname = "-".join(get_cpu_info().get("brand_raw", "unknown").lower().split())
     outdir = Path.cwd().parent.parent / "data" / "benchmarking_results"
     plot_path = (
