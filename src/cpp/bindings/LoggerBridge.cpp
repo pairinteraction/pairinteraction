@@ -50,7 +50,7 @@ void LoggerBridge::QueueSink::sink_it_(const spdlog::details::log_msg &msg) {
 void LoggerBridge::QueueSink::flush_() {}
 
 LoggerBridge::LoggerBridge() {
-    std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
+    std::filesystem::path logdir = paths::get_cache_directory() / "logs";
     if (!std::filesystem::exists(logdir)) {
         std::filesystem::create_directories(logdir);
     } else if (!std::filesystem::is_directory(logdir)) {

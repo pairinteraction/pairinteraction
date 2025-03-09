@@ -283,7 +283,7 @@ int run_unit_tests(int argc, char **argv, bool download_missing, bool use_cache,
     Database::get_global_instance(download_missing, use_cache, std::move(database_dir));
     int exitcode = ctx.run();
 
-    std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
+    std::filesystem::path logdir = paths::get_cache_directory() / "logs";
     SPDLOG_INFO("The log was stored to {}", logdir.string());
 
     if (exitcode != 0) {

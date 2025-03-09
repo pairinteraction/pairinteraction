@@ -15,7 +15,7 @@ namespace pairinteraction {
 void setup() {
 
     // Configure a logger
-    std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
+    std::filesystem::path logdir = paths::get_cache_directory() / "logs";
 
     if (!std::filesystem::exists(logdir)) {
         std::filesystem::create_directories(logdir);
