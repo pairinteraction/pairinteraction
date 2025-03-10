@@ -36,4 +36,14 @@ The following jupyter notebooks show how the pairinteraction Python API can be a
 Tutorials - Graphical User Interface
 ------------------------------------
 
-Coming soon...
+After following the :ref:`installation instructions <installation>`, the graphical user interface (GUI) of pairinteraction can be started by executing
+
+.. code-block:: bash
+
+    pairinteraction gui
+
+from the command line.
+Here as quick preview of the GUI:
+
+.. image:: examples_gui/preview.png
+   :alt: GUI Preview
