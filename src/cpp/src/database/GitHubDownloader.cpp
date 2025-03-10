@@ -13,7 +13,7 @@ GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::Client>(
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
     client->load_ca_cert_store(github_ca_cert.data(), github_ca_cert.size());
-    client->enable_server_certificate_verification(true);
+    client->enable_server_certificate_verification(false);
 }
 
 GitHubDownloader::~GitHubDownloader() = default;
