@@ -81,12 +81,6 @@ find_package(
   COMPONENTS Interpreter Development.Module NumPy
   OPTIONAL_COMPONENTS Development.SABIModule)
 
-find_package(httplib REQUIRED)
-if(NOT httplib_OpenSSL_FOUND)
-  find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
-  add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
-endif()
-
 # Try to find MKL
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
 set(MKL_ARCH
@@ -158,6 +152,26 @@ set_target_properties(
 if(WIN32)
   set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
 endif()
+
+# Httplib
+set(HTTPLIB_REQUIRE_OPENSSL ON)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
+FetchContent_Declare(
+  httplib
+  GIT_REPOSITORY https://github.com/yhirose/cpp-httplib
+  GIT_TAG 03cf43ebaa55f27a2778bed870ea3549f7e84e2c # v0.19.0
+)
+
+# Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
+# can add this argument directly to FetchContent_Declare.
+FetchContent_GetProperties(httplib)
+if(NOT httplib_POPULATED)
+  FetchContent_Populate(httplib)
+  add_subdirectory(${httplib_SOURCE_DIR} ${httplib_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+FetchContent_MakeAvailable(httplib)
 
 # Find miniz
 FetchContent_Declare(
