@@ -12,6 +12,7 @@ GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::Client>(
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
+    client->load_ca_cert_store(github_ca_cert.data(), github_ca_cert.size());
     client->enable_server_certificate_verification(true);
 }
 
@@ -41,7 +42,7 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
                                 "avoids-an-increase-in-ratelimits-used-if-304-is-returned");
             }
 
-            auto response = client->Get(remote_url.c_str(), headers);
+            auto response = client->Get(remote_url, headers);
 
             // Handle if the response is null
             if (!response) {

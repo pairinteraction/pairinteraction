@@ -124,9 +124,7 @@ target_link_libraries(
          cpptrace::cpptrace
          miniz
          $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
-         $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
-         $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
-         $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>)
+         $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>)
 
 target_include_directories(pairinteraction PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
