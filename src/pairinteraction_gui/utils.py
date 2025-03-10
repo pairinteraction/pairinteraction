@@ -25,7 +25,7 @@ def catch_download_missing(func: Callable) -> Callable:
         try:
             return func(*args, **kwargs)
         except RuntimeError as err:
-            if "Try setting download_missing to true" in str(err):
+            if "Table" in str(err) and "not found" in str(err):
                 msg_box = QMessageBox()
                 msg_box.setWindowTitle("Download missing databases?")
                 msg_box.setText(str(err))
