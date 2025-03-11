@@ -34,6 +34,7 @@ class SystemPairPage(SimulationPage):
 
     def calculate(self) -> None:
         super().calculate()
+        self.basis_config.clear_basis_pair_label()
 
         self.fields = self.system_pair_config.get_fields()
         self.distance = self.system_pair_config.get_distance()
@@ -80,6 +81,7 @@ class SystemPairPage(SimulationPage):
         for step in range(steps):
             basis_pair = basis_pair_list[step % len(basis_pair_list)]
             system = pi.SystemPair(basis_pair)  # type: ignore
+            system.set_order(self.system_pair_config.get_order())
             if not np.isinf(self.distance[step]):
                 angle = self.angle[step] * np.pi / 180
                 distance_vector = self.distance[step] * np.array([np.sin(angle), 0, np.cos(angle)])
@@ -92,6 +94,7 @@ class SystemPairPage(SimulationPage):
             kwargs["energy_range"] = (ket_pair_energy + v for v in _energies)
             kwargs["energy_unit"] = "GHz"
 
+        self.basis_config.update_basis_pair_label(basis_pair_list[0])
         pi.diagonalize(self.systems, **kwargs)
 
     def update_plot(self) -> None:

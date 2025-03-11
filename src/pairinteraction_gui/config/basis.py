@@ -15,6 +15,7 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
+    from pairinteraction._wrapped.basis.BasisPair import BasisPairBase
     from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
 
 
@@ -129,16 +130,30 @@ class BasisPairConfig(BasisBaseConfig):
         self.layout().addWidget(QLabel("<b>Atom 1</b>"))
         self.setupOneBasisAtom()
 
-        self.layout().addStretch(2)
+        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneBasisAtom()
 
-        self.layout().addStretch(2)
+        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
         self.delta_pair_energy = DoubleSpinBox(
-            self, vmin=0, vdefault=1, tooltip="Restriction for the Principal quantum number n"
+            self, vmin=0, vdefault=3, tooltip="Restriction for the pair energy difference to the state of interest"
         )
         self.layout().addWidget(QnItem(self, "ΔEnergy", self.delta_pair_energy, "GHz"))
+
+        self.basis_pair_label = QLabel()
+        self.basis_pair_label.setStyleSheet(self._label_style_sheet)
+        self.basis_pair_label.setWordWrap(True)
+        self.layout().addWidget(self.basis_pair_label)
+
+    def update_basis_pair_label(self, basis_pair: "BasisPairBase") -> None:
+        """Update the quantum state label with current values."""
+        self.basis_pair_label.setText(str(basis_pair) + f"\n  ⇒ Basis consists of {basis_pair.number_of_kets} kets")
+        self.basis_pair_label.setStyleSheet(self._label_style_sheet)
+
+    def clear_basis_pair_label(self) -> None:
+        """Clear the basis pair label."""
+        self.basis_pair_label.setText("")
 
 
 class RestrictionsBase(WidgetV):
@@ -168,8 +183,8 @@ class RestrictionsSQDT(RestrictionsBase):
 
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
-        spin_boxes["Δn"] = IntSpinBox(self, vdefault=4, tooltip="Restriction for the Principal quantum number n")
-        spin_boxes["Δl"] = IntSpinBox(self, vdefault=3, tooltip="Restriction for the Orbital angular momentum l")
+        spin_boxes["Δn"] = IntSpinBox(self, vdefault=3, tooltip="Restriction for the Principal quantum number n")
+        spin_boxes["Δl"] = IntSpinBox(self, vdefault=2, tooltip="Restriction for the Orbital angular momentum l")
         spin_boxes["Δj"] = IntSpinBox(self, tooltip="Restriction for the Total angular momentum j")
         spin_boxes["Δm"] = IntSpinBox(self, tooltip="Restriction for the Magnetic quantum number m")
 

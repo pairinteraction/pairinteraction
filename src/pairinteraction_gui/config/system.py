@@ -30,7 +30,6 @@ class SystemBaseConfig(BaseConfig):
 
     def setupEField(self) -> None:
         efield_label = QLabel("<b>Electric field</b>")
-        efield_label.setWordWrap(True)
         self.layout().addWidget(efield_label)
 
         self.efield_range = RangEfield()
@@ -38,21 +37,18 @@ class SystemBaseConfig(BaseConfig):
 
     def setupBField(self) -> None:
         bfield_label = QLabel("<b>Magnetic field</b>")
-        bfield_label.setWordWrap(True)
         self.layout().addWidget(bfield_label)
 
         self.bfield_range = RangeBfield()
         self.layout().addWidget(self.bfield_range)
 
     def setupSteps(self) -> None:
-        # Steps configuration section
         steps_label = QLabel("<b>Calculation steps</b>")
-        steps_label.setWordWrap(True)
         self.layout().addWidget(steps_label)
 
-        steps_widget = WidgetForm()
-        self.steps_spinbox = IntSpinBox(vmin=1, vmax=1000, vdefault=20, tooltip="Number of steps for the calculation")
-        steps_widget.layout().addRow("Number of steps:", self.steps_spinbox)
+        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
+        self.steps_spinbox = IntSpinBox(vmin=1, vmax=10000, vdefault=20, tooltip="Number of steps for the calculation")
+        steps_widget.layout().addRow("Number of steps", self.steps_spinbox)
         self.layout().addWidget(steps_widget)
 
     def get_fields(self) -> dict[str, "RangeObject"]:
@@ -101,11 +97,11 @@ class SystemPairConfig(SystemBaseConfig):
         self.setupBField()
         self.setupDistance()
         self.setupAngle()
+        self.setupOrder()
         self.setupSteps()
 
     def setupDistance(self) -> None:
         label = QLabel("<b>Distance</b>")
-        label.setWordWrap(True)
         self.layout().addWidget(label)
 
         self.distance_range = RangeDistance()
@@ -113,11 +109,19 @@ class SystemPairConfig(SystemBaseConfig):
 
     def setupAngle(self) -> None:
         label = QLabel("<b>Angle</b> (0° = z-axis, 90° = x-axis)")
-        label.setWordWrap(True)
         self.layout().addWidget(label)
 
         self.angle_range = RangeAngle()
         self.layout().addWidget(self.angle_range)
+
+    def setupOrder(self) -> None:
+        steps_label = QLabel("<b>Multipole expansion order</b>")
+        self.layout().addWidget(steps_label)
+
+        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
+        self.order = IntSpinBox(self, vmin=3, vmax=5, vdefault=3, tooltip="Select the order of the multipole expansion")
+        steps_widget.layout().addRow("Multipole order", self.order)
+        self.layout().addWidget(steps_widget)
 
     def get_distance(self) -> "RangeObject":
         """Return the distance range."""
@@ -134,6 +138,10 @@ class SystemPairConfig(SystemBaseConfig):
         if not item.isChecked():
             return RangeObject(0, 0, steps)
         return RangeObject(*item.values(), steps)  # type: ignore
+
+    def get_order(self) -> int:
+        """Return the order of the multipole expansion."""
+        return int(self.order.value())
 
 
 class RangeBase(WidgetV):

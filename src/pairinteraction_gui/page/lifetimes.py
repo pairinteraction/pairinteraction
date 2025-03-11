@@ -84,7 +84,7 @@ class LifetimesPage(SimulationPage):
 
         self.mpl_cursor = mplcursors.cursor(
             self.artists,
-            hover=True,
+            hover=mplcursors.HoverMode.Transient,
             annotation_kwargs={
                 "bbox": {"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
                 "arrowprops": {"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
