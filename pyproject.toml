@@ -18,8 +18,6 @@ authors = [
     { name = "Sebastian Weber" },
     { name = "Henri Menke" },
 ]
-homepage = "https://www.pairinteraction.org"
-repository = "https://github.com/pairinteraction/pairinteraction"
 dependencies = [
     "numpy",
     "pint",
@@ -27,6 +25,10 @@ dependencies = [
     "pyqtgraph",
     "scipy",
 ]
+
+[project.urls]
+Homepage = "https://www.pairinteraction.org"
+Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [tool.scikit-build]
 cmake.verbose = true
