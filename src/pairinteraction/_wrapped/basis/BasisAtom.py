@@ -52,7 +52,7 @@ class BasisAtomBase(BasisBase[KetAtom]):
             >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
             >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
             >>> print(basis)
-            BasisAtomReal(n=(57, 63), l=(0, 3), energy=(1008911.9215883961, 1009111.9215883961), energy_unit=GHz)
+            BasisAtom(n=(57, 63), l=(0, 3), energy=(1008911.9216, 1009111.9216), energy_unit=GHz)
 
         Args:
             species: The species of the atom.
@@ -120,11 +120,11 @@ class BasisAtomBase(BasisBase[KetAtom]):
         if hasattr(self, "_qns"):
             args += ", ".join(f"{k}={v}" for k, v in self._qns.items())
         if hasattr(self, "_energy"):
-            args += f", energy=({self._energy[0]}, {self._energy[1]}), energy_unit={self._energy_unit}"
+            args += f", energy=({self._energy[0]:.4f}, {self._energy[1]:.4f}), energy_unit={self._energy_unit}"
         if hasattr(self, "_additional_kets"):
             args += f", additional_kets={self._additional_kets}"
         if len(args) == 0:
-            args += f"{self.kets[0]} ... {self.kets[-1]}"
+            return super().__repr__()
         return f"{type(self).__name__}({args})"
 
     @overload

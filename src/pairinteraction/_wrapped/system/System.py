@@ -45,22 +45,22 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def __init__(self, basis: BasisType) -> None:
         self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
-        self.update_basis()
+        self._update_basis()
 
     @classmethod
     def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPSystem) -> "Self":
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
-        obj.update_basis()
+        obj._update_basis()
         return obj
-
-    def __str__(self) -> str:
-        return self.__repr__()
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.basis!r}, is_diagonal={self.is_diagonal})"
 
-    def update_basis(self) -> None:
+    def __str__(self) -> str:
+        return self.__repr__().replace("Real", "").replace("Complex", "")
+
+    def _update_basis(self) -> None:
         self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())  # type: ignore
 
     def diagonalize(
@@ -108,7 +108,7 @@ class SystemBase(ABC, Generic[BasisType]):
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             self._cpp.transform(sorter)
 
-        self.update_basis()
+        self._update_basis()
         return self
 
     @property

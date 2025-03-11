@@ -44,4 +44,4 @@ def diagonalize(
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             cpp_system.transform(sorter)
         system._cpp = cpp_system  # type: ignore [reportPrivateUsage]
-        system.update_basis()
+        system._update_basis()

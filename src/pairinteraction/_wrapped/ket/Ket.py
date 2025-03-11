@@ -37,11 +37,11 @@ class KetBase(ABC):
         obj._cpp = cpp_obj
         return obj
 
-    def __str__(self) -> str:
-        return self.get_label("ket")
-
     def __repr__(self) -> str:
         return self.get_label("raw")
+
+    def __str__(self) -> str:
+        return self.get_label("ket")
 
     def get_label(self, format: Literal["ket", "bra", "raw"]) -> str:
         """Label representing the ket."""

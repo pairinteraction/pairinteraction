@@ -40,11 +40,12 @@ class BasisBase(ABC, Generic[KetType]):
         obj._cpp = cpp_obj
         return obj
 
-    def __str__(self) -> str:
-        return self.__repr__()
-
     def __repr__(self) -> str:
-        return f"{type(self).__name__} object with {self.number_of_states} states and {self.number_of_kets} kets"
+        args = f"{self.kets[0]} ... {self.kets[-1]}"
+        return f"{type(self).__name__}({args})"
+
+    def __str__(self) -> str:
+        return self.__repr__().replace("Real", "").replace("Complex", "")
 
     @cached_property
     def kets(self) -> list[KetType]:
