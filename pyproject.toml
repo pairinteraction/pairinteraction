@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "scikit-build-core",
-    "swig",
+    "swig; sys_platform != 'win32'",
     "numpy",
     "pyqt5",
 ]
