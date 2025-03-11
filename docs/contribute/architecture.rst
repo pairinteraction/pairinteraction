@@ -1,5 +1,5 @@
-Developer Informations
-======================
+Overview About pairinteraction's Architecture
+=============================================
 
 This page contains additional information about the pairinteraction library, which is intended for developers and advanced users.
 

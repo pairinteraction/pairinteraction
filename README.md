@@ -1,7 +1,6 @@
 # Pairinteraction - Calculating Properties of Rydberg Atoms
 
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
-<!-- [![PyPI Package][pypi-svg]][pypi-link]  add again when we have a release on pypi -->
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
 [![CI Workflow][gh-workflow-svg]][gh-workflow-link]
 [![C++ Coverage - ctest][coverage-cpp-ctest-svg]][coverage-cpp-ctest-link]
@@ -32,7 +31,7 @@ The *pairinteraction* software calculates properties of Rydberg atoms. The softw
 pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
 ```
 
-You can use the pairinteraction software [as a Python library][tutorial-link], or you can launch the graphical user interface from the command line:
+You can use the pairinteraction software [as a Python library][tutorial-link], or you can launch its graphical user interface from the command line:
 
 ```bash
 pairinteraction gui
@@ -51,10 +50,14 @@ pairinteraction gui
 
 * The software uses single-channel quantum defect theory (SQDT) and also **multi-channel quantum defect theory (MQDT)** for the accurate description of atoms.
 
+  The construction of Hamiltonians is accelerated by using pre-calculated matrix elements, which are stored in database tables. These tables are automatically downloaded from GitHub \[[1],[2]\] and cached locally when needed.
+
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
 [benchmark-results-link]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/data/benchmarking_results/0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
 [benchmark-tool]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/tools/benchmarking
+[1]: https://github.com/pairinteraction/database-sqdt
+[2]: https://github.com/pairinteraction/database-mqdt
 
 
 ## How to Cite
@@ -65,7 +68,7 @@ If you use pairinteraction in your research, please cite our tutorial paper:
 
 Pairinteraction relies on quantum defects provided by the community. Consider citing relevant publications for your atomic species alongside pairinteraction.
 
-<details>
+<p><details>
 <summary><b>Click to expand for quantum defect references</b></summary>
 
 | Element | Model                 | Identifier     | References                                                                                                                                                   |
@@ -86,7 +89,7 @@ Pairinteraction relies on quantum defects provided by the community. Consider ci
 
 The identifier can be used to specify an atomic species in the pairinteraction software.
 
-</details>
+</details></p>
 
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
 [10.1103/PhysRevA.34.2889]: https://doi.org/10.1103/PhysRevA.34.2889
@@ -124,15 +127,15 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 **Contributor Guide**
 
-- [Ways to Contribute] - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
+- [Getting Started as a Contributor] - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
 
-- [Developer Informations] - Find out how pairinteraction is structured and how to extend it.
+- [Overview About pairinteraction's Architecture] - Find out how pairinteraction is structured.
 
-- [Database Format] - Explore the database that we use for storing atomic states and matrix elements.
+- [Database Format] - Explore the database for storing atomic states and matrix elements.
 
 **Utility Tools [External Links]**
 
-- [MQDT.jl] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
+- [jl-mqdt] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 
 - [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
 
@@ -140,10 +143,10 @@ these tutorials enable you to leverage pairinteraction for your projects.
 [Tutorials]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials.html
 [API Reference]: https://www.pairinteraction.org/pairinteraction/sphinx/html/reference.html
 [Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications.html
-[Ways to Contribute]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribution.html
-[Developer Informations]: https://www.pairinteraction.org/pairinteraction/sphinx/html/architecture.html
+[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/getting_started.html
+[Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/architecture.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/database.html
-[mqdt.jl]: https://github.com/pairinteraction/mqdt.jl/
+[jl-mqdt]: https://github.com/pairinteraction/jl-mqdt/
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
 
@@ -157,10 +160,10 @@ The software is maintained by:
 
 In addition, the following people contributed significantly to the current and/or previous versions of the software:
 * [Henri Menke]
-* [Frederic Hummel] - jl-mqdt, a Julia package for multi-channel quantum defect theory, matrix elements
+* [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
 * [Eduard Braun] - Perturbative calculations, installation instructions for Windows
-* [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet ported to the new version)*
-* [Simon Hollerith] - Documentation of the graphical user interface *(not yet ported to the new versionn)*
+* [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
+* [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
 
 We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information.
 

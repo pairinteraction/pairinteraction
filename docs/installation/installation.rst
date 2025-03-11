@@ -12,11 +12,11 @@ we recommend installing pairinteraction from the `Python Package Index`_ by call
 
 .. code-block:: bash
 
-    pip install pairinteraction
+    pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
 
 from the command line if you are using the `pip`_ package manager.
-Alternatively, you can also run ``uv pip install pairinteraction`` or ``conda install pairinteraction``,
-if you are using the `uv`_ or `conda`_ package manager, respectively.
+Alternatively, you can run ``uv pip install [...]``,
+if you are using the `uv`_ package manager.
 
 This gives you access to the pairinteraction Python library.
 Before starting to use the pairinteraction library, we recommend running the following commands in the terminal
@@ -50,8 +50,6 @@ For more information on how to use the graphical user interface, visit the :ref:
 .. _Python Package Index: https://pypi.org/project/pairinteraction
 .. _pip: https://pypi.org/project/pip/
 .. _uv: https://docs.astral.sh/uv/
-.. _conda: https://anaconda.org/anaconda/conda
-
 
 .. Binary Installers
 .. -----------------

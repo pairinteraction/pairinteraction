@@ -18,8 +18,8 @@
     :caption: Contributor Guide
     :hidden:
 
-    contribute/ways.rst
-    contribute/developer.rst
+    contribute/getting_started.rst
+    contribute/architecture.rst
     contribute/databases.rst
 
 .. toctree::
@@ -27,5 +27,5 @@
     :caption: Utility Tools [External Links]
     :hidden:
 
-    MQDT.jl <http://mqdt.pairinteraction.org>
-    ryd-numerov <http://ryd-numerov.pairinteraction.org>
+    jl-mqdt <http://mqdt.pairinteraction.org>
+    ryd-numerov <http://numerov.pairinteraction.org>
