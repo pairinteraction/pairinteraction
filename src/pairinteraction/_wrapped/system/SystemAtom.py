@@ -42,7 +42,7 @@ class SystemAtomBase(SystemBase[BasisType]):
             >>> system = system.set_electric_field([0.1, 0, 0.1], unit="V/cm")
             >>> system = system.enable_diamagnetism(True)
             >>> print(system)
-            SystemAtomReal(BasisAtomReal(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
+            SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
             >>> system = system.diagonalize()
             >>> eigenvalues = system.get_eigenvalues(unit="GHz")
             >>> print(f"{eigenvalues[0] - ket.get_energy(unit='GHz'):.5f}")

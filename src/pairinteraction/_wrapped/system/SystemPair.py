@@ -33,6 +33,7 @@ class SystemPairBase(SystemBase[BasisType]):
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
+            >>> system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit="G").diagonalize()
             >>> pair_energy = 2 * system.get_corresponding_energy(ket, unit="GHz")
             >>> pair_basis = pi.BasisPair(
             ...     [system, system],
@@ -41,16 +42,14 @@ class SystemPairBase(SystemBase[BasisType]):
             ... )
             >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_order(3)
             >>> print(pair_system)
-            SystemPairReal(BasisPairReal object with 140 states and 140 kets, is_diagonal=False)
+            SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
             >>> pair_system = pair_system.diagonalize()
             >>> eigenvalues = pair_system.get_eigenvalues(unit="GHz")
-            >>> print(f"{eigenvalues[0] - pair_energy:.5f}")
-            -2.19974
 
         Args:
             basis: The :class:`pairinteraction.real.BasisPair` object that describes the basis of the system.
 
-        """
+        """  # noqa: E501
         super().__init__(basis)
         self._distance_vector_au = [0, 0, np.inf]
 

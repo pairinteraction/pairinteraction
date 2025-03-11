@@ -56,7 +56,7 @@ class BasisPairBase(BasisBase[KetPairType]):
             >>> import pairinteraction.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
-            >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
+            >>> system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit="G").diagonalize()
             >>> pair_energy = 2 * system.get_corresponding_energy(ket, unit="GHz")
             >>> pair_basis = pi.BasisPair(
             ...     [system, system],
@@ -64,7 +64,7 @@ class BasisPairBase(BasisBase[KetPairType]):
             ...     energy_unit="GHz",
             ... )
             >>> print(pair_basis)
-            BasisPairReal object with 140 states and 140 kets
+            BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)
 
         Args:
             systems: tuple of two SystemAtom objects, which define the two atoms, from which the BasisPair is build.
