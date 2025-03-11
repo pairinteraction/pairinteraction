@@ -9,11 +9,11 @@ repos:
       - id: check-added-large-files
       - id: check-merge-conflict
   # Formatters (hooks that re-write files) and linters (hooks that check but don't alter files)
-  - repo: https://github.com/pocc/pre-commit-hooks
-    rev: v1.3.5
-    hooks:
-      - id: clang-format
-        args: ["-i", "--style=file"]
+  # - repo: https://github.com/pocc/pre-commit-hooks
+  #   rev: v1.3.5
+  #   hooks:
+  #     - id: clang-format
+  #       args: ["-i", "--style=file"]
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.5.4
     hooks:
