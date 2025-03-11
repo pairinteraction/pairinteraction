@@ -1,10 +1,14 @@
 import logging
-from typing import Any
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 import pairinteraction._wrapped as pi
 from pairinteraction_gui.config import BasisAtomConfig, KetAtomConfig, SystemAtomConfig
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +53,34 @@ class SystemAtomPage(SimulationPage):
         energies = [system.get_eigenvalues("GHz") - ket_energy for system in self.systems]
         overlaps = [system.get_eigenbasis().get_overlaps(self.ket) for system in self.systems]
 
-        self.plotwidget.plot(energies, self.fields, overlaps)
+        x_values, xlabel = self.plotwidget._get_x_values_and_label_from_ranges(self.fields)
+
+        self.plotwidget.plot(x_values, energies, overlaps, xlabel=xlabel)
+
+        self.add_short_labels(energies)
+        self.plotwidget.add_cursor(x_values[0], energies[0], self.systems[0])
 
         self.plotwidget.canvas.draw()
+
+    def add_short_labels(
+        self,
+        energies: Sequence["NDArray[Any]"],
+    ) -> None:
+        ax = self.plotwidget.canvas.ax
+        x_lim = ax.get_xlim()
+        ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
+
+        basis0 = self.systems[0].get_eigenbasis()
+        corresponding_kets = [basis0.get_corresponding_ket(i) for i in range(basis0.number_of_states)]
+
+        used = set()
+        l_dict = {0: "S", 1: "P", 2: "D", 3: "F", 4: "G", 5: "H"}
+        for ket, energy in zip(corresponding_kets, energies[0]):
+            if "mqdt" not in ket.species:
+                short_label = f"{ket.n} {l_dict.get(ket.l, ket.l)}"  # type: ignore
+            else:
+                short_label = f"{ket.n} L={ket.l:.1f}"
+            if short_label in used:
+                continue
+            used.add(short_label)
+            self.plotwidget.canvas.ax.text(x_lim[0], energy, short_label, va="center", ha="right")
