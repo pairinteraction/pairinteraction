@@ -5,3 +5,4 @@ pyqt5~=5.15.6
 pyqtgraph~=0.12.4
 scipy~=1.8.0
 wheel~=0.37.1
+swig~=4.3.0

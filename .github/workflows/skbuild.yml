@@ -40,7 +40,7 @@ jobs:
         - os: ubuntu-latest # runs in container anyway
           CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
           CMAKE_ARGS: "-DBUILD_TESTING=Off"
-        - os: macos-12
+        - os: macos-13
           CXXFLAGS: "-Wall -Wextra -Wpedantic"
           CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: windows-2019
@@ -64,9 +64,10 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install boost cereal doctest eigen fmt gsl lapack
+      run: |
+        brew install boost cereal doctest eigen fmt gsl lapack
 
-    - uses: pypa/cibuildwheel@v2.16
+    - uses: pypa/cibuildwheel@v2.23
       env:
         CMAKE_ARGS: ${{ matrix.CMAKE_ARGS }}
         CXXFLAGS: ${{ matrix.CXXFLAGS }}
@@ -79,4 +80,5 @@ jobs:
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v4
       with:
+        name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl

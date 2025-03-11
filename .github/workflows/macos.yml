@@ -21,7 +21,7 @@ env:
 
 jobs:
   macos:
-    runs-on: macos-12
+    runs-on: macos-13
     env:
       package: pairinteraction-install-osx.dmg
     steps:

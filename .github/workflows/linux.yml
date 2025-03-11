@@ -71,8 +71,15 @@ jobs:
 
   manylinux:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
+      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
     container:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
+      volumes:
+        - /node20217:/node20217
+        - /node20217:/__e/node20
     steps:
     - uses: actions/checkout@v4
       with:

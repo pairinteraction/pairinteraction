@@ -52,6 +52,5 @@ test-command = [
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 
-# MACOSX_DEPLOYMENT_TARGET=11.0 is broken: https://github.com/pypa/pip/issues/11789
 [tool.cibuildwheel.macos.environment]
-MACOSX_DEPLOYMENT_TARGET = "10.15"
+MACOSX_DEPLOYMENT_TARGET = "13.0"
