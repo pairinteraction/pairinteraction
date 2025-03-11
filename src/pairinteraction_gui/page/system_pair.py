@@ -103,7 +103,10 @@ class SystemPairPage(SimulationPage):
         overlaps = [system.get_eigenbasis().get_overlaps(self.kets) for system in self.systems]
 
         ranges = {**self.fields, "distance": self.distance, "angle": self.angle}
+        x_values, xlabel = self.plotwidget._get_x_values_and_label_from_ranges(ranges)
 
-        self.plotwidget.plot(energies, ranges, overlaps)
+        self.plotwidget.plot(x_values, energies, overlaps, xlabel=xlabel)
+
+        self.plotwidget.add_cursor(x_values[-1], energies[-1], self.systems[-1])
 
         self.plotwidget.canvas.draw()
