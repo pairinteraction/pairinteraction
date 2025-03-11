@@ -71,16 +71,19 @@ jobs:
 
   manylinux:
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
-      ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
     container:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
       volumes:
-        - /node20217:/node20217
-        - /node20217:/__e/node20
+        # HACK: make it possible to install a version of node20 that works with an old glibc
+        - /tmp:/__e/node20
     steps:
+    - name: install node 20 with old glibc
+      run: |
+        yum install -y curl
+        NODE_VERSION=v20.18.1
+        NODE_URL=https://unofficial-builds.nodejs.org/download/release/$NODE_VERSION/node-$NODE_VERSION-linux-x64-glibc-217.tar.gz
+        curl -Lo /tmp/node.tar.gz $NODE_URL
+        tar -C /__e/node20 -x --strip-components=1 -f /tmp/node.tar.gz
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
