@@ -13,7 +13,7 @@ from pairinteraction_gui.qobjects.widget import WidgetH
 
 class Item(WidgetH):
     margin = (20, 0, 20, 0)
-    spacing = 5
+    spacing = 10
 
     def __init__(
         self,

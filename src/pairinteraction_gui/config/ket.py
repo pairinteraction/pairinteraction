@@ -77,7 +77,7 @@ class KetBaseConfig(BaseConfig):
         atom = len(self.species_combo)
 
         # Species selection
-        species_widget = WidgetForm(margin=(5, 15, 5, 5), spacing=10)
+        species_widget = WidgetForm()
         species_combo = QComboBox()
         species_combo.addItems(AVAILABLE_SPECIES)  # TODO get available species from pairinteraction
         species_combo.setToolTip("Select the atomic species")
@@ -204,7 +204,7 @@ class KetLifetimesConfig(KetBaseConfig):
             ket = self.get_ket_atom(0)
             temperature = self.get_temperature()
             lifetime = ket.get_lifetime(temperature, temperature_unit="K", unit="mus")
-            self.lifetime_label.setText(f"Lifetime: {lifetime} μs")
+            self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} μs")
             self.lifetime_label.setStyleSheet(self._label_style_sheet)
         except Exception:
             self.lifetime_label.setText("Ket not found.")
@@ -226,7 +226,7 @@ class KetPairConfig(KetBaseConfig):
         self.layout().addWidget(QLabel("<b>Atom 1</b>"))
         self.setupOneKetAtom()
 
-        self.layout().addStretch(2)
+        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneKetAtom()
 

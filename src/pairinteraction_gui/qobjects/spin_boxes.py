@@ -72,17 +72,20 @@ class DoubleSpinBox(QDoubleSpinBox):
         vmin: float = 0,
         vmax: float = 999.9,
         vdefault: float = 0,
-        vstep: float = 0.1,
+        vstep: Optional[float] = None,
         suffix: Optional[str] = None,
+        decimals: int = 1,
         tooltip: Optional[str] = None,
     ) -> None:
         """Initialize the double spin box."""
         super().__init__(parent)
 
+        if vstep is None:
+            vstep = int(10**-decimals)
+        self.setDecimals(decimals)
+        self.setSingleStep(vstep)
         self.setRange(vmin, vmax)
         self.setValue(vdefault)
-        self.setSingleStep(vstep)
-        self.setDecimals(1)
 
         if suffix:
             self.setSuffix(suffix)

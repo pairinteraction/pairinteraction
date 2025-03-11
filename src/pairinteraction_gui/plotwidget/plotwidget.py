@@ -67,8 +67,8 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
-        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-0.5, suffix="GHz")
-        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=0.5, suffix="GHz")
+        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-0.5, decimals=2)
+        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=0.5, decimals=2)
         self.energy_range = RangeItem(
             self, "Calculate the energies from", min_spinbox, max_spinbox, "GHz", checked=False
         )

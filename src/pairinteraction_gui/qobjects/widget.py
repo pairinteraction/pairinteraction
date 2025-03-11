@@ -86,3 +86,5 @@ class WidgetForm(Widget[QFormLayout]):
     """Custom Widget class with form (QFormLayout) layout."""
 
     layout_type = QFormLayout
+    margin = (5, 15, 5, 5)
+    spacing = 10
