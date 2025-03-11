@@ -1,4 +1,4 @@
-name: Windows
+name: Windows-no-mkl
 
 on:
   push:
@@ -16,9 +16,8 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
-  VERBOSE: 1
   CMAKE_BUILD_TYPE: Release
-  CXXFLAGS: "/W1 /Ox /arch:AVX2"
+  CXXFLAGS: "/W3 /Ox"
 
 jobs:
   build:
@@ -28,9 +27,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-
-      - name: Install Intel oneAPI Math Kernel Library (oneMKL)
-        uses: ./.github/actions/install-intel-mkl
 
       - name: Install Windows dependencies
         uses: ./.github/actions/setup-vcpkg
@@ -45,9 +41,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           cmake -S . -B build/ -G "Visual Studio 16 2019" -DBUILD_TESTING=On ^
-              -DMKL_THREADING=intel_thread ^
               -DPython3_FIND_REGISTRY=LAST ^
               -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
 
@@ -91,5 +85,5 @@ jobs:
           path: build/pairinteraction-install-windows.exe
       - uses: actions/upload-artifact@v4
         with:
-          name: pairinteraction-windows-wheel
+          name: pairinteraction-windows-wheel-no-mkl
           path: build/wheelhouse/*.whl

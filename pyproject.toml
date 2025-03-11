@@ -9,10 +9,10 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pairinteraction"
-version = "0.9.9"
+version = "0.9.10"
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = { text = "GPL-3.0-or-later OR LGPL-3.0-or-later" }
 authors = [
     { name = "Sebastian Weber" },
@@ -37,9 +37,9 @@ wheel.py-api = "py3"
 
 [tool.cibuildwheel]
 build = [
-  "cp38-manylinux_x86_64",
-  "cp38-win_amd64",
-  "cp38-macosx_x86_64",
+  "cp39-manylinux_x86_64",
+  "cp39-win_amd64",
+  "cp39-macosx_x86_64",
 ]
 build-verbosity = 1
 test-command = [
