@@ -161,7 +161,7 @@ The software is maintained by:
 In addition, the following people contributed significantly to the current and/or previous versions of the software:
 * [Henri Menke]
 * [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
-* [Eduard Braun] - Perturbative calculations, installation instructions for Windows
+* [Eduard J. Braun] - Perturbative calculations, installation instructions for Windows
 * [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
 
@@ -176,7 +176,7 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 [Johannes Mögerle]: https://github.com/johannes-moegerle
 [Henri Menke]: https://github.com/hmenke
 [Frederic Hummel]: https://github.com/frederic-atom
-[Eduard Braun]: https://github.com/EduardJBraun
+[Eduard J. Braun]: https://github.com/EduardJBraun
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
 [contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html

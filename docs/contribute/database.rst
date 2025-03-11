@@ -1,3 +1,5 @@
+.. _database:
+
 Database Format
 ===============
 
@@ -11,7 +13,7 @@ The currently available databases are hosted on GitHub and are downloaded by pai
 .. _database-sqdt: https://github.com/pairinteraction/database-sqdt
 .. _database-mqdt: https://github.com/pairinteraction/database-mqdt
 
-.. _ryd-numerov: http://numerov.pairinteraction.org
+.. _ryd-numerov: https://github.com/pairinteraction/ryd-numerov
 .. _jl-mqdt: http://mqdt.pairinteraction.org
 
 

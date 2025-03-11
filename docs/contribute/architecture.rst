@@ -1,14 +1,39 @@
 Overview About pairinteraction's Architecture
 =============================================
 
-This page contains additional information about the pairinteraction library, which is intended for developers and advanced users.
+This page provides an overview about how the pairinteraction software is structured and how it is working internally. The information is intended for developers and advanced users who want to understand the software's architecture in more detail.
 
-The heart of the pairinteraction library is a high-performance library for constructing and diagonalizing Hamiltonians of systems of Rydberg atoms implemented in C++.
+Code Structure
+--------------
 
-The library provides a Python interface for easily accessing the functionality in a pythonic way.
-The Python classes are defined inside ``pairinteraction._wrapped`` and then aliased to the ``pairinteraction.real`` and ``pairinteraction.complex`` namespaces.
-The two submodules ``real`` and ``complex`` are completely identical in their functionality, but only differ in the data type they use in the C++ backend.
+The pairinteraction software consists of three parts. Each part is implemented in a separate directory in the pairinteraction repository:
 
-The bare C++ functionality is bound to Python using `nanobind`_, all the original bound C++ classes and functions can be accessed via the ``pairinteraction._backend`` namespace.
+* :github:`src/cpp <tree/master/src/cpp>` - A high performance C++ backend for constructing and diagonalizing Hamiltonians of systems of Rydberg atoms. Python bindings are created using `nanobind`_.
+
+* :github:`src/pairinteraction <tree/master/src/pairinteraction>` - A Python library that wraps the Python bindings, providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library adds additional functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The Python classes that wrap the Python bindings are defined inside the private submodules ``pairinteraction._wrapped`` and then aliased to the ``pairinteraction.real`` and ``pairinteraction.complex`` namespaces. The two submodules ``real`` and ``complex`` are completely identical in their functionality, but only differ in the data type they use.
+
+* :github:`src/pairinteraction_gui <tree/master/src/pairinteraction_gui>` - A graphical user interface (GUI) that allows users to perform common calculations without writing any code. The GUI is built on top of the Python library.
+
+Control Flow
+------------
+
+Calculations with the pairinteraction software typically involve three steps that we describe in the following. Hereby, the result of one step is used as input for the next step. Note that, regardless of whether you use the Python library or the GUI, the steps are always the same and eventually performed by the C++ backend:
+
+1. Constructing a Basis
+~~~~~~~~~~~~~~~~~~~~~~~
+
+A user can specify a basis by restricting the energies and quantum numbers of the states to be included. If a basis for a single atom should be constructed, the pairinteraction software uses these restrictions internally to search its :ref:`database <database>` for states that match the criteria. If a basis for two atoms should be constructed, the pairinteraction software combines eigenstates of two single-atom Hamiltonians so that the resulting pair states match the criteria.
+
+2. Constructing a Hamiltonian
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Independently on whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain matrix elements of fundamental operators within a single-atom basis (for example, matrix elements for the dipole operators d0, d+, and d-). The matrix elements of the operators are received from pairinteraction's :ref:`database <database>` where they are indexed by the corresponding states. Next, the matrix elements of the fundamental operators are combined to matrix elements of more complex operators (for example, the operator describing the interaction with an electric field). For the multipole interaction between two atoms, tensor products of the single-atom operators are required. To accelerate the calculation of the tensor products, we take into account energy restrictions of the pair basis, ensuring that only matrix elements are constructed that belong to pair states that are energetically allowed.
+
+
+3. Diagonalizing the Hamiltonian
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Hamiltonian is diagonalized using Intel's MKL library. If multiple Hamiltonians have been constructed, for example, for different interatomic distances, they can be diagonalized in parallel by passing a list of Hamiltonians to the diagonalization routine. The parallelization is done in C++, circumventing the global interpreter lock of Python.
+
 
 .. _nanobind: https://github.com/wjakob/nanobind
