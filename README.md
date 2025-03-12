@@ -57,6 +57,9 @@ pairinteraction gui
 
   The construction of Hamiltonians is accelerated by using pre-calculated matrix elements, which are stored in database tables. These tables are automatically downloaded from GitHub \[[1],[2]\] and cached locally when needed.
 
+[1]: https://github.com/pairinteraction/database-sqdt/releases
+[2]: https://github.com/pairinteraction/database-mqdt/releases
+
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
 [benchmark-results-link]: https://github.com/pairinteraction/pairinteraction/raw/master/data/benchmarking_results/0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png

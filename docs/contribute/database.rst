@@ -10,8 +10,8 @@ The currently available databases are hosted on GitHub and are downloaded by pai
 * `database-sqdt`_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool `ryd-numerov`_.
 * `database-mqdt`_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool `jl-mqdt`_.
 
-.. _database-sqdt: https://github.com/pairinteraction/database-sqdt
-.. _database-mqdt: https://github.com/pairinteraction/database-mqdt
+.. _database-sqdt: https://github.com/pairinteraction/database-sqdt/releases
+.. _database-mqdt: https://github.com/pairinteraction/database-mqdt/releases
 
 .. _ryd-numerov: https://github.com/pairinteraction/ryd-numerov
 .. _jl-mqdt: http://mqdt.pairinteraction.org
