@@ -121,7 +121,7 @@ jobs:
     name: Test installing the sdist
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     needs: [sdist]
     timeout-minutes: 15
     steps:

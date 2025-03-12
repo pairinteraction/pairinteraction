@@ -1,4 +1,4 @@
-# Pairinteraction - Calculating Properties of Rydberg Atoms
+# Pairinteraction - A Rydberg Interaction Calculator
 
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
@@ -13,15 +13,14 @@
 [license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
 [pypi-link]: https://pypi.org/project/pairinteraction/
-[gh-workflow-svg]: https://github.com/atom-pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
-[gh-workflow-link]: https://github.com/atom-pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
+[gh-workflow-svg]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
+[gh-workflow-link]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
 [coverage-cpp-ctest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
-[coverage-cpp-ctest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-ctest/html/index.html
+[coverage-cpp-ctest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-ctest/html/index.html
 [coverage-cpp-pytest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
-[coverage-cpp-pytest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-pytest/html/index.html
+[coverage-cpp-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-pytest/html/index.html
 [coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
-[coverage-python-pytest-link]: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/python-pytest/html/index.html
-
+[coverage-python-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/html/index.html
 
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
 
@@ -39,7 +38,6 @@ pairinteraction gui
 
 [tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
 
-
 ## Highlights
 
 * For calculating Rydberg pair potentials, the software uses a similar approach as the [old version of pairinteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.9), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
@@ -54,11 +52,7 @@ pairinteraction gui
 
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
-[benchmark-results-link]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/data/benchmarking_results/0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
-[benchmark-tool]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/tools/benchmarking
-[1]: https://github.com/pairinteraction/database-sqdt
-[2]: https://github.com/pairinteraction/database-mqdt
-
+[benchmark-results-link]: https://github.com/pairinteraction/pairinteraction/raw/master/data/benchmarking_results/0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
 
 ## How to Cite
 
@@ -180,7 +174,6 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
 [contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html
-
 
 ## License
 

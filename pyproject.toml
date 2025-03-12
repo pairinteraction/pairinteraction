@@ -20,7 +20,6 @@ authors = [
 ]
 maintainers = [
     { name = "Sebastian Weber", email = "seweber@posteo.de" },
-    { name = "Henri Menke", email = "henri@henrimenke.de" },
     { name = "Johannes Mögerle", email = "johannes.moegerle@itp3.uni-stuttgart.de" },
 ]
 classifiers = [
@@ -143,7 +142,7 @@ test-command = [
 
 [[tool.cibuildwheel.overrides]]  # linux overrides
 select = "*-????linux_*"
-manylinux-x86_64-image = "ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker"
+manylinux-x86_64-image = "ghcr.io/pairinteraction/pairinteraction-manylinux:docker"
 config-settings."cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB" = "/opt/duckdb"
 inherit.environment = "append"
 environment.CXXFLAGS = "-march=x86-64-v3"

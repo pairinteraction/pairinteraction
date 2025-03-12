@@ -58,7 +58,7 @@ jobs:
       CXXFLAGS: ${{ matrix.CXXFLAGS }}
 
     container:
-      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/atom-pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
+      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
 
     steps:
     - uses: actions/checkout@v4

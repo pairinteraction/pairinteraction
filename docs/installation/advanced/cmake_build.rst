@@ -36,7 +36,7 @@ A full list of build options is provided in the following:
 .. [#] This mode implies building the debug version of the software.
 
 Moreover, executing the commands manually allows for running additional targets.
-For example, you can use the ``doxygen`` target to build the C++ `doxygen documentation <https://cuddly-adventure-1w1n2vp.pages.github.io/doxygen/html/index.html>`_ by executing ``cmake --build . --target doxygen``.
+For example, you can use the ``doxygen`` target to build the C++ `doxygen documentation <https://www.pairinteraction.org/pairinteraction/doxygen/html/index.html>`_ by executing ``cmake --build . --target doxygen``.
 In contrast, if you use `pip`_ to build the software, only the default target for building the library is executed.
 In the following, a list of all available targets is provided.
 Note that some targets require specific build options to be enabled in addition to the default options, and have varying names depending on the platform.

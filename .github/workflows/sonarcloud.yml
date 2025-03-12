@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     env:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
