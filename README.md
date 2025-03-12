@@ -3,6 +3,7 @@
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
 [![CI Workflow][gh-workflow-svg]][gh-workflow-link]
+[![Quality Gate Status][sonarcloud-svg]][sonarcloud-link]
 [![C++ Coverage - ctest][coverage-cpp-ctest-svg]][coverage-cpp-ctest-link]
 [![C++ Coverage - pytest][coverage-cpp-pytest-svg]][coverage-cpp-pytest-link]
 [![Python Coverage - pytest][coverage-python-pytest-svg]][coverage-python-pytest-link]
@@ -16,13 +17,15 @@
 [pypi-link]: https://pypi.org/project/pairinteraction/
 [gh-workflow-svg]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
 [gh-workflow-link]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
+[sonarcloud-svg]: https://sonarcloud.io/api/project_badges/measure?project=pairinteraction_pairinteraction&metric=alert_status
+[sonarcloud-link]: https://sonarcloud.io/dashboard?id=pairinteraction_pairinteraction
 [coverage-cpp-ctest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
 [coverage-cpp-ctest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-ctest/html/index.html
 [coverage-cpp-pytest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
 [coverage-cpp-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-pytest/html/index.html
 [coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
 [coverage-python-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/html/index.html
-[docs-svg]: https://img.shields.io/badge/docs-online-green.svg?style=flat
+[docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
 [docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
 
 
