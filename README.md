@@ -6,6 +6,7 @@
 [![C++ Coverage - ctest][coverage-cpp-ctest-svg]][coverage-cpp-ctest-link]
 [![C++ Coverage - pytest][coverage-cpp-pytest-svg]][coverage-cpp-pytest-link]
 [![Python Coverage - pytest][coverage-python-pytest-svg]][coverage-python-pytest-link]
+[![Documentation][docs-svg]][docs-link]
 
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
@@ -21,6 +22,9 @@
 [coverage-cpp-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-pytest/html/index.html
 [coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
 [coverage-python-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/html/index.html
+[docs-svg]: https://img.shields.io/badge/docs-online-green.svg?style=flat
+[docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
+
 
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
 
@@ -40,7 +44,7 @@ pairinteraction gui
 
 ## Highlights
 
-* For calculating Rydberg pair potentials, the software uses a similar approach as the [old version of pairinteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.9), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
+* For calculating Rydberg pair potentials, the software uses a similar approach as the [old version of pairinteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.10), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
 
   ![benchmarking results][benchmark-results-link]
 
@@ -133,13 +137,13 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 - [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
 
-[Installation]: https://www.pairinteraction.org/pairinteraction/sphinx/html/installation.html
-[Tutorials]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials.html
-[API Reference]: https://www.pairinteraction.org/pairinteraction/sphinx/html/reference.html
-[Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications.html
-[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/getting_started.html
-[Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/architecture.html
-[Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/database.html
+[Installation]: https://www.pairinteraction.org/pairinteraction/sphinx/html/installation/installation.html
+[Tutorials]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
+[API Reference]: https://www.pairinteraction.org/pairinteraction/sphinx/html/api_reference.html
+[Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications/publications.html
+[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
+[Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/architecture.html
+[Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/database.html
 [jl-mqdt]: https://github.com/pairinteraction/jl-mqdt/
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
@@ -173,7 +177,7 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 [Eduard J. Braun]: https://github.com/EduardJBraun
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
-[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/ways.html
+[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
 
 ## License
 

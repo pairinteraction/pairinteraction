@@ -27,5 +27,5 @@
     :caption: Utility Tools [External Links]
     :hidden:
 
-    jl-mqdt <http://mqdt.pairinteraction.org>
-    ryd-numerov <https://github.com/pairinteraction/ryd-numerov>
+    jl-mqdt <https://github.com/pairinteraction/jl-mqdt/>
+    ryd-numerov <https://github.com/pairinteraction/ryd-numerov/>
