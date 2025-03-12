@@ -58,8 +58,7 @@ class HalfIntSpinBox(QDoubleSpinBox):
 
     def valueFromText(self, text: str) -> float:
         """Convert text to value, ensuring it's a half integer."""
-        value = float(text)
-        value = int(10 * value) / 10
+        value = super().valueFromText(text)
         return round(value - 0.49) + 0.5
 
 

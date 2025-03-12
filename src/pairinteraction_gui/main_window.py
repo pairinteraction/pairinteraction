@@ -112,7 +112,7 @@ class MainWindow(QMainWindow):
         dockwidget.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea)
         dockwidget.setTitleBarWidget(QWidget())  # This removes the title bar
 
-        dockwidget.setMinimumWidth(350)
+        dockwidget.setMinimumWidth(375)
         dockwidget.setStyleSheet("""
             QToolBox {
                 background-color: white;
