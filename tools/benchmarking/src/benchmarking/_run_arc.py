@@ -1,4 +1,5 @@
 # /// script
+# requires-python = "==3.13.*"
 # dependencies = [
 # "arc-alkali-rydberg-calculator",
 # "numpy",

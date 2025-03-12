@@ -69,7 +69,7 @@ class AboutPage(BasePage):
 
         # Benchmark image
         image_label = QLabel()
-        pixmap = QPixmap(images_dir / "0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png")
+        pixmap = QPixmap(images_dir / "0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png")
         scaled_pixmap = pixmap.scaled(
             800, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )

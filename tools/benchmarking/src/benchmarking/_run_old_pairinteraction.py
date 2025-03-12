@@ -1,7 +1,7 @@
 # /// script
-# requires-python = "==3.9"
+# requires-python = "==3.13.*"
 # dependencies = [
-# "pairinteraction==0.9.8a0",
+# "pairinteraction==0.9.10",
 # "numpy",
 # ]
 # ///

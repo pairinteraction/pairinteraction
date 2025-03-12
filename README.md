@@ -54,7 +54,7 @@ pairinteraction gui
 
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
-[benchmark-results-link]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/data/benchmarking_results/0845d67063_1.4.0-cp312-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
+[benchmark-results-link]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/data/benchmarking_results/0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png
 [benchmark-tool]: https://github.com/atom-pairinteraction/pairinteraction/tree/master/tools/benchmarking
 [1]: https://github.com/pairinteraction/database-sqdt
 [2]: https://github.com/pairinteraction/database-mqdt
