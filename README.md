@@ -59,6 +59,7 @@ pairinteraction gui
 
 [1]: https://github.com/pairinteraction/database-sqdt/releases
 [2]: https://github.com/pairinteraction/database-mqdt/releases
+[benchmark-tool]: https://github.com/pairinteraction/pairinteraction/tree/master/tools/benchmarking
 
 * **Electric and magnetic fields in arbitrary directions** can be included in the calculations. Diamagnetism is supported.
 
