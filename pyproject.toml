@@ -50,18 +50,15 @@ dependencies = [
   "scipy >= 1.10",
   "pint >= 0.21.1",
   "colorama >= 0.3.4",
-  "scipy-stubs >= 1.15; python_version >= '3.10'",
-  "mkl == 2025.0.1; sys_platform != 'darwin'",
-  "pairinteraction[gui]",
-]
-
-[project.optional-dependencies]
-gui = [
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
   "mplcursors >= 0.6",
   "numpy >= 1.24",
+  "scipy-stubs >= 1.15; python_version >= '3.10'",
+  "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
+
+[project.optional-dependencies]
 doc = [
   "sphinx < 8.2", # FIXME
   "sphinx-rtd-theme >= 2.0",
@@ -189,7 +186,7 @@ env = [
 ]
 log_cli = true
 log_cli_level = "INFO"
-log_cli_format = "%(levelname)-8s [%(asctime)s.%(msecs)03d] [%(filename)s:%(lineno)d] %(message)s"
+log_cli_format = "[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"
 log_cli_date_format = "%H:%M:%S"
 
 [tool.sonar]

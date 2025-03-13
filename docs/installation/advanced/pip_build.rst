@@ -23,10 +23,9 @@ After cloning the repository and creating the virtual environment, you can build
 
 .. code-block:: bash
 
-    pip install -e .[gui]
+    pip install -e .
 
 This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. In order for pip to find CMake and VCPKG, make sure you have adjusted your environment variables as discussed in our section on :ref:`setting up your development environment<system_setup>`.
-By omitting the ``[gui]`` option, you can build the software without installing the additional dependencies needed for the graphical user interface.
 The option ``-e`` installs the software in editable mode, which means that changes to the python source code are directly reflected in the installed package.
 If you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual environment.
 
