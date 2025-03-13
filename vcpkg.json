@@ -2,14 +2,11 @@
     "name": "pairinteraction",
     "version-string": "1",
     "dependencies": [
-        {
-            "name": "cpp-httplib",
-            "features": [ "openssl" ]
-        },
         "cpptrace",
         "doctest",
         "eigen3",
         "fmt",
+        "openssl",
         "nlohmann-json",
         "spdlog"
     ]

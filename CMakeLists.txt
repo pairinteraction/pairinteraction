@@ -15,9 +15,9 @@ not produce the desired result. If you are a user trying to install \
 this package, consider using the following install command inside \
 the root directory of the repository:
 =====================================================================
-  $ pip install .[gui,doc]
+  $ pip install .[test,doc]
 =====================================================================
-Where the arguments 'gui' (installs the graphical user interface) \
+Where the arguments 'test' (installs dependencies for running tests) \
 and 'doc' (installs dependencies for building the documentation) \
 are optional and can be omitted. \
 

@@ -65,7 +65,7 @@ jobs:
 
     - name: Install MacOS dependencies
       if: ${{ matrix.distro == 'macos' }}
-      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json tbb
 
     - name: Install Windows dependencies
       if: ${{ matrix.distro == 'windows' }}

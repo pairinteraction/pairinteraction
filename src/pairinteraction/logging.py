@@ -67,12 +67,7 @@ def decorate_module_with_flush_logs(module: object) -> None:
 
 def configure_logging(
     level_str: str = "WARNING",
-    fmt: str = (
-        f"[{Fore.MAGENTA}%(asctime)s.%(msecs)03d{Style.RESET_ALL}] "
-        f"[%(levelname)s] "
-        f"[{Fore.CYAN}%(filename)s:%(lineno)d{Style.RESET_ALL}] "
-        f"%(message)s"
-    ),
+    fmt: str = ("[%(asctime)s.%(msecs)03d] [%(levelname)s] [%(filename)s:%(lineno)d] %(message)s"),
 ) -> None:
     """Configure colorfully formatted logging."""
 
