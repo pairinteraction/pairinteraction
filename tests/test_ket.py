@@ -1,3 +1,5 @@
+import pytest
+
 import pairinteraction.real as pi
 
 
@@ -6,5 +8,5 @@ def test_ket() -> None:
     assert ket.species == "Rb"
     assert ket.n == 60
     assert ket.l == 0
-    assert ket.j == 0.5
-    assert ket.m == 0.5
+    assert pytest.approx(ket.j) == 0.5  # NOSONAR
+    assert pytest.approx(ket.m) == 0.5  # NOSONAR

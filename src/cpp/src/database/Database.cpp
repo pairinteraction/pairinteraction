@@ -942,7 +942,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
     std::string id_of_kets = initial_basis->get_id_of_kets();
     std::string cache_key = fmt::format("{}_{}_{}", specifier, q, id_of_kets);
 
-    if (get_matrix_elements_cache().count(cache_key) == 0) {
+    if (!get_matrix_elements_cache().contains(cache_key)) {
         Eigen::Index dim = initial_basis->get_number_of_kets();
 
         std::vector<int> outerIndexPtr;
