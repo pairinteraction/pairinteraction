@@ -526,8 +526,7 @@ def _calculate_perturbative_hamiltonian(
     if separate:
         return (0.5 * (H_eff[order] + H_eff[order].conj().T)).todense(), eigvec_perturb
     else:
-        for i in range(len(H_eff) - 1):
-            H_eff[i + 1] += H_eff[i]
+        H_eff = np.cumsum(H_eff, axis=0)
         return (0.5 * (H_eff[-1] + H_eff[-1].conj().T)).todense(), eigvec_perturb
 
 
