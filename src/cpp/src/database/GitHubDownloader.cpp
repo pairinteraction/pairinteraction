@@ -7,13 +7,12 @@
 
 namespace pairinteraction {
 
-GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::Client>(host)) {
+GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClient>(host)) {
     client->set_follow_location(true);
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
     client->load_ca_cert_store(github_ca_cert.data(), github_ca_cert.size());
-    client->enable_server_certificate_verification(false);
 }
 
 GitHubDownloader::~GitHubDownloader() = default;
@@ -84,6 +83,6 @@ GitHubDownloader::RateLimit GitHubDownloader::get_rate_limit() const {
     return result.rate_limit;
 }
 
-std::string GitHubDownloader::get_host() const { return host; }
+std::string GitHubDownloader::get_host() const { return "https://" + host; }
 
 } // namespace pairinteraction
