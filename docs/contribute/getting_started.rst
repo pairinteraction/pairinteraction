@@ -18,6 +18,8 @@ Writing Tutorials
 Developing Features or Resolving Bugs
     Community contributions in the form of new features or bug fixes are highly appreciated. They not only alleviate the workload on our maintainers but also enrich the software with diverse expertise.
 
+    You can either implement new features in the C++ backend and write Python bindings and wrappers for them (as an example, see the :github:`function for diagonalizing the Hamiltonians of multiple systems in parallel <tree/master/src/cpp/src/diagonalizer/diagonalize.cpp>`), or write them purely in Python (as an example, see the :github:`perturbative calculation of dispersion coefficients and effective Hamiltonians <tree/master/src/pairinteraction/perturbative>`).
+
 .. _repository:
 
 Making Changes to the Repository
@@ -56,7 +58,15 @@ functioning on your computer. In the following we provide a brief summary of the
     In addition, you need to install the dependencies of the C++ backend: If you are
     using GNU/Linux or OS X, dependencies can be found in the Dockerfiles that are located in the :github:`docker
     branch <tree/docker/docker>`. If you are using Windows, you can use vcpkg_ with :github:`our configuration file
-    <tree/master/vcpkg.json>` to install the dependencies.
+    <tree/master/vcpkg.json>` to install the dependencies. You can do so by running the following commands in the root
+    directory of the repository on the powershell:
+
+    .. code-block:: bash
+
+        git clone https://github.com/microsoft/vcpkg.git
+        .\vcpkg\bootstrap-vcpkg.bat
+        .\vcpkg\vcpkg install --triplet x64-windows
+        $env:CMAKE_TOOLCHAIN_FILE = ".\vcpkg\scripts\buildsystems\vcpkg.cmake"
 
 -   After installing the dependencies and activating a python environment, you have two options to build the software.
     You can either build the complete software using ``pip``:
@@ -84,8 +94,8 @@ repository with the following command:
 
     pre-commit install
 
-This automatically formats your code and conducts style checks before each commit. For manual checks at any time,
-execute:
+This automatically formats your code and conducts style checks before each commit. On Windows, you might want to set `$env:SKIP = "clang-format"`
+to avoid calling clang-format which is difficult to install under Windows. For manual checks at any time, execute:
 
 .. code-block:: bash
 
@@ -107,14 +117,14 @@ If you used ``cmake``, execute the command below in your build directory to run 
 
 .. code-block:: bash
 
-    cmake --build . --target test
+    ctest -C RelWithDebInfo
 
 If you added new features, consider writing tests to validate their functionality and a tutorial to demonstrate their usage.
 
 4. Commit and Push
 ~~~~~~~~~~~~~~~~~~
 
-With successful testing and having added some documentation, commit your changes and push them to your fork:
+With successful testing and having added some documentation, commit your changes and push them to your fork (if you are working on multiple different features, consider creating a new branch for each feature; otherwise, you can commit directly to the master branch of your fork).
 
 .. code-block:: bash
 
