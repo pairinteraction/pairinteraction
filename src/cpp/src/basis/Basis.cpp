@@ -12,6 +12,7 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/wigner.hpp"
 
+#include <cassert>
 #include <numeric>
 #include <set>
 
@@ -388,7 +389,12 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
         real_t f = kets[idx_initial]->get_quantum_number_f();
         real_t m_initial = kets[idx_initial]->get_quantum_number_m();
-        for (real_t m_final = -f; m_final <= f; ++m_final) {
+
+        assert(2 * f == std::floor(2 * f) && f >= 0);
+        assert(2 * m_initial == std::floor(2 * m_initial) && m_initial >= -f && m_initial <= f);
+
+        for (real_t m_final = -f; m_final <= f; // NOSONAR m_final is precisely representable
+             ++m_final) {
             auto val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
                                                                    beta, gamma);
             size_t idx_final = get_ket_index_from_ket(
@@ -452,7 +458,7 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
 
     int *perm_begin = transformation.matrix.indices().data();
     int *perm_end = perm_begin + coefficients.matrix.cols();
-    int *perm_back = perm_end - 1;
+    const int *perm_back = perm_end - 1;
 
     // Sort the vector based on the requested labels
     std::stable_sort(perm_begin, perm_end, [&](int a, int b) {
