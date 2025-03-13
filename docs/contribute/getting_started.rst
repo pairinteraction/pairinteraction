@@ -53,20 +53,29 @@ Before implementing any changes, :ref:`set up a development environment and buil
 functioning on your computer. In the following we provide a brief summary of the necessary steps:
 
 -   Install the :ref:`tools <system_setup>` for running the build system and a package manager for
-    managing the Python dependencies.
+    managing the Python dependencies. In addition, you need to install the dependencies of the C++ backend:
 
-    In addition, you need to install the dependencies of the C++ backend: If you are
-    using GNU/Linux or OS X, dependencies can be found in the Dockerfiles that are located in the :github:`docker
-    branch <tree/docker/docker>`. If you are using Windows, you can use vcpkg_ with :github:`our configuration file
-    <tree/master/vcpkg.json>` to install the dependencies. You can do so by running the following commands in the root
-    directory of the repository on the powershell:
+    If you are using GNU/Linux, instructions for installing dependencies with ``apt`` / ``yum`` / ``zypper`` can be found in the Dockerfiles that are located in the :github:`docker branch <tree/docker/docker>`.
+
+    If you are using OS X, take a look at the ``brew install`` instructions in :github:`our GitHub workflow <tree/master/.github/workflows/cpp-backend.yml>`.
+
+    If you are using Windows, you can use ``vcpkg`` to install the dependencies. To set up vcpkg execute the following commands
+    in the powershell:
 
     .. code-block:: bash
 
-        git clone https://github.com/microsoft/vcpkg.git
-        .\vcpkg\bootstrap-vcpkg.bat
-        .\vcpkg\vcpkg install --triplet x64-windows
-        $env:CMAKE_TOOLCHAIN_FILE = ".\vcpkg\scripts\buildsystems\vcpkg.cmake"
+        git clone https://github.com/microsoft/vcpkg.git C:\path\to\vcpkg
+        C:\path\to\vcpkg\bootstrap-vcpkg.bat
+        $env:VCPKG_ROOT = "C:\path\to\vcpkg"
+        $env:PATH = "$env:VCPKG_ROOT;$env:PATH"
+        $env:CMAKE_TOOLCHAIN_FILE = "$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake"
+
+    Then, to install the dependencies of the C++ backend from :github:`our configuration file
+    <tree/master/vcpkg.json>`, run the following command in the root directory of the pairinteraction repository:
+
+    .. code-block:: bash
+
+        vcpkg install --triplet x64-windows
 
 -   After installing the dependencies and activating a python environment, you have two options to build the software.
     You can either build the complete software using ``pip``:
@@ -75,7 +84,7 @@ functioning on your computer. In the following we provide a brief summary of the
 
         pip install -e .[test,doc]
 
-    Or you can build solely the C++ backend using ``cmake``. This manual approach is recommended if you are planning to contribute
+    Or, you can build solely the C++ backend using ``cmake``. This manual approach is recommended if you are planning to contribute
     to the C++ backend because it allows for a faster build more fine-grained control.
 
     .. code-block:: bash
@@ -94,8 +103,7 @@ repository with the following command:
 
     pre-commit install
 
-This automatically formats your code and conducts style checks before each commit. On Windows, you might want to set `$env:SKIP = "clang-format"`
-to avoid calling clang-format which is difficult to install under Windows. For manual checks at any time, execute:
+This automatically formats your code and conducts style checks before each commit. For manual checks at any time, execute:
 
 .. code-block:: bash
 
@@ -138,5 +146,3 @@ With successful testing and having added some documentation, commit your changes
 Finally, initiate a pull request to merge your contributions with the main repository. From the main repository page, go
 to the :github:`"Pull requests" <pull>` page, and click the :github:`"New pull request" <compare>` button to compare
 your fork to the original pairinteraction repository. After reviewing your changes, submit the pull request for approval.
-
-.. _vcpkg: https://vcpkg.io
