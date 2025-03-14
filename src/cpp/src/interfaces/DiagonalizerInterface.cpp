@@ -36,15 +36,21 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
 
     // We are interested in the maximum error of an entry in an eigenvector that can result from the
     // limited floating point precision. Thus, we calculate the error of the largest possible entry,
-    // which is 1 (the eigenvectors are normalized).
-    double error_from_float_type =
-        1 - std::nextafter(static_cast<real_lim_t>(1), std::numeric_limits<real_lim_t>::lowest());
+    // which is 1 (the eigenvectors are normalized):
+    // |1 - nextafter(1)| = eps/2
 
-    if (error_from_float_type * 1e1 > atol) { // 1e1 is a safety factor
-        SPDLOG_WARN("Because the floating point precision is too low, the "
-                    "eigenvectors cannot be calculated accurately. The floating point error ({}) "
-                    "is similar or larger than the specified tolerance ({}).",
-                    error_from_float_type, atol);
+    // By comparing atol with eps/2, we can estimate whether the floating point error or the error
+    // from the specified tolerance dominates.
+
+    double error_from_float_type =
+        1e1 * std::numeric_limits<real_lim_t>::epsilon() / 2; // 1e1 is a safety factor
+
+    if (error_from_float_type > atol) {
+        SPDLOG_WARN(
+            "Because the floating point precision is too low, the "
+            "eigenvectors cannot be calculated accurately. The estimated floating point error ({}) "
+            "is larger than the specified tolerance ({}).",
+            error_from_float_type, atol);
     }
 
     ///////////////////////////////////////
@@ -64,19 +70,8 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     // |Tr(D_exact) - Tr(D)|/dim(D) <= c*eps*||shifted_matrix||.
 
     // Thus, by comparing 2*atol with c*eps, we can estimate whether the floating point error or the
-    // error from the eigenvectors dominates.
-
-    double rel_error_from_eigenvectors = 2 * atol;
-    double rel_error_from_float_type = std::numeric_limits<real_lim_t>::epsilon();
-
-    if (rel_error_from_float_type * 1e1 > rel_error_from_eigenvectors) { // 1e1 is a safety factor
-        SPDLOG_WARN("Because the floating point precision is too low, the "
-                    "eigenvalues cannot be calculated accurately. The floating point error ({} "
-                    "Hartree) is larger than the error estimated from the specified "
-                    "tolerance ({} Hartree).",
-                    rel_error_from_float_type * shifted_matrix.norm(),
-                    rel_error_from_eigenvectors * shifted_matrix.norm());
-    }
+    // error from the eigenvectors dominates. Notably, for c=10, this comparison is equivalent to
+    // the check that we performed above! Thus, we can skip this comparison.
 
     return shifted_matrix;
 }
