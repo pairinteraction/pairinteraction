@@ -34,6 +34,9 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     // Ensure accuracy of the eigenvectors
     ///////////////////////////////////////
 
+    // We are interested in the maximum error of an entry in an eigenvector that can result from the
+    // limited floating point precision. Thus, we calculate the error of the largest possible entry,
+    // which is 1 (the eigenvectors are normalized).
     double error_from_float_type =
         1 - std::nextafter(static_cast<real_lim_t>(1), std::numeric_limits<real_lim_t>::lowest());
 
@@ -45,26 +48,34 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     }
 
     ///////////////////////////////////////
-    // Accuracy of the eigenvalues
+    // Ensure accuracy of the eigenvalues
     ///////////////////////////////////////
-
-    // Estimate the error of the eigenenergies due to limited floating point precision
-    real_lim_t max_entry = shifted_matrix.array().abs().maxCoeff();
-    error_from_float_type =
-        max_entry - std::nextafter(max_entry, std::numeric_limits<real_lim_t>::lowest());
 
     // Estimate the error of the eigenenergies that would result from calculating the eigenenergies
     // by transforming the Hamiltonian with the eigenvector matrix, assuming that all entries of the
-    // eigenvector matrix that are smaller than the tolerance are set to zero.
-    double error_from_eigenvectors =
-        2 * atol * shifted_matrix.norm(); // upper bound of |Tr(D_exact) - Tr(D)|/dim(D)
+    // eigenvector matrix that are smaller than the tolerance are set to zero:
+    // |Tr(D_exact) - Tr(D)|/dim(D) <= 2*atol*||shifted_matrix||
 
-    if (error_from_float_type * 1e1 > error_from_eigenvectors) { // 1e1 is a safety factor
+    // On the other hand, we can estimate the error of the eigenenergies that results from the
+    // limited floating point precision. As the diagonalization algorithms are typically "backward
+    // stable", the computed eigenvalues are typically the eigenvalues of a perturbed matrix
+    // "shifted_matrix + E", with ||E|| <= c*eps*||shifted_matrix||, where c is a small constant and
+    // eps is the machine epsilon. The error of the eigenvalues is then bounded by:
+    // |Tr(D_exact) - Tr(D)|/dim(D) <= c*eps*||shifted_matrix||.
+
+    // Thus, by comparing 2*atol with c*eps, we can estimate whether the floating point error or the
+    // error from the eigenvectors dominates.
+
+    double rel_error_from_eigenvectors = 2 * atol;
+    double rel_error_from_float_type = std::numeric_limits<real_lim_t>::epsilon();
+
+    if (rel_error_from_float_type * 1e1 > rel_error_from_eigenvectors) { // 1e1 is a safety factor
         SPDLOG_WARN("Because the floating point precision is too low, the "
                     "eigenvalues cannot be calculated accurately. The floating point error ({} "
-                    "Hartree) is similar or larger than error estimated from the specified "
+                    "Hartree) is larger than the error estimated from the specified "
                     "tolerance ({} Hartree).",
-                    error_from_float_type, error_from_eigenvectors);
+                    rel_error_from_float_type * shifted_matrix.norm(),
+                    rel_error_from_eigenvectors * shifted_matrix.norm());
     }
 
     return shifted_matrix;
