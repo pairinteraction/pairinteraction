@@ -5,16 +5,16 @@ from typing import TYPE_CHECKING, Any, Optional, Union, overload
 import numpy as np
 from scipy import sparse
 
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction import (
+    complex as pi_complex,
+    real as pi_real,
+)
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
     from pint.facets.plain import PlainQuantity
 
-    from pairinteraction import (
-        complex as pi_complex,
-        real as pi_real,
-    )
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
 
     KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
@@ -25,11 +25,106 @@ logger = logging.getLogger(__name__)
 
 
 @overload
+def get_effective_hamiltonian(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    perturbative_order: int = 2,
+    with_diamagnetism: bool = False,
+    required_overlap: float = 0.9,
+    separate: bool = False,
+) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
+
+
+@overload
+def get_effective_hamiltonian(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    perturbative_order: int = 2,
+    with_diamagnetism: bool = False,
+    required_overlap: float = 0.9,
+    separate: bool = False,
+    *,
+    unit: str,
+) -> tuple["NDArray[Any]", sparse.csr_matrix]: ...
+
+
+def get_effective_hamiltonian(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    perturbative_order: int = 2,
+    with_diamagnetism: bool = False,
+    required_overlap: float = 0.9,
+    separate: bool = False,
+    unit: Optional[str] = None,
+) -> tuple[Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"], sparse.csr_matrix]:
+    r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
+
+    This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
+    Hamiltonian is calculated.
+    The Hamiltonian of the pair system is assumed to be diagonal without atom-atom interactions, all atom-atom
+    interaction is treated as a perturbative term.
+    The function also checks for resonances between all states and states in the model space.
+
+    Args:
+        ket_tuple_list: List of all pair states that span up the model space.
+            The effective Hamiltonian is calculated for these states.
+        magnetic_field: magnetic field in the system.
+        electric_field: electric field in the system.
+        distance_vector: distance vector between the atoms.
+        multipole_order: multipole-order of the interaction. Default is 3 (dipole-dipole).
+        perturbative_order: order of perturbative calculation the system shall be used for. Default is 2.
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+        required_overlap: If set, the code checks for validity of a perturbative treatment.
+            Error is thrown if the perturbed eigenstate has less overlap than this value with the
+            unperturbed eigenstate.
+        separate: True if only required order correction of the Hamiltonian is returned separately. False by default.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
+
+    Returns:
+        - Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`.
+        - Eigenvectors in perturbation theory due to interaction with states out of the model space, returned as
+          a sparse matrix in compressed row format. Each row represents the corresponding eigenvector.
+
+    Raises:
+        ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
+        ValueError: If the perturbative order is not 1,2, or 3.
+
+    """
+    system_pair = _create_system(
+        ket_tuple_list,
+        magnetic_field,
+        electric_field,
+        distance_vector,
+        multipole_order,
+        perturbative_order,
+        with_diamagnetism,
+    )
+    return get_effective_hamiltonian_from_system(
+        ket_tuple_list,
+        system_pair,
+        order=perturbative_order,
+        required_overlap=required_overlap,
+        separate=separate,
+        unit=unit,
+    )
+
+
+@overload
 def get_effective_hamiltonian_from_system(
     ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    separate: bool = False,
 ) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
 
 
@@ -39,6 +134,7 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    separate: bool = False,
     *,
     unit: str,
 ) -> tuple["NDArray[Any]", sparse.csr_matrix]: ...
@@ -49,6 +145,7 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    separate: bool = False,
     unit: Optional[str] = None,
 ) -> tuple[Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"], sparse.csr_matrix]:
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
@@ -68,6 +165,7 @@ def get_effective_hamiltonian_from_system(
         required_overlap: If set, the code checks for validity of a perturbative treatment.
             Error is thrown if the perturbed eigenstate has less overlap than this value with the
             unperturbed eigenstate.
+        separate: True if only required order correction of the Hamiltonian is returned separately. False by default.
         unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
@@ -77,6 +175,7 @@ def get_effective_hamiltonian_from_system(
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
+        ValueError: If the order of perturbation theory is not 0,1,2 or 3.
 
     """
     if np.isinf(system_pair.get_distance().magnitude):
@@ -86,15 +185,83 @@ def get_effective_hamiltonian_from_system(
         )
 
     model_inds = _get_model_inds(ket_tuple_list, system_pair)
-    H_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
-    H_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(H_au, model_inds, order)
+    h_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
+    h_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(h_au, model_inds, order, separate)
     if not 0 <= required_overlap <= 1:
         raise ValueError("Required overlap has to be a positive real number between zero and one.")
     if required_overlap > 0:
         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
 
-    H_eff = QuantityArray.from_base_unit(H_eff_au, "ENERGY").to_pint_or_unit(unit)
-    return H_eff, eigvec_perturb
+    h_eff = QuantityArray.from_base_unit(h_eff_au, "ENERGY").to_pint_or_unit(unit)
+    return h_eff, eigvec_perturb
+
+
+@overload
+def get_c3(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+) -> "PlainQuantity[float]": ...
+
+
+@overload
+def get_c3(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+    *,
+    unit: str,
+) -> float: ...
+
+
+def get_c3(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+    unit: Optional[str] = None,
+) -> Union[float, "PlainQuantity[float]"]:
+    r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.
+
+    This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of
+    single atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.
+
+    Args:
+        ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)],
+            the :math:`C_3` coefficient is calculated for (a,b)->(c,d).
+            If there are not exactly two tuples in the list, a ValueError is raised.
+        magnetic_field: magnetic field in the system.
+        electric_field: electric field in the system.
+        distance_vector: distance vector between the atoms.
+        multipole_order: multipole-order of the interaction. Default is 3 (dipole-dipole).
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
+
+    Returns:
+        The :math:`C_3` coefficient with its unit.
+
+    Raises:
+        ValueError: If a list of not exactly two tuples of single atom states is given.
+
+    """
+    system_pair = _create_system(
+        ket_tuple_list,
+        magnetic_field,
+        electric_field,
+        distance_vector,
+        multipole_order,
+        perturbative_order=1,
+        with_diamagnetism=with_diamagnetism,
+    )
+    return get_c3_from_system(ket_tuple_list, system_pair, unit)
 
 
 @overload
@@ -133,21 +300,88 @@ def get_c3_from_system(
     if len(ket_tuple_list) != 2:
         raise ValueError("C3 coefficient can be calculated only between two 2-atom states.")
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
+        c3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C3
+        return c3
 
-    H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    C3 = H_eff[0, 1] * R**3
-    return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
+    h_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
+    c3 = h_eff[0, 1] * r**3
+    return QuantityScalar.from_pint(c3, "C3").to_pint_or_unit(unit)
+
+
+@overload
+def get_c6(
+    ket_tuple: "KetPairLike",
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+) -> "PlainQuantity[float]": ...
+
+
+@overload
+def get_c6(
+    ket_tuple: "KetPairLike",
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+    *,
+    unit: str,
+) -> float: ...
+
+
+def get_c6(
+    ket_tuple: "KetPairLike",
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+    unit: Optional[str] = None,
+) -> Union[float, "PlainQuantity[float]"]:
+    r"""Calculate the :math:`C_6` coefficient for a given tuple of ket states.
+
+    This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single atom ket
+    states.
+
+    Args:
+        ket_tuple: The input is a tuple repeating the same single atom state in the format (a,a).
+        If a tuple with not exactly two identical states is given, a ValueError is raised.
+        magnetic_field: magnetic field in the system.
+        electric_field: electric field in the system.
+        distance_vector: distance vector between the atoms.
+        multipole_order: multipole-order of the interaction. Default is 3 (dipole-dipole).
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+        unit: The unit to which to convert the result. Default None will return a pint quantity.
+
+    Returns:
+        The :math:`C_6` coefficient. If a unit is specified, the value in this unit is returned.
+
+    Raises:
+        ValueError: If a tuple with more than two single atom states is given.
+
+    """
+    system_pair = _create_system(
+        [ket_tuple],
+        magnetic_field,
+        electric_field,
+        distance_vector,
+        multipole_order,
+        perturbative_order=2,
+        with_diamagnetism=with_diamagnetism,
+    )
+    return get_c6_from_system(ket_tuple, system_pair, unit=unit)
 
 
 @overload
@@ -190,26 +424,25 @@ def get_c6_from_system(
             "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
         )
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C6 = get_c6_from_system(ket_tuple, system_pair, unit)
+        c6 = get_c6_from_system(ket_tuple, system_pair, unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C6
+        return c6
 
-    H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
-    H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    C6 = (H_eff - H_0)[0, 0] * R**6
-    return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
+    h_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2, separate=True)
+    c6 = h_eff[0, 0] * r**6
+    return QuantityScalar.from_pint(c6, "C6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
-    H: sparse.csr_matrix, model_inds: list[int], order: int = 2
+    h: sparse.csr_matrix, model_inds: list[int], order: int = 2, separate: bool = False
 ) -> tuple["NDArray[Any]", sparse.csr_matrix]:
     r"""Calculate the perturbative Hamiltonian at a given order.
 
@@ -217,12 +450,15 @@ def _calculate_perturbative_hamiltonian(
     and list of indices spanning up the model space.
     It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the
     perturbed eigenstates due to interactions with the exterior space in the desired order of perturbation theory.
+    The output is either the full Hamiltonian up to the order of perturbation theory, or only the corrections at
+    a given order.
 
     Args:
-        H: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
+        h: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
         model_inds: List of indices corresponding to the states that span up the model space.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
             Default is second order.
+        separate: True if a fixed order correction of the Hamiltonian is returned separately. False by default.
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
@@ -235,52 +471,60 @@ def _calculate_perturbative_hamiltonian(
         raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
 
     m_inds: NDArray[Any] = np.array(model_inds)
-    o_inds: NDArray[Any] = np.setdiff1d(np.arange(H.shape[0]), m_inds)
+    o_inds: NDArray[Any] = np.setdiff1d(np.arange(h.shape[0]), m_inds)
     m = len(m_inds)
     n = len(o_inds)
 
-    H0 = H.diagonal()
-    H0_m = H0[m_inds]
-    H_eff = sparse.diags(H0_m, format="csr")
+    h0 = h.diagonal()
+    h0_m = h0[m_inds]
+    h_eff = [sparse.diags(h0_m, format="csr")]
     eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])
 
     if order >= 1:
-        V = H - sparse.diags(H0)
-        V_mm = V[np.ix_(m_inds, m_inds)]
-        H_eff += V_mm
+        v = h - sparse.diags(h0)
+        v_mm = v[np.ix_(m_inds, m_inds)]
+        h_eff.append(v_mm)
 
     if order >= 2:
-        H0_e = H0[o_inds]
-        V_me = V[np.ix_(m_inds, o_inds)]
-        deltaE_em = 1 / (H0_m[np.newaxis, :] - H0_e[:, np.newaxis])
-        H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
+        h0_e = h0[o_inds]
+        v_me = v[np.ix_(m_inds, o_inds)]
+        delta_energy_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
+        h_eff.append(v_me @ ((v_me.conj().T).multiply(delta_energy_em)))
         addition_mm = sparse.csr_matrix((m, m))
-        addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
+        addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_energy_em)).T)
         eigvec_perturb += sparse.hstack([addition_mm, addition_me])
 
     if order >= 3:
-        diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]
+        diff = h0_m[np.newaxis, :] - h0_m[:, np.newaxis]
         diff = np.where(diff == 0, np.inf, diff)
-        deltaE_mm = 1 / diff
-        V_ee = V[np.ix_(o_inds, o_inds)]
+        delta_energy_mm = 1 / diff
+        v_ee = v[np.ix_(o_inds, o_inds)]
         if m > 1:
             logger.warning(
                 "At third order, the eigenstates are currently only valid when only one state is in the model space. "
                 "Take care with interpreation of the perturbed eigenvectors."
             )
-        H_eff += V_me @ (
-            (V_ee @ ((V_me.conj().T).multiply(deltaE_em)) - ((V_me.conj().T).multiply(deltaE_em)) @ V_mm).multiply(
-                deltaE_em
+        h_eff.append(
+            v_me
+            @ (
+                (
+                    v_ee @ ((v_me.conj().T).multiply(delta_energy_em))
+                    - ((v_me.conj().T).multiply(delta_energy_em)) @ v_mm
+                ).multiply(delta_energy_em)
             )
         )
         addition_mm_diag = -0.5 * sparse.diags(
-            (V_me @ ((V_me.conj().T).multiply(np.square(deltaE_em)))).diagonal(),
+            (v_me @ ((v_me.conj().T).multiply(np.square(delta_energy_em)))).diagonal(),
             format="csr",
         )
-        addition_mm_offdiag = sparse.csr_matrix(((V_me @ (V_me.conj().T).multiply(deltaE_em)).multiply(deltaE_mm)).T)
-        addition_me = sparse.csr_matrix(((V_ee @ ((V_me.conj().T).multiply(deltaE_em))).multiply(deltaE_em)).T)
+        addition_mm_offdiag = sparse.csr_matrix(
+            ((v_me @ (v_me.conj().T).multiply(delta_energy_em)).multiply(delta_energy_mm)).T
+        )
+        addition_me = sparse.csr_matrix(
+            ((v_ee @ ((v_me.conj().T).multiply(delta_energy_em))).multiply(delta_energy_em)).T
+        )
         addition_me_2 = sparse.csr_matrix(
-            ((V_me.conj().T @ ((V_mm.conj().T).multiply(deltaE_mm))).multiply(deltaE_em)).T
+            ((v_me.conj().T @ ((v_mm.conj().T).multiply(delta_energy_mm))).multiply(delta_energy_em)).T
         )
         eigvec_perturb += sparse.hstack([addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2])
 
@@ -288,11 +532,11 @@ def _calculate_perturbative_hamiltonian(
     all_inds = np.append(m_inds, o_inds)
     all_inds_positions = np.argsort(all_inds)
     eigvec_perturb = eigvec_perturb[:, all_inds_positions]
-
-    # include the hermitian conjugate part of the effective Hamiltonian
-    H_eff = 0.5 * (H_eff + H_eff.conj().T)
-
-    return H_eff.todense(), eigvec_perturb
+    if separate:
+        return (0.5 * (h_eff[order] + h_eff[order].conj().T)).todense(), eigvec_perturb
+    else:
+        h_eff = np.cumsum(h_eff, axis=0)
+        return (0.5 * (h_eff[-1] + h_eff[-1].conj().T)).todense(), eigvec_perturb
 
 
 def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
@@ -378,3 +622,169 @@ def _check_for_resonances(
             "Error. Perturbative Calculation not possible due to resonances. "
             "Add more states to the model space or adapt your required overlap."
         )
+
+
+def _create_system(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PlainQuantity[NDArray[Any]]",
+    electric_field: "PlainQuantity[NDArray[Any]]",
+    distance_vector: "PlainQuantity[NDArray[Any]]",
+    multipole_order: int = 3,
+    perturbative_order: int = 2,
+    with_diamagnetism: bool = False,
+) -> "SystemPair":
+    r"""Create a good estimate for a system in which to perform perturbation theory.
+
+    This function takes a list of 2-tuples of ket states and creates a pair system holding a larger basis.
+    The parameters of the basis are adjusted by the electric and magnetic field vectors of the system, as well
+    as the distance and the multipole-order of the interaction. For higher-order perturbation theory, larger
+    systems can be considered. Diamagnetism can be considered as well.
+
+    Args:
+        ket_tuple_list: List of all pair states that span up the model space. The system is created such that
+        the effective Hamiltonian of the model system can be calculated accurately at a later stage.
+        magnetic_field: magnetic field in the system.
+        electric_field: electric field in the system.
+        distance_vector: distance vector between the atoms.
+        multipole_order: multipole-order of the interaction. Default is 3 (dipole-dipole).
+        perturbative_order: order of perturbative calculation the system shall be used for. Default is 2.
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+
+    Returns:
+        Pair system that can be used for perturbative calculations.
+
+    Raises:
+    ValueError: If the perturbative order is not 1,2 or 3.
+
+    """
+    if perturbative_order not in [1, 2, 3]:
+        raise ValueError("System can only be created for perturbative order 1,2, and 3.")
+    n_1 = []
+    l_1 = []
+    j_1 = []
+    m_1 = []
+    energ_au = []
+    n_2 = []
+    l_2 = []
+    j_2 = []
+    m_2 = []
+
+    for ket1, ket2 in ket_tuple_list:
+        n_1.append(ket1.n)
+        l_1.append(ket1.l)
+        j_1.append(ket1.j)
+        m_1.append(ket1.m)
+        n_2.append(ket2.n)
+        l_2.append(ket2.l)
+        j_2.append(ket2.j)
+        m_2.append(ket2.m)
+        energ_au.append(ket1.get_energy().magnitude + ket2.get_energy().magnitude)
+    species = [ket_tuple_list[0][0].species, ket_tuple_list[0][1].species]
+    spin = [ket_tuple_list[0][0].s, ket_tuple_list[0][1].s]
+    n_max = [np.max(n_1), np.max(n_2)]
+    l_max = [np.max(l_1), np.max(l_2)]
+    j_max = [np.max(j_1), np.max(j_2)]
+    m_max = [np.max(m_1), np.max(m_2)]
+    n_min = [np.min(n_1), np.min(n_2)]
+    l_min = [np.min(l_1), np.min(l_2)]
+    j_min = [np.min(j_1), np.min(j_2)]
+    m_min = [np.min(m_1), np.min(m_2)]
+    ket_max = ket_tuple_list[np.argmax(energ_au)]
+    ket_min = ket_tuple_list[np.argmin(energ_au)]
+
+    if (
+        magnetic_field[0].magnitude
+        == magnetic_field[1].magnitude
+        == electric_field[0].magnitude
+        == electric_field[1].magnitude
+        == 0
+    ):
+        pi = pi_real
+        bases = [
+            pi.BasisAtom(
+                species[i],
+                n=(n_min[i] - 7, n_max[i] + 7),
+                l=(
+                    np.maximum(0, l_min[i] - perturbative_order * (multipole_order - 2)),
+                    l_max[i] + perturbative_order * (multipole_order - 2),
+                ),
+                j=(
+                    np.maximum(0, j_min[i] - perturbative_order * (multipole_order - 2)),
+                    j_max[i] + perturbative_order * (multipole_order - 2),
+                ),
+                m=(
+                    m_min[i] - perturbative_order * (multipole_order - 2),
+                    m_max[i] + perturbative_order * (multipole_order - 2),
+                ),
+            )
+            for i in [0, 1]
+        ]
+    else:
+        pi = pi_complex
+        bases = [
+            pi.BasisAtom(
+                species[i],
+                n=(n_min[i] - 7, n_max[i] + 7),
+                l=(
+                    np.maximum(0, l_min[i] - 1 - perturbative_order * (multipole_order - 2)),
+                    l_max[i] + 1 + perturbative_order * (multipole_order - 2),
+                ),
+            )
+            for i in [0, 1]
+        ]
+    distance_unit = distance_vector.units
+    vector = distance_vector.magnitude
+    distance = ureg.Quantity(np.linalg.norm(vector), distance_unit)
+    population_admixture = 1e-4
+
+    n_max_1 = ket_max[0].n
+    n_max_2 = ket_max[1].n
+    e_max = ket_max[0].get_energy() + ket_max[1].get_energy()
+    dipole_max_1 = pi.KetAtom(
+        species[0], n=n_max_1, l=n_max_1 - 1, j=n_max_1 - 1 + spin[0], m=n_max_1 - 1 + spin[0]
+    ).get_matrix_element(
+        pi.KetAtom(species[0], n=n_max_1 + 1, l=n_max_1, j=n_max_1 + spin[0], m=n_max_1 + spin[0]),
+        operator="ELECTRIC_DIPOLE",
+        q=1,
+    )
+    dipole_max_2 = pi.KetAtom(
+        species[1], n=n_max_2, l=n_max_2 - 1, j=n_max_2 - 1 + spin[1], m=n_max_2 - 1 + spin[1]
+    ).get_matrix_element(
+        pi.KetAtom(species[1], n=n_max_2 + 1, l=n_max_2, j=n_max_2 + spin[1], m=n_max_2 + spin[1]),
+        operator="ELECTRIC_DIPOLE",
+        q=1,
+    )
+    shift_max = dipole_max_1 * dipole_max_2 * ureg.coulomb_constant / distance**3
+    delta_energy_max = np.abs(shift_max) / np.sqrt(population_admixture) * perturbative_order
+    n_min_1 = ket_min[0].n
+    n_min_2 = ket_min[1].n
+    e_min = ket_min[0].get_energy() + ket_min[1].get_energy()
+    dipole_min_1 = pi.KetAtom(
+        species[0], n=n_min_1, l=n_min_1 - 1, j=n_min_1 - 1 + spin[0], m=n_min_1 - 1 + spin[0]
+    ).get_matrix_element(
+        pi.KetAtom(species[0], n=n_min_1 + 1, l=n_min_1, j=n_min_1 + spin[0], m=n_min_1 + spin[0]),
+        operator="ELECTRIC_DIPOLE",
+        q=1,
+    )
+    dipole_min_2 = pi.KetAtom(
+        species[1], n=n_min_2, l=n_min_2 - 1, j=n_min_2 - 1 + spin[1], m=n_min_2 - 1 + spin[1]
+    ).get_matrix_element(
+        pi.KetAtom(species[1], n=n_min_2 + 1, l=n_min_2, j=n_min_2 + spin[1], m=n_min_2 + spin[1]),
+        operator="ELECTRIC_DIPOLE",
+        q=1,
+    )
+    shift_min = dipole_min_1 * dipole_min_2 * ureg.coulomb_constant / distance**3
+    delta_energy_min = np.abs(shift_min) / np.sqrt(population_admixture) * perturbative_order
+
+    systems = [pi.SystemAtom(basis=basis) for basis in bases]
+    for system in systems:
+        system.enable_diamagnetism(with_diamagnetism)
+        system.set_magnetic_field(magnetic_field)
+        system.set_electric_field(electric_field)
+    if not all(system.is_diagonal for system in systems):
+        pi.diagonalize(systems, diagonalizer="eigen", sort_by_energy=False)
+    basis_pair = pi.BasisPair(systems, energy=(e_min - delta_energy_min, e_max + delta_energy_max))
+    system_pair = pi.SystemPair(basis_pair)
+    system_pair.set_distance_vector(distance_vector)
+    system_pair.set_order(multipole_order)
+    return system_pair
