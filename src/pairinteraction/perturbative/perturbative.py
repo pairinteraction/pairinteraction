@@ -498,7 +498,7 @@ def _calculate_perturbative_hamiltonian(
         diff = h0_m[np.newaxis, :] - h0_m[:, np.newaxis]
         diff = np.where(diff == 0, np.inf, diff)
         delta_energy_mm = 1 / diff
-        V_ee = v[np.ix_(o_inds, o_inds)]
+        v_ee = v[np.ix_(o_inds, o_inds)]
         if m > 1:
             logger.warning(
                 "At third order, the eigenstates are currently only valid when only one state is in the model space. "
@@ -508,7 +508,7 @@ def _calculate_perturbative_hamiltonian(
             v_me
             @ (
                 (
-                    V_ee @ ((v_me.conj().T).multiply(delta_energy_em))
+                    v_ee @ ((v_me.conj().T).multiply(delta_energy_em))
                     - ((v_me.conj().T).multiply(delta_energy_em)) @ v_mm
                 ).multiply(delta_energy_em)
             )
@@ -521,7 +521,7 @@ def _calculate_perturbative_hamiltonian(
             ((v_me @ (v_me.conj().T).multiply(delta_energy_em)).multiply(delta_energy_mm)).T
         )
         addition_me = sparse.csr_matrix(
-            ((V_ee @ ((v_me.conj().T).multiply(delta_energy_em))).multiply(delta_energy_em)).T
+            ((v_ee @ ((v_me.conj().T).multiply(delta_energy_em))).multiply(delta_energy_em)).T
         )
         addition_me_2 = sparse.csr_matrix(
             ((v_me.conj().T @ ((v_mm.conj().T).multiply(delta_energy_mm))).multiply(delta_energy_em)).T
