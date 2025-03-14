@@ -74,12 +74,12 @@ class SystemBaseConfig(BaseConfig):
         basis = self.page.basis_config.get_basis(atom, "real" if isreal else "complex")
         systems: list[pi_real.SystemAtom] = []
         for step in range(steps):
-            system = pi.SystemAtom(basis)  # type: ignore
+            system = pi.SystemAtom(basis)
             efield = [fields[key][step] for key in ["Ex", "Ey", "Ez"]]
             bfield = [fields[key][step] for key in ["Bx", "By", "Bz"]]
             system.set_electric_field(efield, unit="V/cm")
             system.set_magnetic_field(bfield, unit="G")
-            systems.append(system)  # type: ignore
+            systems.append(system)
 
         return systems
 
@@ -129,7 +129,8 @@ class SystemPairConfig(SystemBaseConfig):
         item = self.distance_range.items[0]
         if not item.isChecked():
             return RangeObject(np.inf, np.inf, steps)
-        return RangeObject(*item.values(), steps)  # type: ignore
+        values = item.values()
+        return RangeObject(values[0], values[1], steps)
 
     def get_angle(self) -> "RangeObject":
         """Return the angle range."""
@@ -137,7 +138,8 @@ class SystemPairConfig(SystemBaseConfig):
         item = self.angle_range.items[0]
         if not item.isChecked():
             return RangeObject(0, 0, steps)
-        return RangeObject(*item.values(), steps)  # type: ignore
+        values = item.values()
+        return RangeObject(values[0], values[1], steps)
 
     def get_order(self) -> int:
         """Return the order of the multipole expansion."""
@@ -243,4 +245,4 @@ class RangeObject:
         return self.min_value == self.max_value
 
     def __getitem__(self, step: int) -> float:
-        return self.list[step]
+        return self.list[step]  # type: ignore [no-any-return] # FIXME, no idea why numpy type hints dont work here

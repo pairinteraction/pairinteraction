@@ -1,5 +1,5 @@
 from collections.abc import Collection, Iterable
-from typing import TYPE_CHECKING, Generic, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from pint import UnitRegistry
@@ -7,9 +7,15 @@ from pint.facets.plain import PlainQuantity
 from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    import numpy.typing as npt
     from pint.facets.plain import PlainUnit
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeAlias
+
+    NDArray: TypeAlias = npt.NDArray[Any]
+    PintFloat: TypeAlias = PlainQuantity[float]
+    PintArray: TypeAlias = PlainQuantity[NDArray]
+    # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
+    PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
 
 ureg = UnitRegistry(system="atomic")
 
@@ -59,7 +65,7 @@ _CommonUnits: dict[Dimension, str] = {
 BaseUnits: dict[Dimension, "PlainUnit"] = {
     k: ureg.Quantity(1, unit).to_base_units().units for k, unit in _CommonUnits.items()
 }
-BaseQuantities: dict[Dimension, "PlainQuantity[float]"] = {k: ureg.Quantity(1, unit) for k, unit in BaseUnits.items()}
+BaseQuantities: dict[Dimension, "PintFloat"] = {k: ureg.Quantity(1, unit) for k, unit in BaseUnits.items()}
 
 Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
@@ -71,7 +77,7 @@ ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
 
 
 class QuantityAbstract(Generic[ValueType]):
-    def __init__(self, pint_qty: PlainQuantity[ValueType], dimension: DimensionLike) -> None:
+    def __init__(self, pint_qty: PlainQuantity[ValueType], dimension: DimensionLike) -> None:  # type: ignore [type-var]
         if not isinstance(pint_qty, ureg.Quantity):
             raise ValueError(f"pint_qty must be a ureg.Quantity, not {type(pint_qty)}")
         self._quantity = pint_qty
@@ -92,13 +98,13 @@ class QuantityAbstract(Generic[ValueType]):
     def get_contexts(cls, dimension: DimensionLike) -> list[Context]:
         if isinstance(dimension, str):
             return [BaseContexts[dimension]] if dimension in BaseContexts else []
-        contexts = {BaseContexts[d] for d in dimension if d in BaseContexts}
+        contexts: set[Context] = {BaseContexts[d] for d in dimension if d in BaseContexts}
         return list(contexts)
 
     @classmethod
     def from_pint(
         cls: "type[Self]",
-        value: PlainQuantity[ValueType],
+        value: PlainQuantity[ValueType],  # type: ignore [type-var]
         dimension: DimensionLike,
     ) -> "Self":
         """Initialize a Quantity from a ureg.Quantity."""
@@ -136,17 +142,20 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def from_pint_or_unit(
         cls: "type[Self]",
-        value: Union[PlainQuantity[ValueType], ValueType],
+        value: Union[PlainQuantity[ValueType], ValueType],  # type: ignore [type-var]
         unit: Optional[str],
         dimension: DimensionLike,
     ) -> "Self":
         if unit is None:
-            if np.isscalar(value) and np.all(value == 0):
+            if isinstance(value, PlainQuantity):
+                return cls.from_pint(value, dimension)
+            if value == 0:
                 return cls.from_base_unit(value, dimension)
-            return cls.from_pint(value, dimension)
+            raise ValueError("unit must be given if value is not a pint.Quantity")
+        assert not isinstance(value, PlainQuantity)
         return cls.from_unit(value, unit, dimension)
 
-    def to_pint(self) -> PlainQuantity[ValueType]:
+    def to_pint(self) -> PlainQuantity[ValueType]:  # type: ignore [type-var]
         """Return the pint.Quantity object."""
         contexts = self.get_contexts(self.dimension)
         base_unit = self.get_base_unit(self.dimension)
@@ -158,13 +167,14 @@ class QuantityAbstract(Generic[ValueType]):
     ) -> ValueType:
         """Return the value of the quantity in the given unit."""
         contexts = self.get_contexts(self.dimension)
-        return self._quantity.to(unit, *contexts).magnitude
+        return self._quantity.to(unit, *contexts).magnitude  # type: ignore [no-any-return] # also a problem with pint with sparse matrix
 
     def to_base_unit(self) -> ValueType:
         """Return the value of the quantity in the base unit."""
-        return self.to_pint().to_base_units().magnitude
+        value = self.to_pint().to_base_units()
+        return value.magnitude
 
-    def to_pint_or_unit(self, unit: Optional[str]) -> Union[ValueType, PlainQuantity[ValueType]]:
+    def to_pint_or_unit(self, unit: Optional[str]) -> Union[ValueType, PlainQuantity[ValueType]]:  # type: ignore [type-var]
         if unit is None:
             return self.to_pint()
         return self.to_unit(unit)

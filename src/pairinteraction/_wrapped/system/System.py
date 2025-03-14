@@ -1,23 +1,23 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
+import numpy as np
+
 from pairinteraction import _backend
 from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction._wrapped.basis.Basis import BasisBase
+    from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-    Quantity = TypeVar("Quantity", float, PlainQuantity[float])
+    Quantity = TypeVar("Quantity", float, "PintFloat")
 
 
-BasisType = TypeVar("BasisType", bound=Union["BasisAtom", "BasisPair"])
+BasisType = TypeVar("BasisType", bound="BasisBase[Any]", covariant=True)
 UnionCPPSystem = Any
 # UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Real|Complex)
 UnionTypeCPPSystem = Any
@@ -45,7 +45,7 @@ class SystemBase(ABC, Generic[BasisType]):
     _TypeBasis: type[BasisType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, basis: BasisType) -> None:
-        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
+        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [arg-type]
         self._update_basis()
 
     @classmethod
@@ -62,7 +62,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return self.__repr__().replace("Real", "").replace("Complex", "")
 
     def _update_basis(self) -> None:
-        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())  # type: ignore
+        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())
 
     def diagonalize(
         self,
@@ -99,12 +99,11 @@ class SystemBase(ABC, Generic[BasisType]):
         """
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp, float_type, m0=m0)
 
-        min_energy_au, max_energy_au = energy_range
-        if min_energy_au is not None:
-            min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
-        if max_energy_au is not None:
-            max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
-        self._cpp.diagonalize(cpp_diagonalizer, min_energy_au, max_energy_au, rtol)
+        energy_range_au: list[Optional[float]] = [None, None]
+        for i, energy in enumerate(energy_range):
+            if energy is not None:
+                energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+        self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)  # type: ignore [arg-type]
 
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
@@ -127,29 +126,26 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenbasis(self) -> BasisType:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
+        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
 
     @overload
-    def get_eigenvalues(self) -> "PlainQuantity[NDArray[Any]]": ...
+    def get_eigenvalues(self, unit: None = None) -> "PintArray": ...
 
     @overload
-    def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
+    def get_eigenvalues(self, unit: str) -> "NDArray": ...
 
-    def get_eigenvalues(self, unit: Optional[str] = None):
-        eigenvalues_au = self._cpp.get_eigenvalues()
+    def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
+        eigenvalues_au: NDArray = np.array(self._cpp.get_eigenvalues())
         eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
-        return eigenvalues.to_pint_or_unit(unit)
+        return eigenvalues.to_pint_or_unit(unit=unit)
 
     @overload
-    def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
+    def get_hamiltonian(self, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
 
-    def get_hamiltonian(self, unit: Optional[str] = None):
+    def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PintSparse"]:
         hamiltonian_au = self._cpp.get_matrix()
         hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "ENERGY")
         return hamiltonian.to_pint_or_unit(unit)
-
-
-System = SystemBase[Any]

@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
 
@@ -10,13 +10,13 @@ from pairinteraction._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
+    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
+    from pairinteraction.units import PintArray, PintFloat
 
-BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
+BasisType = TypeVar("BasisType", bound="BasisAtom", covariant=True)
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
 UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
@@ -60,7 +60,7 @@ class SystemAtom(SystemBase[BasisType]):
 
     def set_electric_field(
         self: "Self",
-        electric_field: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
+        electric_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         electric_field_au = [
@@ -71,7 +71,7 @@ class SystemAtom(SystemBase[BasisType]):
 
     def set_magnetic_field(
         self: "Self",
-        magnetic_field: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
+        magnetic_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         magnetic_field_au = [
@@ -85,28 +85,28 @@ class SystemAtom(SystemBase[BasisType]):
         return self
 
     @overload
-    def get_corresponding_energy(self: "Self", ket: "KetAtom") -> "PlainQuantity[float]": ...
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: None = None) -> "PintFloat": ...
 
     @overload
     def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: str) -> float: ...
 
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None):
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         overlaps = self.get_eigenbasis().get_overlaps(ket)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit)[idx]
+        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):
-    _cpp: _backend.SystemAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomReal
     _cpp_type = _backend.SystemAtomReal
     _TypeBasis = BasisAtomReal
 
 
 class SystemAtomComplex(SystemAtom[BasisAtomComplex]):
-    _cpp: _backend.SystemAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomComplex
     _cpp_type = _backend.SystemAtomComplex
     _TypeBasis = BasisAtomComplex

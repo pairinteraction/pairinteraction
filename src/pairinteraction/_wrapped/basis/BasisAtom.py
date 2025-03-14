@@ -10,10 +10,10 @@ from pairinteraction._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
+
+    from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
 UnionCPPBasisAtom = Union[_backend.BasisAtomReal, _backend.BasisAtomComplex]
 UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_backend.BasisAtomCreatorComplex]]
@@ -50,7 +50,7 @@ class BasisAtom(BasisBase[KetAtom]):
         j: Optional[tuple[float, float]] = None,
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
-        energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
+        energy: Union[tuple[float, float], tuple["PintFloat", "PintFloat"], None] = None,
         energy_unit: Optional[str] = None,
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
@@ -115,9 +115,9 @@ class BasisAtom(BasisBase[KetAtom]):
             database = Database.get_global_database()
         if additional_kets is not None:
             for ket in additional_kets:
-                creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]
+                creator.append_ket(ket._cpp)
             self._additional_kets = additional_kets
-        self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
+        self._cpp = creator.create(database._cpp)
 
     def __repr__(self) -> str:
         args = ""
@@ -132,60 +132,59 @@ class BasisAtom(BasisBase[KetAtom]):
         return f"{type(self).__name__}({args})"
 
     @overload
-    def get_amplitudes(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...
+    def get_amplitudes(self, ket_or_basis: KetAtom) -> "NDArray": ...
 
     @overload
     def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
-    def get_amplitudes(self, ket_or_basis: Union[KetAtom, "Self"]):
-        return self._cpp.get_amplitudes(ket_or_basis._cpp)
+    def get_amplitudes(self, ket_or_basis: Union[KetAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
+        return self._cpp.get_amplitudes(ket_or_basis._cpp)  # type: ignore [arg-type, return-value]
 
     @overload
-    def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...
+    def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
-    def get_overlaps(self, ket_or_basis: Union[KetAtom, "Self"]):
-        return self._cpp.get_overlaps(ket_or_basis._cpp)
+    def get_overlaps(self, ket_or_basis: Union[KetAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
+        return self._cpp.get_overlaps(ket_or_basis._cpp)  # type: ignore [arg-type, return-value]
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: KetAtom, operator: OperatorType, q: int
-    ) -> "PlainQuantity[NDArray[Any]]": ...
+        self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: None = None
+    ) -> "PintArray": ...
+
+    @overload
+    def get_matrix_elements(self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: str) -> "NDArray": ...
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: str
-    ) -> "NDArray[Any]": ...
-
-    @overload
-    def get_matrix_elements(
-        self, ket_or_basis: "Self", operator: OperatorType, q: int
-    ) -> "PlainQuantity[csr_matrix]": ...
+        self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: None = None
+    ) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
 
     def get_matrix_elements(
         self, ket_or_basis: Union[KetAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
-    ):
-        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, get_cpp_operator_type(operator), q)
-        matrix_elements: QuantityAbstract
+    ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
+        cpp_op = get_cpp_operator_type(operator)
+        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)  # type: ignore [arg-type]
+        matrix_elements: QuantityAbstract[Any]
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operator)
         else:  # csr_matrix
-            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)
+            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)  # type: ignore [arg-type]
         return matrix_elements.to_pint_or_unit(unit)
 
 
 class BasisAtomReal(BasisAtom):
-    _cpp: _backend.BasisAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisAtomReal
     _cpp_creator = _backend.BasisAtomCreatorReal
     _TypeKet = KetAtom
 
 
 class BasisAtomComplex(BasisAtom):
-    _cpp: _backend.BasisAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisAtomComplex
     _cpp_creator = _backend.BasisAtomCreatorComplex
     _TypeKet = KetAtom

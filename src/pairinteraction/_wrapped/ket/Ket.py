@@ -6,8 +6,9 @@ from pairinteraction._wrapped.cpp_types import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
+
+    from pairinteraction.units import PintFloat
 
 UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex, _backend.KetPairReal]
 UnionTypeCPPKetCreator = type[_backend.KetAtomCreator]  # since there currently is no KetPairCreator
@@ -74,17 +75,17 @@ class KetBase(ABC):
         raise ValueError(f"Unknown parity {parity}")
 
     @property
-    def energy(self) -> "PlainQuantity[float]":
+    def energy(self) -> "PintFloat":
         """The energy of the ket: E=I-Ry/nu^2."""
         return self.get_energy()
 
     @overload
-    def get_energy(self) -> "PlainQuantity[float]": ...
+    def get_energy(self, unit: None = None) -> "PintFloat": ...
 
     @overload
     def get_energy(self, unit: str) -> float: ...
 
-    def get_energy(self, unit: Optional[str] = None) -> Union[float, "PlainQuantity[float]"]:
+    def get_energy(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         """Get the energy of the ket in the given unit.
 
         Args:
@@ -98,6 +99,3 @@ class KetBase(ABC):
         energy_au = self._cpp.get_energy()
         energy = QuantityScalar.from_base_unit(energy_au, "ENERGY")
         return energy.to_pint_or_unit(unit)
-
-
-Ket = KetBase

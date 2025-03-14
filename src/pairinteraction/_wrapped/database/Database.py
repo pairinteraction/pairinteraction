@@ -48,7 +48,7 @@ class Database:
     @classmethod
     def get_global_database(cls) -> "Database":
         """Return the global database instance if it was initialized, otherwise None."""
-        return cls._global_database
+        return cls._global_database  # type: ignore [return-value]
 
     @classmethod
     def initialize_global_database(

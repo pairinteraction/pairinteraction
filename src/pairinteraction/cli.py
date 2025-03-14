@@ -50,7 +50,8 @@ def main() -> int:
 
     configure_logging(args.log_level)
 
-    return args.func(args)
+    args.func(args)
+    return 0
 
 
 def start_gui() -> int:
