@@ -70,7 +70,7 @@ class KetBase(ABC):
         parity_cpp = self._cpp.get_parity()
         parity = parity_cpp.name
         if parity in get_args(Parity):
-            return parity  # type: ignore [return-value]
+            return parity
         raise ValueError(f"Unknown parity {parity}")
 
     @property

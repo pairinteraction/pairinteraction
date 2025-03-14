@@ -45,7 +45,7 @@ class SystemBase(ABC, Generic[BasisType]):
     _TypeBasis: type[BasisType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, basis: BasisType) -> None:
-        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
+        self._cpp = self._cpp_type(basis._cpp)
         self._update_basis()
 
     @classmethod
@@ -62,7 +62,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return self.__repr__().replace("Real", "").replace("Complex", "")
 
     def _update_basis(self) -> None:
-        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())  # type: ignore
+        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())
 
     def diagonalize(
         self,
@@ -127,7 +127,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenbasis(self) -> BasisType:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
+        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
 
     @overload
     def get_eigenvalues(self) -> "PlainQuantity[NDArray[Any]]": ...

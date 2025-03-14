@@ -132,7 +132,7 @@ class KetAtom(KetBase):
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
             database = Database.get_global_database()
-        self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
+        self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride]
         self._database = database
 
     def __eq__(self, other: object) -> bool:

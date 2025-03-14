@@ -59,7 +59,7 @@ def diagonalize(
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 
     """
-    cpp_systems = [s._cpp for s in systems]  # type: ignore [reportPrivateUsage]
+    cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0], float_type, m0=m0)
 
@@ -74,5 +74,5 @@ def diagonalize(
         if sort_by_energy:
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             cpp_system.transform(sorter)
-        system._cpp = cpp_system  # type: ignore [reportPrivateUsage]
+        system._cpp = cpp_system
         system._update_basis()

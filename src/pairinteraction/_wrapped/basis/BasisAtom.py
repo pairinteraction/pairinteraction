@@ -115,9 +115,9 @@ class BasisAtom(BasisBase[KetAtom]):
             database = Database.get_global_database()
         if additional_kets is not None:
             for ket in additional_kets:
-                creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]
+                creator.append_ket(ket._cpp)
             self._additional_kets = additional_kets
-        self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
+        self._cpp = creator.create(database._cpp)
 
     def __repr__(self) -> str:
         args = ""
@@ -138,7 +138,7 @@ class BasisAtom(BasisBase[KetAtom]):
     def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
     def get_amplitudes(self, ket_or_basis: Union[KetAtom, "Self"]):
-        return self._cpp.get_amplitudes(ket_or_basis._cpp)
+        return self._cpp.get_amplitudes(ket_or_basis._cpp)  # type: ignore [arg-type]
 
     @overload
     def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray[Any]": ...
@@ -147,7 +147,7 @@ class BasisAtom(BasisBase[KetAtom]):
     def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
     def get_overlaps(self, ket_or_basis: Union[KetAtom, "Self"]):
-        return self._cpp.get_overlaps(ket_or_basis._cpp)
+        return self._cpp.get_overlaps(ket_or_basis._cpp)  # type: ignore [arg-type]
 
     @overload
     def get_matrix_elements(
@@ -170,7 +170,8 @@ class BasisAtom(BasisBase[KetAtom]):
     def get_matrix_elements(
         self, ket_or_basis: Union[KetAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
     ):
-        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, get_cpp_operator_type(operator), q)
+        cpp_op = get_cpp_operator_type(operator)
+        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)  # type: ignore [arg-type]
         matrix_elements: QuantityAbstract
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operator)

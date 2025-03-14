@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
 
-BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
+BasisType = TypeVar("BasisType", bound=Union["BasisAtomReal", "BasisAtomComplex"])
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
 UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
@@ -97,7 +97,7 @@ class SystemAtom(SystemBase[BasisType]):
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit)[idx]
+        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index]
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):
