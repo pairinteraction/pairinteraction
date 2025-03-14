@@ -75,19 +75,19 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
         [](nb::list pylist, // NOLINT
            const DiagonalizerInterface<scalar_t> &diagonalizer,
            std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue,
-           double atol) {
+           double rtol) {
             std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
                 systems.push_back(nb::cast<T>(h));
             }
-            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, atol);
+            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
             for (size_t i = 0; i < systems.size(); ++i) {
                 pylist[i] = nb::cast(systems[i]);
             }
         },
         "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a = nb::none(),
-        "max_eigenvalue"_a = nb::none(), "atol"_a = 1e-6);
+        "max_eigenvalue"_a = nb::none(), "rtol"_a = 1e-6);
 }
 
 void bind_diagonalizer(nb::module_ &m) {

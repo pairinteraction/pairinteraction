@@ -16,17 +16,17 @@ public:
 
     DiagonalizerFeast(int m0, FloatType float_type = FloatType::FLOAT64);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              double atol) const override;
+                              double rtol) const override;
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               std::optional<real_t> min_eigenvalue,
-                              std::optional<real_t> max_eigenvalue, double atol) const override;
+                              std::optional<real_t> max_eigenvalue, double rtol) const override;
 
 private:
     int m0;
     template <typename ScalarLim>
     EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                        real_t min_eigenvalue, real_t max_eigenvalue,
-                                       double atol) const;
+                                       double rtol) const;
 };
 
 extern template class DiagonalizerFeast<double>;
