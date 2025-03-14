@@ -40,6 +40,22 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_diamagnetism_enabled(bool enable) {
 }
 
 template <typename Scalar>
+SystemAtom<Scalar> &
+SystemAtom<Scalar>::set_distance_vector_to_ion(const std::array<real_t, 3> &vector) {
+    this->hamiltonian_requires_construction = true;
+    ion_first_order = spherical::get_multipole_expansion_factors<Scalar, 1>(vector);
+    ion_second_order = spherical::get_multipole_expansion_factors<Scalar, 2>(vector);
+    return *this;
+}
+
+template <typename Scalar>
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_charge(real_t charge) {
+    this->hamiltonian_requires_construction = true;
+    ion_charge = charge;
+    return *this;
+}
+
+template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
 
@@ -51,6 +67,34 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     bool sort_by_quantum_number_f = true;
     bool sort_by_quantum_number_m = true;
     bool sort_by_parity = true;
+
+    // Add the interaction with the field of an ion (see
+    // https://en.wikipedia.org/wiki/Multipole_expansion#Spherical_form for details)
+
+    // Dipole order
+    for (int q = -1; q <= 1; ++q) {
+        int idx = q + 1;
+        if (std::abs(ion_first_order[idx]) > numerical_precision) {
+            *this->hamiltonian -= ion_charge * ion_first_order[idx] *
+                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+            sort_by_parity = false;
+            sort_by_quantum_number_m = (q == 0) ? sort_by_quantum_number_m : false;
+        }
+    }
+
+    // Quadrupole order
+    for (int q = -2; q <= 2; ++q) {
+        int idx = q + 2;
+        if (std::abs(ion_second_order[idx]) > numerical_precision) {
+            *this->hamiltonian -= ion_charge * ion_second_order[idx] *
+                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, q);
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+            sort_by_quantum_number_m = (q == 0) ? sort_by_quantum_number_m : false;
+        }
+    }
 
     // Add external fields (see https://arxiv.org/abs/1612.08053 for details)
 

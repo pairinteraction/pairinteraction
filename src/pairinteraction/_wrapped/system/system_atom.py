@@ -92,6 +92,28 @@ class SystemAtom(SystemBase[BasisType]):
         self._cpp.set_diamagnetism_enabled(enable)
         return self
 
+    def set_distance_to_ion(
+        self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
+    ) -> "Self":
+        return self.set_distance_vector_to_ion([0, 0, distance], unit)
+
+    def set_distance_vector_to_ion(
+        self: "Self",
+        distance: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
+        unit: Optional[str] = None,
+    ) -> "Self":
+        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
+        self._cpp.set_distance_vector_to_ion(distance_au)
+        self._distance_vector_au = distance_au
+        return self
+
+    def set_ion_charge(
+        self: "Self", charge: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
+    ) -> "Self":
+        charge_au = QuantityScalar.from_pint_or_unit(charge, unit, "CHARGE").to_base_unit()
+        self._cpp.set_ion_charge(charge_au)
+        return self
+
     @overload
     def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: None = None) -> "PintFloat": ...
 
