@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+
 import os
 from typing import Optional
 
@@ -29,7 +31,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
         except StopIteration as err:
             raise RuntimeError(f"The '{substring}' library could not be found.") from err
 
-    def load_candidate(candidate: Path, loader: Callable) -> None:
+    def load_candidate(candidate: Path, loader: Callable[..., None]) -> None:
         try:
             loader(str(candidate))
         except Exception as e:
@@ -52,7 +54,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
             Path.cwd().parent.parent / "vcpkg_installed/x64-windows/bin",
         ]
         if directory := next((d for d in vcpkg_dirs if d.is_dir()), None):
-            os.add_dll_directory(str(directory))
+            os.add_dll_directory(str(directory))  # type: ignore [attr-defined]
 
     def load_mkl(system: str) -> None:
         import ctypes
@@ -85,15 +87,15 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
                 tbb_lib_file = get_library_file("tbb", "tbb")
             except RuntimeError:
                 tbb_lib_file = get_library_file("pairinteraction", "tbb")
-            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
+            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
 
             for lib in mkl_lib_file_names:
                 candidate = mkl_lib_dir / f"lib{lib}.so.2"
-                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
+                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
 
         elif system == "Windows":
             # Modify the dll search path
-            os.add_dll_directory(str(mkl_lib_dir))
+            os.add_dll_directory(str(mkl_lib_dir))  # type: ignore [attr-defined]
 
             is_conda_cpython = platform.python_implementation() == "CPython" and (
                 hasattr(ctypes.pythonapi, "Anaconda_GetVersion") or "packaged by conda-forge" in sys.version
@@ -104,9 +106,9 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
 
             # If conda python <= 3.9 is used, the libraries must be loaded manually in the address space
             # https://github.com/adang1345/delvewheel/blob/c37a82f0f66dd73e0169ff637f7c0ba5b33032c6/delvewheel/_wheel_repair.py#L56-L77
-            import ctypes.wintypes as wintypes
+            from ctypes import WinDLL, wintypes  # type: ignore [attr-defined]
 
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32 = WinDLL("kernel32", use_last_error=True)
             kernel32.LoadLibraryExW.restype = wintypes.HMODULE
             kernel32.LoadLibraryExW.argtypes = wintypes.LPCWSTR, wintypes.HANDLE, wintypes.DWORD
             for lib in mkl_lib_file_names:
@@ -175,19 +177,19 @@ del _setup_logging
 # ---------------------------------------------------------------------------------------
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
-from pairinteraction import (  # noqa: E402
+from pairinteraction import (
     complex,
     perturbative,
     real,
 )
-from pairinteraction._backend import (  # noqa: E402
+from pairinteraction._backend import (
     VERSION_MAJOR as _VERSION_MAJOR,
     VERSION_MINOR as _VERSION_MINOR,
     VERSION_PATCH as _VERSION_PATCH,
 )
-from pairinteraction.logging import configure_logging  # noqa: E402
-from pairinteraction.module_tests import run_module_tests  # noqa: E402
-from pairinteraction.units import ureg  # noqa: E402
+from pairinteraction.logging import configure_logging
+from pairinteraction.module_tests import run_module_tests
+from pairinteraction.units import ureg
 
 __all__ = [
     "complex",

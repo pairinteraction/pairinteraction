@@ -95,7 +95,7 @@ class KetBaseConfig(BaseConfig):
 
         for _, widget in stacked_qn.items():
             for item in widget.items:
-                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))
+                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_qn)
 
         # Add a label to display the current ket
@@ -141,7 +141,7 @@ class KetBaseConfig(BaseConfig):
         """Return the ket of interest of the ... atom."""
         species = self.get_species(atom)
         qns = self.get_quantum_numbers(atom)
-        return get_ket_atom(species, **qns)
+        return get_ket_atom(species, **qns)  # type: ignore [no-any-return] # problem decorator catch_download_missing
 
     def on_species_changed(self, species: str, atom: int) -> None:
         """Handle species selection change."""

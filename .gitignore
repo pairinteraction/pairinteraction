@@ -26,6 +26,7 @@ __pycache__/
 obj/
 build*/
 .ruff_cache/
+.mypy_cache/
 vcpkg_installed/
 .venv/
 *.egg-info/

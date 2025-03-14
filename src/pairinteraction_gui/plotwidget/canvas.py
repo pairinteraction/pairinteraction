@@ -3,7 +3,7 @@ from typing import Optional
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QWidget

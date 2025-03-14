@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
 
-from pairinteraction._wrapped.ket.Ket import Ket
+from pairinteraction._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-KetType = TypeVar("KetType", bound=Ket)
+KetType = TypeVar("KetType", bound=KetBase, covariant=True)
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|Pair)(Real|Complex)
 UnionTypeCPPBasisCreator = Any
@@ -50,7 +50,7 @@ class BasisBase(ABC, Generic[KetType]):
     @cached_property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        kets = [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]  # type: ignore [reportPrivateUsage]
+        kets = [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
         return kets
 
     @property
@@ -69,25 +69,22 @@ class BasisBase(ABC, Generic[KetType]):
         if isinstance(ket_or_index, (int, np.integer)):
             cpp_basis = self._cpp.get_corresponding_state(ket_or_index)
         else:
-            cpp_basis = self._cpp.get_corresponding_state(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
+            cpp_basis = self._cpp.get_corresponding_state(ket_or_index._cpp)  # type: ignore [arg-type]
         return type(self)._from_cpp_object(cpp_basis)
 
     def get_corresponding_state_index(self, ket_or_index: Union[KetType, int]) -> int:
         if isinstance(ket_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_state_index(ket_or_index)
-        return self._cpp.get_corresponding_state_index(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
+        return self._cpp.get_corresponding_state_index(ket_or_index._cpp)  # type: ignore [arg-type]
 
     def get_corresponding_ket(self: "Self", state_or_index: Union["Self", int]) -> KetType:
         if isinstance(state_or_index, (int, np.integer)):
             cpp_ket = self._cpp.get_corresponding_ket(state_or_index)
         else:
-            cpp_ket = self._cpp.get_corresponding_ket(state_or_index._cpp)  # type: ignore [reportPrivateUsage]
+            cpp_ket = self._cpp.get_corresponding_ket(state_or_index._cpp)  # type: ignore [arg-type]
         return self._TypeKet._from_cpp_object(cpp_ket)
 
     def get_corresponding_ket_index(self, state_or_index: Union["Self", int]) -> int:
         if isinstance(state_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_ket_index(state_or_index)
-        return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [reportPrivateUsage]
-
-
-Basis = BasisBase[Any]
+        return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [arg-type]

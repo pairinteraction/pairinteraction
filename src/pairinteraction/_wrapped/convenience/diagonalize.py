@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.cpp_types import (
@@ -11,15 +11,14 @@ from pairinteraction._wrapped.cpp_types import (
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity
+    from pairinteraction._wrapped.system.System import SystemBase
+    from pairinteraction.units import PintFloat
 
-    from pairinteraction._wrapped.system.System import System
-
-    Quantity = TypeVar("Quantity", float, PlainQuantity[float])
+    Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
 
 
 def diagonalize(
-    systems: Sequence["System"],
+    systems: Sequence["SystemBase[Any]"],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
@@ -59,20 +58,19 @@ def diagonalize(
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 
     """
-    cpp_systems = [s._cpp for s in systems]  # type: ignore [reportPrivateUsage]
+    cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0], float_type, m0=m0)
 
-    min_energy_au, max_energy_au = energy_range
-    if min_energy_au is not None:
-        min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
-    if max_energy_au is not None:
-        max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
-    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, rtol)
+    energy_range_au: list[Optional[float]] = [None, None]
+    for i, energy in enumerate(energy_range):
+        if energy is not None:
+            energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             cpp_system.transform(sorter)
-        system._cpp = cpp_system  # type: ignore [reportPrivateUsage]
+        system._cpp = cpp_system
         system._update_basis()

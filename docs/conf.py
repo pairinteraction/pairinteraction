@@ -1,5 +1,6 @@
 # Configuration file for the Sphinx documentation builder.
 import os
+from typing import Any
 
 import pairinteraction
 
@@ -78,8 +79,7 @@ autosummary_ignore_module_all = False
 add_module_names = False  # don't add module names to members
 autodoc_class_signature = "separated"  # "mixed": combine class and __init__ doc, "separated": separate them
 autodoc_typehints = "both"
-autodoc_type_aliases = {}  # make type aliases nicer
-autodoc_default_options = {
+autodoc_default_options: dict[str, Any] = {
     "members": True,
     "member-order": "bysource",
     "inherited-members": True,  # include inherited members

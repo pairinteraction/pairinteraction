@@ -2,6 +2,8 @@ import logging
 import os
 import signal
 import sys
+from types import FrameType
+from typing import Optional
 
 from PySide6.QtCore import QCoreApplication, QSocketNotifier, QTimer
 from PySide6.QtWidgets import QApplication
@@ -38,7 +40,7 @@ def allow_ctrl_c(app: QApplication) -> None:
     # Create a pipe to communicate between the signal handler and the Qt event loop
     pipe_r, pipe_w = os.pipe()
 
-    def signal_handler(sig, frame) -> None:  # noqa
+    def signal_handler(signal: int, frame: Optional[FrameType]) -> None:
         os.write(pipe_w, b"x")  # Write a single byte to the pipe
 
     signal.signal(signal.SIGINT, signal_handler)

@@ -1,15 +1,16 @@
 from functools import wraps
-from typing import Callable
+from typing import Any, Callable
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
-THREADPOOL = QThreadPool(maxThreadCount=2)
+THREADPOOL = QThreadPool()
+THREADPOOL.setMaxThreadCount(2)
 
 
 class Worker(QRunnable):
     """Simple worker class to run a function in a separate thread."""
 
-    def __init__(self, fn: Callable, *args, **kwargs) -> None:  # noqa: ANN002
+    def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         super().__init__()
 
         self.fn = fn
@@ -45,15 +46,15 @@ class WorkerSignals(QObject):
     progress = Signal(int)
 
 
-def run_worker(fn: Callable, *args, **kwargs) -> None:  # noqa: ANN002
+def run_worker(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
     """Run a function in a separate thread."""
     worker = Worker(fn, *args, **kwargs)
     THREADPOOL.start(worker)
 
 
-def threaded(func: Callable) -> Callable:
+def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    def wrapper_func(*args, **kwargs):  # noqa
+    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
         worker = Worker(func, *args, **kwargs)
         THREADPOOL.start(worker)
         return worker.signals.result
@@ -61,12 +62,12 @@ def threaded(func: Callable) -> Callable:
     return wrapper_func
 
 
-# def threaded_factory(func_finished: Optional[Callable] = None) -> Callable:
+# def threaded_factory(func_finished: Optional[Callable[..., Any]] = None) -> Callable[..., Any]:
 #     """Decorator to run the function in a separate thread."""
 
-#     def threaded(func: Callable) -> Callable:
+#     def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
 #         @wraps(func)
-#         def wrapper_func(*args, **kwargs):
+#         def wrapper_func(*args: Any, **kwargs: Any) -> Any:
 #             worker = Worker(func, *args, **kwargs)
 #             if func_finished:
 #                 worker.signals.finished.connect(func_finished)

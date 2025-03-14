@@ -1,6 +1,6 @@
 import logging
-from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, Optional, Union, overload
+from collections.abc import Collection, Iterable
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 from scipy import sparse
@@ -8,14 +8,12 @@ from scipy import sparse
 from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
-
     from pairinteraction import (
         complex as pi_complex,
         real as pi_real,
     )
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
+    from pairinteraction.units import NDArray, PintArray, PintFloat
 
     KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
     KetPair = Union[pi_real.KetPair, pi_complex.KetPair]
@@ -30,7 +28,9 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
-) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
+    *,
+    unit: None = None,
+) -> tuple["PintArray", sparse.csr_matrix]: ...
 
 
 @overload
@@ -41,7 +41,7 @@ def get_effective_hamiltonian_from_system(
     required_overlap: float = 0.9,
     *,
     unit: str,
-) -> tuple["NDArray[Any]", sparse.csr_matrix]: ...
+) -> tuple["NDArray", sparse.csr_matrix]: ...
 
 
 def get_effective_hamiltonian_from_system(
@@ -50,7 +50,7 @@ def get_effective_hamiltonian_from_system(
     order: int = 2,
     required_overlap: float = 0.9,
     unit: Optional[str] = None,
-) -> tuple[Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"], sparse.csr_matrix]:
+) -> tuple[Union["NDArray", "PintArray"], sparse.csr_matrix]:
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
 
     This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
@@ -99,9 +99,8 @@ def get_effective_hamiltonian_from_system(
 
 @overload
 def get_c3_from_system(
-    ket_tuple_list: Collection["KetPairLike"],
-    system_pair: "SystemPair",
-) -> "PlainQuantity[float]": ...
+    ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", *, unit: None = None
+) -> "PintFloat": ...
 
 
 @overload
@@ -110,7 +109,7 @@ def get_c3_from_system(ket_tuple_list: Collection["KetPairLike"], system_pair: "
 
 def get_c3_from_system(
     ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: Optional[str] = None
-) -> Union[float, "PlainQuantity[float]"]:
+) -> Union[float, "PintFloat"]:
     r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.
 
     This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of
@@ -141,20 +140,17 @@ def get_c3_from_system(
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
+        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
         return C3
 
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    C3 = H_eff[0, 1] * R**3
-    return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
+    c3_pint = H_eff[0, 1] * R**3  # type: ignore [index] # PintArray does not know it can be indexed
+    return QuantityScalar.from_pint(c3_pint, "C3").to_pint_or_unit(unit)
 
 
 @overload
-def get_c6_from_system(
-    ket_tuple: "KetPairLike",
-    system_pair: "SystemPair",
-) -> "PlainQuantity[float]": ...
+def get_c6_from_system(ket_tuple: "KetPairLike", system_pair: "SystemPair", *, unit: None = None) -> "PintFloat": ...
 
 
 @overload
@@ -163,7 +159,7 @@ def get_c6_from_system(ket_tuple: "KetPairLike", system_pair: "SystemPair", unit
 
 def get_c6_from_system(
     ket_tuple: "KetPairLike", system_pair: "SystemPair", unit: Optional[str] = None
-) -> Union[float, "PlainQuantity[float]"]:
+) -> Union[float, "PintFloat"]:
     r"""Calculate the :math:`C_6` coefficient for a given tuple of ket states.
 
     This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single atom ket
@@ -182,13 +178,14 @@ def get_c6_from_system(
         ValueError: If a tuple with more than two single atom states is given.
 
     """
-    if len(ket_tuple) != 2:
-        raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
-    if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:
-        raise ValueError(
-            "If you want to calculate 2nd order perturbations of two different states a and b, "
-            "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
-        )
+    if isinstance(ket_tuple, Iterable):
+        if len(ket_tuple) != 2:
+            raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
+        if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:
+            raise ValueError(
+                "If you want to calculate 2nd order perturbations of two different states a and b, "
+                "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
+            )
 
     R = system_pair.get_distance()
     if np.isinf(R.magnitude):
@@ -198,19 +195,19 @@ def get_c6_from_system(
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C6 = get_c6_from_system(ket_tuple, system_pair, unit)
+        C6 = get_c6_from_system(ket_tuple, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
         return C6
 
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    C6 = (H_eff - H_0)[0, 0] * R**6
-    return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
+    c6_pint = (H_eff - H_0)[0, 0] * R**6
+    return QuantityScalar.from_pint(c6_pint, "C6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
     H: sparse.csr_matrix, model_inds: list[int], order: int = 2
-) -> tuple["NDArray[Any]", sparse.csr_matrix]:
+) -> tuple["NDArray", sparse.csr_matrix]:
     r"""Calculate the perturbative Hamiltonian at a given order.
 
     This function takes a Hamiltonian as a sparse matrix which is diagonal in the unperturbed basis
@@ -234,15 +231,15 @@ def _calculate_perturbative_hamiltonian(
     if order not in [0, 1, 2, 3]:
         raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
 
-    m_inds: NDArray[Any] = np.array(model_inds)
-    o_inds: NDArray[Any] = np.setdiff1d(np.arange(H.shape[0]), m_inds)
+    m_inds: NDArray = np.array(model_inds)
+    o_inds: NDArray = np.setdiff1d(np.arange(H.shape[0]), m_inds)
     m = len(m_inds)
     n = len(o_inds)
 
     H0 = H.diagonal()
     H0_m = H0[m_inds]
     H_eff = sparse.diags(H0_m, format="csr")
-    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])
+    eigvec_perturb: sparse.csr_matrix = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])  # type: ignore [assignment]
 
     if order >= 1:
         V = H - sparse.diags(H0)
@@ -256,7 +253,7 @@ def _calculate_perturbative_hamiltonian(
         H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
         addition_mm = sparse.csr_matrix((m, m))
         addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
-        eigvec_perturb += sparse.hstack([addition_mm, addition_me])
+        eigvec_perturb += sparse.hstack([addition_mm, addition_me], format="csr")  # type: ignore [arg-type]
 
     if order >= 3:
         diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]

@@ -9,11 +9,12 @@ from pairinteraction._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
-BasisType = TypeVar("BasisType", "BasisPairReal", "BasisPairComplex")
+    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction.units import PintArray, PintFloat
+
+BasisType = TypeVar("BasisType", bound="BasisPair[Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 
@@ -61,14 +62,12 @@ class SystemPair(SystemBase[BasisType]):
         self._cpp.set_order(order)
         return self
 
-    def set_distance(
-        self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
-    ) -> "Self":
+    def set_distance(self: "Self", distance: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
         return self.set_distance_vector([0, 0, distance], unit)
 
     def set_distance_vector(
         self: "Self",
-        distance: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
+        distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
@@ -77,33 +76,33 @@ class SystemPair(SystemBase[BasisType]):
         return self
 
     @overload
-    def get_distance_vector(self) -> list["PlainQuantity[float]"]: ...
+    def get_distance_vector(self, unit: None = None) -> list["PintFloat"]: ...
 
     @overload
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
-    def get_distance_vector(self, unit: Optional[str] = None):  # type: ignore
+    def get_distance_vector(self, unit: Optional[str] = None) -> Union[list[float], list["PintFloat"]]:
         distance_vector = [QuantityScalar.from_base_unit(d, "DISTANCE") for d in self._distance_vector_au]
-        return [d.to_pint_or_unit(unit) for d in distance_vector]
+        return [d.to_pint_or_unit(unit) for d in distance_vector]  # type: ignore [return-value]
 
     @overload
-    def get_distance(self) -> "PlainQuantity[float]": ...
+    def get_distance(self, unit: None = None) -> "PintFloat": ...
 
     @overload
     def get_distance(self, unit: str) -> float: ...
 
-    def get_distance(self, unit: Optional[str] = None):  # type: ignore
+    def get_distance(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.from_base_unit(float(distance), "DISTANCE").to_pint_or_unit(unit)
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
-    _cpp: _backend.SystemPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairReal
     _cpp_type = _backend.SystemPairReal
     _TypeBasis = BasisPairReal
 
 
 class SystemPairComplex(SystemPair[BasisPairComplex]):
-    _cpp: _backend.SystemPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairComplex
     _cpp_type = _backend.SystemPairComplex
     _TypeBasis = BasisPairComplex
