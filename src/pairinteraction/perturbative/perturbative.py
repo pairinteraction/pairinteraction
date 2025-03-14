@@ -69,9 +69,9 @@ def get_effective_hamiltonian(
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
 
     This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
-    Hamiltonian is calculated. The whole Hamiltonian is taken from a pair system.
-    The Hamiltonian of the pair system is assumed to be diagonal in the unperturbed Hamiltonian, all off-diagonal
-    elements are assumed to belong to the perturbative term.
+    Hamiltonian is calculated.
+    The Hamiltonian of the pair system is assumed to be diagonal without atom-atom interactions, all atom-atom
+    interaction is treated as a perturbative term.
     The function also checks for resonances between all states and states in the model space.
 
     Args:
@@ -96,6 +96,7 @@ def get_effective_hamiltonian(
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
+        ValueError: If the perturbative order is not 1,2, or 3.
 
     """
     system_pair = _create_system(
@@ -174,6 +175,7 @@ def get_effective_hamiltonian_from_system(
 
     Raises:
         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.
+        ValueError: If the order of perturbation theory is not 0,1,2 or 3.
 
     """
     if np.isinf(system_pair.get_distance().magnitude):
@@ -183,15 +185,15 @@ def get_effective_hamiltonian_from_system(
         )
 
     model_inds = _get_model_inds(ket_tuple_list, system_pair)
-    H_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
-    H_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(H_au, model_inds, order, separate)
+    h_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
+    h_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(h_au, model_inds, order, separate)
     if not 0 <= required_overlap <= 1:
         raise ValueError("Required overlap has to be a positive real number between zero and one.")
     if required_overlap > 0:
         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
 
-    H_eff = QuantityArray.from_base_unit(H_eff_au, "ENERGY").to_pint_or_unit(unit)
-    return H_eff, eigvec_perturb
+    h_eff = QuantityArray.from_base_unit(h_eff_au, "ENERGY").to_pint_or_unit(unit)
+    return h_eff, eigvec_perturb
 
 
 @overload
@@ -298,21 +300,21 @@ def get_c3_from_system(
     if len(ket_tuple_list) != 2:
         raise ValueError("C3 coefficient can be calculated only between two 2-atom states.")
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
+        c3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C3
+        return c3
 
-    H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    C3 = H_eff[0, 1] * R**3
-    return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
+    h_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
+    c3 = h_eff[0, 1] * r**3
+    return QuantityScalar.from_pint(c3, "C3").to_pint_or_unit(unit)
 
 
 @overload
@@ -422,25 +424,25 @@ def get_c6_from_system(
             "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
         )
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C6 = get_c6_from_system(ket_tuple, system_pair, unit)
+        c6 = get_c6_from_system(ket_tuple, system_pair, unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C6
+        return c6
 
-    H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2, separate=True)
-    C6 = H_eff[0, 0] * R**6
-    return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
+    h_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2, separate=True)
+    c6 = h_eff[0, 0] * r**6
+    return QuantityScalar.from_pint(c6, "C6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
-    H: sparse.csr_matrix, model_inds: list[int], order: int = 2, separate: bool = False
+    h: sparse.csr_matrix, model_inds: list[int], order: int = 2, separate: bool = False
 ) -> tuple["NDArray[Any]", sparse.csr_matrix]:
     r"""Calculate the perturbative Hamiltonian at a given order.
 
@@ -448,13 +450,15 @@ def _calculate_perturbative_hamiltonian(
     and list of indices spanning up the model space.
     It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the
     perturbed eigenstates due to interactions with the exterior space in the desired order of perturbation theory.
+    The output is either the full Hamiltonian up to the order of perturbation theory, or only the corrections at
+    a given order.
 
     Args:
-        H: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
+        h: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
         model_inds: List of indices corresponding to the states that span up the model space.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
             Default is second order.
-        separate: True if each order correction of the Hamiltonian is returned separately. False by default.
+        separate: True if a fixed order correction of the Hamiltonian is returned separately. False by default.
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
@@ -467,55 +471,60 @@ def _calculate_perturbative_hamiltonian(
         raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
 
     m_inds: NDArray[Any] = np.array(model_inds)
-    o_inds: NDArray[Any] = np.setdiff1d(np.arange(H.shape[0]), m_inds)
+    o_inds: NDArray[Any] = np.setdiff1d(np.arange(h.shape[0]), m_inds)
     m = len(m_inds)
     n = len(o_inds)
 
-    H0 = H.diagonal()
-    H0_m = H0[m_inds]
-    H_eff = [sparse.diags(H0_m, format="csr")]
+    h0 = h.diagonal()
+    h0_m = h0[m_inds]
+    h_eff = [sparse.diags(h0_m, format="csr")]
     eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])
 
     if order >= 1:
-        V = H - sparse.diags(H0)
-        V_mm = V[np.ix_(m_inds, m_inds)]
-        H_eff.append(V_mm)
+        v = h - sparse.diags(h0)
+        v_mm = v[np.ix_(m_inds, m_inds)]
+        h_eff.append(v_mm)
 
     if order >= 2:
-        H0_e = H0[o_inds]
-        V_me = V[np.ix_(m_inds, o_inds)]
-        deltaE_em = 1 / (H0_m[np.newaxis, :] - H0_e[:, np.newaxis])
-        H_eff.append(V_me @ ((V_me.conj().T).multiply(deltaE_em)))
+        h0_e = h0[o_inds]
+        v_me = v[np.ix_(m_inds, o_inds)]
+        delta_energy_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
+        h_eff.append(v_me @ ((v_me.conj().T).multiply(delta_energy_em)))
         addition_mm = sparse.csr_matrix((m, m))
-        addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
+        addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_energy_em)).T)
         eigvec_perturb += sparse.hstack([addition_mm, addition_me])
 
     if order >= 3:
-        diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]
+        diff = h0_m[np.newaxis, :] - h0_m[:, np.newaxis]
         diff = np.where(diff == 0, np.inf, diff)
-        deltaE_mm = 1 / diff
-        V_ee = V[np.ix_(o_inds, o_inds)]
+        delta_energy_mm = 1 / diff
+        V_ee = v[np.ix_(o_inds, o_inds)]
         if m > 1:
             logger.warning(
                 "At third order, the eigenstates are currently only valid when only one state is in the model space. "
                 "Take care with interpreation of the perturbed eigenvectors."
             )
-        H_eff.append(
-            V_me
+        h_eff.append(
+            v_me
             @ (
-                (V_ee @ ((V_me.conj().T).multiply(deltaE_em)) - ((V_me.conj().T).multiply(deltaE_em)) @ V_mm).multiply(
-                    deltaE_em
-                )
+                (
+                    V_ee @ ((v_me.conj().T).multiply(delta_energy_em))
+                    - ((v_me.conj().T).multiply(delta_energy_em)) @ v_mm
+                ).multiply(delta_energy_em)
             )
         )
         addition_mm_diag = -0.5 * sparse.diags(
-            (V_me @ ((V_me.conj().T).multiply(np.square(deltaE_em)))).diagonal(),
+            (v_me @ ((v_me.conj().T).multiply(np.square(delta_energy_em)))).diagonal(),
             format="csr",
         )
-        addition_mm_offdiag = sparse.csr_matrix(((V_me @ (V_me.conj().T).multiply(deltaE_em)).multiply(deltaE_mm)).T)
-        addition_me = sparse.csr_matrix(((V_ee @ ((V_me.conj().T).multiply(deltaE_em))).multiply(deltaE_em)).T)
+        addition_mm_offdiag = sparse.csr_matrix(
+            ((v_me @ (v_me.conj().T).multiply(delta_energy_em)).multiply(delta_energy_mm)).T
+        )
+        addition_me = sparse.csr_matrix(
+            ((V_ee @ ((v_me.conj().T).multiply(delta_energy_em))).multiply(delta_energy_em)).T
+        )
         addition_me_2 = sparse.csr_matrix(
-            ((V_me.conj().T @ ((V_mm.conj().T).multiply(deltaE_mm))).multiply(deltaE_em)).T
+            ((v_me.conj().T @ ((v_mm.conj().T).multiply(delta_energy_mm))).multiply(delta_energy_em)).T
         )
         eigvec_perturb += sparse.hstack([addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2])
 
@@ -524,10 +533,10 @@ def _calculate_perturbative_hamiltonian(
     all_inds_positions = np.argsort(all_inds)
     eigvec_perturb = eigvec_perturb[:, all_inds_positions]
     if separate:
-        return (0.5 * (H_eff[order] + H_eff[order].conj().T)).todense(), eigvec_perturb
+        return (0.5 * (h_eff[order] + h_eff[order].conj().T)).todense(), eigvec_perturb
     else:
-        H_eff = np.cumsum(H_eff, axis=0)
-        return (0.5 * (H_eff[-1] + H_eff[-1].conj().T)).todense(), eigvec_perturb
+        h_eff = np.cumsum(h_eff, axis=0)
+        return (0.5 * (h_eff[-1] + h_eff[-1].conj().T)).todense(), eigvec_perturb
 
 
 def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
@@ -746,7 +755,7 @@ def _create_system(
         q=1,
     )
     shift_max = dipole_max_1 * dipole_max_2 * ureg.coulomb_constant / distance**3
-    deltaE_max = np.abs(shift_max) / np.sqrt(population_admixture) * perturbative_order
+    delta_energy_max = np.abs(shift_max) / np.sqrt(population_admixture) * perturbative_order
     n_min_1 = ket_min[0].n
     n_min_2 = ket_min[1].n
     e_min = ket_min[0].get_energy() + ket_min[1].get_energy()
@@ -765,7 +774,7 @@ def _create_system(
         q=1,
     )
     shift_min = dipole_min_1 * dipole_min_2 * ureg.coulomb_constant / distance**3
-    deltaE_min = np.abs(shift_min) / np.sqrt(population_admixture) * perturbative_order
+    delta_energy_min = np.abs(shift_min) / np.sqrt(population_admixture) * perturbative_order
 
     systems = [pi.SystemAtom(basis=basis) for basis in bases]
     for system in systems:
@@ -774,7 +783,7 @@ def _create_system(
         system.set_electric_field(electric_field)
     if not all(system.is_diagonal for system in systems):
         pi.diagonalize(systems, diagonalizer="eigen", sort_by_energy=False)
-    basis_pair = pi.BasisPair(systems, energy=(e_min - deltaE_min, e_max + deltaE_max))
+    basis_pair = pi.BasisPair(systems, energy=(e_min - delta_energy_min, e_max + delta_energy_max))
     system_pair = pi.SystemPair(basis_pair)
     system_pair.set_distance_vector(distance_vector)
     system_pair.set_order(multipole_order)
