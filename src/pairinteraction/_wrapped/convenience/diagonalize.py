@@ -22,7 +22,7 @@ def diagonalize(
     systems: Sequence["System"],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
-    atol: float = 1e-6,
+    rtol: float = 1e-6,
     sort_by_energy: bool = True,
     energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
     energy_unit: Optional[str] = None,
@@ -48,8 +48,8 @@ def diagonalize(
         systems: A list of `SystemAtom` or `SystemPair` objects, which will get diagonalized inplace.
         diagonalizer: The diagonalizer method to use. Defaults to "eigen".
         float_type: The floating point precision to use for the diagonalization. Defaults to "float64".
-        atol: The absolute tolerance allowed for eigenenergies and vectors
-            Smaller values are set to 0 in the sparse eigenbasis. Defaults to 1e-6.
+        rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
+            by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
         sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
         energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
@@ -68,7 +68,7 @@ def diagonalize(
         min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
     if max_energy_au is not None:
         max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
-    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, atol)
+    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:

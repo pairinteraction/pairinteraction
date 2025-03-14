@@ -40,13 +40,13 @@ lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, lapack_com
 template <typename Scalar>
 template <typename ScalarLim>
 EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::dispatch_eigh(
-    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double atol) const {
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double rtol) const {
     using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
 
     // Subtract the mean of the diagonal elements from the diagonal
     real_t shift{};
-    Eigen::MatrixX<ScalarLim> evecs = this->template subtract_mean<ScalarLim>(matrix, shift, atol);
+    Eigen::MatrixX<ScalarLim> evecs = this->template subtract_mean<ScalarLim>(matrix, shift, rtol);
 
     // Diagonalize the shifted matrix
     char jobz = 'V'; // eigenvalues and eigenvectors are computed
@@ -65,7 +65,8 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::dispatch_eigh(
             "Diagonalization error: The lapacke_evd routine failed with error code {}.", info));
     }
 
-    return {evecs.sparseView(1, atol).template cast<Scalar>(), this->add_mean(evals, shift)};
+    return {evecs.sparseView(1, 0.5 * rtol / std::sqrt(dim)).template cast<Scalar>(),
+            this->add_mean(evals, shift)};
 }
 
 template <typename Scalar>
@@ -75,12 +76,12 @@ DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerLapackeEvd<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                     double atol) const {
+                                     double rtol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
-        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, atol);
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, rtol);
     case FloatType::FLOAT64:
-        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(matrix, atol);
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(matrix, rtol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }
@@ -97,7 +98,7 @@ DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
 
 template <typename Scalar>
 EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::eigh(
-    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*atol*/) const {
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 

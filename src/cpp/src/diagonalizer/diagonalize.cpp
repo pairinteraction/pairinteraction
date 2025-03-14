@@ -14,11 +14,11 @@ template <typename Derived>
 void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue,
-                 std::optional<typename Derived::real_t> max_eigenvalue, double atol) {
+                 std::optional<typename Derived::real_t> max_eigenvalue, double rtol) {
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, atol);
+                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
             }
         });
 }
@@ -27,11 +27,11 @@ template <typename Derived>
 void diagonalize(std::vector<Derived> &systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue,
-                 std::optional<typename Derived::real_t> max_eigenvalue, double atol) {
+                 std::optional<typename Derived::real_t> max_eigenvalue, double rtol) {
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                system.diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, atol);
+                system.diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
             }
         });
 }
@@ -40,11 +40,11 @@ template <typename Derived>
 void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue,
-                 std::optional<typename Derived::real_t> max_eigenvalue, double atol) {
+                 std::optional<typename Derived::real_t> max_eigenvalue, double rtol) {
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, atol);
+                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
             }
         });
 }
@@ -55,15 +55,15 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
     template void diagonalize(std::initializer_list<std::reference_wrapper<TYPE<SCALAR>>> systems, \
                               const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
                               std::optional<TYPE<SCALAR>::real_t> min_eigenvalue,                  \
-                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double atol);    \
+                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double rtol);    \
     template void diagonalize(std::vector<TYPE<SCALAR>> &systems,                                  \
                               const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
                               std::optional<TYPE<SCALAR>::real_t> min_eigenvalue,                  \
-                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double atol);    \
+                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double rtol);    \
     template void diagonalize(std::vector<std::reference_wrapper<TYPE<SCALAR>>> systems,           \
                               const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
                               std::optional<TYPE<SCALAR>::real_t> min_eigenvalue,                  \
-                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double atol);
+                              std::optional<TYPE<SCALAR>::real_t> max_eigenvalue, double rtol);
 #define INSTANTIATE_DIAGONALIZE(SCALAR)                                                            \
     INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemAtom)                                             \
     INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemPair)

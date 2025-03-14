@@ -45,14 +45,14 @@ template <typename ScalarLim>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                          real_t min_eigenvalue, real_t max_eigenvalue,
-                                         double atol) const {
+                                         double rtol) const {
     using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
 
     // Subtract the mean of the diagonal elements from the diagonal
     real_t shift{};
     Eigen::MatrixX<ScalarLim> hamiltonian =
-        this->template subtract_mean<ScalarLim>(matrix, shift, atol);
+        this->template subtract_mean<ScalarLim>(matrix, shift, rtol);
 
     // Diagonalize the shifted matrix
     int m0 = std::min(dim, this->m0);
@@ -60,7 +60,7 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     Eigen::VectorX<real_lim_t> evals(dim);
     Eigen::MatrixX<ScalarLim> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
-    double targeted_trace_relative_error = 2 * atol;
+    double targeted_trace_relative_error = rtol;
     int precision_feast = static_cast<int>(std::ceil(-std::log10(targeted_trace_relative_error)));
 
     std::vector<MKL_INT> fpm(128);
@@ -147,7 +147,8 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     evecs.conservativeResize(dim, m);
     evals.conservativeResize(m);
 
-    return {evecs.sparseView(1, atol).template cast<Scalar>(), this->add_mean(evals, shift)};
+    return {evecs.sparseView(1, 0.5 * rtol / std::sqrt(dim)).template cast<Scalar>(),
+            this->add_mean(evals, shift)};
 }
 
 template <typename Scalar>
@@ -162,7 +163,7 @@ DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                double /*atol*/) const {
+                                double /*rtol*/) const {
     throw std::invalid_argument("The FEAST routine requires a search interval.");
 }
 
@@ -170,17 +171,17 @@ template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                 std::optional<real_t> min_eigenvalue,
-                                std::optional<real_t> max_eigenvalue, double atol) const {
+                                std::optional<real_t> max_eigenvalue, double rtol) const {
     if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
         throw std::invalid_argument("The FEAST routine requires a search interval.");
     }
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(
-            matrix, min_eigenvalue.value(), max_eigenvalue.value(), atol);
+            matrix, min_eigenvalue.value(), max_eigenvalue.value(), rtol);
     case FloatType::FLOAT64:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(
-            matrix, min_eigenvalue.value(), max_eigenvalue.value(), atol);
+            matrix, min_eigenvalue.value(), max_eigenvalue.value(), rtol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }
@@ -198,7 +199,7 @@ DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                double /*atol*/) const {
+                                double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 
@@ -206,7 +207,7 @@ template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
                                 std::optional<real_t> /*min_eigenvalue*/,
-                                std::optional<real_t> /*max_eigenvalue*/, double /*atol*/) const {
+                                std::optional<real_t> /*max_eigenvalue*/, double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 

@@ -29,16 +29,16 @@ public:
     DiagonalizerInterface(FloatType float_type);
     virtual ~DiagonalizerInterface() = default;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      double atol) const = 0;
+                                      double rtol) const = 0;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       std::optional<real_t> min_eigenvalue,
-                                      std::optional<real_t> max_eigenvalue, double atol) const;
+                                      std::optional<real_t> max_eigenvalue, double rtol) const;
 
 protected:
     FloatType float_type;
     template <typename ScalarLim>
     Eigen::MatrixX<ScalarLim> subtract_mean(const Eigen::MatrixX<Scalar> &matrix, real_t &shift,
-                                            double atol) const;
+                                            double rtol) const;
     template <typename RealLim>
     Eigen::VectorX<real_t> add_mean(const Eigen::VectorX<RealLim> &eigenvalues, real_t shift) const;
 };
@@ -48,10 +48,10 @@ extern template class DiagonalizerInterface<std::complex<double>>;
 
 extern template Eigen::MatrixX<float>
 DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
-                                             double atol) const;
+                                             double rtol) const;
 extern template Eigen::MatrixX<std::complex<float>>
 DiagonalizerInterface<std::complex<double>>::subtract_mean(
-    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double atol) const;
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double rtol) const;
 
 extern template Eigen::VectorX<double>
 DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<float> &shifted_eigenvalues,
@@ -61,10 +61,10 @@ extern template Eigen::VectorX<double> DiagonalizerInterface<std::complex<double
 
 extern template Eigen::MatrixX<double>
 DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
-                                             double atol) const;
+                                             double rtol) const;
 extern template Eigen::MatrixX<std::complex<double>>
 DiagonalizerInterface<std::complex<double>>::subtract_mean(
-    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double atol) const;
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double rtol) const;
 
 extern template Eigen::VectorX<double>
 DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<double> &shifted_eigenvalues,

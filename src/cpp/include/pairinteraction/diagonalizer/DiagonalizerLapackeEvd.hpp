@@ -15,12 +15,12 @@ public:
 
     DiagonalizerLapackeEvd(FloatType float_type = FloatType::FLOAT64);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              double atol) const override;
+                              double rtol) const override;
 
 private:
     template <typename ScalarLim>
     EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                       double atol) const;
+                                       double rtol) const;
 };
 
 extern template class DiagonalizerLapackeEvd<double>;
