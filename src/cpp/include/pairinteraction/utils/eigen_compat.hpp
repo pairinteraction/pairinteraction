@@ -19,5 +19,7 @@ template <typename Type>
 using Matrix3 = Matrix<Type, 3, 3>;
 template <typename Type>
 using Vector3 = Matrix<Type, 3, 1>;
+template <typename Type, int Size>
+using Vector = Matrix<Type, Size, 1>;
 } // namespace Eigen
 #endif

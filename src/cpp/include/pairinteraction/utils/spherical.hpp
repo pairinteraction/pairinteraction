@@ -12,6 +12,7 @@
 #include <complex>
 #include <limits>
 #include <stdexcept>
+#include <unsupported/Eigen/KroneckerProduct>
 
 using namespace std::complex_literals;
 
@@ -36,73 +37,45 @@ inline const Eigen::MatrixX<Complex> &get_transformator(int kappa) {
     throw std::invalid_argument("Invalid kappa value. Must be 1 or 2.");
 }
 
-template <typename Scalar>
-inline std::array<Scalar, 3>
-convert_to_spherical_basis(const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &field) {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    Eigen::Matrix3<Scalar> converter;
-    if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-        converter = CARTESIAN_TO_SPHERICAL_KAPPA1;
-    } else {
-        converter = CARTESIAN_TO_SPHERICAL_KAPPA1.real();
-        if (std::abs(field[1]) > numerical_precision) {
-            throw std::invalid_argument(
-                "The vector must not have a y-component if the scalar type is real.");
-        }
-    }
-
-    std::array<Scalar, 3> field_spherical{};
-    Eigen::Map<Eigen::Vector3<Scalar>>(field_spherical.data(), field_spherical.size()) =
-        converter.template cast<Scalar>() *
-        Eigen::Map<const Eigen::Vector3<real_t>>(field.data(), field.size());
-    return field_spherical;
-}
-
-template <typename Scalar, int Order>
-inline std::array<Scalar, 2 * Order + 1> get_multipole_expansion_factors(
+template <typename Scalar, std::size_t Order>
+inline std::array<Scalar, 3 * Order> convert_to_spherical_basis(
     const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &vector) {
     static_assert(Order == 1 || Order == 2, "The order must be 1 or 2.");
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
-    Scalar ii = 0;
-    if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-        ii = Scalar(0, 1);
+    Eigen::MatrixX<std::complex<double>> CARTESIAN_TO_SPHERICAL_KAPPA;
+    if constexpr (Order == 1) {
+        CARTESIAN_TO_SPHERICAL_KAPPA = CARTESIAN_TO_SPHERICAL_KAPPA1;
     } else {
+        CARTESIAN_TO_SPHERICAL_KAPPA = CARTESIAN_TO_SPHERICAL_KAPPA2;
+    }
+
+    Eigen::MatrixX<Scalar> converter;
+    if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
+        converter = CARTESIAN_TO_SPHERICAL_KAPPA.template cast<Scalar>();
+    } else {
+        converter = CARTESIAN_TO_SPHERICAL_KAPPA.real().template cast<Scalar>();
         if (std::abs(vector[1]) > numerical_precision) {
             throw std::invalid_argument(
                 "The vector must not have a y-component if the scalar type is real.");
         }
     }
 
-    real_t norm = Eigen::Map<const Eigen::Vector3<real_t>>(vector.data(), vector.size()).norm();
-    real_t scaling = 1 / std::pow(norm, Order + 1);
-    real_t x = vector[0] / norm;
-    real_t y = vector[1] / norm;
-    real_t z = vector[2] / norm;
+    Eigen::Map<const Eigen::Vector3<real_t>> vector_map(vector.data(), vector.size());
 
-    // Calculate sqrt(4pi/3) * (-1)^q * Y_1,-q
-    std::array<Scalar, 2 * Order + 1> factors{};
+    // Calculate sqrt(4pi/3) * r * Y_1,q with q = -1, 0, 1 for the first three elements
+    std::array<Scalar, 3 * Order> vector_spherical{};
     if constexpr (Order == 1) {
-        const real_t INV_SQRT_2 = 1 / std::sqrt(real_t(2));
-        factors[0] = scaling * INV_SQRT_2 * (ii * y + x); // q = -1
-        factors[1] = scaling * z;                         // q = 0
-        factors[2] = scaling * INV_SQRT_2 * (ii * y - x); // q = 1
-        return factors;
+        Eigen::Map<Eigen::Vector3<Scalar>>(vector_spherical.data(), vector_spherical.size()) =
+            converter * vector_map;
+        return vector_spherical;
     }
 
-    // Calculate sqrt(4pi/5) * (-1)^q * Y_2,-q
-    const real_t SQRT_3_OVER_8 = std::sqrt(real_t(3) / real_t(8));
-    const real_t SQRT_3_OVER_2 = std::sqrt(real_t(3) / real_t(2));
-    factors[0] = scaling * SQRT_3_OVER_8 * ((ii * y + x) * (ii * y + x)); // q = -2
-    factors[1] = scaling * SQRT_3_OVER_2 * z * (ii * y + x);              // q = -1
-    factors[2] = scaling * 0.5 * (3 * z * z - 1);                         // q =  0
-    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index)
-    factors[3] = scaling * SQRT_3_OVER_2 * z * (ii * y - x);              // q =  1
-    factors[4] = scaling * SQRT_3_OVER_8 * ((ii * y - x) * (ii * y - x)); // q =  2
-    // NOLINTEND(cppcoreguidelines-pro-bounds-constant-array-index)
-    return factors;
+    // Calculate sqrt(4pi/5) * r^2 * Y_2,q / 3 with q = -2, -1, 0, 1, 2 for the first five elements
+    // and (x^2 + y^2 + z^2) / 6 as the last element
+    Eigen::Map<Eigen::Vector<Scalar, 6>>(vector_spherical.data(), vector_spherical.size()) =
+        converter * Eigen::KroneckerProduct(vector_map, vector_map);
+    return vector_spherical;
 }
 } // namespace pairinteraction::spherical
