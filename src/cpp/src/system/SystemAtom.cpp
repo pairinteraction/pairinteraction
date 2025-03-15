@@ -3,8 +3,11 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
+#include <Eigen/Dense>
 #include <algorithm>
 #include <limits>
 #include <memory>
