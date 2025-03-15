@@ -18,7 +18,7 @@ namespace pairinteraction::spherical {
 extern const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL_KAPPA1;
 extern const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL_KAPPA2;
 
-template <typename Scalar, int Order>
+template <typename Scalar, std::size_t Order>
 inline std::array<Scalar, 3 * Order> convert_to_spherical_basis(
     const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &vector) {
     static_assert(Order == 1 || Order == 2, "The order must be 1 or 2.");
