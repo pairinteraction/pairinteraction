@@ -104,7 +104,6 @@ class SystemAtom(SystemBase[BasisType]):
     ) -> "Self":
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
         self._cpp.set_distance_vector_to_ion(distance_au)
-        self._distance_vector_au = distance_au
         return self
 
     def set_ion_charge(
