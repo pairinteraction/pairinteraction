@@ -8,6 +8,7 @@ from scipy import sparse
 import pairinteraction.perturbative as perturbative
 import pairinteraction.real as pi
 from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
+from pairinteraction.units import ureg
 
 
 # ---------------------------------------------------------------------------------------
@@ -145,8 +146,8 @@ def test_perturbative_calculation(caplog):
     assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
 
 
-def test_c3_coefficient():
-    """Test whether dispersion coefficients are correctly calculated."""
+def test_c3_with_system():
+    """Test whether the C3 coefficient with a given system is calculated correctly."""
     system_pair = _create_system_pair_sample()
 
     ket_tuple_list = [
@@ -159,14 +160,49 @@ def test_c3_coefficient():
     assert np.isclose(-0.5 * C3, 3.1515)
 
 
-def test_c6_coefficient():
-    """Test whether the C6 coefficient is correct."""
+def test_c3_without_system():
+    """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
+    ket_tuple_list = [
+        (pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)),
+        (pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5), pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)),
+    ]
+    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
+    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
+    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
+    c3 = perturbative.get_c3(
+        ket_tuple_list,
+        magnetic_field,
+        electric_field,
+        distance_vector,
+        unit="planck_constant * gigahertz * micrometer^3",
+    )
+    assert np.isclose(-0.5 * c3, 3.2188)
+
+
+def test_c6_with_system():
+    """Test whether the C6 coefficient with a given system is calculated correctly."""
     system_pair = _create_system_pair_sample()
     ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     C6 = perturbative.get_c6_from_system(
         ket_tuple=(ket_atom, ket_atom), system_pair=system_pair, unit="planck_constant * gigahertz * micrometer^6"
     )
     assert np.isclose(C6, 167.92)
+
+
+def test_c6_without_system():
+    """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
+    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
+    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
+    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
+    ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    c6 = perturbative.get_c6(
+        ket_tuple=(ket_atom, ket_atom),
+        magnetic_field=magnetic_field,
+        electric_field=electric_field,
+        distance_vector=distance_vector,
+        unit="planck_constant * gigahertz * micrometer^6",
+    )
+    assert np.isclose(c6, 169.176)
 
 
 def test_resonance_detection(caplog):

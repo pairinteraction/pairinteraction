@@ -659,6 +659,11 @@ def _create_system(
     """
     if perturbative_order not in [1, 2, 3]:
         raise ValueError("System can only be created for perturbative order 1,2, and 3.")
+
+    pi = pi_real
+    if electric_field.magnitude[1] != 0 or magnetic_field.magnitude[1] != 0:
+        pi = pi_complex
+
     n_1 = []
     l_1 = []
     j_1 = []
@@ -668,7 +673,6 @@ def _create_system(
     l_2 = []
     j_2 = []
     m_2 = []
-
     for ket1, ket2 in ket_tuple_list:
         n_1.append(ket1.n)
         l_1.append(ket1.l)
@@ -680,7 +684,6 @@ def _create_system(
         m_2.append(ket2.m)
         energ_au.append(ket1.get_energy().magnitude + ket2.get_energy().magnitude)
     species = [ket_tuple_list[0][0].species, ket_tuple_list[0][1].species]
-    spin = [ket_tuple_list[0][0].s, ket_tuple_list[0][1].s]
     n_max = [np.max(n_1), np.max(n_2)]
     l_max = [np.max(l_1), np.max(l_2)]
     j_max = [np.max(j_1), np.max(j_2)]
@@ -692,6 +695,19 @@ def _create_system(
     ket_max = ket_tuple_list[np.argmax(energ_au)]
     ket_min = ket_tuple_list[np.argmin(energ_au)]
 
+    delta_n = 7  # covers also highest angular momentum
+    angular_momentum_steps = perturbative_order * (multipole_order - 2)
+    n_range = [(n_min[i] - delta_n, n_max[i] + delta_n) for i in [0, 1]]
+    l_range = [
+        (
+            l_min[i] - angular_momentum_steps,
+            l_max[i] + angular_momentum_steps,
+        )
+        for i in [0, 1]
+    ]
+    j_range = [None, None]
+    m_range = [None, None]
+
     if (
         magnetic_field[0].magnitude
         == magnetic_field[1].magnitude
@@ -699,82 +715,31 @@ def _create_system(
         == electric_field[1].magnitude
         == 0
     ):
-        pi = pi_real
-        bases = [
-            pi.BasisAtom(
-                species[i],
-                n=(n_min[i] - 7, n_max[i] + 7),
-                l=(
-                    np.maximum(0, l_min[i] - perturbative_order * (multipole_order - 2)),
-                    l_max[i] + perturbative_order * (multipole_order - 2),
-                ),
-                j=(
-                    np.maximum(0, j_min[i] - perturbative_order * (multipole_order - 2)),
-                    j_max[i] + perturbative_order * (multipole_order - 2),
-                ),
-                m=(
-                    m_min[i] - perturbative_order * (multipole_order - 2),
-                    m_max[i] + perturbative_order * (multipole_order - 2),
-                ),
+        j_range = [
+            (
+                np.maximum(0, j_min[i] - angular_momentum_steps),
+                j_max[i] + angular_momentum_steps,
             )
             for i in [0, 1]
         ]
-    else:
-        pi = pi_complex
-        bases = [
-            pi.BasisAtom(
-                species[i],
-                n=(n_min[i] - 7, n_max[i] + 7),
-                l=(
-                    np.maximum(0, l_min[i] - 1 - perturbative_order * (multipole_order - 2)),
-                    l_max[i] + 1 + perturbative_order * (multipole_order - 2),
-                ),
+        m_range = [
+            (
+                m_min[i] - angular_momentum_steps,
+                m_max[i] + angular_momentum_steps,
             )
             for i in [0, 1]
         ]
+
+    bases = [pi.BasisAtom(species[i], n=n_range[i], l=l_range[i], j=j_range[i], m=m_range[i]) for i in [0, 1]]
+
     distance_unit = distance_vector.units
     vector = distance_vector.magnitude
     distance = ureg.Quantity(np.linalg.norm(vector), distance_unit)
-    population_admixture = 1e-4
 
-    n_max_1 = ket_max[0].n
-    n_max_2 = ket_max[1].n
     e_max = ket_max[0].get_energy() + ket_max[1].get_energy()
-    dipole_max_1 = pi.KetAtom(
-        species[0], n=n_max_1, l=n_max_1 - 1, j=n_max_1 - 1 + spin[0], m=n_max_1 - 1 + spin[0]
-    ).get_matrix_element(
-        pi.KetAtom(species[0], n=n_max_1 + 1, l=n_max_1, j=n_max_1 + spin[0], m=n_max_1 + spin[0]),
-        operator="ELECTRIC_DIPOLE",
-        q=1,
-    )
-    dipole_max_2 = pi.KetAtom(
-        species[1], n=n_max_2, l=n_max_2 - 1, j=n_max_2 - 1 + spin[1], m=n_max_2 - 1 + spin[1]
-    ).get_matrix_element(
-        pi.KetAtom(species[1], n=n_max_2 + 1, l=n_max_2, j=n_max_2 + spin[1], m=n_max_2 + spin[1]),
-        operator="ELECTRIC_DIPOLE",
-        q=1,
-    )
-    shift_max = dipole_max_1 * dipole_max_2 * ureg.coulomb_constant / distance**3
-    delta_energy_max = np.abs(shift_max) / np.sqrt(population_admixture) * perturbative_order
-    n_min_1 = ket_min[0].n
-    n_min_2 = ket_min[1].n
+    delta_energy_max = _get_delta_energy(ket_max, distance) * perturbative_order
     e_min = ket_min[0].get_energy() + ket_min[1].get_energy()
-    dipole_min_1 = pi.KetAtom(
-        species[0], n=n_min_1, l=n_min_1 - 1, j=n_min_1 - 1 + spin[0], m=n_min_1 - 1 + spin[0]
-    ).get_matrix_element(
-        pi.KetAtom(species[0], n=n_min_1 + 1, l=n_min_1, j=n_min_1 + spin[0], m=n_min_1 + spin[0]),
-        operator="ELECTRIC_DIPOLE",
-        q=1,
-    )
-    dipole_min_2 = pi.KetAtom(
-        species[1], n=n_min_2, l=n_min_2 - 1, j=n_min_2 - 1 + spin[1], m=n_min_2 - 1 + spin[1]
-    ).get_matrix_element(
-        pi.KetAtom(species[1], n=n_min_2 + 1, l=n_min_2, j=n_min_2 + spin[1], m=n_min_2 + spin[1]),
-        operator="ELECTRIC_DIPOLE",
-        q=1,
-    )
-    shift_min = dipole_min_1 * dipole_min_2 * ureg.coulomb_constant / distance**3
-    delta_energy_min = np.abs(shift_min) / np.sqrt(population_admixture) * perturbative_order
+    delta_energy_min = _get_delta_energy(ket_min, distance) * perturbative_order
 
     systems = [pi.SystemAtom(basis=basis) for basis in bases]
     for system in systems:
@@ -788,3 +753,56 @@ def _create_system(
     system_pair.set_distance_vector(distance_vector)
     system_pair.set_order(multipole_order)
     return system_pair
+
+
+def _get_delta_energy(ket_tuple: "KetPairLike", distance: "PlainQuantity[float]") -> "PlainQuantity[float]":
+    r"""Get an estimate for the energy range for perturbative caluclations for a two-atom state.
+
+    This function takes a 2-tuple of a ket state and calculates an estimate for the energy range
+    which needs to be included for a perturbative treatment.
+
+    Args:
+        ket_tuple: 2-tuple of ket states. The energy range is calculated for this two-atom state.
+        distance: Distance between the atoms.
+
+    Returns:
+        Energy range (with unit) for the perturbative calculations.
+
+    """
+    # only need to use real values to estimate dipole moments.
+    pi = pi_real
+    # extract needed information from pair state.
+    species = [ket_tuple[0].species, ket_tuple[1].species]
+    spin = [ket_tuple[0].s, ket_tuple[1].s]
+    n = [ket_tuple[0].n, ket_tuple[1].n]
+    l = [ket_tuple[0].l, ket_tuple[1].l]
+    j = [ket_tuple[0].j, ket_tuple[1].j]
+    m = [ket_tuple[0].m, ket_tuple[1].m]
+    # Calculate estimate based on dipole-dipole approximation for small distance R.
+    ## largest dipole-dipole interaction for spherical Rydberg states, upper bound for dme.
+    dipole = [
+        pi.KetAtom(species[i], n=n[i], l=n[i] - 1, j=n[i] - 1 + spin[0], m=n[i] - 1 + spin[0]).get_matrix_element(
+            pi.KetAtom(species[i], n=n[i] + 1, l=n[i], j=n[i] + spin[0], m=n[i] + spin[0]),
+            operator="ELECTRIC_DIPOLE",
+            q=1,
+        )
+        for i in [0, 1]
+    ]
+    ## minimal population admixture included due to dipole-dipole interaction
+    population_admixture = 1e-4
+
+    int_energ = dipole[0] * dipole[1] * ureg.coulomb_constant / distance**3
+    delta_energ_small_distance = abs(int_energ) / np.sqrt(population_admixture)
+
+    # Calculate estimate based on infinite R.
+    energies = [
+        abs(
+            pi.KetAtom(species[i], n=n[i] + 1, l=l[i], j=j[i], m=m[i]).get_energy()
+            - 2 * pi.KetAtom(species[i], n=n[i], l=l[i], j=j[i], m=m[i]).get_energy()
+            + pi.KetAtom(species[i], n=n[i] - 1, l=l[i], j=j[i], m=m[i]).get_energy()
+        )
+        for i in [0, 1]
+    ]
+    delta_energ_large_distance = max(energies)
+    # Return maximum of calculated values.
+    return max(delta_energ_small_distance, delta_energ_large_distance)
