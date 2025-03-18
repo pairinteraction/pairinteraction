@@ -151,7 +151,7 @@ class BasisAtom(BasisBase[KetAtom]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: KetAtom, operator: OperatorType, q: int
+        self, ket_or_basis: KetAtom, operator: OperatorType, q: int, *, unit: None = None
     ) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
@@ -161,8 +161,8 @@ class BasisAtom(BasisBase[KetAtom]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: "Self", operator: OperatorType, q: int
-    ) -> "PlainQuantity[csr_matrix]": ...
+        self, ket_or_basis: "Self", operator: OperatorType, q: int, *, unit: None = None
+    ) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
 
     @overload
     def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...

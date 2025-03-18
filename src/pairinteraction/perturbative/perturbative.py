@@ -30,6 +30,8 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    *,
+    unit: None = None,
 ) -> tuple["PlainQuantity[NDArray[Any]]", sparse.csr_matrix]: ...
 
 
@@ -99,8 +101,7 @@ def get_effective_hamiltonian_from_system(
 
 @overload
 def get_c3_from_system(
-    ket_tuple_list: Collection["KetPairLike"],
-    system_pair: "SystemPair",
+    ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", *, unit: None = None
 ) -> "PlainQuantity[float]": ...
 
 
@@ -152,8 +153,7 @@ def get_c3_from_system(
 
 @overload
 def get_c6_from_system(
-    ket_tuple: "KetPairLike",
-    system_pair: "SystemPair",
+    ket_tuple: "KetPairLike", system_pair: "SystemPair", *, unit: None = None
 ) -> "PlainQuantity[float]": ...
 
 

@@ -126,7 +126,12 @@ class BasisPair(BasisBase[KetPairType]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: "KetPairLike", operators: tuple[OperatorType, OperatorType], qs: tuple[int, int]
+        self,
+        ket_or_basis: "KetPairLike",
+        operators: tuple[OperatorType, OperatorType],
+        qs: tuple[int, int],
+        *,
+        unit: None = None,
     ) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
@@ -136,8 +141,13 @@ class BasisPair(BasisBase[KetPairType]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: BasisPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int]
-    ) -> "PlainQuantity[csr_matrix]": ...
+        self,
+        ket_or_basis: BasisPairLike,
+        operators: tuple[OperatorType, OperatorType],
+        qs: tuple[int, int],
+        *,
+        unit: None = None,
+    ) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
 
     @overload
     def get_matrix_elements(

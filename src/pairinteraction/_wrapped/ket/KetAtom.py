@@ -195,18 +195,14 @@ class KetAtom(KetBase):
         return self._cpp.get_quantum_number_j_ryd()
 
     @overload
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int) -> "PlainQuantity[float]": ...
+    def get_matrix_element(
+        self, ket: "Self", operator: OperatorType, q: int, *, unit: None = None
+    ) -> "PlainQuantity[float]": ...
 
     @overload
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
 
-    def get_matrix_element(
-        self,
-        ket: "Self",
-        operator: OperatorType,
-        q: int,
-        unit: Optional[str] = None,
-    ):
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None):
         """Get the matrix element between two atomic basis states from the database.
 
         Args:
@@ -229,19 +225,13 @@ class KetAtom(KetBase):
 
     @overload
     def get_spontaneous_transition_rates(
-        self,
+        self, *, unit: None = None
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
-    def get_spontaneous_transition_rates(
-        self,
-        unit: str,
-    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
+    def get_spontaneous_transition_rates(self, unit: str) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
-    def get_spontaneous_transition_rates(
-        self,
-        unit: Optional[str] = None,
-    ):
+    def get_spontaneous_transition_rates(self, unit: Optional[str] = None):
         """Calculate the spontaneous transition rates for the KetAtom.
 
         The spontaneous transition rates are given by the Einstein A coefficients.
@@ -263,6 +253,8 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
+        *,
+        unit: None = None,
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
@@ -313,6 +305,8 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]", None] = None,
         temperature_unit: Optional[str] = None,
+        *,
+        unit: None = None,
     ) -> "PlainQuantity[float]": ...
 
     @overload

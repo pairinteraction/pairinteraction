@@ -130,7 +130,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
 
     @overload
-    def get_eigenvalues(self) -> "PlainQuantity[NDArray[Any]]": ...
+    def get_eigenvalues(self, *, unit: None = None) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
     def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
@@ -141,7 +141,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return eigenvalues.to_pint_or_unit(unit)
 
     @overload
-    def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
+    def get_hamiltonian(self, *, unit: None = None) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
 
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
