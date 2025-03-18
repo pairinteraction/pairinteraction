@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-KetType = TypeVar("KetType", bound=Ket)
+KetType = TypeVar("KetType", bound=Ket, covariant=True)
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|Pair)(Real|Complex)
 UnionTypeCPPBasisCreator = Any

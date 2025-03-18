@@ -11,13 +11,12 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction._wrapped.basis.Basis import BasisBase
 
     Quantity = TypeVar("Quantity", float, PlainQuantity[float])
 
 
-BasisType = TypeVar("BasisType", bound=Union["BasisAtom", "BasisPair"])
+BasisType = TypeVar("BasisType", bound="BasisBase[Any]", covariant=True)
 UnionCPPSystem = Any
 # UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Real|Complex)
 UnionTypeCPPSystem = Any

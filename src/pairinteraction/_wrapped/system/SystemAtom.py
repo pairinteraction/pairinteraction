@@ -14,9 +14,10 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
+    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
 
-BasisType = TypeVar("BasisType", bound=Union["BasisAtomReal", "BasisAtomComplex"])
+BasisType = TypeVar("BasisType", bound="BasisAtom", covariant=True)
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
 UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 

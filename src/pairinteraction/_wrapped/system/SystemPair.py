@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
-BasisType = TypeVar("BasisType", bound=Union["BasisPairReal", "BasisPairComplex"])
+    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+
+BasisType = TypeVar("BasisType", bound="BasisPair[Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 

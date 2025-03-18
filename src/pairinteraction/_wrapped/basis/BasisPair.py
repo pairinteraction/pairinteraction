@@ -23,8 +23,8 @@ if TYPE_CHECKING:
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
     from pairinteraction._wrapped.system.SystemAtom import SystemAtom
 
-KetPairType = TypeVar("KetPairType", bound=KetPair)
-BasisPairLike = Union["BasisPair", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+KetPairType = TypeVar("KetPairType", bound=KetPair, covariant=True)
+BasisPairLike = Union["BasisPair[Any]", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
 
 UnionCPPBasisPair = Union[_backend.BasisPairReal, _backend.BasisPairComplex]
 UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_backend.BasisPairCreatorComplex]]
