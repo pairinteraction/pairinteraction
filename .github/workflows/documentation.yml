@@ -30,7 +30,7 @@ jobs:
       run: uv pip install .[docs]
     - name: Build documentation
       working-directory: docs/
-      run: uv run make html SPHINXOPTS="-W --keep-going"  # TODO also use -n in the future
+      run: uv run --no-project make html SPHINXOPTS="-W --keep-going"  # TODO also use -n in the future
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
