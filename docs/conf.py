@@ -30,7 +30,7 @@ extensions = [
     "myst_parser",
 ]
 templates_path = ["_templates"]
-exclude_patterns = ["docs", "_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
+exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",

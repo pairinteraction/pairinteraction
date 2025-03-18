@@ -2,7 +2,7 @@ import datetime
 import inspect
 import logging
 import re
-from typing import Any
+from typing import Any, Callable
 
 from colorama import Fore, Style, just_fix_windows_console
 
@@ -25,7 +25,6 @@ def _extract_cpp_backend_log_fields(message: str) -> dict[str, str]:
 def _log_cpp_backend_record(level: int, message: str) -> None:
     logger = logging.getLogger("cpp")
     fields = _extract_cpp_backend_log_fields(message)
-    created = datetime.datetime.strptime(fields["timestamp"], "%Y-%m-%d %H:%M:%S.%f").timestamp()
     record = logging.LogRecord(
         name=logger.name,
         level=level,
@@ -34,9 +33,9 @@ def _log_cpp_backend_record(level: int, message: str) -> None:
         msg=fields["message"],
         args=(),
         exc_info=None,
-        created=created,
-        thread=int(fields["thread"]),
     )
+    record.created = datetime.datetime.strptime(fields["timestamp"], "%Y-%m-%d %H:%M:%S.%f").timestamp()
+    record.thread = int(fields["thread"])
     if level >= logger.getEffectiveLevel():
         logger.handle(record)
 
@@ -46,7 +45,7 @@ def _flush_pending_logs() -> None:
         _log_cpp_backend_record(entry.level, entry.message)
 
 
-def _flush_logs_after(func: callable) -> callable:
+def _flush_logs_after(func: Callable[..., Any]) -> Callable[..., Any]:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         result = func(*args, **kwargs)
         _flush_pending_logs()
