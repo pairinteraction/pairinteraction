@@ -2,6 +2,11 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union, get_args
 
 from pairinteraction import _backend
+from pairinteraction._backend import (
+    FloatType as CPPFloatType,
+    OperatorType as CPPOperatorType,
+    Parity as CPPParity,
+)
 
 if TYPE_CHECKING:
     from pairinteraction._wrapped.system.System import System
@@ -23,9 +28,6 @@ Parity = Literal["EVEN", "ODD", "UNKNOWN"]
 
 
 UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
-CPPFloatType = _backend.FloatType
-CPPOperatorType = _backend.OperatorType
-CPPParity = _backend.Parity
 
 
 def get_cpp_diagonalize(system: "System") -> Callable:
@@ -70,7 +72,7 @@ def get_type_of_system(cpp_system: Any) -> Literal["Complex", "Real"]:
 
 
 def get_cpp_operator_type(operator_type: OperatorType) -> CPPOperatorType:
-    operator_type = operator_type.upper()
+    operator_type = operator_type.upper()  # type: ignore [assignment]
     if operator_type not in get_args(OperatorType):
         raise ValueError(f"Unknown operator_type '{operator_type}', should be one of {OperatorType}")
     try:
@@ -80,7 +82,7 @@ def get_cpp_operator_type(operator_type: OperatorType) -> CPPOperatorType:
 
 
 def get_cpp_parity(parity: Parity) -> CPPParity:
-    parity = parity.upper()
+    parity = parity.upper()  # type: ignore [assignment]
     if parity not in get_args(Parity):
         raise ValueError(f"Unknown parity '{parity}', should be one of {Parity}")
     try:
@@ -90,7 +92,7 @@ def get_cpp_parity(parity: Parity) -> CPPParity:
 
 
 def get_cpp_float_type(float_type: FloatType) -> CPPFloatType:
-    float_type = float_type.lower()
+    float_type = float_type.lower()  # type: ignore [assignment]
     if float_type not in get_args(FloatType):
         raise ValueError(f"Unknown float_type '{float_type}', should be one of {FloatType}")
     try:

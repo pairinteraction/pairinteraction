@@ -1,5 +1,5 @@
 from collections.abc import Collection, Iterable
-from typing import TYPE_CHECKING, Generic, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from pint import UnitRegistry
@@ -67,7 +67,7 @@ BaseContexts: dict[Dimension, Context] = {
     "ENERGY": "spectroscopy",
 }
 
-ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
+ValueType = TypeVar("ValueType", bound=Union[float, "NDArray[Any]", "csr_matrix"])
 
 
 class QuantityAbstract(Generic[ValueType]):

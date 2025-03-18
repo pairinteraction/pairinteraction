@@ -3,7 +3,8 @@ from typing import Callable
 
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
 
-THREADPOOL = QThreadPool(maxThreadCount=2)
+THREADPOOL = QThreadPool()
+THREADPOOL.setMaxThreadCount(2)
 
 
 class Worker(QRunnable):

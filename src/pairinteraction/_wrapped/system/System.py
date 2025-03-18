@@ -98,12 +98,11 @@ class SystemBase(ABC, Generic[BasisType]):
         """
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp, float_type, m0=m0)
 
-        min_energy_au, max_energy_au = energy_range
-        if min_energy_au is not None:
-            min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
-        if max_energy_au is not None:
-            max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
-        self._cpp.diagonalize(cpp_diagonalizer, min_energy_au, max_energy_au, atol)
+        energy_range_au: list[Optional[float]] = [None, None]
+        for i, energy in enumerate(energy_range):
+            if energy is not None:
+                energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+        self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], atol)
 
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
@@ -135,12 +134,12 @@ class SystemBase(ABC, Generic[BasisType]):
     def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
 
     def get_eigenvalues(self, unit: Optional[str] = None):
-        eigenvalues_au = self._cpp.get_eigenvalues()
+        eigenvalues_au: NDArray[Any] = self._cpp.get_eigenvalues()
         eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
-        return eigenvalues.to_pint_or_unit(unit)
+        return eigenvalues.to_pint_or_unit(unit=unit)
 
     @overload
-    def get_hamiltonian(self, *, unit: None = None) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
+    def get_hamiltonian(self, *, unit: None = None) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
 
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...

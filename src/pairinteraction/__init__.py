@@ -104,9 +104,9 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
 
             # If conda python <= 3.9 is used, the libraries must be loaded manually in the address space
             # https://github.com/adang1345/delvewheel/blob/c37a82f0f66dd73e0169ff637f7c0ba5b33032c6/delvewheel/_wheel_repair.py#L56-L77
-            import ctypes.wintypes as wintypes
+            from ctypes import WinDLL, wintypes  # type: ignore [attr-defined]
 
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)  # type: ignore [attr-defined]
+            kernel32 = WinDLL("kernel32", use_last_error=True)
             kernel32.LoadLibraryExW.restype = wintypes.HMODULE
             kernel32.LoadLibraryExW.argtypes = wintypes.LPCWSTR, wintypes.HANDLE, wintypes.DWORD
             for lib in mkl_lib_file_names:

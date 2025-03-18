@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from pairinteraction._wrapped.system.System import System
 
-    Quantity = TypeVar("Quantity", float, PlainQuantity[float])
+    Quantity = TypeVar("Quantity", bound=Union[float, PlainQuantity[float]])
 
 
 def diagonalize(
@@ -63,12 +63,11 @@ def diagonalize(
     cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0], float_type, m0=m0)
 
-    min_energy_au, max_energy_au = energy_range
-    if min_energy_au is not None:
-        min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
-    if max_energy_au is not None:
-        max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
-    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, atol)
+    energy_range_au: list[Optional[float]] = [None, None]
+    for i, energy in enumerate(energy_range):
+        if energy is not None:
+            energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], atol)
 
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:

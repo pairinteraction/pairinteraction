@@ -176,7 +176,7 @@ class BasisAtom(BasisBase[KetAtom]):
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operator)
         else:  # csr_matrix
-            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)
+            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)  # type: ignore [arg-type]
         return matrix_elements.to_pint_or_unit(unit)
 
 

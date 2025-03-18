@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import numpy as np
@@ -142,13 +142,13 @@ def get_c3_from_system(
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit)
+        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
         return C3
 
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    C3 = H_eff[0, 1] * R**3
-    return QuantityScalar.from_pint(C3, "C3").to_pint_or_unit(unit)
+    c3_pint = H_eff[0, 1] * R**3  # type: ignore [index]
+    return QuantityScalar.from_pint(c3_pint, "C3").to_pint_or_unit(unit)
 
 
 @overload
@@ -182,13 +182,14 @@ def get_c6_from_system(
         ValueError: If a tuple with more than two single atom states is given.
 
     """
-    if len(ket_tuple) != 2:
-        raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
-    if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:
-        raise ValueError(
-            "If you want to calculate 2nd order perturbations of two different states a and b, "
-            "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
-        )
+    if isinstance(ket_tuple, Iterable):
+        if len(ket_tuple) != 2:
+            raise ValueError("C6 coefficient can be calculated only for a single 2-atom state.")
+        if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:
+            raise ValueError(
+                "If you want to calculate 2nd order perturbations of two different states a and b, "
+                "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
+            )
 
     R = system_pair.get_distance()
     if np.isinf(R.magnitude):
@@ -198,14 +199,14 @@ def get_c6_from_system(
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C6 = get_c6_from_system(ket_tuple, system_pair, unit)
+        C6 = get_c6_from_system(ket_tuple, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
         return C6
 
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    C6 = (H_eff - H_0)[0, 0] * R**6
-    return QuantityScalar.from_pint(C6, "C6").to_pint_or_unit(unit)
+    c6_pint = (H_eff - H_0)[0, 0] * R**6
+    return QuantityScalar.from_pint(c6_pint, "C6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
@@ -242,7 +243,7 @@ def _calculate_perturbative_hamiltonian(
     H0 = H.diagonal()
     H0_m = H0[m_inds]
     H_eff = sparse.diags(H0_m, format="csr")
-    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])
+    eigvec_perturb: sparse.csr_matrix = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])  # type: ignore [assignment]
 
     if order >= 1:
         V = H - sparse.diags(H0)
@@ -256,7 +257,7 @@ def _calculate_perturbative_hamiltonian(
         H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
         addition_mm = sparse.csr_matrix((m, m))
         addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
-        eigvec_perturb += sparse.hstack([addition_mm, addition_me])
+        eigvec_perturb += sparse.hstack([addition_mm, addition_me], format="csr")  # type: ignore [arg-type]
 
     if order >= 3:
         diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]

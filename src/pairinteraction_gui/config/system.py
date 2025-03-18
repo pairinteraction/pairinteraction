@@ -129,7 +129,8 @@ class SystemPairConfig(SystemBaseConfig):
         item = self.distance_range.items[0]
         if not item.isChecked():
             return RangeObject(np.inf, np.inf, steps)
-        return RangeObject(*item.values(), steps)
+        values = item.values()
+        return RangeObject(values[0], values[1], steps)
 
     def get_angle(self) -> "RangeObject":
         """Return the angle range."""
@@ -137,7 +138,8 @@ class SystemPairConfig(SystemBaseConfig):
         item = self.angle_range.items[0]
         if not item.isChecked():
             return RangeObject(0, 0, steps)
-        return RangeObject(*item.values(), steps)
+        values = item.values()
+        return RangeObject(values[0], values[1], steps)
 
     def get_order(self) -> int:
         """Return the order of the multipole expansion."""

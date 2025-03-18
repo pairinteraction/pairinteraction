@@ -221,7 +221,7 @@ class KetAtom(KetBase):
         state_1 = basis.get_corresponding_state(self)
 
         matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
-        return matrixelements[0]
+        return matrixelements[0]  # type: ignore [index]
 
     @overload
     def get_spontaneous_transition_rates(
