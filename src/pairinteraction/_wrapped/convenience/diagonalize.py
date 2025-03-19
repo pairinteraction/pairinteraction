@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.cpp_types import (
@@ -13,13 +13,13 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
-    from pairinteraction._wrapped.system.System import System
+    from pairinteraction._wrapped.system.System import SystemBase
 
     Quantity = TypeVar("Quantity", bound=Union[float, PlainQuantity[float]])
 
 
 def diagonalize(
-    systems: Sequence["System"],
+    systems: Sequence["SystemBase[Any]"],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     atol: float = 1e-6,

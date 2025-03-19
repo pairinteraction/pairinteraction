@@ -202,7 +202,9 @@ class KetAtom(KetBase):
     @overload
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
 
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None):
+    def get_matrix_element(
+        self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None
+    ) -> Union[float, "PlainQuantity[float]"]:
         """Get the matrix element between two atomic basis states from the database.
 
         Args:
@@ -231,7 +233,9 @@ class KetAtom(KetBase):
     @overload
     def get_spontaneous_transition_rates(self, unit: str) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
-    def get_spontaneous_transition_rates(self, unit: Optional[str] = None):
+    def get_spontaneous_transition_rates(
+        self, unit: Optional[str] = None
+    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
         """Calculate the spontaneous transition rates for the KetAtom.
 
         The spontaneous transition rates are given by the Einstein A coefficients.
@@ -278,7 +282,7 @@ class KetAtom(KetBase):
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ):
+    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
         """Calculate the black body transition rates of the KetAtom.
 
         The black body transitions rates are given by the Einstein B coefficients,
@@ -337,7 +341,7 @@ class KetAtom(KetBase):
         temperature: Union[float, "PlainQuantity[float]", None] = None,
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ):
+    ) -> Union[float, "PlainQuantity[float]"]:
         """Calculate the lifetime of the KetAtom.
 
         The lifetime is the inverse of the sum of all transition rates.

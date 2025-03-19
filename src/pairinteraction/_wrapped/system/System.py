@@ -133,7 +133,7 @@ class SystemBase(ABC, Generic[BasisType]):
     @overload
     def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
 
-    def get_eigenvalues(self, unit: Optional[str] = None):
+    def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]:
         eigenvalues_au: NDArray[Any] = self._cpp.get_eigenvalues()
         eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
         return eigenvalues.to_pint_or_unit(unit=unit)
@@ -144,10 +144,7 @@ class SystemBase(ABC, Generic[BasisType]):
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
 
-    def get_hamiltonian(self, unit: Optional[str] = None):
+    def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PlainQuantity[csr_matrix]"]:  # type: ignore [type-var]
         hamiltonian_au = self._cpp.get_matrix()
         hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "ENERGY")
         return hamiltonian.to_pint_or_unit(unit)
-
-
-System = SystemBase[Any]

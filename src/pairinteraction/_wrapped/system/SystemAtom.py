@@ -91,7 +91,9 @@ class SystemAtom(SystemBase[BasisType]):
     @overload
     def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: str) -> float: ...
 
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None):
+    def get_corresponding_energy(
+        self: "Self", ket: "KetAtom", unit: Optional[str] = None
+    ) -> Union[float, "PlainQuantity[float]"]:
         overlaps = self.get_eigenbasis().get_overlaps(ket)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:

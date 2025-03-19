@@ -63,7 +63,7 @@ class BasisPair(BasisBase[KetPairType]):
 
     def __init__(
         self,
-        systems: Collection["SystemAtom"],
+        systems: Collection["SystemAtom[Any]"],
         m: Optional[tuple[float, float]] = None,
         product_of_parities: Optional[Parity] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
@@ -102,7 +102,7 @@ class BasisPair(BasisBase[KetPairType]):
     @overload
     def get_amplitudes(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
-    def get_amplitudes(self, ket_or_basis: Union["KetPairLike", BasisPairLike]):
+    def get_amplitudes(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray[Any]", "csr_matrix"]:
         ket_or_basis_cpp: list[Any]
         if not isinstance(ket_or_basis, Iterable):
             ket_or_basis_cpp = [ket_or_basis._cpp]
@@ -116,7 +116,7 @@ class BasisPair(BasisBase[KetPairType]):
     @overload
     def get_overlaps(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
-    def get_overlaps(self, ket_or_basis: Union["KetPairLike", BasisPairLike]):
+    def get_overlaps(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray[Any]", "csr_matrix"]:
         ket_or_basis_cpp: list[Any]
         if not isinstance(ket_or_basis, Iterable):
             ket_or_basis_cpp = [ket_or_basis._cpp]
@@ -164,7 +164,7 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: Optional[str] = None,
-    ):
+    ) -> Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]", "csr_matrix", "PlainQuantity[csr_matrix]"]:  # type: ignore [type-var]
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
         if not isinstance(ket_or_basis, Iterable):
             matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)  # type: ignore [arg-type]
@@ -175,7 +175,7 @@ class BasisPair(BasisBase[KetPairType]):
             raise ValueError(
                 "Provide either a KetPair or BasisPair object, or a tuple of two KetAtom or BasisAtom objects."
             )
-        matrix_elements: QuantityAbstract
+        matrix_elements: QuantityAbstract[Any]
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operators)
         else:  # csr_matrix

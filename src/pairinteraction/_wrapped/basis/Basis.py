@@ -4,13 +4,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
 
-from pairinteraction._wrapped.ket.Ket import Ket
+from pairinteraction._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-KetType = TypeVar("KetType", bound=Ket, covariant=True)
+KetType = TypeVar("KetType", bound=KetBase, covariant=True)
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|Pair)(Real|Complex)
 UnionTypeCPPBasisCreator = Any
@@ -88,6 +88,3 @@ class BasisBase(ABC, Generic[KetType]):
         if isinstance(state_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_ket_index(state_or_index)
         return self._cpp.get_corresponding_ket_index(state_or_index._cpp)
-
-
-Basis = BasisBase[Any]

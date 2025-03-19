@@ -62,7 +62,7 @@ class Item(WidgetH):
         """Return the state of the checkbox."""
         return self.checkbox.isChecked()
 
-    def connectAll(self, func: Callable) -> None:
+    def connectAll(self, func: Callable[[], None]) -> None:
         """Connect the function to the spinbox.valueChanged signal."""
         self.checkbox.stateChanged.connect(lambda state: func())
         for spinbox in self.spinboxes.values():

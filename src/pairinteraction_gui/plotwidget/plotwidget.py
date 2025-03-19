@@ -128,7 +128,7 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
 
-    def add_cursor(self, x_value: "NDArray[Any]", energies: "NDArray[Any]", system: "SystemBase") -> None:
+    def add_cursor(self, x_value: "NDArray[Any]", energies: "NDArray[Any]", system: "SystemBase[Any]") -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore

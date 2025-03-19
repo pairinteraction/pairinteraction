@@ -178,7 +178,7 @@ class QuantityScalar(QuantityAbstract[float]):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
 
-class QuantityArray(QuantityAbstract["NDArray"]):
+class QuantityArray(QuantityAbstract["NDArray[Any]"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not isinstance(magnitude, Collection):

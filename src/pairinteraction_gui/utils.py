@@ -1,6 +1,6 @@
 import os
 from functools import wraps
-from typing import Callable, Literal, Union
+from typing import Any, Callable, Literal, Union
 
 from PySide6.QtWidgets import QMessageBox
 
@@ -19,7 +19,7 @@ class NoStateFoundError(Exception):
     pass
 
 
-def catch_download_missing(func: Callable) -> Callable:
+def catch_download_missing(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     def wrapper_func(*args, **kwargs):  # noqa
         try:

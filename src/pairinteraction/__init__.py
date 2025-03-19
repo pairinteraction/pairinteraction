@@ -29,7 +29,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
         except StopIteration as err:
             raise RuntimeError(f"The '{substring}' library could not be found.") from err
 
-    def load_candidate(candidate: Path, loader: Callable) -> None:
+    def load_candidate(candidate: Path, loader: Callable[..., None]) -> None:
         try:
             loader(str(candidate))
         except Exception as e:
@@ -85,11 +85,11 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
                 tbb_lib_file = get_library_file("tbb", "tbb")
             except RuntimeError:
                 tbb_lib_file = get_library_file("pairinteraction", "tbb")
-            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
+            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
 
             for lib in mkl_lib_file_names:
                 candidate = mkl_lib_dir / f"lib{lib}.so.2"
-                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
+                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
 
         elif system == "Windows":
             # Modify the dll search path

@@ -42,7 +42,7 @@ def _flush_pending_logs() -> None:
         _log_cpp_backend_record(entry.level, entry.message)
 
 
-def _flush_logs_after(func: Callable) -> Callable:
+def _flush_logs_after(func: Callable[..., Any]) -> Callable[..., Any]:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         result = func(*args, **kwargs)
         _flush_pending_logs()

@@ -84,9 +84,9 @@ class SystemPair(SystemBase[BasisType]):
     @overload
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
-    def get_distance_vector(self, unit: Optional[str] = None):
+    def get_distance_vector(self, unit: Optional[str] = None) -> Union[list[float], list["PlainQuantity[float]"]]:
         distance_vector = [QuantityScalar.from_base_unit(d, "DISTANCE") for d in self._distance_vector_au]
-        return [d.to_pint_or_unit(unit) for d in distance_vector]
+        return [d.to_pint_or_unit(unit) for d in distance_vector]  # type: ignore [return-value]
 
     @overload
     def get_distance(self, *, unit: None = None) -> "PlainQuantity[float]": ...
@@ -94,7 +94,7 @@ class SystemPair(SystemBase[BasisType]):
     @overload
     def get_distance(self, unit: str) -> float: ...
 
-    def get_distance(self, unit: Optional[str] = None):
+    def get_distance(self, unit: Optional[str] = None) -> Union[float, "PlainQuantity[float]"]:
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.from_base_unit(float(distance), "DISTANCE").to_pint_or_unit(unit)
 

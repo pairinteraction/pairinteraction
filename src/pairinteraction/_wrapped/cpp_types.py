@@ -9,7 +9,7 @@ from pairinteraction._backend import (
 )
 
 if TYPE_CHECKING:
-    from pairinteraction._wrapped.system.System import System
+    from pairinteraction._wrapped.system.System import SystemBase
 
 
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
@@ -30,7 +30,7 @@ Parity = Literal["EVEN", "ODD", "UNKNOWN"]
 UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
 
 
-def get_cpp_diagonalize(system: "System") -> Callable:
+def get_cpp_diagonalize(system: "SystemBase[Any]") -> Callable[..., None]:
     try:
         return getattr(_backend, f"diagonalize{type(system).__name__}")
     except AttributeError as err:
