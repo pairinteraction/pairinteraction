@@ -28,4 +28,4 @@ jobs:
     - name: Install pairinteraction into virtual environment
       run: uv pip install .[dev]
     - name: Run mypy
-      run: uv run --no-project mypy .
+      run: uv run --no-project mypy . --warn-unused-ignores

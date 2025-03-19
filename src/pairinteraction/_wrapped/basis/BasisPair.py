@@ -184,12 +184,12 @@ class BasisPair(BasisBase[KetPairType]):
 
 
 class BasisPairReal(BasisPair[KetPairReal]):
-    _cpp: _backend.BasisPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisPairReal
     _cpp_creator = _backend.BasisPairCreatorReal
     _TypeKet = KetPairReal
 
 
 class BasisPairComplex(BasisPair[KetPairComplex]):
-    _cpp: _backend.BasisPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisPairComplex
     _cpp_creator = _backend.BasisPairCreatorComplex
     _TypeKet = KetPairComplex

@@ -181,12 +181,12 @@ class BasisAtom(BasisBase[KetAtom]):
 
 
 class BasisAtomReal(BasisAtom):
-    _cpp: _backend.BasisAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisAtomReal
     _cpp_creator = _backend.BasisAtomCreatorReal
     _TypeKet = KetAtom
 
 
 class BasisAtomComplex(BasisAtom):
-    _cpp: _backend.BasisAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisAtomComplex
     _cpp_creator = _backend.BasisAtomCreatorComplex
     _TypeKet = KetAtom

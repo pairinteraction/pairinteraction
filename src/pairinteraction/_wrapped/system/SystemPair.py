@@ -100,12 +100,12 @@ class SystemPair(SystemBase[BasisType]):
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
-    _cpp: _backend.SystemPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairReal
     _cpp_type = _backend.SystemPairReal
     _TypeBasis = BasisPairReal
 
 
 class SystemPairComplex(SystemPair[BasisPairComplex]):
-    _cpp: _backend.SystemPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairComplex
     _cpp_type = _backend.SystemPairComplex
     _TypeBasis = BasisPairComplex

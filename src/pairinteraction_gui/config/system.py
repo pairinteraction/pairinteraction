@@ -74,12 +74,12 @@ class SystemBaseConfig(BaseConfig):
         basis = self.page.basis_config.get_basis(atom, "real" if isreal else "complex")
         systems: list[pi_real.SystemAtom] = []
         for step in range(steps):
-            system = pi.SystemAtom(basis)  # type: ignore
+            system = pi.SystemAtom(basis)
             efield = [fields[key][step] for key in ["Ex", "Ey", "Ez"]]
             bfield = [fields[key][step] for key in ["Bx", "By", "Bz"]]
             system.set_electric_field(efield, unit="V/cm")
             system.set_magnetic_field(bfield, unit="G")
-            systems.append(system)  # type: ignore
+            systems.append(system)
 
         return systems
 

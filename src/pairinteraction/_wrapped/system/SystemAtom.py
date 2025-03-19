@@ -102,12 +102,12 @@ class SystemAtom(SystemBase[BasisType]):
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):
-    _cpp: _backend.SystemAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomReal
     _cpp_type = _backend.SystemAtomReal
     _TypeBasis = BasisAtomReal
 
 
 class SystemAtomComplex(SystemAtom[BasisAtomComplex]):
-    _cpp: _backend.SystemAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomComplex
     _cpp_type = _backend.SystemAtomComplex
     _TypeBasis = BasisAtomComplex
