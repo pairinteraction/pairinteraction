@@ -52,7 +52,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
             Path.cwd().parent.parent / "vcpkg_installed/x64-windows/bin",
         ]
         if directory := next((d for d in vcpkg_dirs if d.is_dir()), None):
-            os.add_dll_directory(str(directory))
+            os.add_dll_directory(str(directory))  # type: ignore [attr-defined]
 
     def load_mkl(system: str) -> None:
         import ctypes
@@ -93,7 +93,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
 
         elif system == "Windows":
             # Modify the dll search path
-            os.add_dll_directory(str(mkl_lib_dir))
+            os.add_dll_directory(str(mkl_lib_dir))  # type: ignore [attr-defined]
 
             is_conda_cpython = platform.python_implementation() == "CPython" and (
                 hasattr(ctypes.pythonapi, "Anaconda_GetVersion") or "packaged by conda-forge" in sys.version
@@ -104,9 +104,9 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
 
             # If conda python <= 3.9 is used, the libraries must be loaded manually in the address space
             # https://github.com/adang1345/delvewheel/blob/c37a82f0f66dd73e0169ff637f7c0ba5b33032c6/delvewheel/_wheel_repair.py#L56-L77
-            import ctypes.wintypes as wintypes
+            from ctypes import WinDLL, wintypes  # type: ignore [attr-defined]
 
-            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32 = WinDLL("kernel32", use_last_error=True)
             kernel32.LoadLibraryExW.restype = wintypes.HMODULE
             kernel32.LoadLibraryExW.argtypes = wintypes.LPCWSTR, wintypes.HANDLE, wintypes.DWORD
             for lib in mkl_lib_file_names:

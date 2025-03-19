@@ -1,0 +1,53 @@
+name: Local pip install and Type checking
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_call:
+  workflow_dispatch:
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CLICOLOR_FORCE: 1
+  VERBOSE: 1
+
+jobs:
+  local-install:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest
+          distro: ubuntu
+        - os: macos-13
+        - os: windows-2019
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    container:
+      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Windows dependencies
+      if: runner.os == 'Windows'
+      uses: ./.github/actions/setup-vcpkg
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install .[test,dev]
+
+    - name: Run pytest
+      run: uv run --no-project pytest
+
+    - name: Run mypy
+      run: uv run --no-project mypy . --warn-unused-ignores

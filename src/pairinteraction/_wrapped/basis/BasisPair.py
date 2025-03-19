@@ -23,8 +23,8 @@ if TYPE_CHECKING:
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
     from pairinteraction._wrapped.system.SystemAtom import SystemAtom
 
-KetPairType = TypeVar("KetPairType", bound=KetPair)
-BasisPairLike = Union["BasisPair", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+KetPairType = TypeVar("KetPairType", bound=KetPair, covariant=True)
+BasisPairLike = Union["BasisPair[Any]", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
 
 UnionCPPBasisPair = Union[_backend.BasisPairReal, _backend.BasisPairComplex]
 UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_backend.BasisPairCreatorComplex]]
@@ -85,7 +85,7 @@ class BasisPair(BasisBase[KetPairType]):
         """
         creator = self._cpp_creator()
         for system in systems:
-            creator.add(system._cpp)  # type: ignore [reportPrivateUsage, arg-type]
+            creator.add(system._cpp)  # type: ignore [arg-type]
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if product_of_parities is not None:
@@ -126,7 +126,12 @@ class BasisPair(BasisBase[KetPairType]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: "KetPairLike", operators: tuple[OperatorType, OperatorType], qs: tuple[int, int]
+        self,
+        ket_or_basis: "KetPairLike",
+        operators: tuple[OperatorType, OperatorType],
+        qs: tuple[int, int],
+        *,
+        unit: None = None,
     ) -> "PlainQuantity[NDArray[Any]]": ...
 
     @overload
@@ -136,8 +141,13 @@ class BasisPair(BasisBase[KetPairType]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: BasisPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int]
-    ) -> "PlainQuantity[csr_matrix]": ...
+        self,
+        ket_or_basis: BasisPairLike,
+        operators: tuple[OperatorType, OperatorType],
+        qs: tuple[int, int],
+        *,
+        unit: None = None,
+    ) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
 
     @overload
     def get_matrix_elements(
@@ -155,13 +165,16 @@ class BasisPair(BasisBase[KetPairType]):
         qs: tuple[int, int],
         unit: Optional[str] = None,
     ):
-        operators_cpp = [get_cpp_operator_type(operator) for operator in operators]
-        ket_or_basis_cpp: list[Any]
+        operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
         if not isinstance(ket_or_basis, Iterable):
-            ket_or_basis_cpp = [ket_or_basis._cpp]
+            matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)  # type: ignore [arg-type]
+        elif len(ket_or_basis) == 2:
+            ket_or_basis_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+            matrix_elements_au = self._cpp.get_matrix_elements(*ket_or_basis_cpp, *operators_cpp, *qs)  # type: ignore [arg-type]
         else:
-            ket_or_basis_cpp = [obj._cpp for obj in ket_or_basis]
-        matrix_elements_au = self._cpp.get_matrix_elements(*ket_or_basis_cpp, *operators_cpp, *qs)
+            raise ValueError(
+                "Provide either a KetPair or BasisPair object, or a tuple of two KetAtom or BasisAtom objects."
+            )
         matrix_elements: QuantityAbstract
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operators)
@@ -171,12 +184,12 @@ class BasisPair(BasisBase[KetPairType]):
 
 
 class BasisPairReal(BasisPair[KetPairReal]):
-    _cpp: _backend.BasisPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisPairReal
     _cpp_creator = _backend.BasisPairCreatorReal
     _TypeKet = KetPairReal
 
 
 class BasisPairComplex(BasisPair[KetPairComplex]):
-    _cpp: _backend.BasisPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.BasisPairComplex
     _cpp_creator = _backend.BasisPairCreatorComplex
     _TypeKet = KetPairComplex

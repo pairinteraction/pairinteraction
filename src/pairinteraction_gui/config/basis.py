@@ -15,7 +15,7 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.basis.BasisPair import BasisPairBase
+    from pairinteraction._wrapped.basis.BasisPair import BasisPair
     from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
 
 
@@ -146,7 +146,7 @@ class BasisPairConfig(BasisBaseConfig):
         self.basis_pair_label.setWordWrap(True)
         self.layout().addWidget(self.basis_pair_label)
 
-    def update_basis_pair_label(self, basis_pair: "BasisPairBase") -> None:
+    def update_basis_pair_label(self, basis_pair: "BasisPair") -> None:
         """Update the quantum state label with current values."""
         self.basis_pair_label.setText(str(basis_pair) + f"\n  ⇒ Basis consists of {basis_pair.number_of_kets} kets")
         self.basis_pair_label.setStyleSheet(self._label_style_sheet)

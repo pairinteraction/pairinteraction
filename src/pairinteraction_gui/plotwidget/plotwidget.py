@@ -119,7 +119,7 @@ class PlotEnergies(PlotWidget):
                 alpha[alpha < 0] = 0
                 alpha[alpha > 1] = 1
 
-            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")
+            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")  # type: ignore [arg-type]
 
         ylim = ax.get_ylim()
         if abs(ylim[1] - ylim[0]) < 1e-2:

@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
-BasisType = TypeVar("BasisType", "BasisPairReal", "BasisPairComplex")
+    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+
+BasisType = TypeVar("BasisType", bound="BasisPair[Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 
@@ -77,33 +79,33 @@ class SystemPair(SystemBase[BasisType]):
         return self
 
     @overload
-    def get_distance_vector(self) -> list["PlainQuantity[float]"]: ...
+    def get_distance_vector(self, *, unit: None = None) -> list["PlainQuantity[float]"]: ...
 
     @overload
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
-    def get_distance_vector(self, unit: Optional[str] = None):  # type: ignore
+    def get_distance_vector(self, unit: Optional[str] = None):
         distance_vector = [QuantityScalar.from_base_unit(d, "DISTANCE") for d in self._distance_vector_au]
         return [d.to_pint_or_unit(unit) for d in distance_vector]
 
     @overload
-    def get_distance(self) -> "PlainQuantity[float]": ...
+    def get_distance(self, *, unit: None = None) -> "PlainQuantity[float]": ...
 
     @overload
     def get_distance(self, unit: str) -> float: ...
 
-    def get_distance(self, unit: Optional[str] = None):  # type: ignore
+    def get_distance(self, unit: Optional[str] = None):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.from_base_unit(float(distance), "DISTANCE").to_pint_or_unit(unit)
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
-    _cpp: _backend.SystemPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairReal
     _cpp_type = _backend.SystemPairReal
     _TypeBasis = BasisPairReal
 
 
 class SystemPairComplex(SystemPair[BasisPairComplex]):
-    _cpp: _backend.SystemPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemPairComplex
     _cpp_type = _backend.SystemPairComplex
     _TypeBasis = BasisPairComplex
