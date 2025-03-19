@@ -14,9 +14,10 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
+    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.ket.KetAtom import KetAtom
 
-BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
+BasisType = TypeVar("BasisType", bound="BasisAtom", covariant=True)
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
 UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
@@ -85,28 +86,30 @@ class SystemAtom(SystemBase[BasisType]):
         return self
 
     @overload
-    def get_corresponding_energy(self: "Self", ket: "KetAtom") -> "PlainQuantity[float]": ...
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", *, unit: None = None) -> "PlainQuantity[float]": ...
 
     @overload
     def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: str) -> float: ...
 
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None):
+    def get_corresponding_energy(
+        self: "Self", ket: "KetAtom", unit: Optional[str] = None
+    ) -> Union[float, "PlainQuantity[float]"]:
         overlaps = self.get_eigenbasis().get_overlaps(ket)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit)[idx]
+        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index]
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):
-    _cpp: _backend.SystemAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomReal
     _cpp_type = _backend.SystemAtomReal
     _TypeBasis = BasisAtomReal
 
 
 class SystemAtomComplex(SystemAtom[BasisAtomComplex]):
-    _cpp: _backend.SystemAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.SystemAtomComplex
     _cpp_type = _backend.SystemAtomComplex
     _TypeBasis = BasisAtomComplex

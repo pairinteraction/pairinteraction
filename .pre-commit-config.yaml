@@ -33,3 +33,11 @@ repos:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix"]
       - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+    hooks:
+      - id: mypy
+        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "matplotlib >= 3.8"]
+        args: ["--ignore-missing-imports"]
+        exclude: '^tests/.*|^tools/.*'

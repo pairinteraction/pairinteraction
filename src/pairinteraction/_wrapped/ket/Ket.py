@@ -79,7 +79,7 @@ class KetBase(ABC):
         return self.get_energy()
 
     @overload
-    def get_energy(self) -> "PlainQuantity[float]": ...
+    def get_energy(self, *, unit: None = None) -> "PlainQuantity[float]": ...
 
     @overload
     def get_energy(self, unit: str) -> float: ...
@@ -98,6 +98,3 @@ class KetBase(ABC):
         energy_au = self._cpp.get_energy()
         energy = QuantityScalar.from_base_unit(energy_au, "ENERGY")
         return energy.to_pint_or_unit(unit)
-
-
-Ket = KetBase

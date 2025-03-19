@@ -59,7 +59,7 @@ class KetAtom(KetBase):
 
     """
 
-    _cpp: _backend.KetAtom  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.KetAtom
     _cpp_creator = _backend.KetAtomCreator
 
     def __init__(  # noqa: C901
@@ -132,7 +132,7 @@ class KetAtom(KetBase):
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
             database = Database.get_global_database()
-        self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
+        self._cpp = creator.create(database._cpp)
         self._database = database
 
     def __eq__(self, other: object) -> bool:
@@ -195,18 +195,16 @@ class KetAtom(KetBase):
         return self._cpp.get_quantum_number_j_ryd()
 
     @overload
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int) -> "PlainQuantity[float]": ...
+    def get_matrix_element(
+        self, ket: "Self", operator: OperatorType, q: int, *, unit: None = None
+    ) -> "PlainQuantity[float]": ...
 
     @overload
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
 
     def get_matrix_element(
-        self,
-        ket: "Self",
-        operator: OperatorType,
-        q: int,
-        unit: Optional[str] = None,
-    ):
+        self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None
+    ) -> Union[float, "PlainQuantity[float]"]:
         """Get the matrix element between two atomic basis states from the database.
 
         Args:
@@ -225,23 +223,19 @@ class KetAtom(KetBase):
         state_1 = basis.get_corresponding_state(self)
 
         matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
-        return matrixelements[0]
+        return matrixelements[0]  # type: ignore [index]
 
     @overload
     def get_spontaneous_transition_rates(
-        self,
+        self, *, unit: None = None
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
-    def get_spontaneous_transition_rates(
-        self,
-        unit: str,
-    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
+    def get_spontaneous_transition_rates(self, unit: str) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
 
     def get_spontaneous_transition_rates(
-        self,
-        unit: Optional[str] = None,
-    ):
+        self, unit: Optional[str] = None
+    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
         """Calculate the spontaneous transition rates for the KetAtom.
 
         The spontaneous transition rates are given by the Einstein A coefficients.
@@ -263,6 +257,8 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
+        *,
+        unit: None = None,
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
@@ -286,7 +282,7 @@ class KetAtom(KetBase):
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ):
+    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
         """Calculate the black body transition rates of the KetAtom.
 
         The black body transitions rates are given by the Einstein B coefficients,
@@ -313,6 +309,8 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]", None] = None,
         temperature_unit: Optional[str] = None,
+        *,
+        unit: None = None,
     ) -> "PlainQuantity[float]": ...
 
     @overload
@@ -343,7 +341,7 @@ class KetAtom(KetBase):
         temperature: Union[float, "PlainQuantity[float]", None] = None,
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ):
+    ) -> Union[float, "PlainQuantity[float]"]:
         """Calculate the lifetime of the KetAtom.
 
         The lifetime is the inverse of the sum of all transition rates.

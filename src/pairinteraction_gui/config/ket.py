@@ -95,7 +95,7 @@ class KetBaseConfig(BaseConfig):
 
         for _, widget in stacked_qn.items():
             for item in widget.items:
-                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))
+                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_qn)
 
         # Add a label to display the current ket

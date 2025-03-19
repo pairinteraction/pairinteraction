@@ -25,7 +25,7 @@ class KetPair(KetBase):
 
     """
 
-    _cpp: UnionCPPKetPair  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: UnionCPPKetPair
     _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator]
 
     def __init__(self) -> None:
@@ -34,10 +34,10 @@ class KetPair(KetBase):
 
 
 class KetPairReal(KetPair):
-    _cpp: _backend.KetPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.KetPairReal
     _cpp_creator = None
 
 
 class KetPairComplex(KetPair):
-    _cpp: _backend.KetPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp: _backend.KetPairComplex
     _cpp_creator = None

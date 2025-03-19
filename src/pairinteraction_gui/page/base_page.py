@@ -51,7 +51,7 @@ class SimulationPage(BasePage):
         self.loading_movie = QMovie(str(gif_path))
         self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
         self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.setAlignment(Qt.AlignCenter)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.hide()
 
         # Control panel below the plot

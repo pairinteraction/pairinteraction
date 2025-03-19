@@ -91,7 +91,11 @@ if(NOT DEFINED ENV{CIBW_ARCHS_MACOS})
     DEPENDS backend
   )
   # cmake-format: on
+  # Add mypy ignore comment at the start of the stub file
+  install(CODE "file(READ ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi CONTENT)
+          file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi \"# mypy: ignore-errors\n\n\${CONTENT}\")")
+  # Install the .pyi file to the python package directory
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION pairinteraction)
-  # install the .pyi file also to the python src dir to make static type checking possible with pip editable installs
+  # Install the .pyi file also to the python src dir to make static type checking possible with pip editable installs
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION ${CMAKE_SOURCE_DIR}/src/pairinteraction)
 endif()
