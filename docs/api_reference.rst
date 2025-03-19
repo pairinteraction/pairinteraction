@@ -15,14 +15,16 @@ All the available classes, methods and functions are documented below:
 
 .. currentmodule:: pairinteraction._wrapped
 
-.. rubric:: Database
+**Database**
+
 .. autosummary::
    :toctree: _autosummary/
 
       Database
 
 
-.. rubric:: Single Atom
+**Single Atom**
+
 .. autosummary::
    :toctree: _autosummary/
 
@@ -31,7 +33,8 @@ All the available classes, methods and functions are documented below:
       SystemAtom
 
 
-.. rubric:: Pair of Atoms
+**Pair of Atoms**
+
 .. autosummary::
    :toctree: _autosummary/
 
@@ -40,7 +43,8 @@ All the available classes, methods and functions are documented below:
       SystemPair
 
 
-.. rubric:: Convenience Functions
+**Convenience Functions**
+
 .. autosummary::
    :toctree: _autosummary/
 
@@ -49,7 +53,8 @@ All the available classes, methods and functions are documented below:
 
 .. currentmodule:: pairinteraction
 
-.. rubric:: Perturbative Calculations
+**Perturbative Calculations**
+
 .. autosummary::
    :toctree: _autosummary/
 

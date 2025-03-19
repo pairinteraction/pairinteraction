@@ -6,7 +6,7 @@ Build using cmake
 Build process
 -------------
 
-If you want to build only the C++ part and want to have more control over the build process, you can manually run the tasks that have been automatically executed by `pip`_ in the `automatic build <Automatic Build>`_.
+If you want to build only the C++ part and want to have more control over the build process, you can manually run the tasks that have been automatically executed by `pip`_ in the :ref:`automatic build <automatic>`.
 For this, you have to first install the python build dependencies for your :ref:`python environment <python_setup>` manually.
 
 If you want to use mkl you should also run ``pip install mkl mkl-devel``.
@@ -30,10 +30,10 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_COVERAGE``   | Generate code coverage report [#]_   | OFF     |
+| ``WITH_COVERAGE``   | Generate code coverage report [1]_   | OFF     |
 +---------------------+--------------------------------------+---------+
 
-.. [#] This mode implies building the debug version of the software.
+.. [1] This mode implies building the debug version of the software.
 
 Moreover, executing the commands manually allows for running additional targets.
 For example, you can use the ``doxygen`` target to build the C++ `doxygen documentation <https://www.pairinteraction.org/pairinteraction/doxygen/html/index.html>`_ by executing ``cmake --build . --target doxygen``.
@@ -191,49 +191,49 @@ If you have executed a build without GDB, a crash occurred, and a core dump was 
 After starting the debugger, you can use `GDB's commands`_ to analyze the crash. Some of the most important commands are listed in the tables below.
 
 +-------------------------+------------------------------------------------------------------+
-| Basics                                                                                     |
+| Basics                  |                                                                  |
 +=========================+==================================================================+
 | ``help COMMAND``        | Display help for the given COMMAND                               |
 +-------------------------+------------------------------------------------------------------+
 | ``q``                   | Quit the debugger                                                |
 +-------------------------+------------------------------------------------------------------+
 
-+-------------------------+------------------------------------------------------------------+
-| Investigating a backtrace                                                                  |
-+=========================+==================================================================+
-| ``bt``                  | Display a backtrace of the call stack                            |
-+-------------------------+------------------------------------------------------------------+
-| ``frame NUMBER``        | Select the frame with the given NUMBER on the call stack         |
-+-------------------------+------------------------------------------------------------------+
-| ``up`` / ``down``       | Select one frame up or down from the currently selected frame    |
-+-------------------------+------------------------------------------------------------------+
-| ``list``                | Display code around the selected frame                           |
-+-------------------------+------------------------------------------------------------------+
-| ``p EXPR``              | Display the value of EXPR                                        |
-+-------------------------+------------------------------------------------------------------+
++---------------------------+------------------------------------------------------------------+
+| Investigating a backtrace |                                                                  |
++===========================+==================================================================+
+| ``bt``                    | Display a backtrace of the call stack                            |
++---------------------------+------------------------------------------------------------------+
+| ``frame NUMBER``          | Select the frame with the given NUMBER on the call stack         |
++---------------------------+------------------------------------------------------------------+
+| ``up`` / ``down``         | Select one frame up or down from the currently selected frame    |
++---------------------------+------------------------------------------------------------------+
+| ``list``                  | Display code around the selected frame                           |
++---------------------------+------------------------------------------------------------------+
+| ``p EXPR``                | Display the value of EXPR                                        |
++---------------------------+------------------------------------------------------------------+
 
-+-------------------------+------------------------------------------------------------------+
-| Debugging with multiple threads                                                            |
-+=========================+==================================================================+
-| ``info threads``        | Display all threads running in the program, the first            |
-|                         | field is the thread number                                       |
-+-------------------------+------------------------------------------------------------------+
-| ``thread NUMBER``       | Select the thread with the given NUMBER                          |
-+-------------------------+------------------------------------------------------------------+
++----------------------------------+------------------------------------------------------------------+
+| Debugging with multiple threads  |                                                                  |
++==================================+==================================================================+
+| ``info threads``                 | Display all threads running in the program, the first            |
+|                                  | field is the thread number                                       |
++----------------------------------+------------------------------------------------------------------+
+| ``thread NUMBER``                | Select the thread with the given NUMBER                          |
++----------------------------------+------------------------------------------------------------------+
 
-+-------------------------+------------------------------------------------------------------+
-| Breakpoints and stepping                                                                   |
-+=========================+==================================================================+
-| ``b FUNCTIONNAME``      | Set breakpoint at FUNCTIONNAME                                   |
-+-------------------------+------------------------------------------------------------------+
-| ``delete FUNCTIONNAME`` | Delete breakpoint at FUNCTIONNAME                                |
-+-------------------------+------------------------------------------------------------------+
-| ``c``                   | Continue executing the program until the next breakpoint         |
-+-------------------------+------------------------------------------------------------------+
-| ``n``                   | Execute next source-code line, stepping over function calls      |
-+-------------------------+------------------------------------------------------------------+
-| ``s``                   | Execute next source-code line, stepping into function calls      |
-+-------------------------+------------------------------------------------------------------+
++--------------------------+------------------------------------------------------------------+
+| Breakpoints and stepping |                                                                  |
++==========================+==================================================================+
+| ``b FUNCTIONNAME``       | Set breakpoint at FUNCTIONNAME                                   |
++--------------------------+------------------------------------------------------------------+
+| ``delete FUNCTIONNAME``  | Delete breakpoint at FUNCTIONNAME                                |
++--------------------------+------------------------------------------------------------------+
+| ``c``                    | Continue executing the program until the next breakpoint         |
++--------------------------+------------------------------------------------------------------+
+| ``n``                    | Execute next source-code line, stepping over function calls      |
++--------------------------+------------------------------------------------------------------+
+| ``s``                    | Execute next source-code line, stepping into function calls      |
++--------------------------+------------------------------------------------------------------+
 
 .. _gdb's commands: http://www.unknownroad.com/rtfm/gdbtut/gdbtoc.html
 .. _pip: https://pypi.org/project/pip/

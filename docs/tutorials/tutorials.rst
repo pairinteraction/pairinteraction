@@ -11,7 +11,7 @@ The Python API is designed to automatize calculations and to have more fine-grai
 Tutorials - Python API
 ----------------------
 
-.. rubric:: Introduction
+**Introduction**
 
 Here we show the usage of the API. The first tutorial serves as a quick start guide.
 
@@ -26,7 +26,7 @@ Here we show the usage of the API. The first tutorial serves as a quick start gu
    examples_python/perturbative_c3_c6
    examples_python/perturbative_h_eff
 
-.. rubric:: Applications
+**Applications**
 
 The following jupyter notebooks show how the pairinteraction Python API can be applied to solve complex problems and reproduce results from literature.
 
