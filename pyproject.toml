@@ -81,7 +81,7 @@ test = [
 dev = [
   "mypy >= 1.14",
   "types-colorama >= 0.4.15.12",
-  "PySide6-stubs >= 6.7.3.0",
+  "pyside6-stubs >= 6.7.3.0",
 ]
 
 [dependency-groups]
@@ -232,6 +232,12 @@ exclude = [
     "^tests/.*$",
     "^tools/.*$",
 ]
+strict = true
+disallow_untyped_decorators = false
+warn_return_any = false
+disallow_untyped_calls = false
+disallow_untyped_defs = false  # handled by ruff
+warn_unused_ignores = false  # fails for pre-commit, eneabled in the ci
 
 [[tool.mypy.overrides]]
 module = "mplcursors"
