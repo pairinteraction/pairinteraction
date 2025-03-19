@@ -3,24 +3,21 @@
 Installation
 ============
 
-
 Installing from the Python Package Index (PyPI)
 -----------------------------------------------
 
-For users who simply want to use the python interface or the graphical user interface,
-we recommend installing pairinteraction from the `Python Package Index`_ by calling
+For users who simply want to use the python interface or the graphical user interface, we recommend installing
+pairinteraction from the `Python Package Index`_ by calling
 
 .. code-block:: bash
 
     pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
 
-from the command line if you are using the `pip`_ package manager.
-Alternatively, you can run ``uv pip install [...]``,
-if you are using the `uv`_ package manager.
+from the command line if you are using the pip_ package manager. Alternatively, you can run ``uv pip install [...]``, if
+you are using the uv_ package manager.
 
-This gives you access to the pairinteraction Python library.
-Before starting to use the pairinteraction library, we recommend running the following commands in the terminal
-to ensure that the package is correctly installed:
+This gives you access to the pairinteraction Python library. Before starting to use the pairinteraction library, we
+recommend running the following commands in the terminal to ensure that the package is correctly installed:
 
 .. code-block:: bash
 
@@ -41,18 +38,20 @@ In addition, a graphical user interface of pairinteraction is installed and can 
 
     pairinteraction gui
 
-from the command line.
-This allows you to do some common and basic calculations without writing any code.
-For more information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.
+from the command line. This allows you to do some common and basic calculations without writing any code. For more
+information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.
 
-
-
-.. _Python Package Index: https://pypi.org/project/pairinteraction
 .. _pip: https://pypi.org/project/pip/
+
+.. _python package index: https://pypi.org/project/pairinteraction
+
 .. _uv: https://docs.astral.sh/uv/
 
-.. Binary Installers
-.. -----------------
+..
+    Binary Installers
+
+..
+    -----------------
 
 ..
     Alternatively, if you are only interested in the graphical user interface,
@@ -70,10 +69,9 @@ For more information on how to use the graphical user interface, visit the :ref:
 Advanced Installation
 ---------------------
 
-For developers and experienced users who want to adjust the source code to their own needs, or want :ref:`to contribute to the package <repository>`
-we recommend building the software from source.
-Some instructions on how to do this can be found in the :ref:`advanced`.
-
+For developers and experienced users who want to adjust the source code to their own needs, or want :ref:`to contribute
+to the package <repository>` we recommend building the software from source. Some instructions on how to do this can be
+found in the :ref:`advanced`.
 
 .. toctree::
     :hidden:
