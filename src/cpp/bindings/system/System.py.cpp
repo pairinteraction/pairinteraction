@@ -51,7 +51,9 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
         .def("set_electric_field", &SystemAtom<T>::set_electric_field)
         .def("set_magnetic_field", &SystemAtom<T>::set_magnetic_field)
-        .def("enable_diamagnetism", &SystemAtom<T>::enable_diamagnetism);
+        .def("enable_diamagnetism", &SystemAtom<T>::enable_diamagnetism)
+        .def("set_distance_vector_to_ion", &SystemAtom<T>::set_distance_vector_to_ion)
+        .def("set_ion_charge", &SystemAtom<T>::set_ion_charge);
 }
 
 template <typename T>
