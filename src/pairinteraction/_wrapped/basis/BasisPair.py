@@ -173,7 +173,7 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
+    ) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_matrix_elements(
@@ -190,7 +190,7 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: Optional[str] = None,
-    ) -> Union["NDArray", "PintArray", "csr_matrix", PintSparse]:
+    ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
 
         matrix_elements_au: Union[NDArray, csr_matrix]
