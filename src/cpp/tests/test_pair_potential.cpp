@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     system_pairs.reserve(5);
     for (int i = 1; i < 6; ++i) {
         pairinteraction::SystemPair<double> system(basis_pair);
-        system.set_distance(i * UM_IN_ATOMIC_UNITS);
+        system.set_distance_vector({0, 0, i * UM_IN_ATOMIC_UNITS});
         system_pairs.push_back(std::move(system));
     }
 

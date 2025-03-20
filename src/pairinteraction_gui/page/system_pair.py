@@ -83,9 +83,7 @@ class SystemPairPage(SimulationPage):
             system = pi.SystemPair(basis_pair)
             system.set_order(self.system_pair_config.get_order())
             if not np.isinf(self.distance[step]):
-                angle = self.angle[step] * np.pi / 180
-                distance_vector = self.distance[step] * np.array([np.sin(angle), 0, np.cos(angle)])
-                system.set_distance_vector(distance_vector, "micrometer")
+                system.set_distance(self.distance[step], self.angle[step], unit="micrometer")
             self.systems.append(system)
 
         if self.plotwidget.energy_range.isChecked():
