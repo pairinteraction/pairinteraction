@@ -1,6 +1,8 @@
 from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
+import numpy as np
+
 from pairinteraction import _backend
 from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
@@ -49,7 +51,7 @@ class SystemBase(ABC, Generic[BasisType]):
     _TypeBasis: type[BasisType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, basis: BasisType) -> None:
-        self._cpp = self._cpp_type(basis._cpp)
+        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [arg-type]
         self._update_basis()
 
     @classmethod
@@ -107,7 +109,7 @@ class SystemBase(ABC, Generic[BasisType]):
         for i, energy in enumerate(energy_range):
             if energy is not None:
                 energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "energy").to_base_unit()
-        self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], atol)
+        self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], atol)  # type: ignore [arg-type]
 
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
@@ -139,7 +141,7 @@ class SystemBase(ABC, Generic[BasisType]):
     def get_eigenvalues(self, unit: str) -> "NDArray": ...
 
     def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
-        eigenvalues_au: NDArray = self._cpp.get_eigenvalues()
+        eigenvalues_au: NDArray = np.array(self._cpp.get_eigenvalues())
         eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "energy")
         return eigenvalues.to_pint_or_unit(unit=unit)
 
