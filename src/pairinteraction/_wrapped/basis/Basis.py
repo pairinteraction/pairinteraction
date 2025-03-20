@@ -16,10 +16,10 @@ UnionCPPBasis = Union[
     _backend.BasisAtomReal, _backend.BasisAtomComplex, _backend.BasisPairReal, _backend.BasisPairComplex
 ]
 UnionTypeCPPBasisCreator = Union[
-    _backend.BasisAtomCreatorReal,
-    _backend.BasisAtomCreatorComplex,
-    _backend.BasisPairCreatorReal,
-    _backend.BasisPairCreatorComplex,
+    type[_backend.BasisAtomCreatorReal],
+    type[_backend.BasisAtomCreatorComplex],
+    type[_backend.BasisPairCreatorReal],
+    type[_backend.BasisPairCreatorComplex],
 ]
 
 
