@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING, Optional, TypeVar
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QObject, QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -23,7 +23,7 @@ from pairinteraction_gui.qobjects import NamedStackedWidget
 if TYPE_CHECKING:
     from pairinteraction_gui.page.base_page import BasePage
 
-    ChildType = TypeVar("ChildType")
+    ChildType = TypeVar("ChildType", bound=QObject)
 
 logger = logging.getLogger(__name__)
 
@@ -48,12 +48,12 @@ class MainWindow(QMainWindow):
 
         self.init_keyboard_shortcuts()
 
-    def findChild(  # type: ignore
-        self, type_: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
-    ) -> "ChildType":  # overwrite type hints
+    def findChild(  # type: ignore [override] # explicitly override type hints
+        self, type: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
+    ) -> "ChildType":
         if options is None:
             options = Qt.FindChildOption.FindChildrenRecursively
-        return super().findChild(type_, name, options)  # type: ignore
+        return super().findChild(type, name, options)  # type: ignore [return-value] # explicitly override type hints
 
     def apply_modern_style(self) -> None:
         """Apply modern styling to the application."""

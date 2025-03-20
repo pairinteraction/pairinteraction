@@ -42,18 +42,18 @@ class Widget(QWidget, Generic[LayoutType]):
         self.setupWidget()
         self.postSetupWidget()
 
-    def layout(self) -> LayoutType:  # overwrite type hints
-        return super().layout()  # type: ignore
+    def layout(self) -> LayoutType:
+        return super().layout()  # type: ignore [return-value] # explicitly override type hints
 
-    def window(self) -> "MainWindow":  # overwrite type hints
-        return super().window()  # type: ignore
+    def window(self) -> "MainWindow":
+        return super().window()  # type: ignore [return-value] # explicitly override type hints
 
-    def findChild(  # type: ignore
+    def findChild(  # type: ignore [override] # explicitly override type hints
         self, type_: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
-    ) -> "ChildType":  # overwrite type hints
+    ) -> "ChildType":
         if options is None:
             options = Qt.FindChildOption.FindChildrenRecursively
-        return super().findChild(type_, name, options)  # type: ignore
+        return super().findChild(type_, name, options)  # type: ignore [return-value] # explicitly override type hints
 
     def setupWidget(self) -> None:
         """Set up the UI components.

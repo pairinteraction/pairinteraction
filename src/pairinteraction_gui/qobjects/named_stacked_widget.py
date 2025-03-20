@@ -34,9 +34,8 @@ class NamedStackedWidget(QStackedWidget, Generic[WidgetType]):
     def items(self) -> ItemsView[str, WidgetType]:
         return self._widgets.items()
 
-    # just overwriting type hints
-    def currentWidget(self) -> WidgetType:  # overwrite type hints
-        return super().currentWidget()  # type: ignore
+    def currentWidget(self) -> WidgetType:
+        return super().currentWidget()  # type: ignore [return-value] # explicitly override type hints
 
-    def addWidget(self, widget: WidgetType) -> int:  # type: ignore  # overwrite type hints
+    def addWidget(self, widget: WidgetType) -> int:  # type: ignore [override] # explicitly override type hints
         return super().addWidget(widget)
