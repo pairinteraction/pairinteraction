@@ -42,11 +42,11 @@ def test_electric_dipole() -> None:
     dipole_b_c = ket_b.get_matrix_element(ket_c, "electric_dipole", q=0)
 
     kappa = ureg.Quantity(1 / (4 * np.pi), "1 / epsilon_0")
-    C3 = kappa * dipole_a_c * dipole_b_c
+    c3 = kappa * dipole_a_c * dipole_b_c
 
     GHz = ureg.Quantity(1, "GHz")
-    C3 = C3 * GHz / GHz.to("J", "spectroscopy")
-    C3 = C3.to("GHz micrometer^3")
+    c3 = c3 * GHz / GHz.to("J", "spectroscopy")
+    c3 = c3.to("GHz micrometer^3")
 
     distance = ureg.Quantity(10, "micrometer")
     basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
@@ -61,5 +61,5 @@ def test_electric_dipole() -> None:
     ket_cc_idx = np.argmax(basis_pair.get_overlaps([ket_c, ket_c]))
     H = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
 
-    assert np.isclose(-2 * C3.magnitude, H[ket_ab_idx, ket_cc_idx])
-    assert np.isclose(-2 * C3.magnitude, 5.73507543166919)
+    assert np.isclose(-2 * c3.magnitude, H[ket_ab_idx, ket_cc_idx])
+    assert np.isclose(-2 * c3.magnitude, 5.73507543166919)
