@@ -104,7 +104,7 @@ class KetAtom(KetBase):
         creator = self._cpp_creator()
         creator.set_species(species)
         if energy is not None:
-            energy_au = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+            energy_au = QuantityScalar.from_pint_or_unit(energy, energy_unit, "energy").to_base_unit()
             creator.set_energy(energy_au)
         if f is not None:
             creator.set_quantum_number_f(f)
@@ -245,7 +245,7 @@ class KetAtom(KetBase):
 
         """
         relevant_kets, transition_rates_au = self._get_transition_rates("spontaneous")
-        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "TRANSITION_RATE").to_pint_or_unit(unit)
+        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "transition_rate").to_pint_or_unit(unit)
         return relevant_kets, transition_rates
 
     @overload
@@ -294,9 +294,9 @@ class KetAtom(KetBase):
             The relevant states and the transition rates.
 
         """
-        temperature_au = QuantityScalar.from_pint_or_unit(temperature, temperature_unit, "TEMPERATURE").to_base_unit()
+        temperature_au = QuantityScalar.from_pint_or_unit(temperature, temperature_unit, "temperature").to_base_unit()
         relevant_kets, transition_rates_au = self._get_transition_rates("black_body", temperature_au)
-        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "TRANSITION_RATE").to_pint_or_unit(unit)
+        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "transition_rate").to_pint_or_unit(unit)
         return relevant_kets, transition_rates
 
     @overload
@@ -360,7 +360,7 @@ class KetAtom(KetBase):
 
         lifetime_au = 1 / np.sum(transition_rates_au)
 
-        return QuantityScalar.from_base_unit(lifetime_au, "TIME").to_pint_or_unit(unit)
+        return QuantityScalar.from_base_unit(lifetime_au, "time").to_pint_or_unit(unit)
 
     def _get_transition_rates(
         self,
@@ -395,7 +395,7 @@ class KetAtom(KetBase):
         electric_dipole_moments_au = np.zeros(len(basis.kets))
         for q in [-1, 0, 1]:
             # the different entries are only at most once nonzero -> we can just add the arrays
-            el_di_m = basis.get_matrix_elements(self, "ELECTRIC_DIPOLE", q)
+            el_di_m = basis.get_matrix_elements(self, "electric_dipole", q)
             electric_dipole_moments_au += el_di_m.to_base_units().magnitude
 
         transition_rates_au = (

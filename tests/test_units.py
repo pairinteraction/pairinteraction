@@ -10,19 +10,19 @@ def test_magnetic() -> None:
     """Test magnetic units."""
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
 
-    mu = ket.get_matrix_element(ket, "MAGNETIC_DIPOLE", q=0)
+    mu = ket.get_matrix_element(ket, "magnetic_dipole", q=0)
     mu = mu.to("bohr_magneton")
     lande_factor = 2.002319304363
     assert np.isclose(mu.magnitude, -1 / 2 * lande_factor)
 
     # check magnetic field conversion is correct
-    B_z = QuantityScalar.from_unit(1, "gauss", "MAGNETIC_FIELD")
+    B_z = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
     B_z_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
     assert np.isclose(B_z.to_base_unit(), B_z_pint.to_base_units().magnitude)
 
     # such that mu * B_z is of dimension energy
     zeeman_energy = -mu * B_z_pint
-    assert zeeman_energy.dimensionality == BaseUnits["ENERGY"].dimensionality
+    assert zeeman_energy.dimensionality == BaseUnits["energy"].dimensionality
 
     # check against constructed Hamiltonian
     basis = pi.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])
@@ -38,8 +38,8 @@ def test_electric_dipole() -> None:
     ket_b = pi.KetAtom("Rb", n=61, l=0, m=0.5)
     ket_c = pi.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
 
-    dipole_a_c = ket_a.get_matrix_element(ket_c, "ELECTRIC_DIPOLE", q=0)
-    dipole_b_c = ket_b.get_matrix_element(ket_c, "ELECTRIC_DIPOLE", q=0)
+    dipole_a_c = ket_a.get_matrix_element(ket_c, "electric_dipole", q=0)
+    dipole_b_c = ket_b.get_matrix_element(ket_c, "electric_dipole", q=0)
 
     kappa = ureg.Quantity(1 / (4 * np.pi), "1 / epsilon_0")
     C3 = kappa * dipole_a_c * dipole_b_c

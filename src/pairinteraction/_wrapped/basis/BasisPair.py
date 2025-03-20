@@ -90,8 +90,8 @@ class BasisPair(BasisBase[KetPairType]):
         if product_of_parities is not None:
             creator.restrict_product_of_parities(get_cpp_parity(product_of_parities))
         if energy is not None:
-            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "ENERGY").to_base_unit()
-            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "ENERGY").to_base_unit()
+            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "energy").to_base_unit()
+            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "energy").to_base_unit()
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 

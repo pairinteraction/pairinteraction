@@ -93,7 +93,7 @@ def get_effective_hamiltonian_from_system(
     if required_overlap > 0:
         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
 
-    H_eff = QuantityArray.from_base_unit(H_eff_au, "ENERGY").to_pint_or_unit(unit)
+    H_eff = QuantityArray.from_base_unit(H_eff_au, "energy").to_pint_or_unit(unit)
     return H_eff, eigvec_perturb
 
 
@@ -146,7 +146,7 @@ def get_c3_from_system(
 
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
     c3_pint = H_eff[0, 1] * R**3  # type: ignore [index] # PintArray does not know it can be indexed
-    return QuantityScalar.from_pint(c3_pint, "C3").to_pint_or_unit(unit)
+    return QuantityScalar.from_pint(c3_pint, "c3").to_pint_or_unit(unit)
 
 
 @overload
@@ -202,7 +202,7 @@ def get_c6_from_system(
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
     c6_pint = (H_eff - H_0)[0, 0] * R**6
-    return QuantityScalar.from_pint(c6_pint, "C6").to_pint_or_unit(unit)
+    return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(

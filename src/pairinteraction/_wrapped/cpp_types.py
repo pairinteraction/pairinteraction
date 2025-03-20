@@ -15,16 +15,16 @@ if TYPE_CHECKING:
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
 FloatType = Literal["float32", "float64"]
 OperatorType = Literal[
-    "ZERO",
-    "ENERGY",
-    "ELECTRIC_DIPOLE",
-    "ELECTRIC_QUADRUPOLE",
-    "ELECTRIC_QUADRUPOLE_ZERO",
-    "ELECTRIC_OCTUPOLE",
-    "MAGNETIC_DIPOLE",
-    "ARBITRARY",
+    "zero",
+    "energy",
+    "electric_dipole",
+    "electric_quadrupole",
+    "electric_quadrupole_zero",
+    "electric_octupole",
+    "magnetic_dipole",
+    "arbitrary",
 ]
-Parity = Literal["EVEN", "ODD", "UNKNOWN"]
+Parity = Literal["even", "odd", "unknown"]
 
 
 UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
@@ -72,7 +72,6 @@ def get_type_of_system(cpp_system: Any) -> Literal["Complex", "Real"]:
 
 
 def get_cpp_operator_type(operator_type: OperatorType) -> CPPOperatorType:
-    operator_type = operator_type.upper()  # type: ignore [assignment]
     if operator_type not in get_args(OperatorType):
         raise ValueError(f"Unknown operator_type '{operator_type}', should be one of {OperatorType}")
     try:
@@ -82,7 +81,6 @@ def get_cpp_operator_type(operator_type: OperatorType) -> CPPOperatorType:
 
 
 def get_cpp_parity(parity: Parity) -> CPPParity:
-    parity = parity.upper()  # type: ignore [assignment]
     if parity not in get_args(Parity):
         raise ValueError(f"Unknown parity '{parity}', should be one of {Parity}")
     try:
@@ -92,7 +90,6 @@ def get_cpp_parity(parity: Parity) -> CPPParity:
 
 
 def get_cpp_float_type(float_type: FloatType) -> CPPFloatType:
-    float_type = float_type.lower()  # type: ignore [assignment]
     if float_type not in get_args(FloatType):
         raise ValueError(f"Unknown float_type '{float_type}', should be one of {FloatType}")
     try:

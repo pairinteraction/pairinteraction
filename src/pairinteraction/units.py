@@ -20,47 +20,47 @@ if TYPE_CHECKING:
 ureg = UnitRegistry(system="atomic")
 
 Dimension = Literal[
-    "ELECTRIC_FIELD",
-    "MAGNETIC_FIELD",
-    "DISTANCE",
-    "ENERGY",
-    "CHARGE",
-    "VELOCITY",
-    "TEMPERATURE",
-    "TIME",
-    "TRANSITION_RATE",
-    "ELECTRIC_DIPOLE",
-    "ELECTRIC_QUADRUPOLE",
-    "ELECTRIC_QUADRUPOLE_ZERO",
-    "ELECTRIC_OCTUPOLE",
-    "MAGNETIC_DIPOLE",
-    "C3",
-    "C6",
-    "ARBITRARY",
-    "ZERO",
+    "electric_field",
+    "magnetic_field",
+    "distance",
+    "energy",
+    "charge",
+    "velocity",
+    "temperature",
+    "time",
+    "transition_rate",
+    "electric_dipole",
+    "electric_quadrupole",
+    "electric_quadrupole_zero",
+    "electric_octupole",
+    "magnetic_dipole",
+    "c3",
+    "c6",
+    "arbitrary",
+    "zero",
 ]
 DimensionLike = Union[Dimension, Iterable[Dimension]]
 
 # au_time = atomic_unit_of_time; au_current = atomic_unit_of_current; m_e = electron_mass
 _CommonUnits: dict[Dimension, str] = {
-    "ELECTRIC_FIELD": "V/cm",  # 1 V/cm = 1.9446903811524456e-10 bohr * m_e / au_current / au_time ** 3
-    "MAGNETIC_FIELD": "T",  # 1 T = 4.254382157342044e-06 m_e / au_current / au_time ** 2
-    "DISTANCE": "micrometer",  # 1 mum = 18897.26124622279 bohr
-    "ENERGY": "hartree",  # 1 hartree = 1 bohr ** 2 * m_e / au_time ** 2
-    "CHARGE": "e",  # 1 e = 1 au_current * au_time
-    "VELOCITY": "speed_of_light",  # 1 c = 137.03599908356244 bohr / au_time
-    "TEMPERATURE": "K",  # 1 K = 3.1668115634555572e-06 atomic_unit_of_temperature
-    "TIME": "s",  # 1 s = 4.134137333518244e+16 au_time
-    "TRANSITION_RATE": "1/s",  # 1 / s = 2.4188843265856806e-17 * 1 / au_time
-    "ELECTRIC_DIPOLE": "e * a0",  # 1 e * a0 = 1 au_current * au_time * bohr
-    "ELECTRIC_QUADRUPOLE": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
-    "ELECTRIC_QUADRUPOLE_ZERO": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
-    "ELECTRIC_OCTUPOLE": "e * a0^3",  # 1 e * a0^3 = 1 au_current * au_time * bohr ** 3
-    "MAGNETIC_DIPOLE": "hbar e / m_e",  # 1 hbar e / m_e = 1 au_current * bohr ** 2
-    "C3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
-    "C6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
-    "ARBITRARY": "",  # 1 dimensionless
-    "ZERO": "",  # 1 dimensionless
+    "electric_field": "V/cm",  # 1 V/cm = 1.9446903811524456e-10 bohr * m_e / au_current / au_time ** 3
+    "magnetic_field": "T",  # 1 T = 4.254382157342044e-06 m_e / au_current / au_time ** 2
+    "distance": "micrometer",  # 1 mum = 18897.26124622279 bohr
+    "energy": "hartree",  # 1 hartree = 1 bohr ** 2 * m_e / au_time ** 2
+    "charge": "e",  # 1 e = 1 au_current * au_time
+    "velocity": "speed_of_light",  # 1 c = 137.03599908356244 bohr / au_time
+    "temperature": "K",  # 1 K = 3.1668115634555572e-06 atomic_unit_of_temperature
+    "time": "s",  # 1 s = 4.134137333518244e+16 au_time
+    "transition_rate": "1/s",  # 1 / s = 2.4188843265856806e-17 * 1 / au_time
+    "electric_dipole": "e * a0",  # 1 e * a0 = 1 au_current * au_time * bohr
+    "electric_quadrupole": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
+    "electric_quadrupole_zero": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
+    "electric_octupole": "e * a0^3",  # 1 e * a0^3 = 1 au_current * au_time * bohr ** 3
+    "magnetic_dipole": "hbar e / m_e",  # 1 hbar e / m_e = 1 au_current * bohr ** 2
+    "c3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
+    "c6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
+    "arbitrary": "",  # 1 dimensionless
+    "zero": "",  # 1 dimensionless
 }
 BaseUnits: dict[Dimension, "PlainUnit"] = {
     k: ureg.Quantity(1, unit).to_base_units().units for k, unit in _CommonUnits.items()
@@ -69,8 +69,8 @@ BaseQuantities: dict[Dimension, "PintFloat"] = {k: ureg.Quantity(1, unit) for k,
 
 Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
-    "MAGNETIC_FIELD": "Gaussian",
-    "ENERGY": "spectroscopy",
+    "magnetic_field": "Gaussian",
+    "energy": "spectroscopy",
 }
 
 ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
