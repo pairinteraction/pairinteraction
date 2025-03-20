@@ -137,20 +137,20 @@ def get_c3_from_system(
     if len(ket_tuple_list) != 2:
         raise ValueError("C3 coefficient can be calculated only between two 2-atom states.")
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C3 = get_c3_from_system(ket_tuple_list, system_pair, unit=unit)
+        c3 = get_c3_from_system(ket_tuple_list, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C3
+        return c3
 
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    c3_pint = H_eff[0, 1] * R**3  # type: ignore [index] # PintArray does not know it can be indexed
+    c3_pint = H_eff[0, 1] * r**3  # type: ignore [index] # PintArray does not know it can be indexed
     return QuantityScalar.from_pint(c3_pint, "c3").to_pint_or_unit(unit)
 
 
@@ -192,21 +192,21 @@ def get_c6_from_system(
                 "please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function."
             )
 
-    R = system_pair.get_distance()
-    if np.isinf(R.magnitude):
+    r = system_pair.get_distance()
+    if np.isinf(r.magnitude):
         logger.warning(
             "Pair system is initialized without a distance. "
             "Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum."
         )
         old_distance_vector = system_pair.get_distance_vector()
         system_pair.set_distance_vector([0, 0, 20], "micrometer")
-        C6 = get_c6_from_system(ket_tuple, system_pair, unit=unit)
+        c6 = get_c6_from_system(ket_tuple, system_pair, unit=unit)
         system_pair.set_distance_vector(old_distance_vector)
-        return C6
+        return c6
 
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    c6_pint = (H_eff[0, 0] - H_0[0, 0]) * R**6  # type: ignore [index] # PintArray does not know it can be indexed
+    c6_pint = (H_eff[0, 0] - H_0[0, 0]) * r**6  # type: ignore [index] # PintArray does not know it can be indexed
     return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
 
 

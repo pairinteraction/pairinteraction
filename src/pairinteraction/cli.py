@@ -27,7 +27,7 @@ def main() -> int:
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="set the logging level (default: WARNING)",
     )
-    subparsers = parser.add_subparsers(dest="command", help="available commands", required=True)
+    subparsers = parser.add_subparsers(dest="command", title="Available Commands")
 
     # GUI command
     gui_parser = subparsers.add_parser("gui", help="launch the graphical user interface")
@@ -49,6 +49,9 @@ def main() -> int:
     args = parser.parse_args()
 
     configure_logging(args.log_level)
+    if not args.command:
+        parser.print_help()
+        return 0
 
     args.func(args)
     return 0

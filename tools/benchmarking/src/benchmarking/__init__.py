@@ -64,7 +64,7 @@ def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings
             energy=(pair_energy - delta_energy, pair_energy + delta_energy),
             energy_unit="GHz",
             m=(2 * m, 2 * m),
-            product_of_parities="EVEN",
+            product_of_parities="even",
         )
         pair_systems = [
             pi.SystemPair(pair_basis).set_distance(d, unit="micrometer").set_order(order) for d in distances
