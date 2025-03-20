@@ -145,7 +145,7 @@ def get_c3_from_system(
         return C3
 
     H_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    c3_pint = H_eff[0, 1] * R**3  # type: ignore [index]
+    c3_pint = H_eff[0, 1] * R**3  # type: ignore [index] # PintArray does not know it can be indexed
     return QuantityScalar.from_pint(c3_pint, "C3").to_pint_or_unit(unit)
 
 
