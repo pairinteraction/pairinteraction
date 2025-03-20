@@ -36,7 +36,7 @@ class KetPair(KetBase):
     """
 
     _cpp: UnionCPPKetPair
-    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator]
+    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator] = None
 
     def __init__(self) -> None:
         """Creating a KetPair object directly is not possible."""  # noqa: D401
@@ -45,9 +45,7 @@ class KetPair(KetBase):
 
 class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal
-    _cpp_creator = None
 
 
 class KetPairComplex(KetPair):
     _cpp: _backend.KetPairComplex
-    _cpp_creator = None
