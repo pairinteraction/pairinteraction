@@ -234,7 +234,6 @@ exclude = [
 ]
 strict = true
 disallow_untyped_decorators = false
-warn_return_any = false
 disallow_untyped_calls = false
 warn_unused_ignores = false  # fails for pre-commit, eneabled in the ci
 disallow_subclassing_any = false  # fails for pre-commit, eneabled in the ci
@@ -242,8 +241,3 @@ disallow_subclassing_any = false  # fails for pre-commit, eneabled in the ci
 [[tool.mypy.overrides]]
 module = "mplcursors"
 ignore_missing_imports = true
-
-
-[tool.pyright]
-reportIncompatibleVariableOverride = "information"
-reportArgumentType = "information"
