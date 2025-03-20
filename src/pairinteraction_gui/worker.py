@@ -54,7 +54,7 @@ def run_worker(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
 
 def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    def wrapper_func(*args, **kwargs):  # noqa
+    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
         worker = Worker(func, *args, **kwargs)
         THREADPOOL.start(worker)
         return worker.signals.result
@@ -67,7 +67,7 @@ def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
 
 #     def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
 #         @wraps(func)
-#         def wrapper_func(*args, **kwargs):
+#         def wrapper_func(*args: Any, **kwargs: Any) -> Any:
 #             worker = Worker(func, *args, **kwargs)
 #             if func_finished:
 #                 worker.signals.finished.connect(func_finished)

@@ -21,7 +21,7 @@ class NoStateFoundError(Exception):
 
 def catch_download_missing(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    def wrapper_func(*args, **kwargs):  # noqa
+    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except RuntimeError as err:
