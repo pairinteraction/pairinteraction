@@ -196,7 +196,7 @@ class KetAtom(KetBase):
 
     @overload
     def get_matrix_element(
-        self, ket: "Self", operator: OperatorType, q: int, *, unit: None = None
+        self, ket: "Self", operator: OperatorType, q: int, unit: None = None
     ) -> "PlainQuantity[float]": ...
 
     @overload
@@ -227,7 +227,7 @@ class KetAtom(KetBase):
 
     @overload
     def get_spontaneous_transition_rates(
-        self, *, unit: None = None
+        self, unit: None = None
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
     @overload
@@ -257,7 +257,6 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]"],
         temperature_unit: Optional[str] = None,
-        *,
         unit: None = None,
     ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
 
@@ -309,7 +308,6 @@ class KetAtom(KetBase):
         self,
         temperature: Union[float, "PlainQuantity[float]", None] = None,
         temperature_unit: Optional[str] = None,
-        *,
         unit: None = None,
     ) -> "PlainQuantity[float]": ...
 
