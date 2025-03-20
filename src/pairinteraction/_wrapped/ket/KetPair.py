@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Union
 
+from typing_extensions import TypeGuard
+
 from pairinteraction import _backend
 from pairinteraction._wrapped.ket.Ket import KetBase
 
@@ -10,7 +12,15 @@ if TYPE_CHECKING:
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
 
-KetPairLike = Union["KetPair", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+KetPairLike = Union["KetPairReal", "KetPairComplex", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+
+
+def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:
+    return isinstance(obj, KetPair) or (len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj))
+
+
+def is_ket_atom_tuple(obj: Any) -> TypeGuard[tuple["KetAtom", "KetAtom"]]:
+    return len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj)
 
 
 class KetPair(KetBase):

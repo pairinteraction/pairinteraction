@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, overload
+from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
 
 import numpy as np
 
@@ -7,7 +7,7 @@ from pairinteraction._wrapped.basis.Basis import BasisBase
 from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction._wrapped.database.Database import Database
 from pairinteraction._wrapped.ket.KetAtom import KetAtom
-from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
+from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -138,7 +138,13 @@ class BasisAtom(BasisBase[KetAtom]):
     def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
     def get_amplitudes(self, ket_or_basis: Union[KetAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
-        return self._cpp.get_amplitudes(ket_or_basis._cpp)  # type: ignore [arg-type, return-value]
+        if isinstance(ket_or_basis, KetAtom):
+            return np.array(self._cpp.get_amplitudes(ket_or_basis._cpp))
+        if isinstance(self, BasisAtomReal) and isinstance(ket_or_basis, BasisAtomReal):
+            return self._cpp.get_amplitudes(ket_or_basis._cpp)
+        if isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
+            return self._cpp.get_amplitudes(ket_or_basis._cpp)
+        raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
 
     @overload
     def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray": ...
@@ -147,7 +153,13 @@ class BasisAtom(BasisBase[KetAtom]):
     def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
     def get_overlaps(self, ket_or_basis: Union[KetAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
-        return self._cpp.get_overlaps(ket_or_basis._cpp)  # type: ignore [arg-type, return-value]
+        if isinstance(ket_or_basis, KetAtom):
+            return np.array(self._cpp.get_overlaps(ket_or_basis._cpp))
+        if isinstance(self, BasisAtomReal) and isinstance(ket_or_basis, BasisAtomReal):
+            return self._cpp.get_overlaps(ket_or_basis._cpp)
+        if isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
+            return self._cpp.get_overlaps(ket_or_basis._cpp)
+        raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
 
     @overload
     def get_matrix_elements(
@@ -169,12 +181,23 @@ class BasisAtom(BasisBase[KetAtom]):
         self, ket_or_basis: Union[KetAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
     ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
         cpp_op = get_cpp_operator_type(operator)
-        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)  # type: ignore [arg-type]
-        matrix_elements: QuantityAbstract[Any]
-        if isinstance(matrix_elements_au, np.ndarray):
+
+        matrix_elements_au: Union[NDArray, csr_matrix]
+        matrix_elements: Union[QuantityArray, QuantitySparse]
+        if isinstance(ket_or_basis, KetAtom):
+            matrix_elements_au = np.array(self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q))
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operator)
-        else:  # csr_matrix
-            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)  # type: ignore [arg-type]
+        elif isinstance(ket_or_basis, BasisAtom):
+            if isinstance(self, BasisAtomReal) and isinstance(ket_or_basis, BasisAtomReal):
+                matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)
+            elif isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
+                matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)
+        else:
+            raise ValueError(f"Unknown type: {type(ket_or_basis)=}")
+
         return matrix_elements.to_pint_or_unit(unit)
 
 

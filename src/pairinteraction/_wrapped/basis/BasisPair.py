@@ -2,16 +2,21 @@ from collections.abc import Collection, Iterable, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
+from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.Basis import BasisBase
+from pairinteraction._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
 from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction._wrapped.ket.KetPair import (
     KetPair,
     KetPairComplex,
     KetPairReal,
+    is_ket_atom_tuple,
+    is_ket_pair_like,
 )
-from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
+from pairinteraction._wrapped.system.SystemAtom import SystemAtomComplex, SystemAtomReal
+from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -23,10 +28,29 @@ if TYPE_CHECKING:
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
 KetPairType = TypeVar("KetPairType", bound=KetPair, covariant=True)
-BasisPairLike = Union["BasisPair[Any]", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+BasisPairLike = Union[
+    "BasisPairReal",
+    "BasisPairComplex",
+    tuple["BasisAtomReal", "BasisAtomReal"],
+    Sequence["BasisAtomReal"],
+    tuple["BasisAtomComplex", "BasisAtomComplex"],
+    Sequence["BasisAtomComplex"],
+]
 
 UnionCPPBasisPair = Union[_backend.BasisPairReal, _backend.BasisPairComplex]
 UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_backend.BasisPairCreatorComplex]]
+
+
+def is_basis_pair_like(obj: Any) -> TypeGuard[BasisPairLike]:
+    return isinstance(obj, BasisPair) or (len(obj) == 2 and all(isinstance(x, BasisAtom) for x in obj))
+
+
+def is_basis_atom_real_tuple(obj: Any) -> TypeGuard[tuple["BasisAtomReal", "BasisAtomReal"]]:
+    return len(obj) == 2 and all(isinstance(x, BasisAtomReal) for x in obj)
+
+
+def is_basis_atom_complex_tuple(obj: Any) -> TypeGuard[tuple["BasisAtomComplex", "BasisAtomComplex"]]:
+    return len(obj) == 2 and all(isinstance(x, BasisAtomComplex) for x in obj)
 
 
 class BasisPair(BasisBase[KetPairType]):
@@ -84,7 +108,12 @@ class BasisPair(BasisBase[KetPairType]):
         """
         creator = self._cpp_creator()
         for system in systems:
-            creator.add(system._cpp)  # type: ignore [arg-type]
+            if isinstance(creator, _backend.BasisPairCreatorReal) and isinstance(system, SystemAtomReal):
+                creator.add(system._cpp)
+            elif isinstance(creator, _backend.BasisPairCreatorComplex) and isinstance(system, SystemAtomComplex):
+                creator.add(system._cpp)
+            else:
+                raise ValueError(f"Incompatible types: {type(system)=}; {type(creator)=}")
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if product_of_parities is not None:
@@ -163,20 +192,37 @@ class BasisPair(BasisBase[KetPairType]):
         unit: Optional[str] = None,
     ) -> Union["NDArray", "PintArray", "csr_matrix", PintSparse]:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
-        if not isinstance(ket_or_basis, Iterable):
-            matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)  # type: ignore [arg-type]
-        elif len(ket_or_basis) == 2:
-            ket_or_basis_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
-            matrix_elements_au = self._cpp.get_matrix_elements(*ket_or_basis_cpp, *operators_cpp, *qs)  # type: ignore [arg-type]
-        else:
-            raise ValueError(
-                "Provide either a KetPair or BasisPair object, or a tuple of two KetAtom or BasisAtom objects."
-            )
-        matrix_elements: QuantityAbstract[Any]
-        if isinstance(matrix_elements_au, np.ndarray):
+
+        matrix_elements_au: Union[NDArray, csr_matrix]
+        matrix_elements: Union[QuantityArray, QuantitySparse]
+        if is_ket_pair_like(ket_or_basis):
+            if is_ket_atom_tuple(ket_or_basis):
+                ket_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                matrix_elements_au = np.array(self._cpp.get_matrix_elements(*ket_cpp, *operators_cpp, *qs))
+            elif isinstance(ket_or_basis, KetPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                matrix_elements_au = np.array(self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs))
+            elif isinstance(ket_or_basis, KetPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                matrix_elements_au = np.array(self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs))
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
             matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operators)
-        else:  # csr_matrix
+        elif is_basis_pair_like(ket_or_basis):
+            if is_basis_atom_real_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairReal):
+                basis_real_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                matrix_elements_au = self._cpp.get_matrix_elements(*basis_real_cpp, *operators_cpp, *qs)
+            elif is_basis_atom_complex_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairComplex):
+                basis_complex_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                matrix_elements_au = self._cpp.get_matrix_elements(*basis_complex_cpp, *operators_cpp, *qs)
+            elif isinstance(ket_or_basis, BasisPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)
+            elif isinstance(ket_or_basis, BasisPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
             matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operators)
+        else:
+            raise ValueError(f"Unknown type: {type(ket_or_basis)=}")
+
         return matrix_elements.to_pint_or_unit(unit)
 
 
