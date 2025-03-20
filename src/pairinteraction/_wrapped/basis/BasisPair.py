@@ -14,14 +14,13 @@ from pairinteraction._wrapped.ket.KetPair import (
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
 
     from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction._wrapped.ket.KetAtom import KetAtom  # noqa: F401  # required fo sphinx for KetPairLike
     from pairinteraction._wrapped.ket.KetPair import KetPairLike
     from pairinteraction._wrapped.system.SystemAtom import SystemAtom
+    from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
 KetPairType = TypeVar("KetPairType", bound=KetPair, covariant=True)
 BasisPairLike = Union["BasisPair[Any]", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
@@ -66,7 +65,7 @@ class BasisPair(BasisBase[KetPairType]):
         systems: Collection["SystemAtom[Any]"],
         m: Optional[tuple[float, float]] = None,
         product_of_parities: Optional[Parity] = None,
-        energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
+        energy: Union[tuple[float, float], tuple["PintFloat", "PintFloat"], None] = None,
         energy_unit: Optional[str] = None,
     ) -> None:
         """Create a basis for a pair of atoms.
@@ -97,12 +96,12 @@ class BasisPair(BasisBase[KetPairType]):
         self._cpp = creator.create()
 
     @overload
-    def get_amplitudes(self, ket_or_basis: "KetPairLike") -> "NDArray[Any]": ...
+    def get_amplitudes(self, ket_or_basis: "KetPairLike") -> "NDArray": ...
 
     @overload
     def get_amplitudes(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
-    def get_amplitudes(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray[Any]", "csr_matrix"]:
+    def get_amplitudes(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
         ket_or_basis_cpp: list[Any]
         if not isinstance(ket_or_basis, Iterable):
             ket_or_basis_cpp = [ket_or_basis._cpp]
@@ -111,12 +110,12 @@ class BasisPair(BasisBase[KetPairType]):
         return self._cpp.get_amplitudes(*ket_or_basis_cpp)
 
     @overload
-    def get_overlaps(self, ket_or_basis: "KetPairLike") -> "NDArray[Any]": ...
+    def get_overlaps(self, ket_or_basis: "KetPairLike") -> "NDArray": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
-    def get_overlaps(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray[Any]", "csr_matrix"]:
+    def get_overlaps(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
         ket_or_basis_cpp: list[Any]
         if not isinstance(ket_or_basis, Iterable):
             ket_or_basis_cpp = [ket_or_basis._cpp]
@@ -131,12 +130,12 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> "PlainQuantity[NDArray[Any]]": ...
+    ) -> "PintArray": ...
 
     @overload
     def get_matrix_elements(
         self, ket_or_basis: "KetPairLike", operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
-    ) -> "NDArray[Any]": ...
+    ) -> "NDArray": ...
 
     @overload
     def get_matrix_elements(
@@ -145,7 +144,7 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
+    ) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_matrix_elements(
@@ -162,7 +161,7 @@ class BasisPair(BasisBase[KetPairType]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: Optional[str] = None,
-    ) -> Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]", "csr_matrix", "PlainQuantity[csr_matrix]"]:  # type: ignore [type-var]
+    ) -> Union["NDArray", "PintArray", "csr_matrix", PintSparse]:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
         if not isinstance(ket_or_basis, Iterable):
             matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, *operators_cpp, *qs)  # type: ignore [arg-type]

@@ -11,11 +11,10 @@ from pairinteraction._wrapped.cpp_types import (
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity
-
     from pairinteraction._wrapped.system.System import SystemBase
+    from pairinteraction.units import PintFloat
 
-    Quantity = TypeVar("Quantity", bound=Union[float, PlainQuantity[float]])
+    Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
 
 
 def diagonalize(

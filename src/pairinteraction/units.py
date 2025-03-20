@@ -7,9 +7,15 @@ from pint.facets.plain import PlainQuantity
 from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    import numpy.typing as npt
     from pint.facets.plain import PlainUnit
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeAlias
+
+    NDArray: TypeAlias = npt.NDArray[Any]
+    PintFloat: TypeAlias = PlainQuantity[float]
+    PintArray: TypeAlias = PlainQuantity[NDArray]
+    # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
+    PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
 
 ureg = UnitRegistry(system="atomic")
 
@@ -59,7 +65,7 @@ _CommonUnits: dict[Dimension, str] = {
 BaseUnits: dict[Dimension, "PlainUnit"] = {
     k: ureg.Quantity(1, unit).to_base_units().units for k, unit in _CommonUnits.items()
 }
-BaseQuantities: dict[Dimension, "PlainQuantity[float]"] = {k: ureg.Quantity(1, unit) for k, unit in BaseUnits.items()}
+BaseQuantities: dict[Dimension, "PintFloat"] = {k: ureg.Quantity(1, unit) for k, unit in BaseUnits.items()}
 
 Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
@@ -67,7 +73,7 @@ BaseContexts: dict[Dimension, Context] = {
     "ENERGY": "spectroscopy",
 }
 
-ValueType = TypeVar("ValueType", bound=Union[float, "NDArray[Any]", "csr_matrix"])
+ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
 
 
 class QuantityAbstract(Generic[ValueType]):
@@ -178,7 +184,7 @@ class QuantityScalar(QuantityAbstract[float]):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
 
-class QuantityArray(QuantityAbstract["NDArray[Any]"]):
+class QuantityArray(QuantityAbstract["NDArray"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not isinstance(magnitude, Collection):

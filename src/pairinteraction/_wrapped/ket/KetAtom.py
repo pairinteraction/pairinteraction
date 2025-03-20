@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Literal, Optional, Union, overload
 
 import numpy as np
 from scipy.special import exprel
@@ -10,9 +10,9 @@ from pairinteraction._wrapped.ket.Ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
+
+    from pairinteraction.units import NDArray, PintArray, PintFloat
 
 
 class KetAtom(KetBase):
@@ -75,7 +75,7 @@ class KetAtom(KetBase):
         j_ryd: Optional[float] = None,
         f: Optional[float] = None,
         m: Optional[float] = None,
-        energy: Union[float, "PlainQuantity[float]", None] = None,
+        energy: Union[float, "PintFloat", None] = None,
         energy_unit: Optional[str] = None,
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
@@ -195,16 +195,14 @@ class KetAtom(KetBase):
         return self._cpp.get_quantum_number_j_ryd()
 
     @overload
-    def get_matrix_element(
-        self, ket: "Self", operator: OperatorType, q: int, unit: None = None
-    ) -> "PlainQuantity[float]": ...
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: None = None) -> "PintFloat": ...
 
     @overload
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
 
     def get_matrix_element(
         self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None
-    ) -> Union[float, "PlainQuantity[float]"]:
+    ) -> Union[float, "PintFloat"]:
         """Get the matrix element between two atomic basis states from the database.
 
         Args:
@@ -226,16 +224,14 @@ class KetAtom(KetBase):
         return matrixelements[0]  # type: ignore [index]
 
     @overload
-    def get_spontaneous_transition_rates(
-        self, unit: None = None
-    ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
+    def get_spontaneous_transition_rates(self, unit: None = None) -> tuple[list["KetAtom"], "PintArray"]: ...
 
     @overload
-    def get_spontaneous_transition_rates(self, unit: str) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
+    def get_spontaneous_transition_rates(self, unit: str) -> tuple[list["KetAtom"], "NDArray"]: ...
 
     def get_spontaneous_transition_rates(
         self, unit: Optional[str] = None
-    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
+    ) -> tuple[list["KetAtom"], Union["NDArray", "PintArray"]]:
         """Calculate the spontaneous transition rates for the KetAtom.
 
         The spontaneous transition rates are given by the Einstein A coefficients.
@@ -255,18 +251,18 @@ class KetAtom(KetBase):
     @overload
     def get_black_body_transition_rates(
         self,
-        temperature: Union[float, "PlainQuantity[float]"],
+        temperature: Union[float, "PintFloat"],
         temperature_unit: Optional[str] = None,
         unit: None = None,
-    ) -> tuple[list["KetAtom"], "PlainQuantity[NDArray[Any]]"]: ...
+    ) -> tuple[list["KetAtom"], "PintArray"]: ...
 
     @overload
     def get_black_body_transition_rates(
         self,
-        temperature: "PlainQuantity[float]",
+        temperature: "PintFloat",
         *,
         unit: str,
-    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
+    ) -> tuple[list["KetAtom"], "NDArray"]: ...
 
     @overload
     def get_black_body_transition_rates(
@@ -274,14 +270,14 @@ class KetAtom(KetBase):
         temperature: float,
         temperature_unit: str,
         unit: str,
-    ) -> tuple[list["KetAtom"], "NDArray[Any]"]: ...
+    ) -> tuple[list["KetAtom"], "NDArray"]: ...
 
     def get_black_body_transition_rates(
         self,
-        temperature: Union[float, "PlainQuantity[float]"],
+        temperature: Union[float, "PintFloat"],
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ) -> tuple[list["KetAtom"], Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]]:
+    ) -> tuple[list["KetAtom"], Union["NDArray", "PintArray"]]:
         """Calculate the black body transition rates of the KetAtom.
 
         The black body transitions rates are given by the Einstein B coefficients,
@@ -306,10 +302,10 @@ class KetAtom(KetBase):
     @overload
     def get_lifetime(
         self,
-        temperature: Union[float, "PlainQuantity[float]", None] = None,
+        temperature: Union[float, "PintFloat", None] = None,
         temperature_unit: Optional[str] = None,
         unit: None = None,
-    ) -> "PlainQuantity[float]": ...
+    ) -> "PintFloat": ...
 
     @overload
     def get_lifetime(
@@ -321,7 +317,7 @@ class KetAtom(KetBase):
     @overload
     def get_lifetime(
         self,
-        temperature: "PlainQuantity[float]",
+        temperature: "PintFloat",
         *,
         unit: str,
     ) -> float: ...
@@ -336,10 +332,10 @@ class KetAtom(KetBase):
 
     def get_lifetime(
         self,
-        temperature: Union[float, "PlainQuantity[float]", None] = None,
+        temperature: Union[float, "PintFloat", None] = None,
         temperature_unit: Optional[str] = None,
         unit: Optional[str] = None,
-    ) -> Union[float, "PlainQuantity[float]"]:
+    ) -> Union[float, "PintFloat"]:
         """Calculate the lifetime of the KetAtom.
 
         The lifetime is the inverse of the sum of all transition rates.
@@ -370,7 +366,7 @@ class KetAtom(KetBase):
         self,
         which_transitions: Literal["spontaneous", "black_body"],
         temperature_au: Union[float, None] = None,
-    ) -> tuple[list["KetAtom"], "NDArray[Any]"]:
+    ) -> tuple[list["KetAtom"], "NDArray"]:
         from pairinteraction._wrapped.basis.BasisAtom import BasisAtomReal
         from pairinteraction._wrapped.system.SystemAtom import SystemAtomReal
 

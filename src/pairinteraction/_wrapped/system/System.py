@@ -6,14 +6,13 @@ from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
-    from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
     from pairinteraction._wrapped.basis.Basis import BasisBase
+    from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-    Quantity = TypeVar("Quantity", float, PlainQuantity[float])
+    Quantity = TypeVar("Quantity", float, "PintFloat")
 
 
 BasisType = TypeVar("BasisType", bound="BasisBase[Any]", covariant=True)
@@ -128,23 +127,23 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
 
     @overload
-    def get_eigenvalues(self, unit: None = None) -> "PlainQuantity[NDArray[Any]]": ...
+    def get_eigenvalues(self, unit: None = None) -> "PintArray": ...
 
     @overload
-    def get_eigenvalues(self, unit: str) -> "NDArray[Any]": ...
+    def get_eigenvalues(self, unit: str) -> "NDArray": ...
 
-    def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray[Any]", "PlainQuantity[NDArray[Any]]"]:
-        eigenvalues_au: NDArray[Any] = self._cpp.get_eigenvalues()
+    def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
+        eigenvalues_au: NDArray = self._cpp.get_eigenvalues()
         eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
         return eigenvalues.to_pint_or_unit(unit=unit)
 
     @overload
-    def get_hamiltonian(self, unit: None = None) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [type-var]
+    def get_hamiltonian(self, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
 
-    def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PlainQuantity[csr_matrix]"]:  # type: ignore [type-var]
+    def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PintSparse"]:
         hamiltonian_au = self._cpp.get_matrix()
         hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "ENERGY")
         return hamiltonian.to_pint_or_unit(unit)
