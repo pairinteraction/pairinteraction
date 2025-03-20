@@ -1,4 +1,4 @@
-from collections.abc import Collection, Iterable, Sequence
+from collections.abc import Collection, Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
@@ -131,12 +131,31 @@ class BasisPair(BasisBase[KetPairType]):
     def get_amplitudes(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
     def get_amplitudes(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
-        ket_or_basis_cpp: list[Any]
-        if not isinstance(ket_or_basis, Iterable):
-            ket_or_basis_cpp = [ket_or_basis._cpp]
+        if is_ket_pair_like(ket_or_basis):
+            if is_ket_atom_tuple(ket_or_basis):
+                ket_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return np.array(self._cpp.get_amplitudes(*ket_cpp))
+            elif isinstance(ket_or_basis, KetPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                return np.array(self._cpp.get_amplitudes(ket_or_basis._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            elif isinstance(ket_or_basis, KetPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                return np.array(self._cpp.get_amplitudes(ket_or_basis._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+        elif is_basis_pair_like(ket_or_basis):
+            if is_basis_atom_real_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairReal):
+                basis_real_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return self._cpp.get_amplitudes(*basis_real_cpp)
+            elif is_basis_atom_complex_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairComplex):
+                basis_complex_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return self._cpp.get_amplitudes(*basis_complex_cpp)
+            elif isinstance(ket_or_basis, BasisPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                return self._cpp.get_amplitudes(ket_or_basis._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            elif isinstance(ket_or_basis, BasisPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                return self._cpp.get_amplitudes(ket_or_basis._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
         else:
-            ket_or_basis_cpp = [obj._cpp for obj in ket_or_basis]
-        return self._cpp.get_amplitudes(*ket_or_basis_cpp)
+            raise ValueError(f"Unknown type: {type(ket_or_basis)=}")
 
     @overload
     def get_overlaps(self, ket_or_basis: "KetPairLike") -> "NDArray": ...
@@ -145,12 +164,31 @@ class BasisPair(BasisBase[KetPairType]):
     def get_overlaps(self, ket_or_basis: BasisPairLike) -> "csr_matrix": ...
 
     def get_overlaps(self, ket_or_basis: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
-        ket_or_basis_cpp: list[Any]
-        if not isinstance(ket_or_basis, Iterable):
-            ket_or_basis_cpp = [ket_or_basis._cpp]
+        if is_ket_pair_like(ket_or_basis):
+            if is_ket_atom_tuple(ket_or_basis):
+                ket_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return np.array(self._cpp.get_overlaps(*ket_cpp))
+            elif isinstance(ket_or_basis, KetPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                return np.array(self._cpp.get_overlaps(ket_or_basis._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            elif isinstance(ket_or_basis, KetPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                return np.array(self._cpp.get_overlaps(ket_or_basis._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+        elif is_basis_pair_like(ket_or_basis):
+            if is_basis_atom_real_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairReal):
+                basis_real_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return self._cpp.get_overlaps(*basis_real_cpp)
+            elif is_basis_atom_complex_tuple(ket_or_basis) and isinstance(self._cpp, _backend.BasisPairComplex):
+                basis_complex_cpp = (ket_or_basis[0]._cpp, ket_or_basis[1]._cpp)
+                return self._cpp.get_overlaps(*basis_complex_cpp)
+            elif isinstance(ket_or_basis, BasisPairReal) and isinstance(self._cpp, _backend.BasisPairReal):
+                return self._cpp.get_overlaps(ket_or_basis._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            elif isinstance(ket_or_basis, BasisPairComplex) and isinstance(self._cpp, _backend.BasisPairComplex):
+                return self._cpp.get_overlaps(ket_or_basis._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            else:
+                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
         else:
-            ket_or_basis_cpp = [obj._cpp for obj in ket_or_basis]
-        return self._cpp.get_overlaps(*ket_or_basis_cpp)
+            raise ValueError(f"Unknown type: {type(ket_or_basis)=}")
 
     @overload
     def get_matrix_elements(
