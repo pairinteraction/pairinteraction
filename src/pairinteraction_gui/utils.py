@@ -1,18 +1,25 @@
-import os
 from functools import wraps
 from typing import Any, Callable, Literal, Union
-
-from PySide6.QtWidgets import QMessageBox
 
 from pairinteraction import (
     _wrapped as pi,
     complex as pi_complex,
     real as pi_real,
 )
+from pairinteraction_gui.app import Application
 
 
 class DatabaseMissingError(Exception):
-    pass
+    def __init__(self, err: RuntimeError) -> None:
+        super().__init__(str(err))
+        if not self.is_database_missing_error(err):
+            raise ValueError("The message must contain 'Table' and 'not found' to be a DatabaseMissingError.")
+        table = next(w for w in str(err).split(" ") if "states" in w)
+        self.species = table.replace("_states", "")
+
+    @classmethod
+    def is_database_missing_error(cls, err: RuntimeError) -> bool:
+        return "Table" in str(err) and "not found" in str(err)
 
 
 class NoStateFoundError(Exception):
@@ -25,29 +32,12 @@ def catch_download_missing(func: Callable[..., Any]) -> Callable[..., Any]:
         try:
             return func(*args, **kwargs)
         except RuntimeError as err:
-            if "Table" in str(err) and "not found" in str(err):
-                msg_box = QMessageBox()
-                msg_box.setWindowTitle("Download missing databases?")
-                msg_box.setText(str(err))
-                msg_box.setInformativeText("Would you like to download the missing database?")
-                msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-
-                if msg_box.exec() == QMessageBox.StandardButton.Yes:
-                    set_global_database(download_missing=True)
-                    return func(*args, **kwargs)
-                else:
-                    raise DatabaseMissingError(str(err)) from err
+            if DatabaseMissingError.is_database_missing_error(err):
+                Application.signals.ask_download_database.emit(DatabaseMissingError(err).species)
+                return func(*args, **kwargs)
             raise err
 
     return wrapper_func
-
-
-def set_global_database(
-    download_missing: bool = False,
-    wigner_in_memory: bool = True,
-    database_dir: Union[str, "os.PathLike[str]"] = "",
-) -> None:
-    pi.Database._global_database = pi.Database(download_missing, wigner_in_memory, database_dir)
 
 
 @catch_download_missing

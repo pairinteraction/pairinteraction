@@ -1,64 +1,52 @@
-import logging
 import os
 import signal
-import sys
 from types import FrameType
 from typing import Optional
 
-from PySide6.QtCore import QCoreApplication, QSocketNotifier, QTimer
+from PySide6.QtCore import QCoreApplication, QObject, QSocketNotifier, QTimer, Signal
 from PySide6.QtWidgets import QApplication
 
-from pairinteraction_gui.main_window import MainWindow
 
+class MainSignals(QObject):
+    """Signals for the application.
 
-def main() -> int:
-    """Run the PairInteraction GUI application.
-
-    Returns:
-        int: Application exit code
-
+    We store an instance of this signal class in the Application instance, see app.py.
+    So to access these signals (from anywhere in the application), you can use
+    `Application.instance().signals`.
     """
-    # in case we run the app from the terminal, add some logging
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-    app = QApplication(sys.argv)
-    app.setApplicationName("PairInteraction")
-
-    allow_ctrl_c(app)
-
-    window = MainWindow()
-    window.show()
-
-    return sys.exit(app.exec())
+    ask_download_database = Signal(str)
 
 
-def allow_ctrl_c(app: QApplication) -> None:
-    # # Make program killable via Ctrl+C if it is started in a terminal
-    # signal.signal(signal.SIGINT, signal.SIG_DFL)  # this kills the program
+class Application(QApplication):
+    """Add some global signals to the QApplication."""
 
-    # This is a more reliable way to handle Ctrl+C in Qt applications
-    # Create a pipe to communicate between the signal handler and the Qt event loop
-    pipe_r, pipe_w = os.pipe()
+    signals = MainSignals()
 
-    def signal_handler(signal: int, frame: Optional[FrameType]) -> None:
-        os.write(pipe_w, b"x")  # Write a single byte to the pipe
+    @classmethod
+    def instance(cls) -> "Application":  # type: ignore  # overwrite type hints
+        """Return the current instance of the application."""
+        return super().instance()  # type: ignore [return-value]
 
-    signal.signal(signal.SIGINT, signal_handler)
+    def allow_ctrl_c(self) -> None:
+        # Create a pipe to communicate between the signal handler and the Qt event loop
+        pipe_r, pipe_w = os.pipe()
 
-    def handle_signal() -> None:
-        os.read(pipe_r, 1)  # Read the byte from the pipe to clear it
-        print("\nCtrl+C detected. Shutting down gracefully...")
-        QCoreApplication.quit()
+        def signal_handler(signal: int, frame: Optional[FrameType]) -> None:
+            os.write(pipe_w, b"x")  # Write a single byte to the pipe
 
-    sn = QSocketNotifier(pipe_r, QSocketNotifier.Type.Read, parent=app)
-    sn.activated.connect(handle_signal)
+        signal.signal(signal.SIGINT, signal_handler)
 
-    # Create a timer to ensure the event loop processes events regularly
-    # This makes Ctrl+C work even when the application is idle
-    timer = QTimer(app)
-    timer.timeout.connect(lambda: None)  # Do nothing, just wake up the event loop
-    timer.start(200)
+        def handle_signal() -> None:
+            os.read(pipe_r, 1)  # Read the byte from the pipe to clear it
+            print("\nCtrl+C detected. Shutting down gracefully...")
+            QCoreApplication.quit()
 
+        sn = QSocketNotifier(pipe_r, QSocketNotifier.Type.Read, parent=self)
+        sn.activated.connect(handle_signal)
 
-if __name__ == "__main__":
-    main()
+        # Create a timer to ensure the event loop processes events regularly
+        # This makes Ctrl+C work even when the application is idle
+        timer = QTimer(self)
+        timer.timeout.connect(lambda: None)  # Do nothing, just wake up the event loop
+        timer.start(200)
