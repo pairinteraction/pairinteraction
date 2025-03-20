@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorials &mdash; pairinteraction 1.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-gallery.css?v=26227f6e" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=a68a9277"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Quick Start" href="examples_python/quick_start.html" />
+    <link rel="prev" title="Building the Documentation" href="../installation/advanced/documentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorials</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#tutorials-python-api">Tutorials - Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/quick_start.html">Quick Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html">Introduction the pairinteraction library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#KetAtom">KetAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#BasisAtom">BasisAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#SystemAtom">SystemAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#BasisPair">BasisPair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#SystemPair">SystemPair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/introduction.html#Calculate-electric-dipole-matrix-elements">Calculate electric dipole matrix elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/stark_map.html">Example of calculating Stark maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/pair_potentials.html">Example of calculating Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/overview.html">Overview over different applications of the new pairinteraction software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/lifetimes.html">Example calculating lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/perturbative_c3_c6.html">Example calculating <span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples_python/perturbative_h_eff.html">Example calculating an effective Hamiltonian</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/architecture.html">Overview About pairinteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/jl-mqdt/">jl-mqdt</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorials</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/tutorials.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorials">
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Link to this heading"></a></h1>
+<p>The pairinteraction software comes with a graphical user interface (GUI) and a Python API.
+The GUI provides a quick way to calculate Rydberg interaction potentials and energy shifts in the presence of external fields.
+The Python API is designed to automatize calculations and to have more fine-grained control.</p>
+<section id="tutorials-python-api">
+<span id="tutorial-api"></span><h2>Tutorials - Python API<a class="headerlink" href="#tutorials-python-api" title="Link to this heading"></a></h2>
+<p class="rubric">Introduction</p>
+<p>Here we show the usage of the API. The first tutorial serves as a quick start guide.</p>
+<div class="toctree-wrapper compound">
+<div class="nbsphinx-gallery">
+<a class="reference internal" href="examples_python/quick_start.html">
+  <div><img alt="" src="../_static/nbsphinx-no-thumbnail.svg"></div>
+  <div>Quick Start</div>
+</a>
+<a class="reference internal" href="examples_python/introduction.html">
+  <div><img alt="" src="../_static/nbsphinx-no-thumbnail.svg"></div>
+  <div>Introduction the pairinteraction library</div>
+</a>
+<a class="reference internal" href="examples_python/stark_map.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_stark_map_4_0.png"></div>
+  <div>Example of calculating Stark maps</div>
+</a>
+<a class="reference internal" href="examples_python/pair_potentials.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_pair_potentials_4_0.png"></div>
+  <div>Example of calculating Pair Potentials</div>
+</a>
+<a class="reference internal" href="examples_python/overview.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_overview_27_1.png"></div>
+  <div>Overview over different applications of the new pairinteraction software</div>
+</a>
+<a class="reference internal" href="examples_python/lifetimes.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_lifetimes_6_0.png"></div>
+  <div>Example calculating lifetimes</div>
+</a>
+<a class="reference internal" href="examples_python/perturbative_c3_c6.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_perturbative_c3_c6_12_0.png"></div>
+  <div>Example calculating C_3 and C_6 coefficients</div>
+</a>
+<a class="reference internal" href="examples_python/perturbative_h_eff.html">
+  <div><img alt="" src="../_images/tutorials_examples_python_perturbative_h_eff_8_0.png"></div>
+  <div>Example calculating an effective Hamiltonian</div>
+</a>
+</div>
+</div>
+<p class="rubric">Applications</p>
+<p>The following jupyter notebooks show how the pairinteraction Python API can be applied to solve complex problems and reproduce results from literature.</p>
+</section>
+<section id="tutorials-graphical-user-interface">
+<span id="tutorial-gui"></span><h2>Tutorials - Graphical User Interface<a class="headerlink" href="#tutorials-graphical-user-interface" title="Link to this heading"></a></h2>
+<p>After following the <a class="reference internal" href="../installation/installation.html#installation"><span class="std std-ref">installation instructions</span></a>, the graphical user interface (GUI) of pairinteraction can be started by executing</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pairinteraction<span class="w"> </span>gui
+</pre></div>
+</div>
+<p>from the command line.
+Here as quick preview of the GUI:</p>
+<img alt="GUI Preview" src="../_images/preview.png" />
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../installation/advanced/documentation.html" class="btn btn-neutral float-left" title="Building the Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="examples_python/quick_start.html" class="btn btn-neutral float-right" title="Quick Start" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Pairinteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
