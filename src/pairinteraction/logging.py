@@ -1,3 +1,4 @@
+import datetime
 import inspect
 import logging
 import re
@@ -24,6 +25,8 @@ def _extract_cpp_backend_log_fields(message: str) -> dict[str, str]:
 def _log_cpp_backend_record(level: int, message: str) -> None:
     logger = logging.getLogger("cpp")
     fields = _extract_cpp_backend_log_fields(message)
+    fields = _extract_cpp_backend_log_fields(message)
+    created = datetime.datetime.strptime(fields["timestamp"], "%Y-%m-%d %H:%M:%S.%f").timestamp()
     record = logging.LogRecord(
         name=logger.name,
         level=level,
@@ -33,6 +36,8 @@ def _log_cpp_backend_record(level: int, message: str) -> None:
         args=(),
         exc_info=None,
     )
+    record.created = created
+    record.thread = int(fields["thread"])
     if level >= logger.getEffectiveLevel():
         logger.handle(record)
 
