@@ -238,8 +238,8 @@ def _calculate_perturbative_hamiltonian(
 
     H0 = H.diagonal()
     H0_m = H0[m_inds]
-    H_eff = sparse.diags(H0_m, format="csr")
-    eigvec_perturb: sparse.csr_matrix = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])  # type: ignore [assignment]
+    H_eff = sparse.diags(H0_m, format="csr").tocsr()
+    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr").tocsr(), sparse.csr_matrix((m, n))]).tocsr()
 
     if order >= 1:
         V = H - sparse.diags(H0)
