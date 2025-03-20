@@ -15,7 +15,7 @@ class DatabaseMissingError(Exception):
         if not self.is_database_missing_error(err):
             raise ValueError("The message must contain 'Table' and 'not found' to be a DatabaseMissingError.")
         table = next(w for w in str(err).split(" ") if "states" in w)
-        self.species = table.split("_")[0]
+        self.species = table.replace("_states", "")
 
     @classmethod
     def is_database_missing_error(cls, err: RuntimeError) -> bool:
