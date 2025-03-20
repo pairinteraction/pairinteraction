@@ -63,7 +63,6 @@ def get_ket_atom(species: str, **qns: Union[float, int]) -> pi.KetAtom:
 def get_basis_atom(
     ket: pi.KetAtom, *, dtype: Literal["real", "complex"] = "real", **delta_qns: Union[float, int]
 ) -> Union[pi_real.BasisAtom, pi_complex.BasisAtom]:
-    pi = pi_real if dtype == "real" else pi_complex
     qns = {}
     for key, value in delta_qns.items():
         if value < 0:
@@ -72,4 +71,6 @@ def get_basis_atom(
         qn = getattr(ket, key)
         qns[key] = (qn - value, qn + value)
 
-    return pi.BasisAtom(ket.species, **qns)
+    if dtype == "real":
+        return pi_real.BasisAtom(ket.species, **qns)  # type: ignore [arg-type]
+    return pi_complex.BasisAtom(ket.species, **qns)  # type: ignore [arg-type]

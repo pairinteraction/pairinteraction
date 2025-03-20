@@ -221,7 +221,7 @@ class KetAtom(KetBase):
         state_1 = basis.get_corresponding_state(self)
 
         matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
-        return matrixelements[0]  # type: ignore [index] # PintArray does not know it can be indexed
+        return matrixelements[0]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
     @overload
     def get_spontaneous_transition_rates(self, unit: None = None) -> tuple[list["KetAtom"], "PintArray"]: ...

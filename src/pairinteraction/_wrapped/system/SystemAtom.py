@@ -97,7 +97,7 @@ class SystemAtom(SystemBase[BasisType]):
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index] # PintArray does not know it can be indexed
+        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):

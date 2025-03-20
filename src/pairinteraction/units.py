@@ -167,7 +167,7 @@ class QuantityAbstract(Generic[ValueType]):
     ) -> ValueType:
         """Return the value of the quantity in the given unit."""
         contexts = self.get_contexts(self.dimension)
-        return self._quantity.to(unit, *contexts).magnitude
+        return self._quantity.to(unit, *contexts).magnitude  # type: ignore [no-any-return] # pint has weird magnitude return type
 
     def to_base_unit(self) -> ValueType:
         """Return the value of the quantity in the base unit."""

@@ -245,4 +245,4 @@ class RangeObject:
         return self.min_value == self.max_value
 
     def __getitem__(self, step: int) -> float:
-        return self.list[step]
+        return self.list[step]  # type: ignore [no-any-return] # FIXME, no idea why numpy type hints dont work here
