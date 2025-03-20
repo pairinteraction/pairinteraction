@@ -100,7 +100,7 @@ def download_databases(species_list: list[str]) -> int:
             # We calculate matrix elements to ensure that the Wigner table is
             # downloaded as well.
             if not is_wigner_downloaded:
-                basis.get_matrix_elements(basis, "ELECTRIC_DIPOLE", 0)
+                basis.get_matrix_elements(basis, "electric_dipole", 0)
                 is_wigner_downloaded = True
 
             print(Fore.GREEN + "Download successful." + Style.RESET_ALL)

@@ -70,7 +70,7 @@ class SystemPair(SystemBase[BasisType]):
         distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
+        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "distance").to_base_unit() for v in distance]
         self._cpp.set_distance_vector(distance_au)
         self._distance_vector_au = distance_au
         return self
@@ -82,7 +82,7 @@ class SystemPair(SystemBase[BasisType]):
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
     def get_distance_vector(self, unit: Optional[str] = None) -> Union[list[float], list["PintFloat"]]:
-        distance_vector = [QuantityScalar.from_base_unit(d, "DISTANCE") for d in self._distance_vector_au]
+        distance_vector = [QuantityScalar.from_base_unit(d, "distance") for d in self._distance_vector_au]
         return [d.to_pint_or_unit(unit) for d in distance_vector]  # type: ignore [return-value]
 
     @overload
@@ -93,7 +93,7 @@ class SystemPair(SystemBase[BasisType]):
 
     def get_distance(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         distance = np.linalg.norm(self._distance_vector_au)
-        return QuantityScalar.from_base_unit(float(distance), "DISTANCE").to_pint_or_unit(unit)
+        return QuantityScalar.from_base_unit(float(distance), "distance").to_pint_or_unit(unit)
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
