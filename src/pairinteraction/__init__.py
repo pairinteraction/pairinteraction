@@ -1,3 +1,5 @@
+# ruff: noqa: E402
+
 import os
 from typing import Optional
 
@@ -175,19 +177,19 @@ del _setup_logging
 # ---------------------------------------------------------------------------------------
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
-from pairinteraction import (  # noqa: E402
+from pairinteraction import (
     complex,
     perturbative,
     real,
 )
-from pairinteraction._backend import (  # noqa: E402
+from pairinteraction._backend import (
     VERSION_MAJOR as _VERSION_MAJOR,
     VERSION_MINOR as _VERSION_MINOR,
     VERSION_PATCH as _VERSION_PATCH,
 )
-from pairinteraction.logging import configure_logging  # noqa: E402
-from pairinteraction.module_tests import run_module_tests  # noqa: E402
-from pairinteraction.units import ureg  # noqa: E402
+from pairinteraction.logging import configure_logging
+from pairinteraction.module_tests import run_module_tests
+from pairinteraction.units import ureg
 
 __all__ = [
     "complex",
