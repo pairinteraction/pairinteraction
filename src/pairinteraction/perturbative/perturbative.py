@@ -8,15 +8,20 @@ from scipy import sparse
 from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
+    from scipy.sparse import csr_matrix
+
     from pairinteraction import (
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.ket.KetPair import KetPairLike
+    from pairinteraction._wrapped.ket.KetAtom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
+    from pairinteraction._wrapped.ket.KetPair import (
+        KetPairComplex,  # noqa: F401  # required for sphinx for KetPairLike
+        KetPairLike,
+        KetPairReal,  # noqa: F401  # required for sphinx for KetPairLike
+    )
     from pairinteraction.units import NDArray, PintArray, PintFloat
 
-    KetAtom = Union[pi_real.KetAtom, pi_complex.KetAtom]
-    KetPair = Union[pi_real.KetPair, pi_complex.KetPair]
     SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
 
 logger = logging.getLogger(__name__)
@@ -30,7 +35,7 @@ def get_effective_hamiltonian_from_system(
     required_overlap: float = 0.9,
     *,
     unit: None = None,
-) -> tuple["PintArray", sparse.csr_matrix]: ...
+) -> tuple["PintArray", "csr_matrix"]: ...
 
 
 @overload
@@ -41,7 +46,7 @@ def get_effective_hamiltonian_from_system(
     required_overlap: float = 0.9,
     *,
     unit: str,
-) -> tuple["NDArray", sparse.csr_matrix]: ...
+) -> tuple["NDArray", "csr_matrix"]: ...
 
 
 def get_effective_hamiltonian_from_system(
@@ -50,7 +55,7 @@ def get_effective_hamiltonian_from_system(
     order: int = 2,
     required_overlap: float = 0.9,
     unit: Optional[str] = None,
-) -> tuple[Union["NDArray", "PintArray"], sparse.csr_matrix]:
+) -> tuple[Union["NDArray", "PintArray"], "csr_matrix"]:
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
 
     This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
@@ -201,13 +206,13 @@ def get_c6_from_system(
 
     H_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
     H_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    c6_pint = (H_eff - H_0)[0, 0] * R**6
+    c6_pint = (H_eff[0, 0] - H_0[0, 0]) * R**6  # type: ignore [index] # PintArray does not know it can be indexed
     return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
-    H: sparse.csr_matrix, model_inds: list[int], order: int = 2
-) -> tuple["NDArray", sparse.csr_matrix]:
+    H: "csr_matrix", model_inds: list[int], order: int = 2
+) -> tuple["NDArray", "csr_matrix"]:
     r"""Calculate the perturbative Hamiltonian at a given order.
 
     This function takes a Hamiltonian as a sparse matrix which is diagonal in the unperturbed basis
@@ -228,58 +233,9 @@ def _calculate_perturbative_hamiltonian(
             corresponding eigenvector
 
     """
-    if order not in [0, 1, 2, 3]:
-        raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
-
-    m_inds: NDArray = np.array(model_inds)
-    o_inds: NDArray = np.setdiff1d(np.arange(H.shape[0]), m_inds)
-    m = len(m_inds)
-    n = len(o_inds)
-
-    H0 = H.diagonal()
-    H0_m = H0[m_inds]
-    H_eff = sparse.diags(H0_m, format="csr")
-    eigvec_perturb: sparse.csr_matrix = sparse.hstack([sparse.eye(m, m, format="csr"), sparse.csr_matrix((m, n))])  # type: ignore [assignment]
-
-    if order >= 1:
-        V = H - sparse.diags(H0)
-        V_mm = V[np.ix_(m_inds, m_inds)]
-        H_eff += V_mm
-
-    if order >= 2:
-        H0_e = H0[o_inds]
-        V_me = V[np.ix_(m_inds, o_inds)]
-        deltaE_em = 1 / (H0_m[np.newaxis, :] - H0_e[:, np.newaxis])
-        H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
-        addition_mm = sparse.csr_matrix((m, m))
-        addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
-        eigvec_perturb += sparse.hstack([addition_mm, addition_me], format="csr")  # type: ignore [arg-type]
-
-    if order >= 3:
-        diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]
-        diff = np.where(diff == 0, np.inf, diff)
-        deltaE_mm = 1 / diff
-        V_ee = V[np.ix_(o_inds, o_inds)]
-        if m > 1:
-            logger.warning(
-                "At third order, the eigenstates are currently only valid when only one state is in the model space. "
-                "Take care with interpreation of the perturbed eigenvectors."
-            )
-        H_eff += V_me @ (
-            (V_ee @ ((V_me.conj().T).multiply(deltaE_em)) - ((V_me.conj().T).multiply(deltaE_em)) @ V_mm).multiply(
-                deltaE_em
-            )
-        )
-        addition_mm_diag = -0.5 * sparse.diags(
-            (V_me @ ((V_me.conj().T).multiply(np.square(deltaE_em)))).diagonal(),
-            format="csr",
-        )
-        addition_mm_offdiag = sparse.csr_matrix(((V_me @ (V_me.conj().T).multiply(deltaE_em)).multiply(deltaE_mm)).T)
-        addition_me = sparse.csr_matrix(((V_ee @ ((V_me.conj().T).multiply(deltaE_em))).multiply(deltaE_em)).T)
-        addition_me_2 = sparse.csr_matrix(
-            ((V_me.conj().T @ ((V_mm.conj().T).multiply(deltaE_mm))).multiply(deltaE_em)).T
-        )
-        eigvec_perturb += sparse.hstack([addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2])
+    m_inds = np.array(model_inds)
+    o_inds = np.setdiff1d(np.arange(H.shape[0]), m_inds)
+    H_eff, eigvec_perturb = _calculate_unsorted_perturbative_hamiltonian(H, m_inds, o_inds, order)
 
     # resort eigvec to original order
     all_inds = np.append(m_inds, o_inds)
@@ -289,7 +245,70 @@ def _calculate_perturbative_hamiltonian(
     # include the hermitian conjugate part of the effective Hamiltonian
     H_eff = 0.5 * (H_eff + H_eff.conj().T)
 
-    return H_eff.todense(), eigvec_perturb
+    return H_eff, eigvec_perturb
+
+
+def _calculate_unsorted_perturbative_hamiltonian(
+    H: "csr_matrix", m_inds: "NDArray", o_inds: "NDArray", order: int
+) -> tuple["NDArray", "csr_matrix"]:
+    # This function is outsourced from _calculate_perturbative_hamiltonian to allow for better type checking
+    if order not in [0, 1, 2, 3]:
+        raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
+
+    m = len(m_inds)
+    n = len(o_inds)
+    H0 = H.diagonal()
+    H0_m = H0[m_inds]
+
+    H_eff = np.diag(H0_m)
+    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr").tocsr(), sparse.csr_matrix((m, n))]).tocsr()
+
+    if order < 1:
+        return H_eff, eigvec_perturb
+
+    V = H - sparse.diags(H0)
+    V_mm = V[np.ix_(m_inds, m_inds)]
+    H_eff += V_mm
+
+    if order < 2:
+        return H_eff, eigvec_perturb
+
+    H0_e = H0[o_inds]
+    V_me = V[np.ix_(m_inds, o_inds)]
+    deltaE_em = 1 / (H0_m[np.newaxis, :] - H0_e[:, np.newaxis])
+    H_eff += V_me @ ((V_me.conj().T).multiply(deltaE_em))
+    addition_mm = sparse.csr_matrix((m, m))
+    addition_me = sparse.csr_matrix(((V_me.conj().T).multiply(deltaE_em)).T)
+    eigvec_perturb = eigvec_perturb + sparse.hstack([addition_mm, addition_me])
+
+    if order < 3:
+        return H_eff, eigvec_perturb
+
+    diff = H0_m[np.newaxis, :] - H0_m[:, np.newaxis]
+    diff = np.where(diff == 0, np.inf, diff)
+    deltaE_mm = 1 / diff
+    V_ee = V[np.ix_(o_inds, o_inds)]
+    if m > 1:
+        logger.warning(
+            "At third order, the eigenstates are currently only valid when only one state is in the model space. "
+            "Take care with interpreation of the perturbed eigenvectors."
+        )
+    H_eff += V_me @ (
+        (V_ee @ ((V_me.conj().T).multiply(deltaE_em)) - ((V_me.conj().T).multiply(deltaE_em)) @ V_mm).multiply(
+            deltaE_em
+        )
+    )
+    addition_mm_diag = -0.5 * sparse.csr_matrix(
+        sparse.diags((V_me @ ((V_me.conj().T).multiply(np.square(deltaE_em)))).diagonal())
+    )
+    addition_mm_offdiag = sparse.csr_matrix(((V_me @ (V_me.conj().T).multiply(deltaE_em)).multiply(deltaE_mm)).T)
+    addition_me = sparse.csr_matrix(((V_ee @ ((V_me.conj().T).multiply(deltaE_em))).multiply(deltaE_em)).T)
+    addition_me_2 = sparse.csr_matrix(((V_me.conj().T @ ((V_mm.conj().T).multiply(deltaE_mm))).multiply(deltaE_em)).T)
+    eigvec_perturb = eigvec_perturb + sparse.hstack(
+        [addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2]
+    )
+
+    return H_eff, eigvec_perturb
 
 
 def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
@@ -320,7 +339,7 @@ def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "Sys
 
 def _check_for_resonances(
     model_inds: list[int],
-    eigvec_perturb: sparse.csr_matrix,
+    eigvec_perturb: "csr_matrix",
     system_pair: "SystemPair",
     required_overlap: float,
 ) -> None:
