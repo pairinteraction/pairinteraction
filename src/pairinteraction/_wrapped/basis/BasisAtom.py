@@ -104,8 +104,8 @@ class BasisAtom(BasisBase[KetAtom]):
         if parity is not None:
             creator.restrict_parity(get_cpp_parity(parity))
         if energy is not None:
-            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "ENERGY").to_base_unit()
-            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "ENERGY").to_base_unit()
+            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "energy").to_base_unit()
+            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "energy").to_base_unit()
             creator.restrict_energy(min_energy_au, max_energy_au)
             self._energy = energy
             self._energy_unit = energy_unit

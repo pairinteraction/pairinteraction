@@ -64,7 +64,7 @@ class SystemAtom(SystemBase[BasisType]):
         unit: Optional[str] = None,
     ) -> "Self":
         electric_field_au = [
-            QuantityScalar.from_pint_or_unit(v, unit, "ELECTRIC_FIELD").to_base_unit() for v in electric_field
+            QuantityScalar.from_pint_or_unit(v, unit, "electric_field").to_base_unit() for v in electric_field
         ]
         self._cpp.set_electric_field(electric_field_au)
         return self
@@ -75,7 +75,7 @@ class SystemAtom(SystemBase[BasisType]):
         unit: Optional[str] = None,
     ) -> "Self":
         magnetic_field_au = [
-            QuantityScalar.from_pint_or_unit(v, unit, "MAGNETIC_FIELD").to_base_unit() for v in magnetic_field
+            QuantityScalar.from_pint_or_unit(v, unit, "magnetic_field").to_base_unit() for v in magnetic_field
         ]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self

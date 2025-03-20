@@ -102,7 +102,7 @@ class SystemBase(ABC, Generic[BasisType]):
         energy_range_au: list[Optional[float]] = [None, None]
         for i, energy in enumerate(energy_range):
             if energy is not None:
-                energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
+                energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "energy").to_base_unit()
         self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)  # type: ignore [arg-type]
 
         if sort_by_energy:
@@ -136,7 +136,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
         eigenvalues_au: NDArray = np.array(self._cpp.get_eigenvalues())
-        eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
+        eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "energy")
         return eigenvalues.to_pint_or_unit(unit=unit)
 
     @overload
@@ -147,5 +147,5 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PintSparse"]:
         hamiltonian_au = self._cpp.get_matrix()
-        hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "ENERGY")
+        hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "energy")
         return hamiltonian.to_pint_or_unit(unit)
