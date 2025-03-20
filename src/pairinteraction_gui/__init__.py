@@ -1,3 +1,3 @@
-from pairinteraction_gui.app import main
+from pairinteraction_gui.__main__ import main
 
 __all__ = ["main"]

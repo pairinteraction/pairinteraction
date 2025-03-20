@@ -82,9 +82,7 @@ def download_databases(species_list: list[str]) -> int:
     from pairinteraction._backend import get_cache_directory
 
     database_dir = get_cache_directory() / "database"
-
-    pi.Database.initialize_global_database(download_missing=True, use_cache=False, database_dir=database_dir)
-    database = pi.Database.get_global_database()
+    database = pi.Database(download_missing=True, use_cache=False, database_dir=database_dir)
 
     is_wigner_downloaded = False
     exit_code = 0

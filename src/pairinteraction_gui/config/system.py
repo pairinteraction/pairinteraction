@@ -10,7 +10,7 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import DoubleSpinBox, IntSpinBox, RangeItem, WidgetForm, WidgetV, parse_html
+from pairinteraction_gui.qobjects import DoubleSpinBox, IntSpinBox, RangeItem, WidgetForm, WidgetV
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
@@ -206,13 +206,13 @@ class RangeDistance(RangeBase):
         self.items = []
 
         min_spinbox = DoubleSpinBox(
-            self, vmin=0, vmax=999, vdefault=3, tooltip=f"Minimum distance in {parse_html('mu')}"
+            self, vmin=0, vmax=999, vdefault=3, tooltip="Minimum distance in <span>&mu;m</span>"
         )
         max_spinbox = DoubleSpinBox(
-            self, vmin=0, vmax=999, vdefault=10, tooltip=f"Maximum distance in {parse_html('mu')}"
+            self, vmin=0, vmax=999, vdefault=10, tooltip="Maximum distance in <span>&mu;m</span>"
         )
 
-        item = RangeItem(self, "R", min_spinbox, max_spinbox, unit=parse_html("mu"))
+        item = RangeItem(self, "R", min_spinbox, max_spinbox, unit="<span>&mu;m</span>")
         self.items.append(item)
         self.layout().addWidget(item)
 

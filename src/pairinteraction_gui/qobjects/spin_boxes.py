@@ -80,7 +80,7 @@ class DoubleSpinBox(QDoubleSpinBox):
         super().__init__(parent)
 
         if vstep is None:
-            vstep = int(10**-decimals)
+            vstep = 10**-decimals
         self.setDecimals(decimals)
         self.setSingleStep(vstep)
         self.setRange(vmin, vmax)

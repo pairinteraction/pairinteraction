@@ -6,12 +6,14 @@ from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
     QMainWindow,
+    QMessageBox,
     QSizePolicy,
     QStatusBar,
     QToolBar,
     QWidget,
 )
 
+from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
     AboutPage,
     LifetimesPage,
@@ -47,6 +49,13 @@ class MainWindow(QMainWindow):
         self.toolbar = self.setup_toolbar()
 
         self.init_keyboard_shortcuts()
+        self.connect_signals()
+
+    def connect_signals(self) -> None:
+        """Connect signals to slots."""
+        self.signals = Application.instance().signals
+
+        self.signals.ask_download_database.connect(self.ask_download_database)
 
     def findChild(  # type: ignore [override] # explicitly override type hints
         self, type: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
@@ -225,3 +234,19 @@ class MainWindow(QMainWindow):
         # Add Ctrl+W shortcut to close the window
         close_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         close_shortcut.activated.connect(self.close)
+
+    def ask_download_database(self, species: str) -> bool:
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Download missing database tables?")
+        msg_box.setText(f"Database tables for {species} not found.")
+        msg_box.setInformativeText("Would you like to download the missing database tables?")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        download = msg_box.exec() == QMessageBox.StandardButton.Yes
+        if download:
+            from pairinteraction._wrapped import Database
+            from pairinteraction.cli import download_databases
+
+            Database._global_database = None
+            download_databases([species])
+        return download
