@@ -18,9 +18,15 @@ if TYPE_CHECKING:
 
 
 BasisType = TypeVar("BasisType", bound="BasisBase[Any]", covariant=True)
-UnionCPPSystem = Any
-# UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Real|Complex)
-UnionTypeCPPSystem = Any
+UnionCPPSystem = Union[
+    _backend.SystemAtomReal, _backend.SystemAtomComplex, _backend.SystemPairReal, _backend.SystemPairComplex
+]
+UnionTypeCPPSystem = Union[
+    type[_backend.SystemAtomReal],
+    type[_backend.SystemAtomComplex],
+    type[_backend.SystemPairReal],
+    type[_backend.SystemPairComplex],
+]
 
 
 class SystemBase(ABC, Generic[BasisType]):

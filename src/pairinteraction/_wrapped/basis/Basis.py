@@ -1,9 +1,10 @@
 from abc import ABC
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
 
+from pairinteraction import _backend
 from pairinteraction._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
@@ -11,10 +12,15 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 KetType = TypeVar("KetType", bound=KetBase, covariant=True)
-UnionCPPBasis = Any
-# UnionCPPBasis is supposed to be Basis(|Basis)(Atom|Pair)(Real|Complex)
-UnionTypeCPPBasisCreator = Any
-# UnionTypeCPPBasisCreator is supposed to be type[Basis(Atom|Pair)Creator(Real|Complex)]
+UnionCPPBasis = Union[
+    _backend.BasisAtomReal, _backend.BasisAtomComplex, _backend.BasisPairReal, _backend.BasisPairComplex
+]
+UnionTypeCPPBasisCreator = Union[
+    type[_backend.BasisAtomCreatorReal],
+    type[_backend.BasisAtomCreatorComplex],
+    type[_backend.BasisPairCreatorReal],
+    type[_backend.BasisPairCreatorComplex],
+]
 
 
 class BasisBase(ABC, Generic[KetType]):

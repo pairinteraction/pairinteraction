@@ -1,16 +1,24 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, ClassVar, Union
+from typing import Any, ClassVar, Union
+
+from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.ket.Ket import KetBase
-
-if TYPE_CHECKING:
-    from pairinteraction._wrapped.ket.KetAtom import KetAtom
+from pairinteraction._wrapped.ket.KetAtom import KetAtom
 
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
 
-KetPairLike = Union["KetPair", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+KetPairLike = Union["KetPairReal", "KetPairComplex", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+
+
+def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:
+    return isinstance(obj, KetPair) or (len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj))
+
+
+def is_ket_atom_tuple(obj: Any) -> TypeGuard[tuple["KetAtom", "KetAtom"]]:
+    return len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj)
 
 
 class KetPair(KetBase):
@@ -26,7 +34,7 @@ class KetPair(KetBase):
     """
 
     _cpp: UnionCPPKetPair
-    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator]
+    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator] = None
 
     def __init__(self) -> None:
         """Creating a KetPair object directly is not possible."""  # noqa: D401
@@ -35,9 +43,7 @@ class KetPair(KetBase):
 
 class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal
-    _cpp_creator = None
 
 
 class KetPairComplex(KetPair):
     _cpp: _backend.KetPairComplex
-    _cpp_creator = None
