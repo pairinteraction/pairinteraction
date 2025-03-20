@@ -117,6 +117,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: python -c "import sys; from pairinteraction import run_module_tests; sys.exit(run_module_tests(download_missing=True))"
 
+    - uses: actions/checkout@v4
+
     - name: Run all python tests including notebooks
       run: python -m pytest --nbmake
 
