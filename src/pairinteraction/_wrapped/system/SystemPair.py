@@ -62,14 +62,37 @@ class SystemPair(SystemBase[BasisType]):
         self._cpp.set_order(order)
         return self
 
-    def set_distance(self: "Self", distance: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
-        return self.set_distance_vector([0, 0, distance], unit)
+    def set_distance(
+        self: "Self",
+        distance: Union[float, "PintFloat"],
+        angle_degree: float = 0,
+        unit: Optional[str] = None,
+    ) -> "Self":
+        """Set the distance between the atoms using the specified distance and angle.
+
+        Args:
+            distance: The distance to set between the atoms in the given unit.
+            angle_degree: The angle between the distance vector and the z-axis in degrees.
+                90 degrees corresponds to the x-axis.
+                Defaults to 0, which corresponds to the z-axis.
+            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+
+        """
+        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        return self.set_distance_vector(distance_vector, unit)
 
     def set_distance_vector(
         self: "Self",
         distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
+        """Set the distance vector between the atoms.
+
+        Args:
+            distance: The distance vector to set between the atoms in the given unit.
+            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+
+        """
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "distance").to_base_unit() for v in distance]
         self._cpp.set_distance_vector(distance_au)
         self._distance_vector_au = distance_au

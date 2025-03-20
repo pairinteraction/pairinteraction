@@ -49,7 +49,6 @@ public:
     SystemPair(std::shared_ptr<const basis_t> basis);
 
     Type &set_order(int value);
-    Type &set_distance(real_t value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
 
 private:

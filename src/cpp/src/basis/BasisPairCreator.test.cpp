@@ -123,8 +123,8 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                                       .restrict_energy(min_energy, max_energy)
                                       .restrict_quantum_number_m(1, 1)
                                       .create();
-    auto system_pair =
-        SystemPair<double>(basis_pair_unperturbed).set_distance(1 * UM_IN_ATOMIC_UNITS);
+    auto system_pair = SystemPair<double>(basis_pair_unperturbed)
+                           .set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
     system_pair.diagonalize(diagonalizer);
 
     auto basis_pair = system_pair.get_eigenbasis();

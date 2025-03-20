@@ -44,7 +44,7 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     auto basis_pair = BasisPairCreator<double>().add(system1).add(system2).create();
 
     auto system_pair = SystemPair<double>(basis_pair);
-    system_pair.set_distance(3 * UM_IN_ATOMIC_UNITS);
+    system_pair.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
     system_pair.diagonalize(diagonalizer);
 
     // Print the largest and smallest eigenvalues

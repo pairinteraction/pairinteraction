@@ -323,11 +323,6 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
 }
 
 template <typename Scalar>
-SystemPair<Scalar> &SystemPair<Scalar>::set_distance(real_t value) {
-    return set_distance_vector({0, 0, value});
-}
-
-template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
     distance_vector = vector;
