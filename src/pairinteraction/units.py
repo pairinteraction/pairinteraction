@@ -147,10 +147,13 @@ class QuantityAbstract(Generic[ValueType]):
         dimension: DimensionLike,
     ) -> "Self":
         if unit is None:
-            if np.isscalar(value) and np.all(value == 0):
-                return cls.from_base_unit(value, dimension)  # type: ignore [arg-type]
-            return cls.from_pint(value, dimension)  # type: ignore [arg-type]
-        return cls.from_unit(value, unit, dimension)  # type: ignore [arg-type]
+            if isinstance(value, PlainQuantity):
+                return cls.from_pint(value, dimension)
+            if value == 0:
+                return cls.from_base_unit(value, dimension)
+            raise ValueError("unit must be given if value is not a pint.Quantity")
+        assert not isinstance(value, PlainQuantity)
+        return cls.from_unit(value, unit, dimension)
 
     def to_pint(self) -> PlainQuantity[ValueType]:  # type: ignore [type-var]
         """Return the pint.Quantity object."""
