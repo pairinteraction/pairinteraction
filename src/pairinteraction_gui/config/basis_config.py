@@ -8,16 +8,16 @@ from PySide6.QtWidgets import (
     QLabel,
 )
 
+from pairinteraction import (
+    complex as pi_complex,
+    real as pi_real,
+)
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import DoubleSpinBox, HalfIntSpinBox, IntSpinBox, NamedStackedWidget, QnItem, WidgetV
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
 from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:
-    from pairinteraction import (
-        complex as pi_complex,
-        real as pi_real,
-    )
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
@@ -28,12 +28,12 @@ class BasisConfig(BaseConfig):
     page: Union["OneAtomPage", "TwoAtomsPage"]
 
     _label_style_sheet = """
-        background-color: #f8f9fa;
-        color: #212529;
+        background-color: #ffffff;
+        color: #000000;
         padding: 12px 16px;
         border-radius: 8px;
         margin: 12px 24px 0px 24px;
-        border: 1px solid #212529;
+        border: 1px solid #aaaaaa;
     """
 
     _label_style_sheet_error = """
@@ -42,7 +42,7 @@ class BasisConfig(BaseConfig):
         padding: 12px 16px;
         border-radius: 8px;
         margin: 12px 24px 0px 24px;
-        border: 1px solid #dc2626;
+        border: 1px solid #aaaaaa;
     """
 
     def setupWidget(self) -> None:
@@ -101,16 +101,31 @@ class BasisConfig(BaseConfig):
 
         worker.start()
 
+    def get_qn_restrictions(self, atom: int) -> dict[str, tuple[float, float]]:
+        """Return the quantum number restrictions to construct a BasisAtom."""
+        ket = self.page.ket_config.get_ket_atom(atom)
+        basis_widget = self.stacked_basis[atom].currentWidget()
+        delta_qns: dict[str, float] = {item.label: item.value() for item in basis_widget.items if item.isChecked()}
+
+        qns: dict[str, tuple[float, float]] = {}
+        for key, value in delta_qns.items():
+            if value < 0:
+                continue
+            key = key.replace("Δ", "")
+            qn: float = getattr(ket, key)
+            qns[key] = (qn - value, qn + value)
+
+        return qns
+
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
         """Return the basis of interest."""
-        basis_widget = self.stacked_basis[atom].currentWidget()
-        delta_qns: dict[str, Union[float, int]] = {
-            item.label: item.value() for item in basis_widget.items if item.isChecked()
-        }
         ket = self.page.ket_config.get_ket_atom(atom)
-        return get_basis_atom(ket, **delta_qns, dtype=dtype)
+        qn_restrictions = self.get_qn_restrictions(atom)
+        if dtype == "real":
+            return pi_real.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
+        return pi_complex.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
 
     def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum number deltas for the basis of interest."""
@@ -153,7 +168,7 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
         self.delta_pair_energy = DoubleSpinBox(
-            self, vmin=0, vdefault=3, tooltip="Restriction for the pair energy difference to the state of interest"
+            self, vmin=0, vdefault=5, tooltip="Restriction for the pair energy difference to the state of interest"
         )
         self.layout().addWidget(QnItem(self, "ΔEnergy", self.delta_pair_energy, "GHz"))
 

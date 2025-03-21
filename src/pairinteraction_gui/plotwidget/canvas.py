@@ -14,9 +14,9 @@ from PySide6.QtWidgets import QWidget
 class MatplotlibCanvas(FigureCanvasQTAgg):
     """Canvas for matplotlib figures."""
 
-    def __init__(self, parent: Optional[QWidget] = None, width: int = 5, height: int = 7, dpi: int = 100) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         """Initialize the canvas with a figure."""
-        self.fig, self.ax = plt.subplots(figsize=(width, height), dpi=dpi)
+        self.fig, self.ax = plt.subplots()
         super().__init__(self.fig)
 
         self.setup_zoom()

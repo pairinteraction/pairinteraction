@@ -18,7 +18,6 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
-    AboutPage,
     LifetimesPage,
     OneAtomPage,
     TwoAtomsPage,
@@ -71,35 +70,11 @@ class MainWindow(QMainWindow):
         """Apply modern styling to the application."""
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #f8f9fa;
-            }
-            QLabel {
-                color: #212529;
-                font-family: 'Segoe UI', 'Arial', sans-serif;
+                background-color: #ffffff;
             }
             QStatusBar {
                 background-color: #343a40;
-                color: #f8f9fa;
-                font-size: 12px;
-                padding: 3px;
-            }
-            QDockWidget {
-                font-family: 'Segoe UI', 'Arial', sans-serif;
-                font-weight: 500;
-                color: #212529;
-            }
-            QDockWidget::title {
-                background-color: #e9ecef;
-                padding: 6px;
-                border: none;
-                border-bottom: 1px solid #dee2e6;
-            }
-            QToolBar {
-                border: none;
-                spacing: 15px;
-            }
-            QToolButton {
-                background-color: transparent;
+                color: #ffffff;
             }
         """)
 
@@ -128,14 +103,14 @@ class MainWindow(QMainWindow):
         dockwidget.setStyleSheet("""
             QToolBox {
                 background-color: white;
-                border: 1px solid #dee2e6;
+                border: 1px solid #ffffff;
                 border-radius: 5px;
             }
             QToolBox::tab {
                 background-color: #343a40;
-                border: 1px solid #dee2e6;
+                border: 1px solid #ffffff;
                 border-radius: 4px;
-                color: #f8f9fa;
+                color: #ffffff;
                 font-weight: bold;
                 font-size: 15px;
             }
@@ -165,7 +140,7 @@ class MainWindow(QMainWindow):
         # stacked_pages.addNamedWidget(C6Page(), "c6")
 
         # stacked_pages.addNamedWidget(SettingsPage(), "settings")
-        stacked_pages.addNamedWidget(AboutPage(), "about")
+        # stacked_pages.addNamedWidget(AboutPage(), "about")
         return stacked_pages
 
     def setup_toolbar(self) -> QToolBar:
@@ -186,7 +161,7 @@ class MainWindow(QMainWindow):
                 border: none;
                 padding: 8px;
                 margin: 5px;
-                color: #f8f9fa;
+                color: #ffffff;
                 font-weight: bold;
                 font-size: 15px;
             }
@@ -194,7 +169,7 @@ class MainWindow(QMainWindow):
                 background-color: #495057;
             }
             QToolButton:pressed {
-                background-color: #212529;
+                background-color: #000000;
             }
             QToolButton:checked {
                 background-color: #007bff;

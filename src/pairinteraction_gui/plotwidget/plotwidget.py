@@ -46,8 +46,6 @@ class PlotWidget(WidgetV):
         top_row = WidgetH(self)
 
         # Add plot toolbar on left
-        if self.plot_toolbar.layout().count():
-            self.plot_toolbar.layout().addStretch()
         top_row.layout().addWidget(self.plot_toolbar)
 
         # Add reset zoom button on right
@@ -59,7 +57,7 @@ class PlotWidget(WidgetV):
         top_row.layout().addWidget(reset_zoom_button)
 
         self.layout().addWidget(top_row)
-        self.layout().addWidget(self.canvas)
+        self.layout().addWidget(self.canvas, stretch=1)
 
     def clear(self) -> None:
         self.canvas.ax.clear()
@@ -83,11 +81,12 @@ class PlotEnergies(PlotWidget):
         )
         self.plot_toolbar.layout().addWidget(self.energy_range)
 
-        self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=False)
+        self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=True)
         self.plot_toolbar.layout().addWidget(self.fast_mode)
 
         mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
         self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest")
+        self.canvas.fig.tight_layout()
 
     def plot(
         self,
@@ -135,6 +134,7 @@ class PlotEnergies(PlotWidget):
 
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
+        self.canvas.fig.tight_layout()
 
     def add_cursor(self, x_value: float, energies: "NDArray[Any]", state_labels_0: list[str]) -> None:
         # Remove any existing cursors to avoid duplicates

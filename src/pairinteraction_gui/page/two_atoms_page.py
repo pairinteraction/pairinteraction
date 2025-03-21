@@ -11,7 +11,6 @@ from pairinteraction_gui.config import (
     SystemConfigTwoAtoms,
 )
 from pairinteraction_gui.page.base_page import CalculationPage
-from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +22,6 @@ class TwoAtomsPage(CalculationPage):
     tooltip = "Configure and analyze pair systems"
 
     def setupWidget(self) -> None:
-        self.plotwidget = PlotEnergies(self)
-        self.layout().addWidget(self.plotwidget)
         super().setupWidget()
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
