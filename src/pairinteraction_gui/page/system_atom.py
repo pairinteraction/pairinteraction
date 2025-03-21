@@ -4,6 +4,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import nbformat
+from nbconvert import PythonExporter
 from PySide6.QtWidgets import QFileDialog
 
 import pairinteraction._wrapped as pi
@@ -98,9 +100,12 @@ class SystemAtomPage(SimulationPage):
         if filename:
             filename = filename.removesuffix(".py") + ".py"
 
-            template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.py"
+            template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.ipynb"
             with open(template_path) as f:
-                content = f.read()
+                notebook = nbformat.read(f, as_version=4)
+
+            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
+            content, _ = exporter.from_notebook_node(notebook)
 
             replacements = self._get_export_replacements()
             for key, value in replacements.items():
