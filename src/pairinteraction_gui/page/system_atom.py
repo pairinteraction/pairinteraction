@@ -1,3 +1,4 @@
+import json
 import logging
 from collections.abc import Sequence
 from pathlib import Path
@@ -111,7 +112,32 @@ class SystemAtomPage(SimulationPage):
             logger.info(f"Python script saved as {filename}")
 
     def export_notebook(self) -> None:
-        super().export_notebook()
+        """Export the current calculation as a Jupyter notebook."""
+        logger.debug("Exporting results as Jupyter notebook...")
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Jupyter Notebook", "", "Jupyter Notebooks (*.ipynb)")
+
+        if filename:
+            filename = filename.removesuffix(".ipynb") + ".ipynb"
+
+            template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.ipynb"
+            with open(template_path) as f:
+                notebook = json.load(f)
+
+            replacements = self._get_export_replacements()
+            for cell in notebook["cells"]:
+                if cell["cell_type"] == "code":
+                    new_source = []
+                    for line in cell["source"]:
+                        for key, value in replacements.items():
+                            line = line.replace(key, str(value))
+                        new_source.append(line)
+                    cell["source"] = new_source
+
+            with open(filename, "w") as f:
+                json.dump(notebook, f, indent=1)
+
+            logger.info(f"Jupyter notebook saved as {filename}")
 
     def _get_export_replacements(self) -> dict[str, Any]:
         ket = self.ket_config.get_ket_atom(0)
