@@ -4,6 +4,7 @@ from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 import matplotlib
+import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 from PySide6.QtWidgets import QPushButton
@@ -78,6 +79,10 @@ class PlotEnergies(PlotWidget):
 
         self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=False)
         self.plot_toolbar.layout().addWidget(self.fast_mode)
+
+        self.canvas.fig.colorbar(
+            plt.cm.ScalarMappable(cmap="magma_r"), ax=self.canvas.ax, label="Overlap with state of interest"
+        )
 
     def plot(
         self,
