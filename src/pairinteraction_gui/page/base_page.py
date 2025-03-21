@@ -55,7 +55,7 @@ class SimulationPage(BasePage):
         QPushButton {
             padding: 8px 16px;
             background-color: #343a40;
-            color: #f8f9fa;
+            color: #ffffff;
             border: none;
             border-radius: 4px;
             font-weight: bold;
@@ -65,24 +65,24 @@ class SimulationPage(BasePage):
             background-color: #495057;
         }
         QPushButton:pressed {
-            background-color: #212529;
+            background-color: #000000;
         }
     """
 
     _button_menu_style = """
         QMenu {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
+            background-color: #ffffff;
+            border: 1px solid #ffffff;
             border-radius: 4px;
             padding: 4px;
         }
         QMenu::item {
             padding: 6px 24px;
-            color: #212529;
+            color: #000000;
             font-size: 14px;
         }
         QMenu::item:selected {
-            background-color: #e9ecef;
+            background-color: #ffffff;
         }
     """
 
@@ -99,7 +99,6 @@ class SimulationPage(BasePage):
         self.loading_label.hide()
 
     def postSetupWidget(self) -> None:
-        self.layout().addStretch()
         for attr in self.__dict__.values():
             if isinstance(attr, BaseConfig):
                 self.toolbox.addItem(attr, attr.title)
@@ -122,6 +121,9 @@ class CalculationPage(SimulationPage):
 
     def setupWidget(self) -> None:
         super().setupWidget()
+
+        self.plotwidget = PlotEnergies(self)
+        self.layout().addWidget(self.plotwidget)
 
         # Control panel below the plot
         control_layout = QHBoxLayout()

@@ -2,12 +2,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from functools import wraps
-from typing import Any, Callable, Literal, Union
+from typing import Any, Callable
 
 from pairinteraction import (
     _wrapped as pi,
-    complex as pi_complex,
-    real as pi_real,
 )
 from pairinteraction_gui.app import Application
 
@@ -51,19 +49,3 @@ def get_ket_atom(species: str, **qns: float) -> pi.KetAtom:
         if "No state found" in str(err) or "quantum number m must be" in str(err):
             raise NoStateFoundError(str(err)) from err
         raise err
-
-
-def get_basis_atom(
-    ket: pi.KetAtom, *, dtype: Literal["real", "complex"] = "real", **delta_qns: float
-) -> Union[pi_real.BasisAtom, pi_complex.BasisAtom]:
-    qns = {}
-    for key, value in delta_qns.items():
-        if value < 0:
-            continue
-        key = key.replace("Δ", "")
-        qn = getattr(ket, key)
-        qns[key] = (qn - value, qn + value)
-
-    if dtype == "real":
-        return pi_real.BasisAtom(ket.species, **qns)  # type: ignore [arg-type]
-    return pi_complex.BasisAtom(ket.species, **qns)  # type: ignore [arg-type]

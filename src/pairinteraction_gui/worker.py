@@ -13,10 +13,8 @@ from pairinteraction_gui.app import Application
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
-    from pairinteraction_gui.calculate.calculate_base import Results
-
     P = ParamSpec("P")
-    R = TypeVar("R", bound="Results")
+    R = TypeVar("R")
 
 logger = logging.getLogger(__name__)
 

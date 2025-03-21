@@ -60,7 +60,7 @@ class SystemConfig(BaseConfig):
         self.layout().addWidget(steps_label)
 
         steps_widget = WidgetForm(margin=(0, 0, 0, 0))
-        self.steps_spinbox = IntSpinBox(vmin=1, vmax=10000, vdefault=20, tooltip="Number of steps for the calculation")
+        self.steps_spinbox = IntSpinBox(vmin=1, vmax=10000, vdefault=100, tooltip="Number of steps for the calculation")
         steps_widget.layout().addRow("Number of steps", self.steps_spinbox)
         self.layout().addWidget(steps_widget)
 
@@ -105,7 +105,7 @@ class SystemConfigTwoAtoms(SystemConfig):
         label = QLabel("<b>Distance</b>")
         self.layout().addWidget(label)
 
-        self.distance = RangeItem(self, "Distance", (0, 999), (3, 10), unit="<span>&mu;m</span>")
+        self.distance = RangeItem(self, "Distance", (0, 999), (3, 8), unit="<span>&mu;m</span>")
         self.layout().addWidget(self.distance)
 
     def setupAngle(self) -> None:

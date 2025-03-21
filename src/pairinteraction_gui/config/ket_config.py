@@ -51,12 +51,12 @@ class KetConfig(BaseConfig):
     title = "State of Interest"
 
     _label_style_sheet = """
-        background-color: #f8f9fa;
-        color: #212529;
+        background-color: #ffffff;
+        color: #000000;
         padding: 12px 16px;
         border-radius: 8px;
         margin: 12px 24px 0px 24px;
-        border: 1px solid #212529;
+        border: 1px solid #aaaaaa;
     """
 
     _label_style_sheet_error = """
@@ -65,7 +65,7 @@ class KetConfig(BaseConfig):
         padding: 12px 16px;
         border-radius: 8px;
         margin: 12px 24px 0px 24px;
-        border: 1px solid #dc2626;
+        border: 1px solid #aaaaaa;
     """
 
     def setupWidget(self) -> None:
@@ -258,10 +258,6 @@ class KetConfigTwoAtoms(KetConfig):
         self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneKetAtom()
-
-        # set some better defaults
-        n_spinbox = self.stacked_qn[1].getNamedWidget("sqdt_duplet").findChild(IntSpinBox, "n")
-        n_spinbox.setValue(81)
 
 
 class QnBase(WidgetV):
