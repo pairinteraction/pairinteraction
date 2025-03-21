@@ -8,6 +8,7 @@ from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
+    QMenu,
     QPushButton,
     QToolBox,
 )
@@ -61,10 +62,17 @@ class SimulationPage(BasePage):
         calculate_button.clicked.connect(self._thread_calculate)
         control_layout.addWidget(calculate_button)
 
-        # export_button = QPushButton("Export")
-        # export_button.setObjectName("Export")
-        # export_button.clicked.connect(self.export)
-        # control_layout.addWidget(export_button)
+        export_button = QPushButton("Export")
+        export_button.setObjectName("Export")
+
+        # Create export menu
+        export_menu = QMenu(self)
+        export_menu.addAction("Export as PNG", self.export_png)
+        export_menu.addAction("Export as Python script", self.export_python)
+        export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
+
+        export_button.setMenu(export_menu)
+        control_layout.addWidget(export_button)
 
         self.layout().addLayout(control_layout)
 
@@ -116,6 +124,14 @@ class SimulationPage(BasePage):
     def update_plot(self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
-    def export(self) -> None:
-        logger.debug("Exporting results...")
+    def export_png(self) -> None:
+        logger.debug("Exporting results as PNG...")
+        return
+
+    def export_python(self) -> None:
+        logger.debug("Exporting results as Python script...")
+        return
+
+    def export_notebook(self) -> None:
+        logger.debug("Exporting results as Jupyter notebook...")
         return
