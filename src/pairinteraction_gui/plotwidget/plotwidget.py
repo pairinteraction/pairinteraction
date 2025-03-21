@@ -3,14 +3,16 @@
 
 import logging
 from collections.abc import Sequence
-from itertools import chain
 from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
+from matplotlib.colors import Normalize
 from PySide6.QtWidgets import QPushButton
 
+from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.qobjects import WidgetH, WidgetV
 from pairinteraction_gui.qobjects.item import Item, RangeItem
@@ -21,7 +23,6 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
-mpl.use("Qt5Agg")
 
 
 class PlotWidget(WidgetV):
@@ -32,6 +33,8 @@ class PlotWidget(WidgetV):
 
     def __init__(self, parent: "SimulationPage") -> None:
         """Initialize the base section."""
+        mpl.use("Qt5Agg")
+
         self.page = parent
         super().__init__(parent)
 
@@ -83,47 +86,48 @@ class PlotEnergies(PlotWidget):
         self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=False)
         self.plot_toolbar.layout().addWidget(self.fast_mode)
 
+        mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
+        self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest")
+
     def plot(
         self,
-        x_values: Sequence[float],
-        energies: Sequence["NDArray[Any]"],
-        overlaps: Sequence["NDArray[Any]"],
+        x_list: Sequence[float],
+        energies_list: Sequence["NDArray[Any]"],
+        overlaps_list: Sequence["NDArray[Any]"],
         xlabel: str,
     ) -> None:
         ax = self.canvas.ax
         ax.clear()
 
         try:
-            ax.plot(x_values, np.array(energies), c="0.9", lw=0.25, zorder=-10)
+            ax.plot(x_list, np.array(energies_list), c="0.9", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
-                for x_value, es in zip(x_values, energies):
+                for x_value, es in zip(x_list, energies_list):
                     ax.plot([x_value] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
             else:
                 raise err
 
-        _x = chain.from_iterable([x] * len(es) for x, es in zip(x_values, energies))
-        x = np.array(list(_x))
-        _y = chain.from_iterable(energies)
-        y = np.array(list(_y))
-        _o = chain.from_iterable(overlaps)
-        o = np.array(list(_o))
+        # Flatten the arrays for scatter plot and repeat x value for each energy
+        # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
+        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_list, energies_list)])
+        energies_flattend = np.hstack(energies_list)
+        overlaps_flattend = np.hstack(overlaps_list)
 
-        min_overlap = 0.0001
-        inds: NDArray[Any] = np.argwhere(o > min_overlap).flatten()
-        inds = inds[np.argsort(o[inds])]
+        min_overlap = 1e-4
+        inds: NDArray[Any] = np.argwhere(overlaps_flattend > min_overlap).flatten()
+        inds = inds[np.argsort(overlaps_flattend[inds])]
 
         if len(inds) > 0:
-            log_o = np.log(o[inds])
-            alpha: NDArray[Any]
-            if log_o.max() - log_o.min() < 1e-10:
-                alpha = np.ones_like(log_o)
-            else:
-                alpha = 1 - log_o / np.log(min_overlap)
-                alpha[alpha < 0] = 0
-                alpha[alpha > 1] = 1
-
-            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")  # type: ignore [arg-type]
+            ax.scatter(
+                x_repeated[inds],
+                energies_flattend[inds],
+                c=overlaps_flattend[inds],
+                s=15,
+                vmin=0,
+                vmax=1,
+                cmap=alphamagma,
+            )
 
         ylim = ax.get_ylim()
         if abs(ylim[1] - ylim[0]) < 1e-2:

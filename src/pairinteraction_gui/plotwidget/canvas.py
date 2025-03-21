@@ -3,15 +3,12 @@
 
 from typing import Optional
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QWheelEvent
 from PySide6.QtWidgets import QWidget
-
-mpl.use("Qt5Agg")
 
 
 class MatplotlibCanvas(FigureCanvasQTAgg):

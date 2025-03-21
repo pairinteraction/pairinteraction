@@ -185,6 +185,7 @@ from pairinteraction import (
     complex,  # noqa: A004
     perturbative,
     real,
+    visualization,
 )
 from pairinteraction._backend import (
     VERSION_MAJOR as _VERSION_MAJOR,
@@ -202,6 +203,7 @@ __all__ = [
     "real",
     "run_module_tests",
     "ureg",
+    "visualization",
 ]
 
 __version__ = f"{_VERSION_MAJOR}.{_VERSION_MINOR}.{_VERSION_PATCH}"
