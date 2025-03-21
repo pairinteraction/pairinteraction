@@ -1,4 +1,3 @@
-import json
 import logging
 from collections.abc import Sequence
 from pathlib import Path
@@ -127,20 +126,17 @@ class SystemAtomPage(SimulationPage):
 
             template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.ipynb"
             with open(template_path) as f:
-                notebook = json.load(f)
+                notebook = nbformat.read(f, as_version=4)
 
             replacements = self._get_export_replacements()
-            for cell in notebook["cells"]:
-                if cell["cell_type"] == "code":
-                    new_source = []
-                    for line in cell["source"]:
-                        for key, value in replacements.items():
-                            line = line.replace(key, str(value))
-                        new_source.append(line)
-                    cell["source"] = new_source
+            for cell in notebook.cells:
+                if cell.cell_type == "code":
+                    source = cell.source
+                    for key, value in replacements.items():
+                        source = source.replace(key, str(value))
+                    cell.source = source
 
-            with open(filename, "w") as f:
-                json.dump(notebook, f, indent=1)
+            nbformat.write(notebook, filename)
 
             logger.info(f"Jupyter notebook saved as {filename}")
 
