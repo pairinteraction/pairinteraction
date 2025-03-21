@@ -61,7 +61,6 @@ static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
     nb::class_<SystemPair<T>, System<SystemPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
         .def("set_order", &SystemPair<T>::set_order)
-        .def("set_distance", &SystemPair<T>::set_distance)
         .def("set_distance_vector", &SystemPair<T>::set_distance_vector);
 }
 

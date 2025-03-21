@@ -41,6 +41,8 @@ class SystemPair(SystemBase[BasisType]):
         SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
         >>> pair_system = pair_system.diagonalize()
         >>> eigenvalues = pair_system.get_eigenvalues(unit="GHz")
+        >>> print(f"{eigenvalues[0] - pair_energy:.5f}")
+        -2.18361
 
     """  # noqa: E501
 
@@ -62,15 +64,36 @@ class SystemPair(SystemBase[BasisType]):
         return self
 
     def set_distance(
-        self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
+        self: "Self",
+        distance: Union[float, "PlainQuantity[float]"],
+        angle_degree: float = 0,
+        unit: Optional[str] = None,
     ) -> "Self":
-        return self.set_distance_vector([0, 0, distance], unit)
+        """Set the distance between the atoms using the specified distance and angle.
+
+        Args:
+            distance: The distance to set between the atoms in the given unit.
+            angle_degree: The angle between the distance vector and the z-axis in degrees.
+                90 degrees corresponds to the x-axis.
+                Defaults to 0, which corresponds to the z-axis.
+            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+
+        """
+        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        return self.set_distance_vector(distance_vector, unit)
 
     def set_distance_vector(
         self: "Self",
         distance: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: Optional[str] = None,
     ) -> "Self":
+        """Set the distance vector between the atoms.
+
+        Args:
+            distance: The distance vector to set between the atoms in the given unit.
+            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+
+        """
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
         self._cpp.set_distance_vector(distance_au)
         self._distance_vector_au = distance_au
