@@ -68,7 +68,7 @@ class SystemBaseConfig(BaseConfig):
         fields = self.get_fields()
         steps = next(iter(fields.values())).steps
 
-        isreal = all(f.is_zero() for key, f in fields.items() if key.endswith("y"))
+        isreal = fields["By"].is_zero() and fields["Ey"].is_zero()
         pi = pi_real if isreal else pi_complex
 
         basis = self.page.basis_config.get_basis(atom, "real" if isreal else "complex")
