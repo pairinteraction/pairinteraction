@@ -9,9 +9,12 @@ from typing import Any, Optional
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QLabel,
+    QMenu,
     QPushButton,
+    QStyle,
     QToolBox,
 )
 
@@ -45,6 +48,41 @@ class SimulationPage(BasePage):
     """Base class for all simulation pages in this application."""
 
     plotwidget: PlotWidget
+
+    _button_style = """
+        QPushButton {
+            padding: 8px 16px;
+            background-color: #343a40;
+            color: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QPushButton:hover {
+            background-color: #495057;
+        }
+        QPushButton:pressed {
+            background-color: #212529;
+        }
+    """
+
+    _button_menu_style = """
+        QMenu {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 4px;
+        }
+        QMenu::item {
+            padding: 6px 24px;
+            color: #212529;
+            font-size: 14px;
+        }
+        QMenu::item:selected {
+            background-color: #e9ecef;
+        }
+    """
 
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
@@ -85,10 +123,27 @@ class CalculationPage(SimulationPage):
 
         # Control panel below the plot
         control_layout = QHBoxLayout()
+
+        # Calculate button
         calculate_button = QPushButton("Calculate")
         calculate_button.setObjectName("Calculate")
+        calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
         calculate_button.clicked.connect(self.calculate_clicked)
+        calculate_button.setStyleSheet(self._button_style)
         control_layout.addWidget(calculate_button)
+
+        # Create export button with menu
+        export_button = QPushButton("Export")
+        export_button.setObjectName("Export")
+        export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
+        export_button.setStyleSheet(self._button_style)
+        export_menu = QMenu(self)
+        export_menu.setStyleSheet(self._button_menu_style)
+        export_menu.addAction("Export as PNG", self.export_png)
+        export_menu.addAction("Export as Python script", self.export_python)
+        export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
+        export_button.setMenu(export_menu)
+        control_layout.addWidget(export_button)
 
         self.layout().addLayout(control_layout)
 
@@ -149,5 +204,22 @@ class CalculationPage(SimulationPage):
 
         self.plotwidget.canvas.draw()
 
-    def export(self) -> None:
-        raise NotImplementedError("Subclasses must implement this method")
+    def export_png(self) -> None:
+        """Export the current plot as a PNG file."""
+        logger.debug("Exporting results as PNG...")
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Plot", "", "PNG Files (*.png)")
+
+        if filename:
+            if not filename.endswith(".png"):
+                filename += ".png"
+            self.plotwidget.canvas.fig.savefig(
+                filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
+            )
+            logger.info("Plot saved as %s", filename)
+
+    def export_python(self) -> None:
+        logger.debug("Exporting results as Python script...")
+
+    def export_notebook(self) -> None:
+        logger.debug("Exporting results as Jupyter notebook...")
