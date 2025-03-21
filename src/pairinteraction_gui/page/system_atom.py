@@ -185,4 +185,7 @@ class SystemAtomPage(SimulationPage):
         replacements["X_VALUES"] = xlabel.split(" ")[0]
         replacements["XLABEL"] = f'"{xlabel}"'
 
+        isreal = fields["By"].is_zero() and fields["Ey"].is_zero()
+        replacements["PI_DTYPE"] = "real" if isreal else "complex"
+
         return replacements

@@ -211,7 +211,7 @@ mccabe.max-complexity = 10
 "tests/*.py" = ["ANN"]
 "src/pairinteraction/_wrapped/*.py" = ["N999"]
 "src/pairinteraction_gui/**" = ["N802"]
-"src/pairinteraction_gui/export_templates/**" = ["F821"]
+"src/pairinteraction_gui/export_templates/**" = ["F821", "N811"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
