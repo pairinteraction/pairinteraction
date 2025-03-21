@@ -120,7 +120,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Run all python tests including notebooks
-      run: python -m pytest --nbmake
+      run: python -m pytest --nbmake --download-missing --database-dir=""
 
   test-install-from-sdist:
     name: Test installing the sdist
