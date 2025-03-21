@@ -1,58 +1,59 @@
 API Reference
 =============
 
-The pairinteraction package provides a Python interface for easily accessing the functionality in a pythonic way.
-This Python interface can be accessed via the ``pairinteraction`` module by importing
+The pairinteraction package provides a Python interface for easily accessing the functionality in a pythonic way. This
+Python interface can be accessed via the ``pairinteraction`` module by importing
 
 .. code-block:: python
 
     import pairinteraction.real as pi
 
-Alternatively, the same functionality can be accessed using complex data types via ``import pairinteraction.complex as pi``.
-The two submodules are completely identical in their functionality, but only differ in the data type they use.
+Alternatively, the same functionality can be accessed using complex data types via ``import pairinteraction.complex as
+pi``. The two submodules are completely identical in their functionality, but only differ in the data type they use.
 
 All the available classes, methods and functions are documented below:
 
 .. currentmodule:: pairinteraction._wrapped
 
-.. rubric:: Database
+**Database**
+
 .. autosummary::
-   :toctree: _autosummary/
+    :toctree: _autosummary/
 
-      Database
+       Database
 
+**Single Atom**
 
-.. rubric:: Single Atom
 .. autosummary::
-   :toctree: _autosummary/
+    :toctree: _autosummary/
 
-      KetAtom
-      BasisAtom
-      SystemAtom
+       KetAtom
+       BasisAtom
+       SystemAtom
 
+**Pair of Atoms**
 
-.. rubric:: Pair of Atoms
 .. autosummary::
-   :toctree: _autosummary/
+    :toctree: _autosummary/
 
-      KetPair
-      BasisPair
-      SystemPair
+       KetPair
+       BasisPair
+       SystemPair
 
+**Convenience Functions**
 
-.. rubric:: Convenience Functions
 .. autosummary::
-   :toctree: _autosummary/
+    :toctree: _autosummary/
 
-      diagonalize
-
+       diagonalize
 
 .. currentmodule:: pairinteraction
 
-.. rubric:: Perturbative Calculations
-.. autosummary::
-   :toctree: _autosummary/
+**Perturbative Calculations**
 
-      perturbative.get_c3_from_system
-      perturbative.get_c6_from_system
-      perturbative.get_effective_hamiltonian_from_system
+.. autosummary::
+    :toctree: _autosummary/
+
+       perturbative.get_c3_from_system
+       perturbative.get_c6_from_system
+       perturbative.get_effective_hamiltonian_from_system
