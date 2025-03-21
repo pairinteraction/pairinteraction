@@ -172,8 +172,7 @@ class SimulationPage(BasePage):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Plot", "", "PNG Files (*.png)")
 
         if filename:
-            if not filename.endswith(".png"):
-                filename += ".png"
+            filename = filename.removesuffix(".png") + ".png"
             self.plotwidget.canvas.fig.savefig(
                 filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
             )
