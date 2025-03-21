@@ -93,16 +93,29 @@ class BasisBaseConfig(BaseConfig):
                 self.basis_label[atom].setText(str(err))
             self.basis_label[atom].setStyleSheet(self._label_style_sheet_error)
 
+    def get_restrict_qns(self, atom: int) -> dict[str, tuple[float, float]]:
+        """Return the quantum number restrictions."""
+        ket = self.page.ket_config.get_ket_atom(atom)
+        basis_widget = self.stacked_basis[atom].currentWidget()
+        delta_qns: dict[str, float] = {item.label: item.value() for item in basis_widget.items if item.isChecked()}
+
+        qns: dict[str, tuple[float, float]] = {}
+        for key, value in delta_qns.items():
+            if value < 0:
+                continue
+            key = key.replace("Δ", "")
+            qn: float = getattr(ket, key)
+            qns[key] = (qn - value, qn + value)
+
+        return qns
+
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
         """Return the basis of interest."""
-        basis_widget = self.stacked_basis[atom].currentWidget()
-        delta_qns: dict[str, Union[float, int]] = {
-            item.label: item.value() for item in basis_widget.items if item.isChecked()
-        }
         ket = self.page.ket_config.get_ket_atom(atom)
-        return get_basis_atom(ket, **delta_qns, dtype=dtype)
+        restrict_qns = self.get_restrict_qns(atom)
+        return get_basis_atom(ket, dtype=dtype, **restrict_qns)
 
     def showEvent(self, event: "QShowEvent") -> None:
         """Update the basis label when the widget is shown."""
