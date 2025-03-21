@@ -6,6 +6,7 @@ from typing import Optional
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QMenu,
@@ -165,13 +166,21 @@ class SimulationPage(BasePage):
         raise NotImplementedError("Subclasses must implement this method")
 
     def export_png(self) -> None:
+        """Export the current plot as a PNG file."""
         logger.debug("Exporting results as PNG...")
-        return
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Plot", "", "PNG Files (*.png)")
+
+        if filename:
+            if not filename.endswith(".png"):
+                filename += ".png"
+            self.plotwidget.canvas.fig.savefig(
+                filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
+            )
+            logger.info(f"Plot saved as {filename}")
 
     def export_python(self) -> None:
         logger.debug("Exporting results as Python script...")
-        return
 
     def export_notebook(self) -> None:
         logger.debug("Exporting results as Jupyter notebook...")
-        return
