@@ -98,28 +98,19 @@ class PlotEnergies(PlotWidget):
             else:
                 raise err
 
-        _x = chain.from_iterable([x] * len(es) for x, es in zip(x_values, energies))
-        x = np.array(list(_x))
-        _y = chain.from_iterable(energies)
-        y = np.array(list(_y))
-        _o = chain.from_iterable(overlaps)
-        o = np.array(list(_o))
+        # Flatten the arrays for scatter plot and repeat x value for each energy
+        # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
+        x = np.array(list(chain.from_iterable([x] * len(es) for x, es in zip(x_values, energies))))
+        y = np.array(list(chain.from_iterable(energies)))
+        o = np.array(list(chain.from_iterable(overlaps)))
 
         min_overlap = 0.0001
         inds: NDArray[Any] = np.argwhere(o > min_overlap).flatten()
         inds = inds[np.argsort(o[inds])]
 
         if len(inds) > 0:
-            log_o = np.log(o[inds])
-            alpha: NDArray[Any]
-            if log_o.max() - log_o.min() < 1e-10:
-                alpha = np.ones_like(log_o)
-            else:
-                alpha = 1 - log_o / np.log(min_overlap)
-                alpha[alpha < 0] = 0
-                alpha[alpha > 1] = 1
-
-            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")  # type: ignore [arg-type]
+            alpha = 1 - np.maximum(np.log(o[inds]) / np.log(min_overlap), 0)
+            ax.scatter(x[inds], y[inds], c=o[inds], alpha=alpha, s=15, vmin=0, vmax=1, cmap="magma_r")
 
         ylim = ax.get_ylim()
         if abs(ylim[1] - ylim[0]) < 1e-2:
