@@ -36,6 +36,7 @@ add_library(
   ./include/pairinteraction/operator/Operator.hpp
   ./include/pairinteraction/operator/OperatorAtom.hpp
   ./include/pairinteraction/operator/OperatorPair.hpp
+  ./include/pairinteraction/system/GreenTensor.hpp
   ./include/pairinteraction/system/System.hpp
   ./include/pairinteraction/system/SystemAtom.hpp
   ./include/pairinteraction/system/SystemClassicalLight.hpp
@@ -96,6 +97,7 @@ add_library(
   ./src/operator/Operator.cpp
   ./src/operator/OperatorAtom.cpp
   ./src/operator/OperatorPair.cpp
+  ./src/system/GreenTensor.cpp
   ./src/system/System.cpp
   ./src/system/SystemAtom.cpp
   ./src/system/SystemAtom.test.cpp
