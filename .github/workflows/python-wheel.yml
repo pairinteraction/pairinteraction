@@ -125,17 +125,33 @@ jobs:
       run: python -m pytest --nbmake --download-missing --database-dir=""
 
   test-install-from-sdist:
-    name: Test installing the sdist
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest
+          distro: ubuntu
+        - os: macos-13
+        - os: windows-2019
+    name: Test installing sdist on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
     needs: [sdist]
-    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup uv build virtual environment
-      uses: ./.github/actions/setup-uv-build-venv
+    - name: Install Windows dependencies
+      if: runner.os == 'Windows'
+      uses: ./.github/actions/setup-vcpkg
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: brew install --force-bottle spdlog doctest nlohmann-json eigen tbb lapack fmt
+
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
 
     - name: Download the sdist
       uses: actions/download-artifact@v4
@@ -144,10 +160,11 @@ jobs:
         path: dist
 
     - name: Install the sdist
+      shell: bash
       run: uv pip install dist/*.tar.gz
 
-    - name: Test that importing pairinteraction works
-      run: uv run --no-project python -c "import pairinteraction"
+    - name: Run pytest
+      run: uv run --no-project pytest
 
   publish-to-testpypi:
     name: Publish to TestPyPI
