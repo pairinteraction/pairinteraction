@@ -9,6 +9,7 @@
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/operator/OperatorPair.hpp"
+#include "pairinteraction/system/GreenTensor.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
@@ -28,14 +29,6 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-struct GreenFunctions {
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_dipole{3, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_quadrupole{3, 6};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_dipole{6, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_quadrupole{6, 6};
-};
-
-template <typename Scalar>
 struct OperatorMatrices {
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d1;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d2;
@@ -44,7 +37,7 @@ struct OperatorMatrices {
 };
 
 template <typename Scalar>
-GreenFunctions<Scalar> construct_green_functions(
+GreenTensor<Scalar> construct_green_tensor(
     const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &distance_vector, int order) {
     // https://doi.org/10.1103/PhysRevA.96.062509
     // https://doi.org/10.1103/PhysRevA.82.010901
@@ -53,15 +46,15 @@ GreenFunctions<Scalar> construct_green_functions(
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
-    GreenFunctions<Scalar> green_functions;
+    GreenTensor<Scalar> green_tensor;
 
-    // Normalize the distance vector, return zero green functions if the distance is infinity
+    // Normalize the distance vector, return zero green tensor if the distance is infinity
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(distance_vector.data(),
                                                         distance_vector.size());
     real_t distance = vector_map.norm();
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
     if (distance == std::numeric_limits<real_t>::infinity()) {
-        return green_functions;
+        return green_tensor;
     }
     if (distance < numerical_precision) {
         throw std::invalid_argument("The distance must be greater than zero.");
@@ -73,188 +66,127 @@ GreenFunctions<Scalar> construct_green_functions(
     }
     Eigen::Vector3<real_t> vector_normalized = vector_map / distance;
 
-    // Conversion matrices from Cartesian to spherical coordinates
-    const auto &to_spherical_kappa1 = pairinteraction::spherical::CARTESIAN_TO_SPHERICAL_KAPPA1
-                                          .template cast<std::complex<real_t>>();
-    const auto &to_spherical_kappa2 = pairinteraction::spherical::CARTESIAN_TO_SPHERICAL_KAPPA2
-                                          .template cast<std::complex<real_t>>();
-
     // Dyadic green function of dipole-dipole interaction
     if (order >= 3) {
-        Eigen::Matrix3<real_t> green_function_cartesian = Eigen::Matrix3<real_t>::Identity() -
+        Eigen::Matrix3<Scalar> entries = Eigen::Matrix3<real_t>::Identity() -
             3 * vector_normalized * vector_normalized.transpose();
+        entries /= std::pow(distance, 3);
 
-        auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa1.adjoint();
-        if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-            green_functions.dipole_dipole =
-                tmp.sparseView(1, numerical_precision) / std::pow(distance, 3);
-        } else {
-            green_functions.dipole_dipole =
-                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 3);
-            assert(tmp.imag().norm() < numerical_precision);
-        }
-    } else {
-        green_functions.dipole_dipole.setZero();
+        green_tensor.set_entries(1, 1, entries.template cast<Scalar>());
     }
-
-    SPDLOG_DEBUG("Green function of dipole-dipole interaction:\n{}",
-                 fmt::streamed(green_functions.dipole_dipole * std::pow(distance, 3)));
 
     // Dyadic green function of dipole-quadrupole interaction
     if (order >= 4) {
-        Eigen::Matrix<real_t, 3, 9> green_function_cartesian = Eigen::Matrix<real_t, 3, 9>::Zero();
+        Eigen::Matrix<real_t, 3, 9> entries = Eigen::Matrix<real_t, 3, 9>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             Eigen::Index row = q;
             for (Eigen::Index j = 0; j < 3; ++j) {
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     Eigen::Index col = 3 * j + i;
-                    green_function_cartesian(row, col) +=
+                    entries(row, col) +=
                         15 * vector_normalized[q] * vector_normalized[j] * vector_normalized[i];
                     if (i == j) {
-                        green_function_cartesian(row, col) += -3 * vector_normalized[q];
+                        entries(row, col) += -3 * vector_normalized[q];
                     }
                     if (i == q) {
-                        green_function_cartesian(row, col) += -3 * vector_normalized[j];
+                        entries(row, col) += -3 * vector_normalized[j];
                     }
                     if (j == q) {
-                        green_function_cartesian(row, col) += -3 * vector_normalized[i];
+                        entries(row, col) += -3 * vector_normalized[i];
                     }
                 }
             }
         }
+        entries /= std::pow(distance, 4);
 
-        auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa2.adjoint();
-        if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-            green_functions.dipole_quadrupole =
-                tmp.sparseView(1, numerical_precision) / std::pow(distance, 4);
-        } else {
-            green_functions.dipole_quadrupole =
-                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 4);
-            assert(tmp.imag().norm() < numerical_precision);
-        }
-    } else {
-        green_functions.dipole_quadrupole.setZero();
+        green_tensor.set_entries(1, 2, entries.template cast<Scalar>());
     }
-
-    SPDLOG_DEBUG("Green function of dipole-quadrupole interaction:\n{}",
-                 fmt::streamed(green_functions.dipole_quadrupole * std::pow(distance, 4)));
 
     // Dyadic green function of quadrupole-dipole interaction
     if (order >= 4) {
-        Eigen::Matrix<real_t, 9, 3> green_function_cartesian = Eigen::Matrix<real_t, 9, 3>::Zero();
+        Eigen::Matrix<real_t, 9, 3> entries = Eigen::Matrix<real_t, 9, 3>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             for (Eigen::Index j = 0; j < 3; ++j) {
                 Eigen::Index row = 3 * q + j;
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     Eigen::Index col = i;
-                    green_function_cartesian(row, col) +=
+                    entries(row, col) +=
                         -15 * vector_normalized[q] * vector_normalized[j] * vector_normalized[i];
                     if (i == j) {
-                        green_function_cartesian(row, col) += 3 * vector_normalized[q];
+                        entries(row, col) += 3 * vector_normalized[q];
                     }
                     if (i == q) {
-                        green_function_cartesian(row, col) += 3 * vector_normalized[j];
+                        entries(row, col) += 3 * vector_normalized[j];
                     }
                     if (j == q) {
-                        green_function_cartesian(row, col) += 3 * vector_normalized[i];
+                        entries(row, col) += 3 * vector_normalized[i];
                     }
                 }
             }
         }
+        entries /= std::pow(distance, 4);
 
-        auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa1.adjoint();
-        if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-            green_functions.quadrupole_dipole =
-                tmp.sparseView(1, numerical_precision) / std::pow(distance, 4);
-        } else {
-            green_functions.quadrupole_dipole =
-                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 4);
-            assert(tmp.imag().norm() < numerical_precision);
-        }
-    } else {
-        green_functions.quadrupole_dipole.setZero();
+        green_tensor.set_entries(2, 1, entries.template cast<Scalar>());
     }
-
-    SPDLOG_DEBUG("Green function of quadrupole-dipole interaction:\n{}",
-                 fmt::streamed(green_functions.quadrupole_dipole * std::pow(distance, 4)));
 
     // Dyadic green function of quadrupole-quadrupole interaction
     if (order >= 5) {
-        Eigen::Matrix<real_t, 9, 9> green_function_cartesian = Eigen::Matrix<real_t, 9, 9>::Zero();
+        Eigen::Matrix<real_t, 9, 9> entries = Eigen::Matrix<real_t, 9, 9>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             for (Eigen::Index j = 0; j < 3; ++j) {
                 Eigen::Index row = 3 * q + j;
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     for (Eigen::Index k = 0; k < 3; ++k) {
                         Eigen::Index col = 3 * i + k;
-                        green_function_cartesian(row, col) += 105 * vector_normalized[q] *
-                            vector_normalized[j] * vector_normalized[i] * vector_normalized[k];
+                        entries(row, col) += 105 * vector_normalized[q] * vector_normalized[j] *
+                            vector_normalized[i] * vector_normalized[k];
                         if (i == j) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[q] * vector_normalized[k];
+                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[k];
                         }
                         if (i == q) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[j] * vector_normalized[k];
+                            entries(row, col) += -15 * vector_normalized[j] * vector_normalized[k];
                         }
                         if (j == q) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[i] * vector_normalized[k];
+                            entries(row, col) += -15 * vector_normalized[i] * vector_normalized[k];
                         }
                         if (k == q) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[j] * vector_normalized[i];
+                            entries(row, col) += -15 * vector_normalized[j] * vector_normalized[i];
                         }
                         if (k == j) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[q] * vector_normalized[i];
+                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[i];
                         }
                         if (k == i) {
-                            green_function_cartesian(row, col) +=
-                                -15 * vector_normalized[q] * vector_normalized[j];
+                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[j];
                         }
                         if (q == k && i == j) {
-                            green_function_cartesian(row, col) += 3;
+                            entries(row, col) += 3;
                         }
                         if (i == k && j == q) {
-                            green_function_cartesian(row, col) += 3;
+                            entries(row, col) += 3;
                         }
                         if (j == k && i == q) {
-                            green_function_cartesian(row, col) += 3;
+                            entries(row, col) += 3;
                         }
                     }
                 }
             }
         }
+        entries /= std::pow(distance, 5);
 
-        auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa2.adjoint();
-        if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
-            green_functions.quadrupole_quadrupole =
-                tmp.sparseView(1, numerical_precision) / std::pow(distance, 5);
-        } else {
-            green_functions.quadrupole_quadrupole =
-                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 5);
-            assert(tmp.imag().norm() < numerical_precision);
-        }
-    } else {
-        green_functions.quadrupole_quadrupole.setZero();
+        green_tensor.set_entries(2, 2, entries.template cast<Scalar>());
     }
 
-    SPDLOG_DEBUG("Green function of quadrupole-quadrupole interaction:\n{}",
-                 fmt::streamed(green_functions.quadrupole_quadrupole * std::pow(distance, 5)));
-
-    return green_functions;
+    return green_tensor;
 }
 
 template <typename Scalar>
 OperatorMatrices<Scalar>
-construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
+construct_operator_matrices(const GreenTensor<Scalar> &green_tensor,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis2) {
     OperatorMatrices<Scalar> op;
 
-    if (green_functions.dipole_dipole.nonZeros() > 0 ||
-        green_functions.dipole_quadrupole.nonZeros() > 0) {
+    if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(1, 2).empty()) {
         op.d1.push_back(
             -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1).get_matrix());
         op.d1.push_back(
@@ -263,8 +195,7 @@ construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
             -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1).get_matrix());
     }
 
-    if (green_functions.dipole_dipole.nonZeros() > 0 ||
-        green_functions.quadrupole_dipole.nonZeros() > 0) {
+    if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(2, 1).empty()) {
         op.d2.push_back(
             OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, -1).get_matrix());
         op.d2.push_back(
@@ -273,8 +204,7 @@ construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
             OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 1).get_matrix());
     }
 
-    if (green_functions.quadrupole_quadrupole.nonZeros() > 0 ||
-        green_functions.quadrupole_dipole.nonZeros() > 0) {
+    if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(2, 1).empty()) {
         op.q1.push_back(
             OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, 2).get_matrix());
         op.q1.push_back(
@@ -289,8 +219,7 @@ construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
             OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0).get_matrix());
     }
 
-    if (green_functions.quadrupole_quadrupole.nonZeros() > 0 ||
-        green_functions.dipole_quadrupole.nonZeros() > 0) {
+    if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(1, 2).empty()) {
         op.q2.push_back(
             OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, -2).get_matrix());
         op.q2.push_back(
@@ -340,8 +269,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
-    auto green_functions = construct_green_functions<Scalar>(distance_vector, order);
-    auto op = construct_operator_matrices(green_functions, basis1, basis2);
+    auto green_tensor = construct_green_tensor<Scalar>(distance_vector, order);
+    auto op = construct_operator_matrices(green_tensor, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorPair<Scalar>>(basis, OperatorType::ENERGY);
@@ -351,71 +280,63 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     bool sort_by_parity = basis->has_parity();
 
     // Dipole-dipole interaction
-    if (green_functions.dipole_dipole.nonZeros() > 0) {
-        for (Eigen::Index row = 0; row < green_functions.dipole_dipole.rows(); ++row) {
-            for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                     green_functions.dipole_dipole, row);
-                 it; ++it) {
-                this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, basis, op.d1[it.row()], op.d2[it.col()]);
-                if (it.row() != it.col()) {
-                    sort_by_quantum_number_m = false;
-                }
+    for (const auto &entry : green_tensor.get_entries(1, 1)) {
+        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
+            this->hamiltonian->get_matrix() += ce->val() *
+                utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.d2[ce->col()]);
+            if (ce->row() != ce->col()) {
+                sort_by_quantum_number_m = false;
             }
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+        } else {
+            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
         }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
     }
 
     // Dipole-quadrupole interaction
-    if (green_functions.dipole_quadrupole.nonZeros() > 0) {
-        for (Eigen::Index row = 0; row < green_functions.dipole_quadrupole.rows(); ++row) {
-            for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                     green_functions.dipole_quadrupole, row);
-                 it; ++it) {
-                this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, basis, op.d1[it.row()], op.q2[it.col()]);
-                if (it.row() != it.col() - 1) {
-                    sort_by_quantum_number_m = false;
-                }
+    for (const auto &entry : green_tensor.get_entries(1, 2)) {
+        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
+            this->hamiltonian->get_matrix() += ce->val() *
+                utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.q2[ce->col()]);
+            if (ce->row() != ce->col() - 1) {
+                sort_by_quantum_number_m = false;
             }
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+        } else {
+            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
         }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
     }
 
     // Quadrupole-dipole interaction
-    if (green_functions.quadrupole_dipole.nonZeros() > 0) {
-        for (Eigen::Index row = 0; row < green_functions.quadrupole_dipole.rows(); ++row) {
-            for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                     green_functions.quadrupole_dipole, row);
-                 it; ++it) {
-                this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, basis, op.q1[it.row()], op.d2[it.col()]);
-                if (it.row() - 1 != it.col()) {
-                    sort_by_quantum_number_m = false;
-                }
+    for (const auto &entry : green_tensor.get_entries(2, 1)) {
+        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
+            this->hamiltonian->get_matrix() += ce->val() *
+                utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.d2[ce->col()]);
+            if (ce->row() - 1 != ce->col()) {
+                sort_by_quantum_number_m = false;
             }
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+        } else {
+            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
         }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
     }
 
     // Quadrupole-quadrupole interaction
-    if (green_functions.quadrupole_quadrupole.nonZeros() > 0) {
-        for (Eigen::Index row = 0; row < green_functions.quadrupole_quadrupole.rows(); ++row) {
-            for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                     green_functions.quadrupole_quadrupole, row);
-                 it; ++it) {
-                this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, basis, op.q1[it.row()], op.q2[it.col()]);
-                if (it.row() != it.col()) {
-                    sort_by_quantum_number_m = false;
-                }
+    for (const auto &entry : green_tensor.get_entries(2, 2)) {
+        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
+            this->hamiltonian->get_matrix() += ce->val() *
+                utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.q2[ce->col()]);
+            if (ce->row() != ce->col()) {
+                sort_by_quantum_number_m = false;
             }
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
+        } else {
+            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
         }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
     }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
