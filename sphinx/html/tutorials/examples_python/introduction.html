@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction the pairinteraction library &mdash; pairinteraction 1.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=a68a9277"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Example of calculating Stark maps" href="stark_map.html" />
+    <link rel="prev" title="Quick Start" href="quick_start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Introduction the pairinteraction library</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Datatypes">Datatypes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#The-Database-object">The Database object</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#KetAtom">KetAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#BasisAtom">BasisAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#SystemAtom">SystemAtom</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#BasisPair">BasisPair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#SystemPair">SystemPair</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Calculate-electric-dipole-matrix-elements">Calculate electric dipole matrix elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stark_map.html">Example of calculating Stark maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potentials.html">Example of calculating Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="overview.html">Overview over different applications of the new pairinteraction software</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lifetimes.html">Example calculating lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_c3_c6.html">Example calculating <span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_h_eff.html">Example calculating an effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">Rydberg Pair Potentials Under External Fields</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/architecture.html">Overview About pairinteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/jl-mqdt/">jl-mqdt</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Introduction the pairinteraction library</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorials/examples_python/introduction.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="introduction.ipynb">introduction.ipynb</a>.
+</div><section id="Introduction-the-pairinteraction-library">
+<h1>Introduction the pairinteraction library<a class="headerlink" href="#Introduction-the-pairinteraction-library" title="Link to this heading"></a></h1>
+<section id="Datatypes">
+<h2>Datatypes<a class="headerlink" href="#Datatypes" title="Link to this heading"></a></h2>
+<p>The pairinteraction software supports real and complex datatypes in its C++ backend implementation to adapt to the specific needs of the user. The <code class="docutils literal notranslate"><span class="pre">real</span></code> datatype ise used for real-valued calculations (typically if no field in y-direction is present), while the <code class="docutils literal notranslate"><span class="pre">complex</span></code> datatype is used for complex-valued calculations, i.e. when using external fields in y-direction. To change the datatype it is as simple as changing this import statement:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>  <span class="c1"># possible backend data types: real, complex</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="The-Database-object">
+<h2>The Database object<a class="headerlink" href="#The-Database-object" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">Database</span></code> object is responsible for storing and looking up the allowed atomic states with their corresponding energies, quantum numbers and electric dipole, etc. matrix elements with other atomic states. These matrix elements are pre-calculated (either via explicit calculation of the overlap integrals and using the Numerov method to get the radial wavefunctions, or alternatively for Earth Alkali atoms via Multichannel Quantum Defect Theory (MQDT)) and stored online in their own github
+repositories. The <code class="docutils literal notranslate"><span class="pre">Database</span></code> object is able to download the necessary tables on the fly if <code class="docutils literal notranslate"><span class="pre">download_missing=True</span></code> is passed to the <code class="docutils literal notranslate"><span class="pre">Database</span></code>. Once downloaded, the tables are stored in the cache directory of the user’s computer and are reused in subsequent calculations.</p>
+<p>You can either create a <code class="docutils literal notranslate"><span class="pre">Database</span></code> object via <code class="docutils literal notranslate"><span class="pre">database</span> <span class="pre">=</span> <span class="pre">pi.Database(download_missing=True)</span></code> and use this database for the creation of the kets and basis objects below, or alternatively you can once create a global instance of the <code class="docutils literal notranslate"><span class="pre">Database</span></code> object via <code class="docutils literal notranslate"><span class="pre">pi.Database.initialize_global_database(download_missing=True)</span></code> and then the ket and basis classes will use this global instance by default.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="KetAtom">
+<h1>KetAtom<a class="headerlink" href="#KetAtom" title="Link to this heading"></a></h1>
+<p>The simplest object you can create is a simple ket, e.g. via the <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> class. The <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> object represents a single atomic state. The first argument has to be the specifier of the atomic species. Currently supported species are: (‘Rb’, ‘Sr88_singlet’, ‘Sr88_triplet’, ‘Sr87_mqdt’, ‘Sr88_mqdt’, ‘Yb171_mqdt’, ‘Yb174_mqdt’), where no ending or ‘_singlet’ or ‘_triplet’ specifies that the matrix elements are calculated via the Numerov method, while ‘_mqdt’ specifies that the matrix elements
+are calculated via MQDT. The following optional keyword arguments of KetAtom have to uniquely specify the atomic state, you can pass whatever combination of quantum numbers you like, as long as they uniquely specify exactly one state (e.g. <code class="docutils literal notranslate"><span class="pre">pi.KetAtom(&quot;Rb&quot;,</span> <span class="pre">n=60,</span> <span class="pre">l=0,</span> <span class="pre">j=0.5,</span> <span class="pre">m=0.5)</span></code> and <code class="docutils literal notranslate"><span class="pre">pi.KetAtom(&quot;Rb&quot;,</span> <span class="pre">n=60,</span> <span class="pre">l=0,</span> <span class="pre">m=0.5)</span></code> are both equivalent and specify the same state).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;You successfully created a ket object: </span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;with quantum numbers n=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span><span class="si">}</span><span class="s2">, l=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">l</span><span class="si">}</span><span class="s2">, j=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">j</span><span class="si">}</span><span class="s2">, m=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="si">}</span><span class="s2"> and energy=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">energy</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;And getting its energy in GHz is as simple as </span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">ket2</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">delta_energy</span> <span class="o">=</span> <span class="n">ket</span><span class="o">.</span><span class="n">energy</span> <span class="o">-</span> <span class="n">ket2</span><span class="o">.</span><span class="n">energy</span>  <span class="c1"># this is a pint.Quantity object</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Even the energy difference between two states is easily calculated and converted:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;delta_energy = </span><span class="si">{</span><span class="n">delta_energy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;GHz&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as frequency)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cm^-1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as wavenumber)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;eV&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as wavelength)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+You successfully created a ket object: |Rb:60,P_1/2,1/2⟩ with quantum numbers n=60, l=1.0, j=0.5, m=0.5 and energy=0.15335520073991077 bohr ** 2 * electron_mass / atomic_unit_of_time ** 2
+And getting its energy in GHz is as simple as ket.get_energy(unit=&#39;GHz&#39;)=1009028.7484337102
+Even the energy difference between two states is easily calculated and converted:
+delta_energy = 1.403362628490945e-05 bohr ** 2 * electron_mass / atomic_unit_of_time ** 2
+             = 92.33682521314954 gigahertz (as frequency)
+             = 3.0800249555694146 / centimeter (as wavenumber)
+             = 0.0003818744252705271 electron_volt
+             = 3.2467269402858667 millimeter (as wavelength)
+</pre></div></div>
+</div>
+</section>
+<section id="BasisAtom">
+<h1>BasisAtom<a class="headerlink" href="#BasisAtom" title="Link to this heading"></a></h1>
+<p>Next, you can create a basis object. A basis object consists of a list of kets, which define a canonical basis for the Hilbert space. Furthermore, the basis object defines basis states via its coefficients matrix, where each column in the coefficients matrix corresponds to one basis state. When created the coefficients matrix is initialized to the identity matrix, i.e. each basis state correspond to one ket. However, in general a state (and therefore each column of the basis coefficients matrix)
+can be a superposition of multiple kets.</p>
+<p>The list of which kets should be considered in the basis can be restricted by passing in tuples of (min, max) values for the quantum numbers and the energy to the <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> class.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">energy_min</span><span class="p">,</span> <span class="n">energy_max</span> <span class="o">=</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="mi">100</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">100</span>
+<span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="mi">58</span><span class="p">,</span> <span class="mi">63</span><span class="p">),</span> <span class="n">l</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">energy_min</span><span class="p">,</span> <span class="n">energy_max</span><span class="p">),</span> <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="n">coefficients</span> <span class="o">=</span> <span class="n">basis</span><span class="o">.</span><span class="n">coefficients</span>  <span class="c1"># this is a scipy.sparse.csr_matrix object</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This basis contains </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">number_of_kets</span><span class="si">}</span><span class="s2"> kets (=atomic states)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The first and last kets are </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The coefficient matrix has shape </span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and the following entries:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+This basis contains 130 kets (=atomic states)
+The first and last kets are |Rb:58,S_1/2,-1/2⟩ and |Rb:63,P_3/2,3/2⟩
+
+The coefficient matrix has shape (130, 130) and the following entries:
+[[1. 0. 0. ... 0. 0. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 1. 0. 0.]
+ [0. 0. 0. ... 0. 1. 0.]
+ [0. 0. 0. ... 0. 0. 1.]]
+</pre></div></div>
+</div>
+</section>
+<section id="SystemAtom">
+<h1>SystemAtom<a class="headerlink" href="#SystemAtom" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> object describes the single atom system. It is created by passing a <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> object in, which defines the basis of the Hilbert space. You can now set external fields and enable or disable the diamagnetic term.</p>
+<p>Then you can inspect the resulting Hamiltonian and diagonalize it to get the eigenstates and eigenenergies of the system.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;V/cm&quot;</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">enable_diamagnetism</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The Hamiltonian of the system (in GHz) with magnetic and electric fields is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">system</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The Hamiltonian of the system (in GHz) with magnetic and electric fields is:
+[[ 1.00893641e+06  0.00000000e+00  1.48688631e-01 ...  2.75971999e-03 -1.37985999e-03  0.00000000e+00]
+ [ 0.00000000e+00  1.00893641e+06 -1.48688631e-01 ...  1.37985999e-03  2.75971999e-03 -2.38998762e-03]
+ [ 1.48688631e-01 -1.48688631e-01  1.00895514e+06 ... -1.73384434e-06  0.00000000e+00  0.00000000e+00]
+ ...
+ [ 2.75971999e-03  1.37985999e-03 -1.73384434e-06 ...  1.00912614e+06  0.00000000e+00  0.00000000e+00]
+ [-1.37985999e-03  2.75971999e-03  0.00000000e+00 ...  0.00000000e+00  1.00912614e+06  0.00000000e+00]
+ [ 0.00000000e+00 -2.38998762e-03  0.00000000e+00 ...  0.00000000e+00  0.00000000e+00  1.00912614e+06]]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_eigenvalues</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The eigenenergies in GHz are:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The eigenenergies in GHz are:
+[1008936.40335628 1008936.40615876 1008955.13771731 ... 1009126.14540512 1009126.15112008 1009126.15407509]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eigenbasis</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span>
+<span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">corresponding_state</span> <span class="o">=</span> <span class="n">eigenbasis</span><span class="o">.</span><span class="n">get_corresponding_state</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span>
+
+<span class="n">eigenstate_number</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The eigenvector with index </span><span class="si">{</span><span class="n">eigenstate_number</span><span class="si">}</span><span class="s2"> is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eigenbasis</span><span class="o">.</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[:,</span><span class="w"> </span><span class="n">eigenstate_number</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;It has the largest overlap with the ket: </span><span class="si">{</span><span class="n">eigenbasis</span><span class="o">.</span><span class="n">get_corresponding_ket</span><span class="p">(</span><span class="n">eigenstate_number</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The state corresponding to the ket </span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2"> is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">corresponding_state</span><span class="o">.</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The overlap |&lt;state|ket&gt;|^2 is </span><span class="si">{</span><span class="n">corresponding_state</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">ket</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The eigenvector with index 2 is:
+[ 0.00793871 -0.00792766  0.99988698 ...  0.          0.          0.        ]
+It has the largest overlap with the ket: |Rb:58,P_1/2,-1/2⟩
+The state corresponding to the ket |Rb:60,P_1/2,1/2⟩ is:
+[-7.62549565e-05 -7.64093445e-05  0.00000000e+00 ...  4.18012523e-06  1.41482889e-06 -2.41644012e-06]
+The overlap |&lt;state|ket&gt;|^2 is 0.9982977951678482
+</pre></div></div>
+</div>
+</section>
+<section id="BasisPair">
+<h1>BasisPair<a class="headerlink" href="#BasisPair" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object consists of a list of <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects. Again, we view these KetPair kets as forming a canonical basis for the pair Hilbert space. However, in contrast to the <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> objects, the <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects are not atomic states (or product states of atomic states), but rather product states of the eigenstates of the single atom Hamiltonian.</p>
+<p>Again, the <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object has a coefficients matrix, which defines the basis states (with respect to the list of <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects). The coefficients matrix is initialized to the identity matrix. This corresponds to the eigenstates of the pair Hamiltonian with external fields but without any interaction between the atoms. In general, when adding interactions, the pair-states (=the columns of the coefficent matrix) can be a superposition of multiple KetPair objects.</p>
+<p>Similar to the <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> object, we can restrict the list of kets that should be considered in the basis by passing in tuples of (min, max) values for the energy (of the pair states) and the quantum number m if it is conserved.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pair_energy</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="n">delta_energy</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># GHz</span>
+<span class="n">pair_basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">system</span><span class="p">,</span> <span class="n">system</span><span class="p">],</span>
+    <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">pair_energy</span> <span class="o">-</span> <span class="n">delta_energy</span><span class="p">,</span> <span class="n">pair_energy</span> <span class="o">+</span> <span class="n">delta_energy</span><span class="p">),</span>
+    <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">coefficients</span> <span class="o">=</span> <span class="n">pair_basis</span><span class="o">.</span><span class="n">coefficients</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pair-basis contains </span><span class="si">{</span><span class="n">pair_basis</span><span class="o">.</span><span class="n">number_of_kets</span><span class="si">}</span><span class="s2"> KetPair (=pair-states)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The first KetPair corresponds to a pair-state close to the product state </span><span class="si">{</span><span class="n">pair_basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The coefficient matrix has shape </span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and the following entries:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The pair-basis contains 580 KetPair (=pair-states)
+The first KetPair corresponds to a pair-state close to the product state |Rb:58,P_1/2,-1/2; Rb:61,D_3/2,-3/2⟩
+
+The coefficient matrix has shape (580, 580) and the following entries:
+[[1. 0. 0. ... 0. 0. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 1. 0. 0.]
+ [0. 0. 0. ... 0. 1. 0.]
+ [0. 0. 0. ... 0. 0. 1.]]
+</pre></div></div>
+</div>
+</section>
+<section id="SystemPair">
+<h1>SystemPair<a class="headerlink" href="#SystemPair" title="Link to this heading"></a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemPair</span></code> object describes the pair system. Similar to the <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> object, it is created by passing a <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object in, which defines the basis of the pair Hilbert space. You can now set the interatomic distance between the atoms and the order of the multipole expansion. Then you can inspect the resulting Hamiltonian and diagonalize it to get the eigenstates and eigenenergies of the system.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pair_system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">pair_basis</span><span class="p">)</span>
+<span class="n">distance</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># micrometer</span>
+<span class="n">pair_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+<span class="n">pair_system</span><span class="o">.</span><span class="n">set_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The Hamiltonian of the SystemPair (in GHz) for the given </span><span class="si">{</span><span class="n">distance</span><span class="si">=}</span><span class="s2">um is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pair_system</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The Hamiltonian of the SystemPair (in GHz) for the given distance=5um is:
+[[ 2.01805976e+06  6.30194544e-09  1.35466497e-06 ... -3.29215113e-10  5.56627090e-10 -2.42208422e-10]
+ [ 6.30194544e-09  2.01805977e+06 -1.02994569e-06 ... -1.31926787e-09 -5.63476847e-10  1.75820162e-09]
+ [ 1.35466497e-06 -1.02994569e-06  2.01805977e+06 ... -7.42015942e-10 -3.19784432e-10 -1.82370533e-10]
+ ...
+ [-3.29215113e-10 -1.31926787e-09 -7.42015942e-10 ...  2.01806034e+06 -1.85611056e-08 -1.39796132e-07]
+ [ 5.56627090e-10 -5.63476847e-10 -3.19784432e-10 ... -1.85611056e-08  2.01806034e+06 -5.26445479e-08]
+ [-2.42208422e-10  1.75820162e-09 -1.82370533e-10 ... -1.39796132e-07 -5.26445479e-08  2.01806034e+06]]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pair_system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="n">eigenvalues</span> <span class="o">=</span> <span class="n">pair_system</span><span class="o">.</span><span class="n">get_eigenvalues</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The eigenenergies in GHz are:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The eigenenergies in GHz are:
+[2018054.77997889 2018054.77998195 2018054.78225167 ... 2018060.3415922  2018060.34301859 2018060.34301872]
+</pre></div></div>
+</div>
+</section>
+<section id="Calculate-electric-dipole-matrix-elements">
+<h1>Calculate electric dipole matrix elements<a class="headerlink" href="#Calculate-electric-dipole-matrix-elements" title="Link to this heading"></a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket1</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ket2</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+
+<span class="n">database</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span>
+<span class="n">electric_dipole</span> <span class="o">=</span> <span class="n">ket1</span><span class="o">.</span><span class="n">get_matrix_element</span><span class="p">(</span><span class="n">ket2</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;electric_dipole&quot;</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">magnetic_dipole</span> <span class="o">=</span> <span class="n">ket1</span><span class="o">.</span><span class="n">get_matrix_element</span><span class="p">(</span><span class="n">ket1</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="s2">&quot;magnetic_dipole&quot;</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The electric dipole matrix element between </span><span class="si">{</span><span class="n">ket1</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">ket2</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">electric_dipole</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The magnetic dipole matrix element between </span><span class="si">{</span><span class="n">ket2</span><span class="si">}</span><span class="s2"> and itself is </span><span class="si">{</span><span class="n">magnetic_dipole</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The electric dipole matrix element between |Rb:60,S_1/2,1/2⟩ and |Rb:60,P_1/2,1/2⟩ is 1247.5985544327225 atomic_unit_of_current * atomic_unit_of_time * bohr
+The magnetic dipole matrix element between |Rb:60,P_1/2,1/2⟩ and itself is -0.5005798 atomic_unit_of_current * bohr ** 2
+</pre></div></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quick_start.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="stark_map.html" class="btn btn-neutral float-right" title="Example of calculating Stark maps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Pairinteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+﻿SystemAtom
+==========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~SystemAtom.__init__
+      ~SystemAtom.diagonalize
+      ~SystemAtom.enable_diamagnetism
+      ~SystemAtom.get_corresponding_energy
+      ~SystemAtom.get_eigenbasis
+      ~SystemAtom.get_eigenvalues
+      ~SystemAtom.get_hamiltonian
+      ~SystemAtom.set_electric_field
+      ~SystemAtom.set_magnetic_field
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~SystemAtom.basis
+   ~SystemAtom.is_diagonal
+   ~SystemAtom.matrix
+
+
+
+.. autoclass:: pairinteraction._wrapped.SystemAtom

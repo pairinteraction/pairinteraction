@@ -1,0 +1,14 @@
+digraph "pairinteraction::OperatorAtom::OperatorAtom"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node1 [label="pairinteraction::Operator\lAtom::OperatorAtom",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="pairinteraction::Operator\l\< OperatorAtom\< Scalar\l \> \>::initialize_as_energy\l_operator",height=0.2,width=0.4,color="black",URL="$classpairinteraction_1_1Operator.html#a469db9f222bc7ad895238dca2fcc2ee8",tooltip=" "];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="pairinteraction::Operator\l\< OperatorAtom\< Scalar\l \> \>::initialize_from_matrix",height=0.2,width=0.4,color="black",URL="$classpairinteraction_1_1Operator.html#ae50791a64fb0e17c4f1dc5eabdee2774",tooltip=" "];
+}
