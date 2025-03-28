@@ -7,8 +7,6 @@ add_library(
   ./include/pairinteraction/basis/Basis.hpp
   ./include/pairinteraction/basis/BasisAtom.hpp
   ./include/pairinteraction/basis/BasisAtomCreator.hpp
-  ./include/pairinteraction/basis/BasisClassicalLight.hpp
-  ./include/pairinteraction/basis/BasisClassicalLightCreator.hpp
   ./include/pairinteraction/basis/BasisPair.hpp
   ./include/pairinteraction/basis/BasisPairCreator.hpp
   ./include/pairinteraction/database/AtomDescriptionByParameters.hpp
@@ -30,8 +28,6 @@ add_library(
   ./include/pairinteraction/ket/Ket.hpp
   ./include/pairinteraction/ket/KetAtom.hpp
   ./include/pairinteraction/ket/KetAtomCreator.hpp
-  ./include/pairinteraction/ket/KetClassicalLight.hpp
-  ./include/pairinteraction/ket/KetClassicalLightCreator.hpp
   ./include/pairinteraction/ket/KetPair.hpp
   ./include/pairinteraction/operator/Operator.hpp
   ./include/pairinteraction/operator/OperatorAtom.hpp
@@ -39,7 +35,6 @@ add_library(
   ./include/pairinteraction/system/GreenTensor.hpp
   ./include/pairinteraction/system/System.hpp
   ./include/pairinteraction/system/SystemAtom.hpp
-  ./include/pairinteraction/system/SystemClassicalLight.hpp
   ./include/pairinteraction/system/SystemPair.hpp
   ./include/pairinteraction/tools/run_unit_tests.hpp
   ./include/pairinteraction/tools/setup.hpp
@@ -65,9 +60,6 @@ add_library(
   ./src/basis/BasisAtom.cpp
   ./src/basis/BasisAtomCreator.cpp
   ./src/basis/BasisAtomCreator.test.cpp
-  ./src/basis/BasisClassicalLight.cpp
-  ./src/basis/BasisClassicalLightCreator.cpp
-  ./src/basis/BasisClassicalLightCreator.test.cpp
   ./src/basis/BasisPair.cpp
   ./src/basis/BasisPairCreator.cpp
   ./src/basis/BasisPairCreator.test.cpp
@@ -90,9 +82,6 @@ add_library(
   ./src/ket/KetAtom.cpp
   ./src/ket/KetAtomCreator.cpp
   ./src/ket/KetAtomCreator.test.cpp
-  ./src/ket/KetClassicalLight.cpp
-  ./src/ket/KetClassicalLightCreator.cpp
-  ./src/ket/KetClassicalLightCreator.test.cpp
   ./src/ket/KetPair.cpp
   ./src/operator/Operator.cpp
   ./src/operator/OperatorAtom.cpp
@@ -101,7 +90,6 @@ add_library(
   ./src/system/System.cpp
   ./src/system/SystemAtom.cpp
   ./src/system/SystemAtom.test.cpp
-  ./src/system/SystemClassicalLight.cpp
   ./src/system/SystemPair.cpp
   ./src/system/SystemPair.test.cpp
   ./src/tools/setup.cpp

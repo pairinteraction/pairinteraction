@@ -5,8 +5,6 @@
 #include "pairinteraction/ket/Ket.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
-#include "pairinteraction/ket/KetClassicalLight.hpp"
-#include "pairinteraction/ket/KetClassicalLightCreator.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
@@ -70,23 +68,6 @@ static void declare_ket_atom_creator(nb::module_ &m) {
         .def("create", &KetAtomCreator::create);
 }
 
-static void declare_ket_classical_light(nb::module_ &m) {
-    std::string pyclass_name = "KetClassicalLight";
-    nb::class_<KetClassicalLight, Ket> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_photon_energy", &KetClassicalLight::get_photon_energy)
-        .def("get_quantum_number_q", &KetClassicalLight::get_quantum_number_q);
-}
-
-static void declare_ket_classical_light_creator(nb::module_ &m) {
-    std::string pyclass_name = "KetClassicalLightCreator";
-    nb::class_<KetClassicalLightCreator> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def(nb::init<double, int>())
-        .def("set_photon_energy", &KetClassicalLightCreator::set_photon_energy)
-        .def("set_quantum_number_q", &KetClassicalLightCreator::set_quantum_number_q)
-        .def("create", &KetClassicalLightCreator::create);
-}
-
 template <typename T>
 static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
@@ -98,8 +79,6 @@ void bind_ket(nb::module_ &m) {
     declare_ket(m);
     declare_ket_atom(m);
     declare_ket_atom_creator(m);
-    declare_ket_classical_light(m);
-    declare_ket_classical_light_creator(m);
     declare_ket_pair<double>(m, "Real");
     declare_ket_pair<std::complex<double>>(m, "Complex");
 }
