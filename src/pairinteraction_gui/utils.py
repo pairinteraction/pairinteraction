@@ -41,7 +41,7 @@ def catch_download_missing(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 @catch_download_missing
-def get_ket_atom(species: str, **qns: Union[float, int]) -> pi.KetAtom:
+def get_ket_atom(species: str, **qns: float) -> pi.KetAtom:
     try:
         return pi.KetAtom(species, **qns)  # type: ignore
     except ValueError as err:
@@ -51,7 +51,7 @@ def get_ket_atom(species: str, **qns: Union[float, int]) -> pi.KetAtom:
 
 
 def get_basis_atom(
-    ket: pi.KetAtom, *, dtype: Literal["real", "complex"] = "real", **delta_qns: Union[float, int]
+    ket: pi.KetAtom, *, dtype: Literal["real", "complex"] = "real", **delta_qns: float
 ) -> Union[pi_real.BasisAtom, pi_complex.BasisAtom]:
     qns = {}
     for key, value in delta_qns.items():

@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Callable
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from cpuinfo import get_cpu_info
+from matplotlib import ticker
 
 import pairinteraction.complex as pi_complex
 import pairinteraction.real as pi_real
@@ -94,8 +94,8 @@ def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings
 def benchmark_external_script(script_path: Path, name: str, settings: dict) -> list[BenchmarkResult]:
     """Benchmark external script."""
     try:
-        proc_result = subprocess.run(  # noqa: S603
-            ["uv", "run", "--script", script_path, json.dumps(settings)],  # noqa: S607
+        proc_result = subprocess.run(
+            ["uv", "run", "--script", script_path, json.dumps(settings)],
             capture_output=True,
             text=True,
             check=True,

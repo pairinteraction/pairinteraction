@@ -60,14 +60,12 @@ class Widget(QWidget, Generic[LayoutType]):
 
         This method should be overwritten by subclasses to set up the UI components.
         """
-        pass
 
     def postSetupWidget(self) -> None:
         """Post-process the UI components.
 
         This method should be overwritten by subclasses to post-process the UI components.
         """
-        pass
 
 
 class WidgetV(Widget[QVBoxLayout]):

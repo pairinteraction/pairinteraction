@@ -35,7 +35,7 @@ def get_cpp_diagonalizer(
 ) -> UnionCPPDiagonalizer:
     if diagonalizer == "feast" and m0 is None:
         raise ValueError("m0 must be specified for the 'feast' diagonalizer")
-    elif diagonalizer != "feast" and m0 is not None:
+    if diagonalizer != "feast" and m0 is not None:
         raise ValueError("m0 must not be specified if the diagonalizer is not 'feast'")
 
     if isinstance(system, (_wrapped.SystemAtomReal, _wrapped.SystemPairReal)):

@@ -96,7 +96,7 @@ class LifetimesPage(SimulationPage):
             label = sel.artist.get_label()
             x, y, width, height = sel.artist[sel.index].get_bbox().bounds
 
-            n = int(round(x + width / 2))
+            n = round(x + width / 2)
             key = "BBR" if "Black Body" in label else "SP"
             state_text = "\n".join(f"{s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[key][n])
             text = f"{label} to n={n}:\n{state_text}"

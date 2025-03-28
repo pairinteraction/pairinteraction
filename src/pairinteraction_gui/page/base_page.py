@@ -118,4 +118,3 @@ class SimulationPage(BasePage):
 
     def export(self) -> None:
         logger.debug("Exporting results...")
-        return

@@ -59,5 +59,6 @@ def test_transition_rates() -> None:
     kets_sp, rates_sp = ket.get_spontaneous_transition_rates(unit="MHz")
     kets_bbr, rates_bbr = ket.get_black_body_transition_rates(temperature=300, temperature_unit="K", unit="MHz")
 
-    assert len(rates_sp) == len(kets_sp) and len(rates_bbr) == len(kets_bbr)
+    assert len(rates_sp) == len(kets_sp)
+    assert len(rates_bbr) == len(kets_bbr)
     assert np.isclose(1 / (sum(rates_sp) + sum(rates_bbr)), lifetime)

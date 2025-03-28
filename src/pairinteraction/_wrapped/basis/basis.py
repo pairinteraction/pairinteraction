@@ -57,8 +57,7 @@ class BasisBase(ABC, Generic[KetType]):
     @cached_property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        kets = [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
-        return kets
+        return [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
 
     @property
     def number_of_states(self) -> int:

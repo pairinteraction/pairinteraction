@@ -4,7 +4,7 @@ import os
 from typing import Optional
 
 
-def _setup_dynamic_libaries() -> None:  # noqa: C901
+def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
     import os
     import platform
     from importlib.metadata import PackageNotFoundError, files
@@ -43,10 +43,11 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901
     def fix_ssl() -> None:
         try:
             get_library_file("pairinteraction", "ssl")
-            return
         except RuntimeError as err:
             if "library could not be found" not in str(err):
-                raise err
+                raise
+        else:
+            return
 
         vcpkg_dirs = [
             Path.cwd() / "vcpkg_installed/x64-windows/bin",
@@ -138,16 +139,16 @@ def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str]
 
     from pairinteraction._wrapped import Database
 
-    PAIRINTERACTION_DIR = Path(__file__).parent
-    CWD = Path.cwd()
+    pairinteraction_dir = Path(__file__).parent
+    cwd = Path.cwd()
 
     if database_dir is None:
         possible_dirs = [
-            PAIRINTERACTION_DIR.parent.parent / "data" / "database",  # if local editable install
-            CWD / "data" / "database",  # normal pytest mode
-            CWD.parent / "data" / "database",  # for pytest jupyter notebooks
-            CWD.parent.parent / "data" / "database",  # for pytest jupyter notebooks
-            CWD.parent.parent.parent / "data" / "database",  # for pytest jupyter notebooks
+            pairinteraction_dir.parent.parent / "data" / "database",  # if local editable install
+            cwd / "data" / "database",  # normal pytest mode
+            cwd.parent / "data" / "database",  # for pytest jupyter notebooks
+            cwd.parent.parent / "data" / "database",  # for pytest jupyter notebooks
+            cwd.parent.parent.parent / "data" / "database",  # for pytest jupyter notebooks
         ]
         try:
             database_dir = next(str(d) for d in possible_dirs if any(d.rglob("wigner.parquet")))
@@ -166,7 +167,7 @@ if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
 # ---------------------------------------------------------------------------------------
 def _setup_logging() -> None:
     from pairinteraction import _backend
-    from pairinteraction.logging import decorate_module_with_flush_logs
+    from pairinteraction.custom_logging import decorate_module_with_flush_logs
 
     decorate_module_with_flush_logs(_backend)
 
@@ -178,7 +179,7 @@ del _setup_logging
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
 from pairinteraction import (
-    complex,
+    complex,  # noqa: A004
     perturbative,
     real,
 )
@@ -187,7 +188,7 @@ from pairinteraction._backend import (
     VERSION_MINOR as _VERSION_MINOR,
     VERSION_PATCH as _VERSION_PATCH,
 )
-from pairinteraction.logging import configure_logging
+from pairinteraction.custom_logging import configure_logging
 from pairinteraction.module_tests import run_module_tests
 from pairinteraction.units import ureg
 
@@ -207,4 +208,4 @@ __version__ = f"{_VERSION_MAJOR}.{_VERSION_MINOR}.{_VERSION_PATCH}"
 # Clean up namespace
 # ---------------------------------------------------------------------------------------
 del _VERSION_MAJOR, _VERSION_MINOR, _VERSION_PATCH
-del _setup_dynamic_libaries  #  don't delete _setup_test_mode, since it is used in tests/conftest.py
+del _setup_dynamic_libaries  # don't delete _setup_test_mode, since it is used in tests/conftest.py

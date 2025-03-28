@@ -7,7 +7,7 @@ from PySide6.QtGui import QStatusTipEvent
 from PySide6.QtWidgets import QApplication
 
 
-def show_status_tip(parent: QObject, message: str, timeout: int = 0, logger: Optional["logging.Logger"] = None) -> None:
+def show_status_tip(parent: QObject, message: str, timeout: int = 0, logger: Optional[logging.Logger] = None) -> None:
     """Show a status tip message using QStatusTipEvent."""
     QApplication.sendEvent(parent, QStatusTipEvent(message))
     if logger:

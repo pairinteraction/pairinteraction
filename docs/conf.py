@@ -1,3 +1,5 @@
+# noqa: INP001
+
 # Configuration file for the Sphinx documentation builder.
 import os
 from typing import Any
@@ -7,7 +9,7 @@ import pairinteraction
 # -- Project information -----------------------------------------------------
 
 project = "pairinteraction"
-copyright = "2017, Pairinteraction Developers"
+copyright = "2017, Pairinteraction Developers"  # noqa: A001
 author = "Pairinteraction Developers"
 
 version = pairinteraction.__version__  # The short X.Y version, use via |version|

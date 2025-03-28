@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from itertools import chain
 from typing import TYPE_CHECKING, Any
 
-import matplotlib
+import matplotlib as mpl
 import mplcursors
 import numpy as np
 from PySide6.QtWidgets import QPushButton
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page.base_page import SimulationPage
 
 logger = logging.getLogger(__name__)
-matplotlib.use("Qt5Agg")
+mpl.use("Qt5Agg")
 
 
 class PlotWidget(WidgetV):

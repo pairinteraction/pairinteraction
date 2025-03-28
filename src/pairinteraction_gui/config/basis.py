@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -104,7 +104,7 @@ class BasisBaseConfig(BaseConfig):
         ket = self.page.ket_config.get_ket_atom(atom)
         return get_basis_atom(ket, **delta_qns, dtype=dtype)
 
-    def showEvent(self, event: "QShowEvent") -> None:
+    def showEvent(self, event: QShowEvent) -> None:
         """Update the basis label when the widget is shown."""
         super().showEvent(event)
         ket_of_interest = self.page.ket_config
@@ -162,7 +162,7 @@ class RestrictionsBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    default_deactivated: list[str] = []
+    default_deactivated: ClassVar[list[str]] = []
     _spin_boxes: dict[str, Union[IntSpinBox, HalfIntSpinBox, DoubleSpinBox]]
     items: list[QnItem]
 
@@ -179,7 +179,7 @@ class RestrictionsBase(WidgetV):
 class RestrictionsSQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    default_deactivated = ["Δj", "Δm"]
+    default_deactivated: ClassVar[list[str]] = ["Δj", "Δm"]
 
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
@@ -192,7 +192,7 @@ class RestrictionsSQDT(RestrictionsBase):
 class RestrictionsMQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    default_deactivated = ["Δf", "Δm", "Δl_ryd"]
+    default_deactivated: ClassVar[list[str]] = ["Δf", "Δm", "Δl_ryd"]
 
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, ClassVar, Union
 
 import numpy as np
 from PySide6.QtWidgets import (
@@ -153,12 +153,13 @@ class RangeBase(WidgetV):
     spacing = 5
 
     items: list[RangeItem]
+    default_deactivated: ClassVar[list[str]] = []
 
 
 class RangEfield(RangeBase):
     """Configuration for electric field ranges in x, y, and z directions."""
 
-    default_deactivated = ["Ey"]
+    default_deactivated: ClassVar = ["Ey"]
 
     def setupWidget(self) -> None:
         self.items = []
@@ -180,7 +181,7 @@ class RangEfield(RangeBase):
 class RangeBfield(RangeBase):
     """Configuration for magnetic field ranges in x, y, and z directions."""
 
-    default_deactivated = ["By"]
+    default_deactivated: ClassVar = ["By"]
 
     def setupWidget(self) -> None:
         self.items = []

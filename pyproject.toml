@@ -212,15 +212,35 @@ target-version = "py39"
 extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
-select = ["F", "E", "B", "C", "W", "I", "UP", "TID25", "RUF", "ANN", "D", "N", "S"]
-extend-ignore = ["E741", "RUF012", "ANN003", "ANN401", "D1", "N806", "N803", "S101", "S608"]  # TODO: remove "D1" once more docstrings are added
+select = ["ALL"]
+extend-ignore = [
+  "EM",  # Exceptions ...
+  "TRY003",  # Avoid specifying long messages outside the exception class
+  "FA",  # from __future__ ...
+  "FBT",  # Boolean arguments ...
+  "BLE",  # Blind Except
+  "PLC0105",  # covariant variable names
+  "SLF001",  # Private member accessed
+  "PLR0913",  # Too many arguments in function definition (... > 5)
+  "SIM114",  # this breaks mypy
+  "E741",  # Ambiguous variable name, does not like quantum number 'l'
+  "PLR2004",  # FIXME: Magic value used in comparison
+  "T2",  # FIXME: print statements
+  "DTZ",  # FIXME: Datetime
+  "ANN401",  # FIXME: Dynamically typed expressions (typing.Any) are disallowed in {name}
+  "D1",  # FIXME: remove once more docstrings are added
+  "S101",  # FIXME: Use of assert detected
+  "COM812",  # (missing-trailing-comma) incompatible with ruff format
+  "D203",  # (incorrect-blank-line-before-class) incompatible with D211: no-blank-line-before-class
+  "D213",  # (multi-line-summary-second-line) incompatible with D212: multi-line-summary-first-line
+]
 flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["ANN"]
-"src/pairinteraction/_wrapped/*.py" = ["N999"]
-"src/pairinteraction_gui/**" = ["N802"]
+"tools/*.py" = ["LOG015", "SIM", "G004", "S", "FIX", "TD", "PD", "D1"]
+"tests/*.py" = ["ANN", "N", "FIX", "TD", "PLR", "S", "D1"]
+"src/pairinteraction_gui/**" = ["ERA", "PLW", "TRY", "PGH", "FIX", "TD", "ARG", "N802", "PERF102", "D1"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
