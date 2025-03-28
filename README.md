@@ -158,8 +158,6 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 ## Contributors
 
-The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
-
 The software is maintained by:
 * [Sebastian Weber]
 * [Johannes Mögerle]
@@ -171,7 +169,20 @@ In addition, the following people contributed significantly to the current and/o
 * [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
 
-We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information.
+We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information!
+
+The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
+
+[![University of Stuttgart][stuttgart-jpg]][stuttgart-link]
+[![Federal Ministry of Education and Research][bmbf-jpg]][bmbf-link]
+[![Atom Computing][atom-jpg]][atom-link]
+[![University of Stuttgart][stuttgart-jpg]][stuttgart-link]
+
+[stuttgart-link]: https://www.uni-stuttgart.de/en/
+[bmbf-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/bmbf.jpg
+[bmbf-link]: https://www.bmbf.de/EN/
+[atom-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.jpg
+[atom-link]: https://atom-computing.com/
 
 [Institute for Theoretical Physics III]: https://www.itp3.uni-stuttgart.de/
 [QRydDemo]: https://www.quantentechnologien.de/forschung/foerderung/quantenprozessoren-und-technologien-fuer-quantencomputer/qryddemo.html
