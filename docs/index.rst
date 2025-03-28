@@ -18,6 +18,7 @@
 
     contribute/getting_started.rst
     contribute/architecture.rst
+    contribute/style_guide.rst
     contribute/database.rst
 
 .. toctree::

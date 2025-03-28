@@ -28,7 +28,6 @@
 [docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
 [docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
 
-
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
 
 The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip:
@@ -136,6 +135,8 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 - [Overview About pairinteraction's Architecture] - Find out how pairinteraction is structured.
 
+- [Style Guide] - Learn about the coding style used in pairinteraction.
+
 - [Database Format] - Explore the database for storing atomic states and matrix elements.
 
 **Utility Tools [External Links]**
@@ -150,14 +151,12 @@ these tutorials enable you to leverage pairinteraction for your projects.
 [Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications/publications.html
 [Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
 [Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/architecture.html
+[Style Guide]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/database.html
 [jl-mqdt]: https://github.com/pairinteraction/jl-mqdt/
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
-
 ## Contributors
-
-The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
 
 The software is maintained by:
 * [Sebastian Weber]
@@ -170,7 +169,20 @@ In addition, the following people contributed significantly to the current and/o
 * [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
 
-We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information.
+We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information!
+
+The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
+
+[![University of Stuttgart][stuttgart-jpg]][stuttgart-link]
+[![Federal Ministry of Education and Research][bmbf-jpg]][bmbf-link]
+[![Atom Computing][atom-jpg]][atom-link]
+
+[stuttgart-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/uni_stuttgart.jpg
+[stuttgart-link]: https://www.uni-stuttgart.de/en/
+[bmbf-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/bmbf.jpg
+[bmbf-link]: https://www.bmbf.de/EN/
+[atom-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.jpg
+[atom-link]: https://atom-computing.com/
 
 [Institute for Theoretical Physics III]: https://www.itp3.uni-stuttgart.de/
 [QRydDemo]: https://www.quantentechnologien.de/forschung/foerderung/quantenprozessoren-und-technologien-fuer-quantencomputer/qryddemo.html
