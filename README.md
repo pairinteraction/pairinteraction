@@ -28,7 +28,6 @@
 [docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
 [docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
 
-
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
 
 The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip:
@@ -136,6 +135,8 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 - [Overview About pairinteraction's Architecture] - Find out how pairinteraction is structured.
 
+- [Style Guide] - Learn about the coding style used in pairinteraction.
+
 - [Database Format] - Explore the database for storing atomic states and matrix elements.
 
 **Utility Tools [External Links]**
@@ -150,10 +151,10 @@ these tutorials enable you to leverage pairinteraction for your projects.
 [Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications/publications.html
 [Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
 [Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/architecture.html
+[Style Guide]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/database.html
 [jl-mqdt]: https://github.com/pairinteraction/jl-mqdt/
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
-
 
 ## Contributors
 
