@@ -44,7 +44,7 @@ def test_pair_potential(generate_reference: bool) -> None:
     # Compare to reference data
     kets = [repr(ket) for ket in basis_pair.kets]
     eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in system_pairs])
-    eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in system_pairs])
+    eigenstates = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in system_pairs])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)

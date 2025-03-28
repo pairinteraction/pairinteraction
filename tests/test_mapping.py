@@ -20,7 +20,7 @@ def test_mapping() -> None:
     state_indices = [eigenbasis.get_corresponding_state_index(ket) for ket in eigenbasis.kets]
 
     # Calculate the mapping from the coefficient matrix using scipy
-    coefficient_matrix = np.square(np.abs(eigenbasis.coefficients.todense()))
+    coefficient_matrix = np.square(np.abs(eigenbasis.get_coefficients().todense()))
     rows, cols = linear_sum_assignment(-coefficient_matrix)
 
     sorter = np.argsort(rows)

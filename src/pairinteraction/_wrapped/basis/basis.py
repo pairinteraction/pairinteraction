@@ -3,6 +3,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
+from typing_extensions import deprecated
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.ket.ket import KetBase
@@ -68,7 +69,12 @@ class BasisBase(ABC, Generic[KetType]):
         return self._cpp.get_number_of_kets()
 
     @property
+    @deprecated("Use the `get_coefficients` method instead. Will be removed in v2.0")
     def coefficients(self) -> "csr_matrix":
+        return self.get_coefficients()
+
+    def get_coefficients(self) -> "csr_matrix":
+        """Return the coefficients of the basis as a sparse matrix."""
         return self._cpp.get_coefficients()
 
     def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
