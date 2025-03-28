@@ -1,6 +1,6 @@
-#include "pairinteraction/info.hpp"
+#include "pairinteraction/Info.hpp"
 
-#include "./info.py.hpp"
+#include "./Info.py.hpp"
 
 #include <nanobind/nanobind.h>
 

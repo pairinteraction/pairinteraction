@@ -1,4 +1,4 @@
-#include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"

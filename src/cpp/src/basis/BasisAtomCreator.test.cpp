@@ -2,7 +2,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
