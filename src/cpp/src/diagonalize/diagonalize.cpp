@@ -1,4 +1,4 @@
-#include "pairinteraction/diagonalizer/diagonalize.hpp"
+#include "pairinteraction/diagonalize/diagonalize.hpp"
 
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"

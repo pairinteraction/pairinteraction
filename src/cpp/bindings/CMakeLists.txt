@@ -13,8 +13,8 @@ nanobind_add_module(
   basis/Basis.py.cpp
   database/Database.py.hpp
   database/Database.py.cpp
-  diagonalizer/Diagonalizer.py.cpp
-  diagonalizer/Diagonalizer.py.hpp
+  diagonalize/Diagonalizer.py.cpp
+  diagonalize/Diagonalizer.py.hpp
   enums/FloatType.py.hpp
   enums/FloatType.py.cpp
   enums/OperatorType.py.hpp
@@ -35,9 +35,9 @@ nanobind_add_module(
   system/System.py.cpp
   tools/run_unit_tests.py.hpp
   tools/run_unit_tests.py.cpp
-  binding.cpp
-  info.py.hpp
-  info.py.cpp
+  bindings.cpp
+  Info.py.hpp
+  Info.py.cpp
   LoggerBridge.cpp
   LoggerBridge.hpp
   paths.py.hpp

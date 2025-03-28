@@ -16,11 +16,11 @@ add_library(
   ./include/pairinteraction/database/Database.hpp
   ./include/pairinteraction/database/GitHubDownloader.hpp
   ./include/pairinteraction/database/ParquetManager.hpp
-  ./include/pairinteraction/diagonalizer/diagonalize.hpp
-  ./include/pairinteraction/diagonalizer/DiagonalizerEigen.hpp
-  ./include/pairinteraction/diagonalizer/DiagonalizerFeast.hpp
-  ./include/pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp
-  ./include/pairinteraction/diagonalizer/DiagonalizerLapackeEvr.hpp
+  ./include/pairinteraction/diagonalize/diagonalize.hpp
+  ./include/pairinteraction/diagonalize/DiagonalizerEigen.hpp
+  ./include/pairinteraction/diagonalize/DiagonalizerFeast.hpp
+  ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp
+  ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp
   ./include/pairinteraction/enums/FloatType.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
   ./include/pairinteraction/enums/Parity.hpp
@@ -58,7 +58,7 @@ add_library(
   ./include/pairinteraction/utils/traits.hpp
   ./include/pairinteraction/utils/wigner.hpp
   ./include/pairinteraction/pairinteraction.hpp
-  ./include/pairinteraction/info.hpp
+  ./include/pairinteraction/Info.hpp
   ./include/pairinteraction/version.hpp
   # Sources
   ./src/basis/Basis.cpp
@@ -77,11 +77,11 @@ add_library(
   ./src/database/GitHubDownloader.test.cpp
   ./src/database/ParquetManager.cpp
   ./src/database/ParquetManager.test.cpp
-  ./src/diagonalizer/diagonalize.cpp
-  ./src/diagonalizer/DiagonalizerEigen.cpp
-  ./src/diagonalizer/DiagonalizerFeast.cpp
-  ./src/diagonalizer/DiagonalizerLapackeEvd.cpp
-  ./src/diagonalizer/DiagonalizerLapackeEvr.cpp
+  ./src/diagonalize/diagonalize.cpp
+  ./src/diagonalize/DiagonalizerEigen.cpp
+  ./src/diagonalize/DiagonalizerFeast.cpp
+  ./src/diagonalize/DiagonalizerLapackeEvd.cpp
+  ./src/diagonalize/DiagonalizerLapackeEvr.cpp
   ./src/enums/Parity.test.cpp
   ./src/interfaces/DiagonalizerInterface.cpp
   ./src/interfaces/TransformationBuilderInterface.cpp
