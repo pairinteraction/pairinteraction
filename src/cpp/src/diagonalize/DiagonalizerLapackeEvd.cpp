@@ -1,4 +1,4 @@
-#include "pairinteraction/diagonalizer/DiagonalizerLapackeEvd.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp"
 
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"

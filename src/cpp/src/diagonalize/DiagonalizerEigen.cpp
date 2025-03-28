@@ -1,4 +1,4 @@
-#include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
 
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"

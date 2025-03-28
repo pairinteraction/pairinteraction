@@ -5,7 +5,6 @@
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
-#include "pairinteraction/system/SystemClassicalLight.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 
 #include <nanobind/eigen/dense.h>

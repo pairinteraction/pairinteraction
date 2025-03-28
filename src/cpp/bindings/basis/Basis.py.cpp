@@ -3,8 +3,6 @@
 #include "pairinteraction/basis/Basis.hpp"
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
-#include "pairinteraction/basis/BasisClassicalLight.hpp"
-#include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
@@ -113,23 +111,6 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
 }
 
 template <typename T>
-static void declare_basis_classical_light(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "BasisClassicalLight" + type_name;
-    nb::class_<BasisClassicalLight<T>, Basis<BasisClassicalLight<T>>> pyclass(m,
-                                                                              pyclass_name.c_str());
-}
-
-template <typename T>
-static void declare_basis_classical_light_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "BasisClassicalLightCreator" + type_name;
-    nb::class_<BasisClassicalLightCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def("set_photon_energy", &BasisClassicalLightCreator<T>::set_photon_energy)
-        .def("restrict_quantum_number_q", &BasisClassicalLightCreator<T>::restrict_quantum_number_q)
-        .def("create", &BasisClassicalLightCreator<T>::create);
-}
-
-template <typename T>
 static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPair" + type_name;
     nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
@@ -184,13 +165,6 @@ void bind_basis(nb::module_ &m) {
     declare_basis_atom<std::complex<double>>(m, "Complex");
     declare_basis_atom_creator<double>(m, "Real");
     declare_basis_atom_creator<std::complex<double>>(m, "Complex");
-
-    declare_basis<BasisClassicalLight<double>>(m, "BasisClassicalLightReal");
-    declare_basis<BasisClassicalLight<std::complex<double>>>(m, "BasisClassicalLightComplex");
-    declare_basis_classical_light<double>(m, "Real");
-    declare_basis_classical_light<std::complex<double>>(m, "Complex");
-    declare_basis_classical_light_creator<double>(m, "Real");
-    declare_basis_classical_light_creator<std::complex<double>>(m, "Complex");
 
     declare_basis<BasisPair<double>>(m, "BasisPairReal");
     declare_basis<BasisPair<std::complex<double>>>(m, "BasisPairComplex");

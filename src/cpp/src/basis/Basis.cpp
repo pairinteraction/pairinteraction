@@ -1,12 +1,10 @@
 #include "pairinteraction/basis/Basis.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisClassicalLight.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/ket/KetClassicalLight.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -20,8 +18,6 @@ namespace pairinteraction {
 
 template <typename Scalar>
 class BasisAtom;
-template <typename Scalar>
-class BasisClassicalLight;
 
 template <typename Derived>
 void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType> &labels) const {
@@ -786,8 +782,6 @@ bool Basis<Derived>::equal_to::operator()(const std::shared_ptr<const ket_t> &lh
 // Explicit instantiations
 template class Basis<BasisAtom<double>>;
 template class Basis<BasisAtom<std::complex<double>>>;
-template class Basis<BasisClassicalLight<double>>;
-template class Basis<BasisClassicalLight<std::complex<double>>>;
 template class Basis<BasisPair<double>>;
 template class Basis<BasisPair<std::complex<double>>>;
 } // namespace pairinteraction
