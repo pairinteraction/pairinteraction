@@ -377,7 +377,7 @@ class KetAtom(KetBase):
 
         energy_range = None
         if is_spontaneous:
-            energy_range = (ureg.Quantity(-1, "hartree"), self.energy)
+            energy_range = (-1, self.get_energy("hartree"))
 
         basis = BasisAtomReal(
             self.species,
@@ -385,6 +385,7 @@ class KetAtom(KetBase):
             l=(self.l - 1, self.l + 1),
             m=(self.m - 1, self.m + 1),
             energy=energy_range,
+            energy_unit="hartree",
             additional_kets=[self],  # needed to make get_matrix_elements(self, ...) work
             database=self.database,
         )

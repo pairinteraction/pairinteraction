@@ -1,6 +1,8 @@
 from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, get_args, overload
 
+from typing_extensions import deprecated
+
 from pairinteraction import _backend
 from pairinteraction._wrapped.enums import Parity
 from pairinteraction.units import QuantityScalar
@@ -75,6 +77,7 @@ class KetBase(ABC):
         raise ValueError(f"Unknown parity {parity}")
 
     @property
+    @deprecated("Use the `get_energy` method instead. Will be removed in v2.0")
     def energy(self) -> "PintFloat":
         """The energy of the ket: E=I-Ry/nu^2."""
         return self.get_energy()
