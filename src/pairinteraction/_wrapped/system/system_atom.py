@@ -40,8 +40,8 @@ class SystemAtom(SystemBase[BasisType]):
         >>> print(system)
         SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
         >>> system = system.diagonalize()
-        >>> eigenvalues = system.get_eigenvalues(unit="GHz")
-        >>> print(f"{eigenvalues[0] - ket.get_energy(unit='GHz'):.5f}")
+        >>> eigenenergies = system.get_eigenenergies(unit="GHz")
+        >>> print(f"{eigenenergies[0] - ket.get_energy(unit='GHz'):.5f}")
         -75.51823
 
     """
@@ -97,7 +97,7 @@ class SystemAtom(SystemBase[BasisType]):
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):

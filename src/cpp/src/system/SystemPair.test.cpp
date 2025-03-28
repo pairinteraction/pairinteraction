@@ -13,7 +13,6 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
-#include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
 
@@ -47,9 +46,9 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     system_pair.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
     system_pair.diagonalize(diagonalizer);
 
-    // Print the largest and smallest eigenvalues
-    auto eigenvalues = system_pair.get_eigenvalues();
-    DOCTEST_MESSAGE("Lowest energy: ", eigenvalues.minCoeff());
-    DOCTEST_MESSAGE("Highest energy: ", eigenvalues.maxCoeff());
+    // Print the largest and smallest eigenenergies
+    auto eigenenergies = system_pair.get_eigenenergies();
+    DOCTEST_MESSAGE("Lowest energy: ", eigenenergies.minCoeff());
+    DOCTEST_MESSAGE("Highest energy: ", eigenenergies.maxCoeff());
 }
 } // namespace pairinteraction

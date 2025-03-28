@@ -8,7 +8,7 @@ import pytest
 import pairinteraction.real as pi
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_stark_map/kets.txt"
-reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_stark_map/eigenvalues.txt"
+reference_eigenenergies_file = Path(__file__).parent.parent / "data/reference_stark_map/eigenenergies.txt"
 reference_overlaps_file = Path(__file__).parent.parent / "data/reference_stark_map/overlaps.txt"
 
 
@@ -34,21 +34,21 @@ def test_starkmap(generate_reference: bool) -> None:
 
     # Compare to reference data
     kets = [repr(ket) for ket in systems[0].basis.kets]
-    eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in systems])
-    eigenstates = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in systems])
+    eigenenergies = np.array([system.get_eigenenergies(unit="GHz") for system in systems])
+    eigenbasis = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in systems])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
         np.savetxt(reference_kets_file, kets, fmt="%s", delimiter="\t")
-        np.savetxt(reference_eigenvalues_file, eigenvalues)
+        np.savetxt(reference_eigenenergies_file, eigenenergies)
         np.savetxt(reference_overlaps_file, overlaps)
         pytest.skip("Reference data generated, skipping comparison test")
 
     np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
-    np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
+    np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_eigenenergies_file))
     np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
 
-    # Because of degeneracies, checking the eigenstates against reference data is complicated.
+    # Because of degeneracies, checking the eigenbasis against reference data is complicated.
     # Thus, we only check their normalization and orthogonality.
-    cumulative_norm = (np.array(eigenstates) * np.array(eigenstates).conj()).sum(axis=1)
+    cumulative_norm = (np.array(eigenbasis) * np.array(eigenbasis).conj()).sum(axis=1)
     np.testing.assert_allclose(cumulative_norm, 90 * np.ones(len(electric_fields)))

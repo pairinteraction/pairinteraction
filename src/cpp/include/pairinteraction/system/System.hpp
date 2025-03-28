@@ -36,7 +36,7 @@ public:
 
     std::shared_ptr<const basis_t> get_basis() const;
     std::shared_ptr<const basis_t> get_eigenbasis() const;
-    Eigen::VectorX<real_t> get_eigenvalues() const;
+    Eigen::VectorX<real_t> get_eigenenergies() const;
 
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
 
@@ -53,8 +53,8 @@ public:
     System<Derived> &transform(const Sorting &transformation);
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                 std::optional<real_t> min_eigenvalue = {},
-                                 std::optional<real_t> max_eigenvalue = {}, double rtol = 1e-6);
+                                 std::optional<real_t> min_eigenenergy = {},
+                                 std::optional<real_t> max_eigenenergy = {}, double rtol = 1e-6);
     bool is_diagonal() const;
 
 protected:

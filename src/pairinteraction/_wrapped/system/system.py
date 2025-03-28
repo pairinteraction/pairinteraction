@@ -2,6 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
 import numpy as np
+from typing_extensions import deprecated
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
@@ -83,7 +84,7 @@ class SystemBase(ABC, Generic[BasisType]):
     ) -> "Self":
         """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
 
-        This method computes the eigenvalues and eigenvectors of the Hamiltonian
+        This method computes the eigenenergies and eigenbasis of the Hamiltonian
         and updates the internal basis of the system accordingly.
 
         Args:
@@ -93,10 +94,10 @@ class SystemBase(ABC, Generic[BasisType]):
             rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
                 by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
             sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
-            energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
+            energy_range: A tuple specifying an energy range, in which the eigenenergies should be calculated.
                 Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
-                The accuracy of the eigenvalues is not affected by this, but not all eigenvalues will be calculated.
-                Defaults to (None, None), i.e. calculate all eigenvalues.
+                The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
+                Defaults to (None, None), i.e. calculate all eigenenergies.
             energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
             m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 
@@ -135,16 +136,20 @@ class SystemBase(ABC, Generic[BasisType]):
         cpp_eigenbasis = self._cpp.get_eigenbasis()
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
 
-    @overload
-    def get_eigenvalues(self, unit: None = None) -> "PintArray": ...
-
-    @overload
-    def get_eigenvalues(self, unit: str) -> "NDArray": ...
-
+    @deprecated("Use `get_eigenenergies` instead. Will be removed in v2.0")
     def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
-        eigenvalues_au: NDArray = np.array(self._cpp.get_eigenvalues())
-        eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "energy")
-        return eigenvalues.to_pint_or_unit(unit=unit)
+        return self.get_eigenenergies(unit=unit)
+
+    @overload
+    def get_eigenenergies(self, unit: None = None) -> "PintArray": ...
+
+    @overload
+    def get_eigenenergies(self, unit: str) -> "NDArray": ...
+
+    def get_eigenenergies(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
+        eigenenergies_au: NDArray = np.array(self._cpp.get_eigenenergies())
+        eigenenergies = QuantityArray.from_base_unit(eigenenergies_au, "energy")
+        return eigenenergies.to_pint_or_unit(unit=unit)
 
     @overload
     def get_hamiltonian(self, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse

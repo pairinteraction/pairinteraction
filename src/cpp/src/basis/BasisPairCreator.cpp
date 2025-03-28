@@ -62,39 +62,41 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // quantum numbers
     auto basis1 = system1.get_basis();
     auto basis2 = system2.get_basis();
-    auto eigenvalues1 = system1.get_eigenvalues();
-    auto eigenvalues2 = system2.get_eigenvalues();
-    real_t *eigenvalues2_begin = eigenvalues2.data();
-    real_t *eigenvalues2_end = eigenvalues2_begin + eigenvalues2.size();
+    auto eigenenergies1 = system1.get_eigenenergies();
+    auto eigenenergies2 = system2.get_eigenenergies();
+    real_t *eigenenergies2_begin = eigenenergies2.data();
+    real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
 
     ketvec_t kets;
-    kets.reserve(eigenvalues1.size() * eigenvalues2.size());
+    kets.reserve(eigenenergies1.size() * eigenenergies2.size());
 
     typename basis_t::map_range_t map_range_of_state_index2;
-    map_range_of_state_index2.reserve(eigenvalues1.size());
+    map_range_of_state_index2.reserve(eigenenergies1.size());
 
     typename basis_t::map_indices_t state_indices_to_ket_index;
 
     // Loop only over states with an allowed energy
     size_t ket_index = 0;
-    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenvalues1.size()); ++idx1) {
+    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenenergies1.size()); ++idx1) {
         // Get the energetically allowed range of the second index
         size_t min = 0;
-        size_t max = eigenvalues2.size();
+        size_t max = eigenenergies2.size();
         if (range_energy.is_finite()) {
-            real_t min_val2 = range_energy.min() - eigenvalues1[idx1];
-            real_t max_val2 = range_energy.max() - eigenvalues1[idx1];
-            min = std::distance(eigenvalues2_begin,
-                                std::lower_bound(eigenvalues2_begin, eigenvalues2_end, min_val2));
-            max = std::distance(eigenvalues2_begin,
-                                std::upper_bound(eigenvalues2_begin, eigenvalues2_end, max_val2));
+            real_t min_val2 = range_energy.min() - eigenenergies1[idx1];
+            real_t max_val2 = range_energy.max() - eigenenergies1[idx1];
+            min =
+                std::distance(eigenenergies2_begin,
+                              std::lower_bound(eigenenergies2_begin, eigenenergies2_end, min_val2));
+            max =
+                std::distance(eigenenergies2_begin,
+                              std::upper_bound(eigenenergies2_begin, eigenenergies2_end, max_val2));
         }
         map_range_of_state_index2.emplace(idx1, typename basis_t::range_t(min, max));
 
         // Loop over the energetically allowed range of the second index
         for (size_t idx2 = min; idx2 < max; ++idx2) {
             // Get energy
-            const real_t energy = eigenvalues1[idx1] + eigenvalues2[idx2];
+            const real_t energy = eigenenergies1[idx1] + eigenenergies2[idx2];
             assert(!range_energy.is_finite() ||
                    (energy >= range_energy.min() && energy <= range_energy.max()));
 

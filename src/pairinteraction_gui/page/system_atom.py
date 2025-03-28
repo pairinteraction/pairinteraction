@@ -50,7 +50,7 @@ class SystemAtomPage(SimulationPage):
 
     def update_plot(self) -> None:
         ket_energy = self.ket.get_energy("GHz")
-        energies = [system.get_eigenvalues("GHz") - ket_energy for system in self.systems]
+        energies = [system.get_eigenenergies("GHz") - ket_energy for system in self.systems]
         overlaps = [system.get_eigenbasis().get_overlaps(self.ket) for system in self.systems]
 
         x_values, xlabel = self.plotwidget._get_x_values_and_label_from_ranges(self.fields)

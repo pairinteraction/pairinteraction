@@ -91,7 +91,7 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
 }
 
 template <typename Derived>
-Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenvalues() const {
+Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenergies() const {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
@@ -179,8 +179,8 @@ System<Derived> &System<Derived>::transform(const Sorting &transformation) {
 
 template <typename Derived>
 System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                              std::optional<real_t> min_eigenvalue,
-                                              std::optional<real_t> max_eigenvalue, double rtol) {
+                                              std::optional<real_t> min_eigenenergy,
+                                              std::optional<real_t> max_eigenenergy, double rtol) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
@@ -191,7 +191,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvectors;
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvalues;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenenergies;
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
@@ -208,22 +208,22 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     SPDLOG_DEBUG("Diagonalizing the Hamiltonian with {} blocks.", blocks.size());
 
     // Diagonalize the blocks in parallel
-    std::vector<Eigen::VectorX<real_t>> eigenvalues_blocks(blocks.size());
+    std::vector<Eigen::VectorX<real_t>> eigenenergies_blocks(blocks.size());
     std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> eigenvectors_blocks(blocks.size());
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
             for (size_t idx = range.begin(); idx != range.end(); ++idx) {
-                auto eigensys = min_eigenvalue.has_value() || max_eigenvalue.has_value()
+                auto eigensys = min_eigenenergy.has_value() || max_eigenenergy.has_value()
                     ? diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
-                          min_eigenvalue, max_eigenvalue, rtol)
+                          min_eigenenergy, max_eigenenergy, rtol)
                     : diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
                           rtol);
                 eigenvectors_blocks[idx] = eigensys.eigenvectors;
-                eigenvalues_blocks[idx] = eigensys.eigenvalues;
+                eigenenergies_blocks[idx] = eigensys.eigenvalues;
             }
         });
 
@@ -245,7 +245,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     assert(static_cast<size_t>(num_cols) <= hamiltonian->get_basis()->get_number_of_states());
 
     eigenvectors.resize(num_rows, num_cols);
-    eigenvalues.resize(num_cols, num_cols);
+    eigenenergies.resize(num_cols, num_cols);
 
     if (num_cols > 0) {
         // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
@@ -271,16 +271,16 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
             eigenvectors.nonZeros() ==
             std::accumulate(non_zeros_per_inner_index.begin(), non_zeros_per_inner_index.end(), 0));
 
-        // Get the combined eigenvalue matrix
-        eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+        // Get the combined eigenenergy matrix
+        eigenenergies.reserve(Eigen::VectorXi::Constant(num_cols, 1));
         Eigen::Index offset = 0;
-        for (const auto &matrix : eigenvalues_blocks) {
+        for (const auto &matrix : eigenenergies_blocks) {
             for (int i = 0; i < matrix.size(); ++i) {
-                eigenvalues.insert(i + offset, i + offset) = matrix(i);
+                eigenenergies.insert(i + offset, i + offset) = matrix(i);
             }
             offset += matrix.size();
         }
-        eigenvalues.makeCompressed();
+        eigenenergies.makeCompressed();
 
         // Fix phase ambiguity
         std::vector<scalar_t> map_col_to_max(num_cols, 0);
@@ -306,7 +306,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     // Store the diagonalized hamiltonian
-    hamiltonian->get_matrix() = eigenvalues;
+    hamiltonian->get_matrix() = eigenenergies;
     hamiltonian->get_basis() = hamiltonian->get_basis()->transformed(eigenvectors);
 
     hamiltonian_is_diagonal = true;

@@ -53,10 +53,10 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
 
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
     eigensolver.compute(system.get_matrix());
-    auto eigenvalues_eigen = eigensolver.eigenvalues();
-    auto eigenvalues_pairinteraction = system.get_eigenvalues();
-    for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
-        DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) < 1e-10);
+    auto eigenenergies_eigen = eigensolver.eigenvalues();
+    auto eigenenergies_pairinteraction = system.get_eigenenergies();
+    for (int i = 0; i < eigenenergies_eigen.size(); ++i) {
+        DOCTEST_CHECK(std::abs(eigenenergies_eigen(i) - eigenenergies_pairinteraction(i)) < 1e-10);
     }
 }
 
@@ -137,7 +137,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     Eigen::MatrixXcd matrix = system.get_matrix();
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
     eigensolver.compute(matrix);
-    auto eigenvalues_eigen = eigensolver.eigenvalues();
+    auto eigenenergies_eigen = eigensolver.eigenvalues();
 
     // Create diagonalizers
     std::vector<std::unique_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
@@ -174,10 +174,10 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     }
 
     // Diagonalize using pairinteraction
-    for (double rtol_eigenvalues : rtols) {
+    for (double rtol_eigenenergies : rtols) {
         double atol_eigenvectors =
-            std::max(0.5 * rtol_eigenvalues / std::sqrt(basis->get_number_of_states()), 4 * eps);
-        DOCTEST_MESSAGE("Precision: " << rtol_eigenvalues << " (rtol eigenvalues), "
+            std::max(0.5 * rtol_eigenenergies / std::sqrt(basis->get_number_of_states()), 4 * eps);
+        DOCTEST_MESSAGE("Precision: " << rtol_eigenenergies << " (rtol eigenenergies), "
                                       << atol_eigenvectors << " (atol eigenvectors)");
 
         for (const auto &diagonalizer : diagonalizers) {
@@ -190,13 +190,13 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // used. To avoid overflows, the interval ranges from half the smallest possible
             // value to half the largest possible value.
             system.diagonalize(*diagonalizer, std::numeric_limits<float>::lowest() / 2,
-                               std::numeric_limits<float>::max() / 2, rtol_eigenvalues);
-            auto eigenvalues_pairinteraction = system.get_eigenvalues();
+                               std::numeric_limits<float>::max() / 2, rtol_eigenenergies);
+            auto eigenenergies_pairinteraction = system.get_eigenenergies();
             auto eigenvectors_pairinteraction = system.get_eigenbasis()->get_coefficients();
 
             DOCTEST_CHECK(
-                (eigenvalues_eigen - eigenvalues_pairinteraction).array().abs().maxCoeff() <
-                rtol_eigenvalues * matrix.norm());
+                (eigenenergies_eigen - eigenenergies_pairinteraction).array().abs().maxCoeff() <
+                rtol_eigenenergies * matrix.norm());
 
             for (int i = 0; i < eigenvectors_pairinteraction.cols(); ++i) {
                 DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) <
@@ -225,11 +225,11 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
     eigensolver.compute(system.get_matrix());
-    auto eigenvalues_all = eigensolver.eigenvalues();
-    std::vector<double> eigenvalues_eigen;
-    for (int i = 0; i < eigenvalues_all.size(); ++i) {
-        if (eigenvalues_all[i] > min_energy && eigenvalues_all[i] < max_energy) {
-            eigenvalues_eigen.push_back(eigenvalues_all[i]);
+    auto eigenenergies_all = eigensolver.eigenvalues();
+    std::vector<double> eigenenergies_eigen;
+    for (int i = 0; i < eigenenergies_all.size(); ++i) {
+        if (eigenenergies_all[i] > min_energy && eigenenergies_all[i] < max_energy) {
+            eigenenergies_eigen.push_back(eigenenergies_all[i]);
         }
     }
 
@@ -251,16 +251,17 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
             {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
         system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
-        auto eigenvalues_pairinteraction = system.get_eigenvalues();
+        auto eigenenergies_pairinteraction = system.get_eigenenergies();
 
-        Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
-        std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());
-        DOCTEST_MESSAGE(fmt::format("Eigenvalues: {}", fmt::join(eigenvalues_vector, ", ")));
+        Eigen::MatrixXd tmp = (1e5 * eigenenergies_pairinteraction).array().round() / 1e5;
+        std::vector<double> eigenenergies_vector(tmp.data(), tmp.data() + tmp.size());
+        DOCTEST_MESSAGE(fmt::format("Eigenenergies: {}", fmt::join(eigenenergies_vector, ", ")));
 
-        DOCTEST_CHECK(eigenvalues_eigen.size() == 8);
-        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 8);
-        for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {
-            DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-10);
+        DOCTEST_CHECK(eigenenergies_eigen.size() == 8);
+        DOCTEST_CHECK(eigenenergies_pairinteraction.size() == 8);
+        for (size_t i = 0; i < eigenenergies_eigen.size(); ++i) {
+            DOCTEST_CHECK(std::abs(eigenenergies_eigen[i] - eigenenergies_pairinteraction[i]) <
+                          1e-10);
         }
     }
 }
@@ -275,17 +276,17 @@ DOCTEST_TEST_CASE("diagonalization with mkl") {
         int n = 100;
         Eigen::MatrixXd matrix = Eigen::MatrixXd::Random(n, n);
         matrix = (matrix + matrix.transpose()).eval();
-        Eigen::VectorXd eigenvalues(n);
+        Eigen::VectorXd eigenenergies(n);
 
         // Diagonalize the matrix
         int info =
-            LAPACKE_dsyev(LAPACK_COL_MAJOR, 'V', 'U', n, matrix.data(), n, eigenvalues.data());
+            LAPACKE_dsyev(LAPACK_COL_MAJOR, 'V', 'U', n, matrix.data(), n, eigenenergies.data());
         DOCTEST_CHECK(info == 0);
     }
 }
 #endif
 
-DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy restrictions") {
+DOCTEST_TEST_CASE("handle it gracefully if no eigenenergies are within energy restrictions") {
     double min_energy = -1;
     double max_energy = -1;
 
@@ -309,9 +310,9 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
             {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
         system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
-        auto eigenvalues_pairinteraction = system.get_eigenvalues();
+        auto eigenenergies_pairinteraction = system.get_eigenenergies();
 
-        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 0);
+        DOCTEST_CHECK(eigenenergies_pairinteraction.size() == 0);
     }
 }
 

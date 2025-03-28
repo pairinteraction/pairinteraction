@@ -19,20 +19,20 @@ def test_diamagnetism() -> None:
     # Diagonalize the system
     system = system.diagonalize(diagonalizer="eigen", sort_by_energy=True)
 
-    # Get eigenvalues and the overlap with |ket>
+    # Get eigenenergies and the overlap with |ket>
     overlaps = system.basis.get_overlaps(ket)
-    eigenvalues = system.get_eigenvalues(unit="GHz") - ket.get_energy(unit="GHz")
+    eigenenergies = system.get_eigenenergies(unit="GHz") - ket.get_energy(unit="GHz")
 
-    # Get the overlap and eigenvalue corresponding to |ket>
+    # Get the overlap and eigenenergy corresponding to |ket>
     idx = np.argmax(overlaps)
     overlap = overlaps[idx]
-    eigenvalue = eigenvalues[idx]
+    eigenenergy = eigenenergies[idx]
     print(
-        f"The state |{ket}> in a field of {bfield} G has an energy of {eigenvalue:.3f} GHz "
+        f"The state |{ket}> in a field of {bfield} G has an energy of {eigenenergy:.3f} GHz "
         f"and overlap of {overlap:.2%} with the unperturbed state."
     )
 
     # Compare to reference data
     assert np.isclose(overlap, system.basis.get_corresponding_state(ket).get_overlaps(ket)[0])
     assert np.isclose(overlap, 0.9823116102876408, atol=1e-10)
-    assert np.isclose(eigenvalue, 4.113262772909366)
+    assert np.isclose(eigenenergy, 4.113262772909366)

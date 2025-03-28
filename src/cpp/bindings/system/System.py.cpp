@@ -28,7 +28,7 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
                                                                             pyclass_name.c_str());
     pyclass.def("get_basis", &System<T>::get_basis)
         .def("get_eigenbasis", &System<T>::get_eigenbasis)
-        .def("get_eigenvalues", &System<T>::get_eigenvalues)
+        .def("get_eigenenergies", &System<T>::get_eigenenergies)
         .def("get_matrix", &System<T>::get_matrix)
         .def("get_transformation", &System<T>::get_transformation)
         .def("get_rotator", &System<T>::get_rotator)
@@ -38,7 +38,7 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transform))
         .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transform))
         .def("diagonalize", &System<T>::diagonalize, "diagonalizer"_a,
-             "min_eigenvalue"_a = nb::none(), "max_eigenvalue"_a = nb::none(), "rtol"_a = 1e-6)
+             "min_eigenenergy"_a = nb::none(), "max_eigenenergy"_a = nb::none(), "rtol"_a = 1e-6)
         .def("is_diagonal", &System<T>::is_diagonal);
 }
 
