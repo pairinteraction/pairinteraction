@@ -35,7 +35,7 @@ def test_starkmap(generate_reference: bool) -> None:
     # Compare to reference data
     kets = [repr(ket) for ket in systems[0].basis.kets]
     eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in systems])
-    eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in systems])
+    eigenstates = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in systems])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
