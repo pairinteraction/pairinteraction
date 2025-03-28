@@ -392,7 +392,7 @@ class KetAtom(KetBase):
         system = SystemAtomReal(basis)
 
         relevant_kets = basis.kets
-        energy_differences_au = self.get_energy("hartree") - system.get_eigenvalues("hartree")
+        energy_differences_au = self.get_energy("hartree") - system.get_eigenenergies("hartree")
         electric_dipole_moments_au = np.zeros(len(basis.kets))
         for q in [-1, 0, 1]:
             # the different entries are only at most once nonzero -> we can just add the arrays

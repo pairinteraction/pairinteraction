@@ -48,8 +48,8 @@ def diagonalize(
         sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
         energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
-            The accuracy of the eigenvalues is not affected by this, but not all eigenvalues will be calculated.
-            Defaults to (None, None), i.e. calculate all eigenvalues.
+            The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
+            Defaults to (None, None), i.e. calculate all eigenenergies.
         energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 

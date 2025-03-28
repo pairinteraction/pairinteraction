@@ -20,12 +20,12 @@ def test_energy_range() -> None:
         [system, system], energy=(pair_energy - 10, pair_energy + 10), energy_unit="GHz", m=(1, 1)
     )
 
-    # Diagonalize the systems for different distances in parallel and get all eigenvalues
+    # Diagonalize the systems for different distances in parallel and get all eigenenergies
     system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
     pi.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
-    eigenvalues_all = [system.get_eigenvalues(unit="GHz") for system in system_pairs]
+    eigenenergies_all = [system.get_eigenenergies(unit="GHz") for system in system_pairs]
 
-    # Diagonalize the systems for different distances in parallel and get only the eigenvalues in an energy range
+    # Diagonalize the systems for different distances in parallel and get only the eigenenergies in an energy range
     system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
     pi.diagonalize(
         system_pairs,
@@ -34,12 +34,12 @@ def test_energy_range() -> None:
         energy_range=(pair_energy - 5, pair_energy + 5),
         energy_unit="GHz",
     )
-    eigenvalues_restricted = [system.get_eigenvalues(unit="GHz") for system in system_pairs]
+    eigenenergies_restricted = [system.get_eigenenergies(unit="GHz") for system in system_pairs]
 
     # Check the result
-    eigenvalues_all_restricted = [
-        eigenvalues[(eigenvalues < pair_energy + 5) & (eigenvalues > pair_energy - 5)]
-        for eigenvalues in eigenvalues_all
+    eigenenergies_all_restricted = [
+        eigenenergies[(eigenenergies < pair_energy + 5) & (eigenenergies > pair_energy - 5)]
+        for eigenenergies in eigenenergies_all
     ]
-    for e1, e2 in zip(eigenvalues_restricted, eigenvalues_all_restricted):
+    for e1, e2 in zip(eigenenergies_restricted, eigenenergies_all_restricted):
         np.testing.assert_allclose(e1, e2)

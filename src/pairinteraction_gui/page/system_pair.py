@@ -97,7 +97,7 @@ class SystemPairPage(SimulationPage):
 
     def update_plot(self) -> None:
         ket_pair_energy = sum(ket.get_energy("GHz") for ket in self.kets)
-        energies = [system.get_eigenvalues("GHz") - ket_pair_energy for system in self.systems]
+        energies = [system.get_eigenenergies("GHz") - ket_pair_energy for system in self.systems]
         overlaps = [system.get_eigenbasis().get_overlaps(self.kets) for system in self.systems]
 
         ranges = {**self.fields, "distance": self.distance, "angle": self.angle}

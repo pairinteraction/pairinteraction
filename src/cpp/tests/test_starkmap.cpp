@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     pairinteraction::DiagonalizerEigen<double> diagonalizer(pairinteraction::FloatType::FLOAT32);
     pairinteraction::diagonalize(systems, diagonalizer);
 
-    // Sort by the eigenvalues
+    // Sort by the eigenenergies
     for (auto &system : systems) {
         auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
         system.transform(sorter);
@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
 
     // Extract results
     std::vector<std::string> kets;
-    Eigen::MatrixX<double> eigenvalues(systems.size(), basis->get_number_of_states());
+    Eigen::MatrixX<double> eigenenergies(systems.size(), basis->get_number_of_states());
     Eigen::MatrixX<double> eigenstates(
         systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
     Eigen::MatrixX<double> overlaps(systems.size(), basis->get_number_of_states());
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     }
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
-        eigenvalues.row(i) = systems[i].get_eigenvalues() * HARTREE_IN_GHZ;
+        eigenenergies.row(i) = systems[i].get_eigenenergies() * HARTREE_IN_GHZ;
 
         Eigen::MatrixX<double> tmp =
             systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
@@ -122,32 +122,32 @@ int main(int argc, char **argv) {
         }
     }
 
-    // Check eigenvalues
-    const std::filesystem::path reference_eigenvalues_file =
-        data_dir / "reference_stark_map/eigenvalues.txt";
-    SPDLOG_INFO("Reference eigenvalues: {}", reference_eigenvalues_file.string());
+    // Check eigenenergies
+    const std::filesystem::path reference_eigenenergies_file =
+        data_dir / "reference_stark_map/eigenenergies.txt";
+    SPDLOG_INFO("Reference eigenenergies: {}", reference_eigenenergies_file.string());
 
-    Eigen::MatrixXd reference_eigenvalues(systems.size(), basis->get_number_of_states());
-    stream = std::ifstream(reference_eigenvalues_file);
+    Eigen::MatrixXd reference_eigenenergies(systems.size(), basis->get_number_of_states());
+    stream = std::ifstream(reference_eigenenergies_file);
     if (!stream) {
-        SPDLOG_ERROR("Could not open reference eigenvalues file");
+        SPDLOG_ERROR("Could not open reference eigenenergies file");
         success = false;
     } else {
         for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
             for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(basis->get_number_of_states());
                  ++j) {
-                stream >> reference_eigenvalues(i, j);
+                stream >> reference_eigenenergies(i, j);
             }
         }
         stream.close();
-        if ((eigenvalues - reference_eigenvalues).array().abs().maxCoeff() >
+        if ((eigenenergies - reference_eigenenergies).array().abs().maxCoeff() >
             500e-6) { // 500 kHz precision
-            for (Eigen::Index i = 0; i < eigenvalues.size(); ++i) {
-                SPDLOG_DEBUG("Eigenvalue: {} vs {}, delta: {}", eigenvalues(i),
-                             reference_eigenvalues(i),
-                             std::abs(eigenvalues(i) - reference_eigenvalues(i)));
+            for (Eigen::Index i = 0; i < eigenenergies.size(); ++i) {
+                SPDLOG_DEBUG("Eigenenergy: {} vs {}, delta: {}", eigenenergies(i),
+                             reference_eigenenergies(i),
+                             std::abs(eigenenergies(i) - reference_eigenenergies(i)));
             }
-            SPDLOG_ERROR("Eigenvalues do not match reference data");
+            SPDLOG_ERROR("Eigenenergies do not match reference data");
             success = false;
         }
     }
