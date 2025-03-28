@@ -46,16 +46,16 @@ class KetBase(ABC):
     def __str__(self) -> str:
         return self.get_label("ket")
 
-    def get_label(self, format: Literal["ket", "bra", "raw"]) -> str:
+    def get_label(self, fmt: Literal["ket", "bra", "raw"]) -> str:
         """Label representing the ket."""
         raw = self._cpp.get_label()
-        if format == "raw":
+        if fmt == "raw":
             return raw
-        if format == "ket":
+        if fmt == "ket":
             return f"|{raw}⟩"
-        if format == "bra":
+        if fmt == "bra":
             return f"⟨{raw}|"
-        raise ValueError(f"Unknown format {format}")
+        raise ValueError(f"Unknown fmt {fmt}")
 
     @property
     def m(self) -> float:

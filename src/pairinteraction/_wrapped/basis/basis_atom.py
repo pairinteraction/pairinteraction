@@ -40,7 +40,7 @@ class BasisAtom(BasisBase[KetAtom]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
-    def __init__(  # noqa: C901
+    def __init__(  # noqa: C901, PLR0912
         self,
         species: str,
         n: Optional[tuple[int, int]] = None,
@@ -144,7 +144,7 @@ class BasisAtom(BasisBase[KetAtom]):
             return self._cpp.get_amplitudes(ket_or_basis._cpp)
         if isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
             return self._cpp.get_amplitudes(ket_or_basis._cpp)
-        raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+        raise TypeError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
 
     @overload
     def get_overlaps(self, ket_or_basis: KetAtom) -> "NDArray": ...
@@ -159,7 +159,7 @@ class BasisAtom(BasisBase[KetAtom]):
             return self._cpp.get_overlaps(ket_or_basis._cpp)
         if isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
             return self._cpp.get_overlaps(ket_or_basis._cpp)
-        raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+        raise TypeError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
 
     @overload
     def get_matrix_elements(
@@ -193,10 +193,10 @@ class BasisAtom(BasisBase[KetAtom]):
             elif isinstance(self, BasisAtomComplex) and isinstance(ket_or_basis, BasisAtomComplex):
                 matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_op, q)
             else:
-                raise ValueError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
+                raise TypeError(f"Incompatible types: {type(ket_or_basis)=}; {type(self)=}")
             matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operator)
         else:
-            raise ValueError(f"Unknown type: {type(ket_or_basis)=}")
+            raise TypeError(f"Unknown type: {type(ket_or_basis)=}")
 
         return matrix_elements.to_pint_or_unit(unit)
 

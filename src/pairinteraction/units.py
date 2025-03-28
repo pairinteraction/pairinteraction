@@ -41,7 +41,7 @@ Dimension = Literal[
 ]
 DimensionLike = Union[Dimension, Iterable[Dimension]]
 
-# au_time = atomic_unit_of_time; au_current = atomic_unit_of_current; m_e = electron_mass
+# some abbreviations: au_time: atomic_unit_of_time; au_current: atomic_unit_of_current; m_e: electron_mass
 _CommonUnits: dict[Dimension, str] = {
     "electric_field": "V/cm",  # 1 V/cm = 1.9446903811524456e-10 bohr * m_e / au_current / au_time ** 3
     "magnetic_field": "T",  # 1 T = 4.254382157342044e-06 m_e / au_current / au_time ** 2
@@ -79,7 +79,7 @@ ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
 class QuantityAbstract(Generic[ValueType]):
     def __init__(self, pint_qty: PlainQuantity[ValueType], dimension: DimensionLike) -> None:  # type: ignore [type-var]
         if not isinstance(pint_qty, ureg.Quantity):
-            raise ValueError(f"pint_qty must be a ureg.Quantity, not {type(pint_qty)}")
+            raise TypeError(f"pint_qty must be a ureg.Quantity, not {type(pint_qty)}")
         self._quantity = pint_qty
         self.dimension: DimensionLike = dimension
         self.check_value_type()
@@ -91,8 +91,8 @@ class QuantityAbstract(Generic[ValueType]):
     def get_base_unit(cls, dimension: DimensionLike) -> str:
         if isinstance(dimension, str):
             return str(BaseUnits[dimension])
-        else:  # dimension isinstance Iterable[Dimension]
-            return " * ".join(str(BaseUnits[d]) for d in dimension)
+        # dimension isinstance Iterable[Dimension]
+        return " * ".join(str(BaseUnits[d]) for d in dimension)
 
     @classmethod
     def get_contexts(cls, dimension: DimensionLike) -> list[Context]:
@@ -110,12 +110,11 @@ class QuantityAbstract(Generic[ValueType]):
         """Initialize a Quantity from a ureg.Quantity."""
         if isinstance(value, ureg.Quantity):
             return cls(value, dimension)
-        elif isinstance(value, PlainQuantity):
+        if isinstance(value, PlainQuantity):
             raise TypeError(
                 "Only use pint quantities genereated by pairinteraction.ureg and not by a different pint.UnitRegistry."
             )
-        else:
-            raise ValueError("method from_pint: value must be a pint.Quantity")
+        raise ValueError("method from_pint: value must be a pint.Quantity")
 
     @classmethod
     def from_unit(

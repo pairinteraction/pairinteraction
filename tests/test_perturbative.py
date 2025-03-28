@@ -1,19 +1,18 @@
 import logging
-from typing import Union
 
 import numpy as np
 import pytest
 from scipy import sparse
 
-import pairinteraction.perturbative as perturbative
 import pairinteraction.real as pi
+from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
 
 
 # ---------------------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------------------
-def _check_sparse_matrices_equal(matrix_a: sparse.csr_matrix, matrix_b: sparse.csr_matrix) -> Union[bool, bool]:
+def _check_sparse_matrices_equal(matrix_a: sparse.csr_matrix, matrix_b: sparse.csr_matrix) -> bool:
     """Check for equality of sparse matrices efficiently.
 
     This functions compares two sparse matrices in compressed sparse row format on their equality.
@@ -40,8 +39,7 @@ def _check_sparse_matrices_equal(matrix_a: sparse.csr_matrix, matrix_b: sparse.c
             and np.all(matrix_a.indptr == matrix_b.indptr)
             and np.allclose(matrix_a.data, matrix_b.data, rtol=0, atol=1e-14)
         )
-    else:
-        return False
+    return False
 
 
 def _create_system_pair_sample():
@@ -171,10 +169,11 @@ def test_resonance_detection(caplog):
     ket_tuple_list = [
         (pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom(species="Rb", n=61, l=1, j=0.5, m=0.5))
     ]
-    with pytest.warns(RuntimeWarning, match="divide by zero encountered in divide"):
-        with pytest.raises(ValueError) as excinfo:
-            with caplog.at_level(logging.CRITICAL):
-                perturbative.get_effective_hamiltonian_from_system(
-                    ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
-                )
-        assert "Perturbative Calculation not possible due to resonances." in str(excinfo.value)
+    with (
+        pytest.warns(RuntimeWarning, match="divide by zero encountered in divide"),
+        pytest.raises(ValueError, match="Perturbative Calculation not possible due to resonances."),
+        caplog.at_level(logging.CRITICAL),
+    ):
+        perturbative.get_effective_hamiltonian_from_system(
+            ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
+        )

@@ -97,11 +97,11 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
         if name not in parquet_files or version > parquet_versions[name]:
             parquet_files[name] = path
             parquet_versions[name] = version
-    assert "misc_wigner" in parquet_files.keys()
-    assert "Yb174_mqdt_states" in parquet_files.keys()
-    assert "Yb174_mqdt_matrix_elements_mu" in parquet_files.keys()
-    assert "Yb174_mqdt_matrix_elements_q" in parquet_files.keys()
-    assert "Yb174_mqdt_matrix_elements_q0" in parquet_files.keys()
+    assert "misc_wigner" in parquet_files
+    assert "Yb174_mqdt_states" in parquet_files
+    assert "Yb174_mqdt_matrix_elements_mu" in parquet_files
+    assert "Yb174_mqdt_matrix_elements_q" in parquet_files
+    assert "Yb174_mqdt_matrix_elements_q0" in parquet_files
 
     # Obtain the ids of the initial and final states
     id_initial = fetch_id(n_initial, l_initial, f_initial, s_initial, connection, parquet_files["Yb174_mqdt_states"])

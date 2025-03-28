@@ -62,7 +62,7 @@ class KetAtom(KetBase):
     _cpp: _backend.KetAtom
     _cpp_creator = _backend.KetAtomCreator
 
-    def __init__(  # noqa: C901
+    def __init__(  # noqa: C901, PLR0912
         self,
         species: str,
         n: Optional[int] = None,

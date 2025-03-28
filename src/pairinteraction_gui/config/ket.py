@@ -1,5 +1,5 @@
 import re
-from typing import TYPE_CHECKING, Literal, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union
 
 from PySide6.QtWidgets import (
     QComboBox,
@@ -123,8 +123,7 @@ class KetBaseConfig(BaseConfig):
                 if int(match.group()) % 2 == 0:
                     return "mqdt_int"
                 return "mqdt_halfint"
-            else:
-                raise ValueError(f"Invalid species name: {species}")
+            raise ValueError(f"Invalid species name: {species}")
         if "singlet" in species:
             return "sqdt_singlet"
         if "triplet" in species:
@@ -134,8 +133,7 @@ class KetBaseConfig(BaseConfig):
     def get_quantum_numbers(self, atom: int) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn[atom].currentWidget()
-        qns = {item.label: item.value() for item in qn_widget.items if item.isChecked()}
-        return qns
+        return {item.label: item.value() for item in qn_widget.items if item.isChecked()}
 
     def get_ket_atom(self, atom: int) -> "pi.KetAtom":
         """Return the ket of interest of the ... atom."""
@@ -177,12 +175,12 @@ class KetLifetimesConfig(KetBaseConfig):
         self.setupOneKetAtom()
 
         self.layout().addStretch(2)
-        spin_box_T = DoubleSpinBox(
+        spin_box_temp = DoubleSpinBox(
             self, vdefault=300, tooltip="Temperature in Kelvin (0K considers only spontaneous decay)"
         )
-        self.item_temperature = QnItem(self, "Temperature", spin_box_T, "K")
+        self.item_temperature = QnItem(self, "Temperature", spin_box_temp, "K")
         self.layout().addWidget(self.item_temperature)
-        spin_box_T.valueChanged.connect(lambda value: self.update_lifetime())
+        spin_box_temp.valueChanged.connect(lambda value: self.update_lifetime())
 
         self.layout().addStretch(2)
         # Add a label to display the lifetime
@@ -241,7 +239,7 @@ class QnBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    default_deactivated: list[str] = []
+    default_deactivated: ClassVar[list[str]] = []
     _spin_boxes: dict[str, Union[IntSpinBox, HalfIntSpinBox, DoubleSpinBox]]
     items: list[QnItem]
 
@@ -258,7 +256,7 @@ class QnBase(WidgetV):
 class QnSQDT(QnBase):
     """Configuration for atoms using SQDT."""
 
-    def __init__(self, parent: Optional[QWidget] = None, s: Union[int, float] = 0.5) -> None:
+    def __init__(self, parent: Optional[QWidget] = None, s: float = 0.5) -> None:
         self.s = s
         super().__init__(parent)
 
@@ -281,7 +279,7 @@ class QnSQDT(QnBase):
 class QnMQDT(QnBase):
     """Configuration for earth alkali atoms using MQDT."""
 
-    default_deactivated: list[str] = ["l_ryd"]
+    default_deactivated: ClassVar = ["l_ryd"]
 
     def __init__(self, parent: Optional[QWidget] = None, m_is_int: bool = False) -> None:
         self.m_is_int = m_is_int

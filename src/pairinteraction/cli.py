@@ -31,11 +31,11 @@ def main() -> int:
 
     # GUI command
     gui_parser = subparsers.add_parser("gui", help="launch the graphical user interface")
-    gui_parser.set_defaults(func=lambda args: start_gui())
+    gui_parser.set_defaults(func=lambda _args: start_gui())
 
     # Test command
     test_parser = subparsers.add_parser("test", help="run module tests")
-    test_parser.set_defaults(func=lambda args: run_module_tests())
+    test_parser.set_defaults(func=lambda _args: run_module_tests())
 
     # Download command
     download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
@@ -44,7 +44,7 @@ def main() -> int:
 
     # Purge command
     purge_parser = subparsers.add_parser("purge", help="delete all cached data")
-    purge_parser.set_defaults(func=lambda args: purge_cache())
+    purge_parser.set_defaults(func=lambda _args: purge_cache())
 
     args = parser.parse_args()
 

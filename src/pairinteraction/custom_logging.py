@@ -2,7 +2,7 @@ import datetime
 import inspect
 import logging
 import re
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar
 
 from colorama import Fore, Style, just_fix_windows_console
 
@@ -71,7 +71,7 @@ def configure_logging(
     """Configure colorfully formatted logging."""
 
     class ColoredFormatter(logging.Formatter):
-        COLORS = {
+        COLORS: ClassVar = {
             "DEBUG": Fore.BLUE,
             "INFO": Fore.GREEN,
             "WARNING": Fore.YELLOW,
