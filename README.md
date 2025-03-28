@@ -174,7 +174,7 @@ We warmly welcome new contributions! Please see our [contributor guide][contribu
 The development of the pairinteraction software has been supported by the [Institute for Theoretical Physics III] of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants [QRydDemo] and [MUNIQC-Atoms], and the company [Atom Computing]. The development of the original version of the software started at the [5th Institute of Physics] of the University of Stuttgart.
 
 [![University of Stuttgart][stuttgart-jpg]][stuttgart-link]
-[![BMBF][bmbf-jpg]][bmbf-link]
+[![Federal Ministry of Education and Research][bmbf-jpg]][bmbf-link]
 [![Atom Computing][atom-jpg]][atom-link]
 
 [stuttgart-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/uni_stuttgart.jpg
