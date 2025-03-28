@@ -70,5 +70,5 @@ File and Folder Names
 Type Annotations
 ----------------
 
-To avoid bugs, make the code more readable, and help with code completion, we use strict typing. Avoid ``void`` and
-``dynamic_casts`` in C++. Use type annotations in Python.
+To avoid bugs, make the code more readable, and help with code completion, we use strict typing. Avoid ``void`` pointers
+and ``dynamic_casts`` in C++. Use type annotations in Python.
