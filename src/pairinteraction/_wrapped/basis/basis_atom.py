@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.Basis import BasisBase
-from pairinteraction._wrapped.database.Database import Database
+from pairinteraction._wrapped.basis.basis import BasisBase
+from pairinteraction._wrapped.database.database import Database
 from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction._wrapped.ket.KetAtom import KetAtom
+from pairinteraction._wrapped.ket.ket_atom import KetAtom
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:

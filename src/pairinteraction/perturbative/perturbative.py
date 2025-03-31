@@ -14,8 +14,8 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.ket.KetAtom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
-    from pairinteraction._wrapped.ket.KetPair import (
+    from pairinteraction._wrapped.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
+    from pairinteraction._wrapped.ket.ket_pair import (
         KetPairComplex,  # noqa: F401  # required for sphinx for KetPairLike
         KetPairLike,
         KetPairReal,  # noqa: F401  # required for sphinx for KetPairLike

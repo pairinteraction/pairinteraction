@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.Basis import BasisBase
+    from pairinteraction._wrapped.basis.basis import BasisBase
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
     Quantity = TypeVar("Quantity", float, "PintFloat")

@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
-from pairinteraction._wrapped.system.System import SystemBase
+from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction._wrapped.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction._wrapped.ket.KetAtom import KetAtom
+    from pairinteraction._wrapped.basis.basis_atom import BasisAtom
+    from pairinteraction._wrapped.ket.ket_atom import KetAtom
     from pairinteraction.units import PintArray, PintFloat
 
 BasisType = TypeVar("BasisType", bound="BasisAtom", covariant=True)

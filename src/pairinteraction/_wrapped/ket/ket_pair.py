@@ -4,8 +4,8 @@ from typing import Any, ClassVar, Union
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.ket.Ket import KetBase
-from pairinteraction._wrapped.ket.KetAtom import KetAtom
+from pairinteraction._wrapped.ket.ket import KetBase
+from pairinteraction._wrapped.ket.ket_atom import KetAtom
 
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction._wrapped.basis.basis_pair import BasisPair
     from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
 
 

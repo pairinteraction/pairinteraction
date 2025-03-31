@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, Union
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.ket.Ket import KetBase
+from pairinteraction._wrapped.ket.ket import KetBase
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
