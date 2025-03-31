@@ -16,7 +16,7 @@ from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from pairinteraction._wrapped.system.System import SystemBase
+    from pairinteraction._wrapped.system.system import SystemBase
     from pairinteraction_gui.config.system import RangeObject
     from pairinteraction_gui.page.base_page import SimulationPage
 

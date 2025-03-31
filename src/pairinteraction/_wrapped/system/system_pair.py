@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.BasisPair import BasisPairComplex, BasisPairReal
-from pairinteraction._wrapped.system.System import SystemBase
+from pairinteraction._wrapped.basis.basis_pair import BasisPairComplex, BasisPairReal
+from pairinteraction._wrapped.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.BasisPair import BasisPair
+    from pairinteraction._wrapped.basis.basis_pair import BasisPair
     from pairinteraction.units import PintArray, PintFloat
 
 BasisType = TypeVar("BasisType", bound="BasisPair[Any]", covariant=True)

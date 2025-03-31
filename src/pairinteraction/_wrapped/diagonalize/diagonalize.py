@@ -7,7 +7,7 @@ from pairinteraction._wrapped.enums import FloatType
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pairinteraction._wrapped.system.System import SystemBase
+    from pairinteraction._wrapped.system.system import SystemBase
     from pairinteraction.units import PintFloat
 
     Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
