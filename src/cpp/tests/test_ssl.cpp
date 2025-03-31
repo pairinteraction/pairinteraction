@@ -1,40 +1,9 @@
-#pragma once
+#include <filesystem>
+#include <fstream>
+#include <httplib.h>
 
-#include <future>
-#include <memory>
-#include <string>
-
-namespace httplib {
-class SSLClient;
-}
-
-namespace pairinteraction {
-
-class GitHubDownloader {
-public:
-    struct RateLimit {
-        int remaining = -1;  // remaining number of requests
-        int reset_time = -1; // unix timestamp when the rate limit resets
-    };
-
-    class Result {
-    public:
-        int status_code = 400;
-        std::string last_modified;
-        std::string body;
-        RateLimit rate_limit;
-    };
-
-    GitHubDownloader();
-    virtual ~GitHubDownloader();
-    virtual std::future<Result> download(const std::string &remote_url,
-                                         const std::string &if_modified_since = "",
-                                         bool use_octet_stream = false) const;
-    RateLimit get_rate_limit() const;
-    std::string get_host() const;
-
-private:
-    const std::string host{"api.github.com"};
+int main(int /*argc*/, char ** /*argv*/) {
+    // Store the certificate
     const std::string cert{R"(Comodo AAA Services root
 ========================
 -----BEGIN CERTIFICATE-----
@@ -58,7 +27,30 @@ Rt0vxuBqw8M0Ayx9lt1awg6nCpnBBYurDC/zXDrPbDdVCYfeU0BsWO/8tqtlbgT2G9w84FoVxp7Z
 8VlIMCFlA2zs6SFz7JsDoeA3raAVGI/6ugLOpyypEBMs1OUIJqsil2D4kF501KKaU73yqWjgom7C
 12yxow+ev+to51byrvLjKzg6CYG1a4XXvi3tPxq3smPi9WIsgtRqAEFQ8TmDn5XpNpaYbg==
 -----END CERTIFICATE-----)"};
-    std::unique_ptr<httplib::SSLClient> client;
-};
 
-} // namespace pairinteraction
+    std::filesystem::path cert_path =
+        std::filesystem::temp_directory_path() / "pairinteraction-test-ca-bundle.crt";
+    if (std::filesystem::exists(cert_path)) {
+        std::filesystem::remove(cert_path);
+    }
+    std::ofstream out(cert_path);
+    if (!out) {
+        throw std::runtime_error("Failed to create certificate file at " + cert_path.string());
+    }
+    out << cert;
+    out.close();
+
+    // Use the certificate to make a request
+    httplib::SSLClient cli("api.github.com");
+    cli.set_ca_cert_path(cert_path.string());
+    const auto res = cli.Get("/rate_limit");
+
+    // Clean up
+    std::filesystem::remove(cert_path);
+
+    // Check the response
+    if (!res || res->status != 200) {
+        throw std::runtime_error("Error: " + httplib::to_string(res.error()));
+    }
+    return 0;
+}

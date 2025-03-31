@@ -160,7 +160,7 @@ set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
 FetchContent_Declare(
   httplib
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib
-  GIT_TAG 03cf43ebaa55f27a2778bed870ea3549f7e84e2c # v0.19.0
+  GIT_TAG 787a34ad7f01f20922a237d5142aae469828be72 # v0.20.0
 )
 
 # Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we

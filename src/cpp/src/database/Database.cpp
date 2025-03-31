@@ -57,7 +57,8 @@ Database::Database(bool download_missing, bool use_cache, std::filesystem::path 
     if (!std::filesystem::exists(configdir)) {
         std::filesystem::create_directories(configdir);
     } else if (!std::filesystem::is_directory(configdir)) {
-        throw std::filesystem::filesystem_error("Cannot access config", configdir.string(),
+        throw std::filesystem::filesystem_error("Cannot access config directory ",
+                                                configdir.string(),
                                                 std::make_error_code(std::errc::not_a_directory));
     }
 

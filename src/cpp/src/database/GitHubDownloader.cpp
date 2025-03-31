@@ -1,6 +1,10 @@
 #include "pairinteraction/database/GitHubDownloader.hpp"
 
+#include "pairinteraction/utils/paths.hpp"
+
+#include <filesystem>
 #include <fmt/core.h>
+#include <fstream>
 #include <future>
 #include <httplib.h>
 #include <stdexcept>
@@ -8,11 +12,30 @@
 namespace pairinteraction {
 
 GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClient>(host)) {
+    std::filesystem::path configdir = paths::get_config_directory();
+    if (!std::filesystem::exists(configdir)) {
+        std::filesystem::create_directories(configdir);
+    } else if (!std::filesystem::is_directory(configdir)) {
+        throw std::filesystem::filesystem_error("Cannot access config directory ",
+                                                configdir.string(),
+                                                std::make_error_code(std::errc::not_a_directory));
+    }
+
+    std::filesystem::path cert_path = configdir / "ca-bundle.crt";
+    if (!std::filesystem::exists(cert_path)) {
+        std::ofstream out(cert_path);
+        if (!out) {
+            throw std::runtime_error("Failed to create certificate file at " + cert_path.string());
+        }
+        out << cert;
+        out.close();
+    }
+
     client->set_follow_location(true);
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
-    client->load_ca_cert_store(github_ca_cert.data(), github_ca_cert.size());
+    client->set_ca_cert_path(cert_path.string());
 }
 
 GitHubDownloader::~GitHubDownloader() = default;
