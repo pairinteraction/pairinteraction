@@ -30,7 +30,7 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_magnetic_field(const std::array<real
 }
 
 template <typename Scalar>
-SystemAtom<Scalar> &SystemAtom<Scalar>::enable_diamagnetism(bool enable) {
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_diamagnetism_enabled(bool enable) {
     this->hamiltonian_requires_construction = true;
     diamagnetism_enabled = enable;
     return *this;

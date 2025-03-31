@@ -50,7 +50,7 @@ def _create_system_pair_sample():
         m=(-1.5, 1.5),
     )
     system = pi.SystemAtom(basis=basis)
-    system.enable_diamagnetism(False)
+    system.set_diamagnetism_enabled(False)
     system.set_magnetic_field([0, 0, 1e-3], "gauss")
     if not system.is_diagonal:
         pi.diagonalize([system], diagonalizer="eigen", sort_by_energy=False)

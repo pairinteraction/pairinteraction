@@ -42,7 +42,7 @@ public:
 
     Type &set_electric_field(const std::array<real_t, 3> &field);
     Type &set_magnetic_field(const std::array<real_t, 3> &field);
-    Type &enable_diamagnetism(bool enable);
+    Type &set_diamagnetism_enabled(bool enable);
 
 private:
     std::array<Scalar, 3> electric_field_spherical{};

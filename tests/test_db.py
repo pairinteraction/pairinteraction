@@ -80,7 +80,7 @@ def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: boo
     operator = (
         pi.SystemAtom(basis)
         .set_magnetic_field([0, 0, bfield_in_gauss], unit="G")
-        .enable_diamagnetism(True)
+        .set_diamagnetism_enabled(True)
         .get_hamiltonian(unit="GHz")
     )
     operator -= np.diag(np.sort([ket_initial.get_energy(unit="GHz"), ket_final.get_energy(unit="GHz")]))

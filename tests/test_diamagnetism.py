@@ -14,7 +14,7 @@ def test_diamagnetism() -> None:
 
     # Create system for a magnetic field of 1000 G
     bfield = 1000
-    system = pi.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").enable_diamagnetism(True)
+    system = pi.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
 
     # Diagonalize the system
     system = system.diagonalize(diagonalizer="eigen", sort_by_energy=True)

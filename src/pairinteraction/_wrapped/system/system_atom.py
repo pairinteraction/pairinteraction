@@ -3,6 +3,7 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
+from typing_extensions import deprecated
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
@@ -36,7 +37,7 @@ class SystemAtom(SystemBase[BasisType]):
         >>> system = pi.SystemAtom(basis)
         >>> system = system.set_magnetic_field([0, 0, 1], unit="gauss")
         >>> system = system.set_electric_field([0.1, 0, 0.1], unit="V/cm")
-        >>> system = system.enable_diamagnetism(True)
+        >>> system = system.set_diamagnetism_enabled(True)
         >>> print(system)
         SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
         >>> system = system.diagonalize()
@@ -80,8 +81,12 @@ class SystemAtom(SystemBase[BasisType]):
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
+    @deprecated("Use `set_diamagnetism_enabled` instead. Will be removed in v2.0")
     def enable_diamagnetism(self: "Self", enable: bool = True) -> "Self":
-        self._cpp.enable_diamagnetism(enable)
+        return self.set_diamagnetism_enabled(enable)
+
+    def set_diamagnetism_enabled(self: "Self", enable: bool = True) -> "Self":
+        self._cpp.set_diamagnetism_enabled(enable)
         return self
 
     @overload
