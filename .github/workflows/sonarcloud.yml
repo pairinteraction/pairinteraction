@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/setup-uv-build-venv
 
       - name: Configure project
-        run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
+        run: uv run --no-project cmake -S . -B build/ -DWITH_COVERAGE=On
 
       - name: Run Build Wrapper with build
         run: |

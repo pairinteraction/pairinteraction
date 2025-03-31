@@ -129,15 +129,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - os: ubuntu-latest
-          distro: ubuntu
+        - os: ubuntu-latest  # runs in container anyway
         - os: macos-13
         - os: windows-2019
     name: Test installing sdist on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     container:
-      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
+      image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-ubuntu:docker') || null }}
     needs: [sdist]
     steps:
     - uses: actions/checkout@v4

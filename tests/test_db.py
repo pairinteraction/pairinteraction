@@ -1,5 +1,6 @@
 """Test receiving matrix elements from the databases."""
 
+from collections.abc import Generator
 from pathlib import Path
 
 import duckdb
@@ -14,7 +15,7 @@ from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NU
 expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])
 
 
-def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.duckdb.DuckDBPyConnection, table: str) -> int:
+def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: str) -> int:
     return connection.execute(
         f"SELECT id FROM '{table}' WHERE n = {n} AND f = {f} ORDER BY (exp_s - {s})^2+(exp_l - {l})^2 LIMIT 1"
     ).fetchone()[0]
@@ -27,7 +28,7 @@ def fetch_wigner_element(
     m_final: float,
     kappa: int,
     q: int,
-    connection: duckdb.duckdb.DuckDBPyConnection,
+    connection: duckdb.DuckDBPyConnection,
     table: str,
 ) -> float:
     result = connection.execute(
@@ -38,7 +39,7 @@ def fetch_wigner_element(
 
 
 def fetch_reduced_matrix_element(
-    id_initial: int, id_final: int, connection: duckdb.duckdb.DuckDBPyConnection, table: str
+    id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: str
 ) -> float:
     result = connection.execute(
         f"SELECT val FROM '{table}' WHERE id_initial = {id_initial} AND id_final = {id_final}"
@@ -47,13 +48,13 @@ def fetch_reduced_matrix_element(
 
 
 @pytest.fixture(scope="module")
-def connection() -> duckdb.duckdb.DuckDBPyConnection:
+def connection() -> Generator[duckdb.DuckDBPyConnection]:
     with duckdb.connect(":memory:") as connection:
         yield connection
 
 
 @pytest.mark.parametrize("swap_states", [False, True])
-def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: bool) -> None:
+def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> None:
     """Test receiving matrix elements from the databases."""
     database = pi.Database.get_global_database()
     bfield_in_gauss = 1500
