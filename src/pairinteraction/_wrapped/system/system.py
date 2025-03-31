@@ -104,7 +104,7 @@ class SystemBase(ABC, Generic[BasisType]):
             Self: The updated instance of the system.
 
         """
-        cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp, float_type, m0=m0)
+        cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self, float_type, m0=m0)
 
         energy_range_au: list[Optional[float]] = [None, None]
         for i, energy in enumerate(energy_range):
