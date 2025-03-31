@@ -84,8 +84,7 @@ class SystemBase(ABC, Generic[BasisType]):
     ) -> "Self":
         """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
 
-        This method computes the eigenenergies and eigenbasis of the Hamiltonian
-        and updates the internal basis of the system accordingly.
+        This method diagonalizes the Hamiltonian of the system and updates the basis of the system accordingly.
 
         Args:
             systems: A list of `SystemAtom` or `SystemPair` objects.

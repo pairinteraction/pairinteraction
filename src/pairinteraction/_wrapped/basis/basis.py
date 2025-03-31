@@ -1,5 +1,4 @@
 from abc import ABC
-from functools import cached_property
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
@@ -54,7 +53,7 @@ class BasisBase(ABC, Generic[KetType]):
     def __str__(self) -> str:
         return self.__repr__().replace("Real", "").replace("Complex", "")
 
-    @cached_property
+    @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
         return [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]

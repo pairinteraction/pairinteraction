@@ -68,7 +68,7 @@ jobs:
     - name: Setup uv build virtual environment
       uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
+      run: uv run --no-project cmake -S . -B build/ -DWITH_COVERAGE=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

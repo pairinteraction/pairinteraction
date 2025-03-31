@@ -255,13 +255,13 @@ def _calculate_unsorted_perturbative_hamiltonian(
     if order not in [0, 1, 2, 3]:
         raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
 
-    m = len(m_inds)
-    n = len(o_inds)
     h0 = hamiltonian.diagonal()
     h0_m = h0[m_inds]
 
     h_eff = np.diag(h0_m)
-    eigvec_perturb = sparse.hstack([sparse.eye(m, m, format="csr").tocsr(), sparse.csr_matrix((m, n))]).tocsr()
+    eigvec_perturb = sparse.hstack(
+        [sparse.eye(len(m_inds), len(m_inds), format="csr").tocsr(), sparse.csr_matrix((len(m_inds), len(o_inds)))]
+    ).tocsr()
 
     if order < 1:
         return h_eff, eigvec_perturb
@@ -277,7 +277,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     v_me = v_offdiag[np.ix_(m_inds, o_inds)]
     delta_e_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
     h_eff += v_me @ ((v_me.conj().T).multiply(delta_e_em))
-    addition_mm = sparse.csr_matrix((m, m))
+    addition_mm = sparse.csr_matrix((len(m_inds), len(m_inds)))
     addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_e_em)).T)
     eigvec_perturb = eigvec_perturb + sparse.hstack([addition_mm, addition_me])
 
@@ -288,7 +288,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     diff = np.where(diff == 0, np.inf, diff)
     delta_e_mm = 1 / diff
     v_ee = v_offdiag[np.ix_(o_inds, o_inds)]
-    if m > 1:
+    if len(m_inds) > 1:
         logger.warning(
             "At third order, the eigenstates are currently only valid when only one state is in the model space. "
             "Take care with interpreation of the perturbed eigenvectors."

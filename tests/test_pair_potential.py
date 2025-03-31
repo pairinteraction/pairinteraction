@@ -44,7 +44,7 @@ def test_pair_potential(generate_reference: bool) -> None:
     # Compare to reference data
     kets = [repr(ket) for ket in basis_pair.kets]
     eigenenergies = np.array([system.get_eigenenergies(unit="GHz") for system in system_pairs])
-    eigenbasis = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in system_pairs])
+    eigenvectors = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in system_pairs])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
@@ -57,7 +57,7 @@ def test_pair_potential(generate_reference: bool) -> None:
     np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_eigenenergies_file))
     np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
 
-    # Because of degeneracies, checking the eigenbasis against reference data is complicated.
+    # Because of degeneracies, checking the eigenvectors against reference data is complicated.
     # Thus, we only check their normalization and orthogonality.
-    cumulative_norm = (np.array(eigenbasis) * np.array(eigenbasis).conj()).sum(axis=1)
+    cumulative_norm = (np.array(eigenvectors) * np.array(eigenvectors).conj()).sum(axis=1)
     np.testing.assert_allclose(cumulative_norm, 19 * np.ones(5))
