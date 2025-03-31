@@ -1,7 +1,7 @@
 from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
 
-from pairinteraction import _backend
+from pairinteraction import _backend, _wrapped
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
 from pairinteraction._wrapped.enums import FloatType
 from pairinteraction.units import QuantityScalar
@@ -55,8 +55,8 @@ def diagonalize(
 
     """
     cpp_systems = [s._cpp for s in systems]
-    cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
-    cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0], float_type, m0=m0)
+    cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
+    cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
 
     energy_range_au: list[Optional[float]] = [None, None]
     for i, energy in enumerate(energy_range):
@@ -72,8 +72,16 @@ def diagonalize(
         system._update_basis()
 
 
-def get_cpp_diagonalize(system: "SystemBase[Any]") -> Callable[..., None]:
-    try:
-        return getattr(_backend, f"diagonalize{type(system).__name__}")  # type: ignore [no-any-return]
-    except AttributeError as err:
-        raise ValueError(f"Unknown diagonalize function for {type(system).__name__}") from err
+def get_cpp_diagonalize_function(system: "SystemBase[Any]") -> Callable[..., None]:
+    if isinstance(system, _wrapped.SystemAtomReal):
+        return _backend.diagonalizeSystemAtomReal
+    if isinstance(system, _wrapped.SystemAtomComplex):
+        return _backend.diagonalizeSystemAtomComplex
+    if isinstance(system, _wrapped.SystemPairReal):
+        return _backend.diagonalizeSystemPairReal
+    if isinstance(system, _wrapped.SystemPairComplex):
+        return _backend.diagonalizeSystemPairComplex
+    raise TypeError(
+        f"system must be of type SystemAtomReal, SystemPairReal, SystemAtomComplex, or SystemPairComplex, "
+        f"not {type(system)}"
+    )

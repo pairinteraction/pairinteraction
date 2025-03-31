@@ -1,41 +1,61 @@
-from typing import Any, Literal, Optional, Union, get_args
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
-from pairinteraction import _backend
+from pairinteraction import _backend, _wrapped
 from pairinteraction._wrapped.enums import FloatType, get_cpp_float_type
+
+if TYPE_CHECKING:
+    from pairinteraction._wrapped.system.system import SystemBase
+
 
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
 UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
+UnionCPPDiagonalizerType = Union[type[_backend.DiagonalizerInterfaceReal], type[_backend.DiagonalizerInterfaceComplex]]
+
+_DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
+    "real": {
+        "eigen": _backend.DiagonalizerEigenReal,
+        "lapacke_evd": _backend.DiagonalizerLapackeEvdReal,
+        "lapacke_evr": _backend.DiagonalizerLapackeEvrReal,
+        "feast": _backend.DiagonalizerFeastReal,
+    },
+    "complex": {
+        "eigen": _backend.DiagonalizerEigenComplex,
+        "lapacke_evd": _backend.DiagonalizerLapackeEvdComplex,
+        "lapacke_evr": _backend.DiagonalizerLapackeEvrComplex,
+        "feast": _backend.DiagonalizerFeastComplex,
+    },
+}
 
 
 def get_cpp_diagonalizer(
     diagonalizer: Diagonalizer,
-    cpp_system: Any,
+    system: "SystemBase[Any]",
     float_type: FloatType,
     m0: Optional[int] = None,
 ) -> UnionCPPDiagonalizer:
-    if diagonalizer not in get_args(Diagonalizer):
-        raise ValueError(f"Unknown diagonalizer '{diagonalizer}', should be one of {Diagonalizer}")
     if diagonalizer == "feast" and m0 is None:
         raise ValueError("m0 must be specified for the 'feast' diagonalizer")
     elif diagonalizer != "feast" and m0 is not None:
         raise ValueError("m0 must not be specified if the diagonalizer is not 'feast'")
 
-    type_ = get_type_of_system(cpp_system)
-    diagonalizer_ = "".join([s.capitalize() for s in diagonalizer.split("_")])
+    if isinstance(system, (_wrapped.SystemAtomReal, _wrapped.SystemPairReal)):
+        type_ = "real"
+    elif isinstance(system, (_wrapped.SystemAtomComplex, _wrapped.SystemPairComplex)):
+        type_ = "complex"
+    else:
+        raise TypeError(
+            f"system must be of type SystemAtomReal, SystemPairReal, SystemAtomComplex, or SystemPairComplex, "
+            f"not {type(system)}"
+        )
+
     try:
-        diagonalizer_class = getattr(_backend, f"Diagonalizer{diagonalizer_}{type_}")
-    except AttributeError as err:
-        raise ValueError(f"Unknown diagonalizer 'Diagonalizer{diagonalizer_}{type_}'") from err
+        diagonalizer_class = _DiagonalizerDict[type_][diagonalizer]
+    except KeyError:
+        raise ValueError(
+            f"Unknown diagonalizer '{diagonalizer}', should be one of {list(_DiagonalizerDict.keys())}"
+        ) from None
 
     cpp_float_type = get_cpp_float_type(float_type)
     if diagonalizer == "feast":
-        return diagonalizer_class(m0=m0, float_type=cpp_float_type)  # type: ignore [no-any-return]
-    return diagonalizer_class(float_type=cpp_float_type)  # type: ignore [no-any-return]
-
-
-def get_type_of_system(cpp_system: Any) -> Literal["Complex", "Real"]:
-    if type(cpp_system).__name__.endswith("Complex"):
-        return "Complex"
-    if type(cpp_system).__name__.endswith("Real"):
-        return "Real"
-    raise ValueError("Unknown type of system")
+        return diagonalizer_class(m0=m0, float_type=cpp_float_type)  # type: ignore [call-arg]
+    return diagonalizer_class(float_type=cpp_float_type)  # type: ignore [call-arg]
