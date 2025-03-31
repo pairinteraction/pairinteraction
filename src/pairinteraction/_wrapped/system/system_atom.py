@@ -93,23 +93,22 @@ class SystemAtom(SystemBase[BasisType]):
         return self
 
     def set_distance_to_ion(
-        self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
+        self: "Self", distance: Union[float, "PintFloat"], angle_degree: float = 0, unit: Optional[str] = None
     ) -> "Self":
-        return self.set_distance_vector_to_ion([0, 0, distance], unit)
+        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        return self.set_distance_vector_to_ion(distance_vector, unit)
 
     def set_distance_vector_to_ion(
         self: "Self",
-        distance: Union["PlainQuantity[NDArray[Any]]", Collection[Union[float, "PlainQuantity[float]"]]],
+        distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
+        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "distance").to_base_unit() for v in distance]
         self._cpp.set_distance_vector_to_ion(distance_au)
         return self
 
-    def set_ion_charge(
-        self: "Self", charge: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
-    ) -> "Self":
-        charge_au = QuantityScalar.from_pint_or_unit(charge, unit, "CHARGE").to_base_unit()
+    def set_ion_charge(self: "Self", charge: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
+        charge_au = QuantityScalar.from_pint_or_unit(charge, unit, "charge").to_base_unit()
         self._cpp.set_ion_charge(charge_au)
         return self
 
