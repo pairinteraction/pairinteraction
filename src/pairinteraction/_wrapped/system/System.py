@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Uni
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, get_cpp_diagonalizer
+from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
+from pairinteraction._wrapped.enums import FloatType
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:

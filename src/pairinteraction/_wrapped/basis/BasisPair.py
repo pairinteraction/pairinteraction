@@ -7,7 +7,7 @@ from typing_extensions import TypeGuard
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.Basis import BasisBase
 from pairinteraction._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
-from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction._wrapped.ket.KetPair import (
     KetPair,
     KetPairComplex,

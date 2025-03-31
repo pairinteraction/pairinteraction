@@ -8,9 +8,10 @@ from pairinteraction._wrapped.basis.BasisPair import (
     BasisPairComplex,
     BasisPairReal,
 )
-from pairinteraction._wrapped.convenience.diagonalize import diagonalize
-from pairinteraction._wrapped.cpp_types import Diagonalizer, FloatType, OperatorType, Parity
 from pairinteraction._wrapped.database.Database import Database
+from pairinteraction._wrapped.diagonalize.diagonalize import diagonalize
+from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer
+from pairinteraction._wrapped.enums import FloatType, OperatorType, Parity
 from pairinteraction._wrapped.ket.KetAtom import KetAtom
 from pairinteraction._wrapped.ket.KetPair import (
     KetPair,

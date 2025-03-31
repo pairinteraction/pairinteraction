@@ -2,7 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, get_args, overload
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.cpp_types import Parity
+from pairinteraction._wrapped.enums import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
