@@ -4,8 +4,8 @@ import numpy as np
 from scipy.special import exprel
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.cpp_types import OperatorType, Parity, get_cpp_parity
 from pairinteraction._wrapped.database.Database import Database
+from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_parity
 from pairinteraction._wrapped.ket.Ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
