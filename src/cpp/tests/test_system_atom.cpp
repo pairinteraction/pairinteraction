@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     auto system = pairinteraction::SystemAtom<double>(basis);
     system.set_electric_field({0, 0, 1});
     system.set_magnetic_field({0, 0, 1});
-    system.enable_diamagnetism(true);
+    system.set_diamagnetism_enabled(true);
 
     return 0;
 }
