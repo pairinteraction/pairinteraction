@@ -44,6 +44,7 @@ add_test_executable(test_dipole_operator test_dipole_operator.cpp ${NPROC})
 add_test_executable(test_system_atom test_system_atom.cpp ${NPROC})
 add_test_executable(test_starkmap test_starkmap.cpp ${NPROC})
 add_test_executable(test_pair_potential test_pair_potential.cpp ${NPROC})
+add_test_executable(test_ssl test_ssl.cpp ${NPROC})
 
 # Ensure that not more than one test is build at the same time
 set_tests_properties(${GEN_TEST_NAMES} PROPERTIES RESOURCE_LOCK compiler_access)
