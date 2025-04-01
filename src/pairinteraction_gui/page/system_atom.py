@@ -1,11 +1,6 @@
 import logging
 from collections.abc import Sequence
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
-
-import nbformat
-from nbconvert import PythonExporter
-from PySide6.QtWidgets import QFileDialog
 
 import pairinteraction._wrapped as pi
 from pairinteraction_gui.config import BasisAtomConfig, KetAtomConfig, SystemAtomConfig
@@ -25,6 +20,8 @@ class SystemAtomPage(SimulationPage):
     tooltip = "Configure and analyze single atom systems"
 
     plotwidget: PlotEnergies
+
+    _export_notebook_template = "single_atom.ipynb"
 
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
@@ -89,56 +86,6 @@ class SystemAtomPage(SimulationPage):
                 continue
             used.add(short_label)
             self.plotwidget.canvas.ax.text(x_lim[0], energy, short_label, va="center", ha="right")
-
-    def export_python(self) -> None:
-        """Export the current calculation as a Python script."""
-        logger.debug("Exporting results as Python script...")
-
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Python Script", "", "Python Files (*.py)")
-
-        if filename:
-            filename = filename.removesuffix(".py") + ".py"
-
-            template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.ipynb"
-            with open(template_path) as f:
-                notebook = nbformat.read(f, as_version=4)
-
-            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
-            content, _ = exporter.from_notebook_node(notebook)
-
-            replacements = self._get_export_replacements()
-            for key, value in replacements.items():
-                content = content.replace(key, str(value))
-
-            with open(filename, "w") as f:
-                f.write(content)
-
-            logger.info(f"Python script saved as {filename}")
-
-    def export_notebook(self) -> None:
-        """Export the current calculation as a Jupyter notebook."""
-        logger.debug("Exporting results as Jupyter notebook...")
-
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Jupyter Notebook", "", "Jupyter Notebooks (*.ipynb)")
-
-        if filename:
-            filename = filename.removesuffix(".ipynb") + ".ipynb"
-
-            template_path = Path(__file__).parent.parent / "export_templates" / "single_atom.ipynb"
-            with open(template_path) as f:
-                notebook = nbformat.read(f, as_version=4)
-
-            replacements = self._get_export_replacements()
-            for cell in notebook.cells:
-                if cell.cell_type == "code":
-                    source = cell.source
-                    for key, value in replacements.items():
-                        source = source.replace(key, str(value))
-                    cell.source = source
-
-            nbformat.write(notebook, filename)
-
-            logger.info(f"Jupyter notebook saved as {filename}")
 
     def _get_export_replacements(self) -> dict[str, Any]:
         ket = self.ket_config.get_ket_atom(0)

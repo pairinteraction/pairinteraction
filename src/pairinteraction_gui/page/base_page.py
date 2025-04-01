@@ -3,6 +3,8 @@ import time
 from pathlib import Path
 from typing import Optional
 
+import nbformat
+from nbconvert import PythonExporter
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
@@ -80,6 +82,8 @@ class SimulationPage(BasePage):
         }
     """
 
+    _export_notebook_template: Optional[str] = None
+
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
@@ -110,8 +114,10 @@ class SimulationPage(BasePage):
         export_menu.setStyleSheet(self._button_menu_style)
         file_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
         export_menu.addAction(file_icon, "Export as PNG", self.export_png)
-        export_menu.addAction(file_icon, "Export as Python script", self.export_python)
-        export_menu.addAction(file_icon, "Export as Jupyter notebook", self.export_notebook)
+        if self._export_notebook_template:
+            export_menu.addAction(file_icon, "Export as Python script", self.export_python)
+            export_menu.addAction(file_icon, "Export as Jupyter notebook", self.export_notebook)
+
         export_button.setMenu(export_menu)
         control_layout.addWidget(export_button)
 
@@ -179,7 +185,58 @@ class SimulationPage(BasePage):
             logger.info(f"Plot saved as {filename}")
 
     def export_python(self) -> None:
+        """Export the current calculation as a Python script."""
         logger.debug("Exporting results as Python script...")
+        assert self._export_notebook_template is not None, "No export notebook template defined"
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Python Script", "", "Python Files (*.py)")
+
+        if filename:
+            filename = filename.removesuffix(".py") + ".py"
+
+            template_path = Path(__file__).parent.parent / "export_templates" / self._export_notebook_template
+            with open(template_path) as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
+            content, _ = exporter.from_notebook_node(notebook)
+
+            replacements = self._get_export_replacements()
+            for key, value in replacements.items():
+                content = content.replace(key, str(value))
+
+            with open(filename, "w") as f:
+                f.write(content)
+
+            logger.info(f"Python script saved as {filename}")
 
     def export_notebook(self) -> None:
+        """Export the current calculation as a Jupyter notebook."""
         logger.debug("Exporting results as Jupyter notebook...")
+        assert self._export_notebook_template is not None, "No export notebook template defined"
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Jupyter Notebook", "", "Jupyter Notebooks (*.ipynb)")
+
+        if filename:
+            filename = filename.removesuffix(".ipynb") + ".ipynb"
+
+            template_path = Path(__file__).parent.parent / "export_templates" / self._export_notebook_template
+            with open(template_path) as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            replacements = self._get_export_replacements()
+            for cell in notebook.cells:
+                if cell.cell_type == "code":
+                    source = cell.source
+                    for key, value in replacements.items():
+                        source = source.replace(key, str(value))
+                    cell.source = source
+
+            nbformat.write(notebook, filename)
+
+            logger.info(f"Jupyter notebook saved as {filename}")
+
+
+    def _get_export_replacements(self) -> dict[str, str]:
+        # Override this method in subclasses to provide specific replacements for the export
+        return {}
