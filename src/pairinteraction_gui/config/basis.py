@@ -19,14 +19,14 @@ if TYPE_CHECKING:
         real as pi_real,
     )
     from pairinteraction._wrapped.basis.basis_pair import BasisPair
-    from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
+    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
 class BasisBaseConfig(BaseConfig):
     """Section for configuring the basis."""
 
     title = "Basis"
-    page: Union["SystemAtomPage", "SystemPairPage"]
+    page: Union["OneAtomPage", "TwoAtomsPage"]
 
     _label_style_sheet = """
         background-color: #f8f9fa;

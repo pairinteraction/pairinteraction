@@ -16,7 +16,7 @@ from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import DoubleSpinBox, IntSpinBox, RangeItem, WidgetForm, WidgetV
 
 if TYPE_CHECKING:
-    from pairinteraction_gui.page import SystemAtomPage, SystemPairPage
+    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
 class SystemBaseConfig(BaseConfig):
@@ -26,7 +26,7 @@ class SystemBaseConfig(BaseConfig):
     spacing = 10
 
     title = "System"
-    page: Union["SystemAtomPage", "SystemPairPage"]
+    page: Union["OneAtomPage", "TwoAtomsPage"]
 
     def postSetupWidget(self) -> None:
         self.layout().addStretch()

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from pairinteraction_gui.qobjects import WidgetV
 
 if TYPE_CHECKING:
-    from pairinteraction_gui.page.base_page import SimulationPage
+    from pairinteraction_gui.page import SimulationPage
 
 
 class BaseConfig(WidgetV):

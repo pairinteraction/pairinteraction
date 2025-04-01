@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class LifetimesPage(SimulationPage):
     """Page for calculating lifetimes."""
 
-    title = "Lifetime"
+    title = "Lifetimes"
     tooltip = "Calculate the lifetimes and transition rates for a specified ket."
 
     def setupWidget(self) -> None:

@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
     from pairinteraction._wrapped.system.system import SystemBase
     from pairinteraction_gui.config.system import RangeObject
-    from pairinteraction_gui.page.base_page import SimulationPage
+    from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
 mpl.use("Qt5Agg")

@@ -17,7 +17,7 @@ from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 logger = logging.getLogger(__name__)
 
 
-class SystemPairPage(SimulationPage):
+class TwoAtomsPage(SimulationPage):
     """Page for configuring and analyzing pair systems."""
 
     title = "Two Atoms"
