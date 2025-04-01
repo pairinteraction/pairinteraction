@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class SystemAtomPage(SimulationPage):
+class OneAtomPage(SimulationPage):
     """Page for configuring and analyzing single atom systems."""
 
     title = "One Atom"

@@ -20,13 +20,13 @@ from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
     AboutPage,
     LifetimesPage,
-    SystemAtomPage,
-    SystemPairPage,
+    OneAtomPage,
+    TwoAtomsPage,
 )
 from pairinteraction_gui.qobjects import NamedStackedWidget
 
 if TYPE_CHECKING:
-    from pairinteraction_gui.page.base_page import BasePage
+    from pairinteraction_gui.page import BasePage
 
     ChildType = TypeVar("ChildType", bound=QObject)
 
@@ -159,8 +159,8 @@ class MainWindow(QMainWindow):
         stacked_pages = NamedStackedWidget["BasePage"]()
         self.setCentralWidget(stacked_pages)
 
-        stacked_pages.addNamedWidget(SystemAtomPage(), "system_atom")
-        stacked_pages.addNamedWidget(SystemPairPage(), "system_pair")
+        stacked_pages.addNamedWidget(OneAtomPage(), "system_atom")
+        stacked_pages.addNamedWidget(TwoAtomsPage(), "system_pair")
         stacked_pages.addNamedWidget(LifetimesPage(), "lifetimes")
         # stacked_pages.addNamedWidget(C6Page(), "c6")
 
