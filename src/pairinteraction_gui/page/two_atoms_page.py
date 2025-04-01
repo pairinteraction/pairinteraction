@@ -10,7 +10,11 @@ from pairinteraction import (
     complex as pi_complex,
     real as pi_real,
 )
-from pairinteraction_gui.config import BasisPairConfig, KetPairConfig, SystemPairConfig
+from pairinteraction_gui.config import (
+    BasisConfigTwoAtoms,
+    KetConfigTwoAtoms,
+    SystemConfigTwoAtoms,
+)
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 
@@ -31,9 +35,9 @@ class TwoAtomsPage(SimulationPage):
         super().setupWidget()
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
-        self.ket_config = KetPairConfig(self)
-        self.basis_config = BasisPairConfig(self)
-        self.system_pair_config = SystemPairConfig(self)
+        self.ket_config = KetConfigTwoAtoms(self)
+        self.basis_config = BasisConfigTwoAtoms(self)
+        self.system_pair_config = SystemConfigTwoAtoms(self)
 
     def calculate(self) -> None:
         super().calculate()

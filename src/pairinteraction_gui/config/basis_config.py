@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
-class BasisBaseConfig(BaseConfig):
+class BasisConfig(BaseConfig):
     """Section for configuring the basis."""
 
     title = "Basis"
@@ -120,13 +120,13 @@ class BasisBaseConfig(BaseConfig):
             self.update_basis_label(atom)
 
 
-class BasisAtomConfig(BasisBaseConfig):
+class BasisConfigOneAtom(BasisConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneBasisAtom()
 
 
-class BasisPairConfig(BasisBaseConfig):
+class BasisConfigTwoAtoms(BasisConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
 
