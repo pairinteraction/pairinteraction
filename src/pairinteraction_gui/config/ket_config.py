@@ -44,7 +44,7 @@ AVAILABLE_SPECIES = [
 SpeciesTypes = Literal["sqdt_duplet", "sqdt_singlet", "sqdt_triplet", "mqdt_halfint", "mqdt_int"]
 
 
-class KetBaseConfig(BaseConfig):
+class KetConfig(BaseConfig):
     """Section for configuring the ket of interest."""
 
     title = "State of Interest"
@@ -166,13 +166,13 @@ class KetBaseConfig(BaseConfig):
             self.ket_label[atom].setStyleSheet(self._label_style_sheet_error)
 
 
-class KetAtomConfig(KetBaseConfig):
+class KetConfigOneAtom(KetConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
 
 
-class KetLifetimesConfig(KetBaseConfig):
+class KetConfigLifetimes(KetConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
@@ -220,7 +220,7 @@ class KetLifetimesConfig(KetBaseConfig):
             self.update_lifetime()
 
 
-class KetPairConfig(KetBaseConfig):
+class KetConfigTwoAtoms(KetConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
 

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
-class SystemBaseConfig(BaseConfig):
+class SystemConfig(BaseConfig):
     """Section for configuring the system parameters."""
 
     margin = (5, 15, 5, 5)
@@ -87,14 +87,14 @@ class SystemBaseConfig(BaseConfig):
         return systems
 
 
-class SystemAtomConfig(SystemBaseConfig):
+class SystemConfigOneAtom(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
         self.setupSteps()
 
 
-class SystemPairConfig(SystemBaseConfig):
+class SystemConfigTwoAtoms(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()

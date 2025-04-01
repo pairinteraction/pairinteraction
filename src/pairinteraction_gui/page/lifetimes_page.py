@@ -8,7 +8,7 @@ import mplcursors
 import numpy as np
 from PySide6.QtWidgets import QPushButton
 
-from pairinteraction_gui.config import KetLifetimesConfig
+from pairinteraction_gui.config import KetConfigLifetimes
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import show_status_tip
@@ -38,7 +38,7 @@ class LifetimesPage(SimulationPage):
         show_status_tip(self, "Ready", timeout=1)
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
-        self.ket_config = KetLifetimesConfig(self)
+        self.ket_config = KetConfigLifetimes(self)
 
     def calculate(self) -> None:
         super().calculate()

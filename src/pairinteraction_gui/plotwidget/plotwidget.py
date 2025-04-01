@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from pairinteraction._wrapped.system.system import SystemBase
-    from pairinteraction_gui.config.system import RangeObject
+    from pairinteraction_gui.config.system_config import RangeObject
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)

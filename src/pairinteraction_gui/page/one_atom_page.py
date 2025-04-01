@@ -6,7 +6,11 @@ from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 import pairinteraction._wrapped as pi
-from pairinteraction_gui.config import BasisAtomConfig, KetAtomConfig, SystemAtomConfig
+from pairinteraction_gui.config import (
+    BasisConfigOneAtom,
+    KetConfigOneAtom,
+    SystemConfigOneAtom,
+)
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 
@@ -30,9 +34,9 @@ class OneAtomPage(SimulationPage):
         super().setupWidget()
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
-        self.ket_config = KetAtomConfig(self)
-        self.basis_config = BasisAtomConfig(self)
-        self.system_atom_config = SystemAtomConfig(self)
+        self.ket_config = KetConfigOneAtom(self)
+        self.basis_config = BasisConfigOneAtom(self)
+        self.system_atom_config = SystemConfigOneAtom(self)
 
     def calculate(self) -> None:
         super().calculate()
