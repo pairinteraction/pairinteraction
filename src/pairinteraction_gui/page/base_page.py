@@ -3,12 +3,17 @@ import time
 from pathlib import Path
 from typing import Optional
 
+import nbformat
+from nbconvert import PythonExporter
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
+    QFileDialog,
     QHBoxLayout,
     QLabel,
+    QMenu,
     QPushButton,
+    QStyle,
     QToolBox,
 )
 
@@ -42,6 +47,43 @@ class SimulationPage(BasePage):
 
     plotwidget: PlotWidget
 
+    _button_style = """
+        QPushButton {
+            padding: 8px 16px;
+            background-color: #343a40;
+            color: #f8f9fa;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        QPushButton:hover {
+            background-color: #495057;
+        }
+        QPushButton:pressed {
+            background-color: #212529;
+        }
+    """
+
+    _button_menu_style = """
+        QMenu {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 4px;
+        }
+        QMenu::item {
+            padding: 6px 24px;
+            color: #212529;
+            font-size: 14px;
+        }
+        QMenu::item:selected {
+            background-color: #e9ecef;
+        }
+    """
+
+    _export_notebook_template: Optional[str] = None
+
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
@@ -56,15 +98,28 @@ class SimulationPage(BasePage):
 
         # Control panel below the plot
         control_layout = QHBoxLayout()
+
         calculate_button = QPushButton("Calculate")
         calculate_button.setObjectName("Calculate")
+        calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
         calculate_button.clicked.connect(self._thread_calculate)
+        calculate_button.setStyleSheet(self._button_style)
         control_layout.addWidget(calculate_button)
 
-        # export_button = QPushButton("Export")
-        # export_button.setObjectName("Export")
-        # export_button.clicked.connect(self.export)
-        # control_layout.addWidget(export_button)
+        export_button = QPushButton("Export")
+        export_button.setObjectName("Export")
+        export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
+        export_button.setStyleSheet(self._button_style)
+        export_menu = QMenu(self)
+        export_menu.setStyleSheet(self._button_menu_style)
+        file_icon = self.style().standardIcon(QStyle.StandardPixmap.SP_FileIcon)
+        export_menu.addAction(file_icon, "Export as PNG", self.export_png)
+        if self._export_notebook_template:
+            export_menu.addAction(file_icon, "Export as Python script", self.export_python)
+            export_menu.addAction(file_icon, "Export as Jupyter notebook", self.export_notebook)
+
+        export_button.setMenu(export_menu)
+        control_layout.addWidget(export_button)
 
         self.layout().addLayout(control_layout)
 
@@ -116,6 +171,72 @@ class SimulationPage(BasePage):
     def update_plot(self) -> None:
         raise NotImplementedError("Subclasses must implement this method")
 
-    def export(self) -> None:
-        logger.debug("Exporting results...")
-        return
+    def export_png(self) -> None:
+        """Export the current plot as a PNG file."""
+        logger.debug("Exporting results as PNG...")
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Plot", "", "PNG Files (*.png)")
+
+        if filename:
+            filename = filename.removesuffix(".png") + ".png"
+            self.plotwidget.canvas.fig.savefig(
+                filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
+            )
+            logger.info(f"Plot saved as {filename}")
+
+    def export_python(self) -> None:
+        """Export the current calculation as a Python script."""
+        logger.debug("Exporting results as Python script...")
+        assert self._export_notebook_template is not None, "No export notebook template defined"
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Python Script", "", "Python Files (*.py)")
+
+        if filename:
+            filename = filename.removesuffix(".py") + ".py"
+
+            template_path = Path(__file__).parent.parent / "export_templates" / self._export_notebook_template
+            with open(template_path) as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
+            content, _ = exporter.from_notebook_node(notebook)
+
+            replacements = self._get_export_replacements()
+            for key, value in replacements.items():
+                content = content.replace(key, str(value))
+
+            with open(filename, "w") as f:
+                f.write(content)
+
+            logger.info(f"Python script saved as {filename}")
+
+    def export_notebook(self) -> None:
+        """Export the current calculation as a Jupyter notebook."""
+        logger.debug("Exporting results as Jupyter notebook...")
+        assert self._export_notebook_template is not None, "No export notebook template defined"
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Jupyter Notebook", "", "Jupyter Notebooks (*.ipynb)")
+
+        if filename:
+            filename = filename.removesuffix(".ipynb") + ".ipynb"
+
+            template_path = Path(__file__).parent.parent / "export_templates" / self._export_notebook_template
+            with open(template_path) as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            replacements = self._get_export_replacements()
+            for cell in notebook.cells:
+                if cell.cell_type == "code":
+                    source = cell.source
+                    for key, value in replacements.items():
+                        source = source.replace(key, str(value))
+                    cell.source = source
+
+            nbformat.write(notebook, filename)
+
+            logger.info(f"Jupyter notebook saved as {filename}")
+
+
+    def _get_export_replacements(self) -> dict[str, str]:
+        # Override this method in subclasses to provide specific replacements for the export
+        return {}
