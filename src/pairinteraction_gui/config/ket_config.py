@@ -75,6 +75,11 @@ class KetConfig(BaseConfig):
     def postSetupWidget(self) -> None:
         self.layout().addStretch(30)
 
+    @property
+    def n_atoms(self) -> int:
+        """Return the number of atoms configured."""
+        return len(self.species_combo)
+
     def setupOneKetAtom(self) -> None:
         """Set up the UI components for a single ket atom."""
         atom = len(self.species_combo)
@@ -113,7 +118,7 @@ class KetConfig(BaseConfig):
         self.ket_label.append(ket_label)
         self.on_qnitem_changed(atom)
 
-    def get_species(self, atom: int) -> str:
+    def get_species(self, atom: int = 0) -> str:
         """Return the selected species of the ... atom."""
         return self.species_combo[atom].currentText()
 
@@ -133,7 +138,7 @@ class KetConfig(BaseConfig):
             return "sqdt_triplet"
         return "sqdt_duplet"
 
-    def get_quantum_numbers(self, atom: int) -> dict[str, float]:
+    def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn[atom].currentWidget()
         return {item.label: item.value() for item in qn_widget.items if item.isChecked()}

@@ -14,13 +14,10 @@ from PySide6.QtWidgets import QPushButton
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.qobjects import WidgetH, WidgetV
 from pairinteraction_gui.qobjects.item import Item, RangeItem
-from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from pairinteraction._wrapped.system.system import SystemBase
-    from pairinteraction_gui.config.system_config import RangeObject
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
@@ -72,10 +69,14 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
-        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-0.5, decimals=2)
-        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=0.5, decimals=2)
         self.energy_range = RangeItem(
-            self, "Calculate the energies from", min_spinbox, max_spinbox, "GHz", checked=False
+            self,
+            "Calculate the energies from",
+            (-999, 999),
+            (-0.5, 0.5),
+            unit="GHz",
+            checked=False,
+            tooltip_label="energy",
         )
         self.plot_toolbar.layout().addWidget(self.energy_range)
 
@@ -84,7 +85,7 @@ class PlotEnergies(PlotWidget):
 
     def plot(
         self,
-        x_values: "NDArray[Any]",
+        x_values: Sequence[float],
         energies: Sequence["NDArray[Any]"],
         overlaps: Sequence["NDArray[Any]"],
         xlabel: str,
@@ -96,8 +97,8 @@ class PlotEnergies(PlotWidget):
             ax.plot(x_values, np.array(energies), c="0.9", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
-                for x, es in zip(x_values, energies):
-                    ax.plot([x] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
+                for x_value, es in zip(x_values, energies):
+                    ax.plot([x_value] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
             else:
                 raise err
 
@@ -131,7 +132,7 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
 
-    def add_cursor(self, x_value: "NDArray[Any]", energies: "NDArray[Any]", system: "SystemBase[Any]") -> None:
+    def add_cursor(self, x_value: float, energies: "NDArray[Any]", state_labels_0: list[str]) -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore
@@ -139,12 +140,10 @@ class PlotEnergies(PlotWidget):
             del self.mpl_cursor  # type: ignore
 
         ax = self.canvas.ax
-        basis0 = system.get_eigenbasis()
-        corresponding_kets = [basis0.get_corresponding_ket(i) for i in range(basis0.number_of_states)]
 
         artists = []
-        for e, ket in zip(energies, corresponding_kets):
-            artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=str(ket))
+        for e, ket_label in zip(energies, state_labels_0):
+            artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=ket_label)
             artists.extend(artist)
 
         self.mpl_cursor = mplcursors.cursor(
@@ -160,19 +159,3 @@ class PlotEnergies(PlotWidget):
         def on_add(sel: mplcursors.Selection) -> None:
             label = sel.artist.get_label()
             sel.annotation.set_text(label)
-
-    @staticmethod
-    def _get_x_values_and_label_from_ranges(x_ranges: dict[str, "RangeObject"]) -> tuple["NDArray[Any]", str]:
-        range_diffs = {key: abs(r[-1] - r[0]) for key, r in x_ranges.items()}
-        max_key = max(range_diffs, key=range_diffs.get)  # type: ignore
-        x = x_ranges[max_key].list
-
-        xlabel = max_key
-        x_units = {"E": "V/cm", "B": "Gauss", "distance": r"$\mu$m", "angle": r"$^\circ$"}
-        xlabel += f" [{next((unit for key, unit in x_units.items() if max_key.startswith(key)), '')}]"
-
-        non_constant_keys = [k for k, v in range_diffs.items() if k != max_key and v != 0]
-        if non_constant_keys:
-            xlabel += f"  ({', '.join(non_constant_keys)} did also change)"
-
-        return x, xlabel

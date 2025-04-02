@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Union
+from typing import TYPE_CHECKING, ClassVar, Literal, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -18,7 +18,6 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.basis.basis_pair import BasisPair
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
@@ -96,6 +95,14 @@ class BasisConfig(BaseConfig):
                 self.basis_label[atom].setText(str(err))
             self.basis_label[atom].setStyleSheet(self._label_style_sheet_error)
 
+    def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
+        """Return the quantum number deltas for the basis of interest."""
+        delta_qns: dict[str, float] = {}
+        for item in self.stacked_basis[atom].currentWidget().items:
+            if item.isChecked():
+                delta_qns[item.label.replace("Δ", "")] = item.value()
+        return delta_qns
+
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
@@ -149,9 +156,9 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.basis_pair_label.setWordWrap(True)
         self.layout().addWidget(self.basis_pair_label)
 
-    def update_basis_pair_label(self, basis_pair: "BasisPair[Any]") -> None:
+    def update_basis_pair_label(self, basis_pair_label: str) -> None:
         """Update the quantum state label with current values."""
-        self.basis_pair_label.setText(str(basis_pair) + f"\n  ⇒ Basis consists of {basis_pair.number_of_kets} kets")
+        self.basis_pair_label.setText(basis_pair_label)
         self.basis_pair_label.setStyleSheet(self._label_style_sheet)
 
     def clear_basis_pair_label(self) -> None:

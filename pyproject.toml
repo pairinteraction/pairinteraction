@@ -57,6 +57,7 @@ dependencies = [
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
   "mplcursors >= 0.6",
+  "attrs >= 24.0",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
