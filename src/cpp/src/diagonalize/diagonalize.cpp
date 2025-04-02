@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 
 #include "pairinteraction/system/SystemAtom.hpp"

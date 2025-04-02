@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 """Test receiving matrix elements from the databases."""
 
 from collections.abc import Generator

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 from pairinteraction_gui.qobjects.events import reset_status_tip, show_status_tip
 from pairinteraction_gui.qobjects.html_parser import parse_html
 from pairinteraction_gui.qobjects.item import QnItem, RangeItem

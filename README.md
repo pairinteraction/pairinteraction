@@ -200,4 +200,4 @@ The development of the pairinteraction software has been supported by the [Insti
 
 ## License
 
-The pairinteraction software is licensed under [LGPL v3][license-lgpl-link].
+The pairinteraction software is licensed under [LGPL v3][license-lgpl-link]. For more information, see [LICENSE.txt](https://github.com/pairinteraction/pairinteraction/blob/master/LICENSE.txt).

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 import logging
 from collections.abc import Collection, Iterable
 from typing import TYPE_CHECKING, Optional, Union, overload

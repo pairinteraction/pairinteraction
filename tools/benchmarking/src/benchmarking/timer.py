@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 from collections.abc import Generator
 from contextlib import contextmanager
 from time import perf_counter_ns

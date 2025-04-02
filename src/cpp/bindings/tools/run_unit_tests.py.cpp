@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "./run_unit_tests.py.hpp"
 
 #include "pairinteraction/tools/run_unit_tests.hpp"

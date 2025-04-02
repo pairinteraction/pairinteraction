@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 202 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 import os
 from typing import Union
 

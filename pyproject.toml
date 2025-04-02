@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 [build-system]
 requires = [  # keep this in sync with .build_requirements.txt
   "scikit-build-core >=0.9.0",

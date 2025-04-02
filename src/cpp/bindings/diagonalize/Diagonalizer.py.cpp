@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "./Diagonalizer.py.hpp"
 
 #include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
