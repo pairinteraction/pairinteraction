@@ -19,7 +19,6 @@ from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from pairinteraction_gui.config.system_config import RangeObject
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
@@ -157,19 +156,3 @@ class PlotEnergies(PlotWidget):
         def on_add(sel: mplcursors.Selection) -> None:
             label = sel.artist.get_label()
             sel.annotation.set_text(label)
-
-    @staticmethod
-    def _get_x_values_and_label_from_ranges(x_ranges: dict[str, "RangeObject"]) -> tuple["NDArray[Any]", str]:
-        range_diffs = {key: abs(r[-1] - r[0]) for key, r in x_ranges.items()}
-        max_key = max(range_diffs, key=range_diffs.get)  # type: ignore
-        x = x_ranges[max_key].list
-
-        xlabel = max_key
-        x_units = {"E": "V/cm", "B": "Gauss", "distance": r"$\mu$m", "angle": r"$^\circ$"}
-        xlabel += f" [{next((unit for key, unit in x_units.items() if max_key.startswith(key)), '')}]"
-
-        non_constant_keys = [k for k, v in range_diffs.items() if k != max_key and v != 0]
-        if non_constant_keys:
-            xlabel += f"  ({', '.join(non_constant_keys)} did also change)"
-
-        return x, xlabel

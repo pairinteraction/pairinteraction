@@ -23,7 +23,7 @@ class ParametersOneAtom:
     species: str
     quantum_numbers: dict[str, float]
     quantum_number_deltas: dict[str, float]
-    fields: dict[str, list[float]]
+    ranges: dict[str, list[float]]
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: Union[tuple[float, float], None]
 
@@ -35,7 +35,7 @@ class ParametersOneAtom:
 
         quantum_number_deltas = page.basis_config.get_quantum_number_deltas()
 
-        fields = page.system_atom_config.get_fields_dict()
+        ranges = page.system_atom_config.get_ranges_dict()
 
         diagonalize_kwargs = {}
         if page.plotwidget.fast_mode.isChecked():
@@ -50,28 +50,28 @@ class ParametersOneAtom:
             species,
             quantum_numbers,
             quantum_number_deltas,
-            fields,
+            ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
         )
 
     def is_real(self) -> bool:
         """Check if the parameters are real."""
-        return all(e == 0 for e in self.fields.get("Ey", [0])) and all(b == 0 for b in self.fields.get("By", [0]))
+        return all(e == 0 for e in self.ranges.get("Ey", [0])) and all(b == 0 for b in self.ranges.get("By", [0]))
 
     def get_efield(self, step: int) -> list[float]:
         """Return the electric field for the given step."""
-        return [self.fields[key][step] if key in self.fields else 0 for key in ["Ex", "Ey", "Ez"]]
+        return [self.ranges[key][step] if key in self.ranges else 0 for key in ["Ex", "Ey", "Ez"]]
 
     def get_bfield(self, step: int) -> list[float]:
         """Return the magnetic field for the given step."""
-        return [self.fields[key][step] if key in self.fields else 0 for key in ["Bx", "By", "Bz"]]
+        return [self.ranges[key][step] if key in self.ranges else 0 for key in ["Bx", "By", "Bz"]]
 
     @property
     def steps(self) -> int:
         """Return the number of steps."""
-        steps = len(next(iter(self.fields.values())))
-        assert all(len(v) == steps for v in self.fields.values()), "All fields must have the same number of steps"
+        steps = len(next(iter(self.ranges.values())))
+        assert all(len(v) == steps for v in self.ranges.values()), "All ranges must have the same number of steps"
         return steps
 
     def get_quantum_numbers(self) -> dict[str, Any]:
@@ -102,13 +102,13 @@ class ParametersOneAtom:
 
     def _get_max_diff_key(self) -> str:
         """Return the key with the maximum difference in the ranges."""
-        range_diffs = {key: abs(r[-1] - r[0]) for key, r in self.fields.items()}
+        range_diffs = {key: abs(r[-1] - r[0]) for key, r in self.ranges.items()}
         return max(range_diffs, key=range_diffs.get)
 
     def get_x_values(self) -> list[float]:
         """Return the x values for the plot."""
         max_key = self._get_max_diff_key()
-        return self.fields[max_key]
+        return self.ranges[max_key]
 
     def get_x_label(self) -> str:
         """Return the x values for the plot."""
@@ -118,7 +118,7 @@ class ParametersOneAtom:
         x_units = {"E": "V/cm", "B": "Gauss", "distance": r"$\mu$m", "angle": r"$^\circ$"}
         x_label += f" [{next((unit for key, unit in x_units.items() if max_key.startswith(key)), '')}]"
 
-        non_constant_keys = [key for key, values in self.fields.items() if key != max_key and values[0] != values[-1]]
+        non_constant_keys = [key for key, values in self.ranges.items() if key != max_key and values[0] != values[-1]]
         if non_constant_keys:
             x_label += f"  ({', '.join(non_constant_keys)} did also change)"
 
@@ -163,14 +163,13 @@ def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     ket = pi.KetAtom(parameters.species, **parameters.get_quantum_numbers())
     basis = pi.BasisAtom(parameters.species, **parameters.get_quantum_number_restrictions(ket))
 
-    systems = []
-    for step in range(parameters.steps):
-        system = pi.SystemAtom(basis)
-        system.set_electric_field(parameters.get_efield(step), unit="V/cm")
-        system.set_magnetic_field(parameters.get_bfield(step), unit="G")
-        systems.append(system)
+    system_list = [
+        pi.SystemAtom(basis)
+        .set_electric_field(parameters.get_efield(step), unit="V/cm")
+        .set_magnetic_field(parameters.get_bfield(step), unit="G")
+        for step in range(parameters.steps)
+    ]
 
-    print(parameters.get_diagonalize_kwargs(ket))
-    pi.diagonalize(systems, **parameters.get_diagonalize_kwargs(ket))
+    pi.diagonalize(system_list, **parameters.get_diagonalize_kwargs(ket))
 
-    return ResultsOneAtom.from_ket_basis_systems(ket, basis, systems)
+    return ResultsOneAtom.from_ket_basis_systems(ket, basis, system_list)
