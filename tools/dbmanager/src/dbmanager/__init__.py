@@ -12,6 +12,8 @@ import duckdb
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", handlers=[logging.StreamHandler()])
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class TableFile:
@@ -34,19 +36,19 @@ def get_source_directory() -> Path:
     else:
         xdg_cache = os.environ.get("XDG_CACHE_HOME", "~/.cache")
         source_dir = Path(xdg_cache).expanduser() / "pairinteraction" / "database"
-    logging.debug(f"Source directory determined: {source_dir}")
+    logger.debug("Source directory determined: %s", source_dir)
     return source_dir
 
 
 def load_parquet_and_csv_files(path_source: Path) -> dict[str, TableFile]:
     """Load the latest parquet files from the source directory."""
-    parquet_and_csv_files = {}
+    parquet_and_csv_files: dict[str, TableFile] = {}
     for path in list(path_source.glob("*.parquet")) + list(path_source.glob("*.csv")):
         name, version_str = path.stem.rsplit("_v", 1)
         version = int(version_str)
         if name not in parquet_and_csv_files or version > parquet_and_csv_files[name].version:
             parquet_and_csv_files[name] = TableFile(name, version, path)
-            logging.debug(f"Loaded parquet file: {parquet_and_csv_files[name]}")
+            logger.debug("Loaded parquet file: %s", parquet_and_csv_files[name])
     return parquet_and_csv_files
 
 
@@ -58,7 +60,7 @@ def delete_old_parquet_and_csv_files(path_target: Path, parquet_and_csv_files: d
         if name in parquet_and_csv_files:
             if version < parquet_and_csv_files[name].version or parquet_and_csv_files[name].path.suffix == ".csv":
                 path.unlink()
-                logging.info(f"Deleted csv / old parquet file: {path.name}")
+                logger.info("Deleted csv / old parquet file: %s", path.name)
             elif version > parquet_and_csv_files[name].version:
                 raise ValueError(
                     f"Version of the table '{name}' in target directory is higher than in source directory."
@@ -79,7 +81,7 @@ def write_parquet_files(
             f"(FORMAT PARQUET, {', '.join(f'{k} {v}' for k, v in options.items())})"
         )
         connection.execute(copy_cmd)
-        logging.debug(f"Wrote parquet file: {parquet_file.path}")
+        logger.debug("Wrote parquet file: %s", parquet_file.path)
 
 
 def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[str, TableFile]) -> None:
@@ -88,17 +90,17 @@ def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[st
 
     # Initialize a list to hold each row's data
     table_data = []
-    total_size_on_disk = 0
+    total_size_on_disk = 0.0
     for parquet_file in parquet_files.values():
         if parquet_file.path.suffix == ".csv":
             continue
 
         metadata = connection.execute(
-            f"SELECT compression, row_group_num_rows FROM parquet_metadata('{parquet_file.path}')"
+            "SELECT compression, row_group_num_rows FROM parquet_metadata('?')", parquet_file.path
         ).fetchone()
 
         file_metadata = connection.execute(
-            f"SELECT num_rows, num_row_groups FROM parquet_file_metadata('{parquet_file.path}')"
+            "SELECT num_rows, num_row_groups FROM parquet_file_metadata('?')", parquet_file.path
         ).fetchone()
 
         compression = metadata[0] if metadata else "Unknown"
@@ -134,10 +136,10 @@ def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[st
     row_fmt = " | ".join([f"{{:<{w}}}" for w in col_widths])
 
     # Output the table
-    logging.info(header_fmt.format(*headers))
-    logging.info(separator)
+    logger.info(header_fmt.format(*headers))
+    logger.info(separator)
     for row in table_data:
-        logging.info(row_fmt.format(*row))
+        logger.info(row_fmt.format(*row))
 
 
 def optimize() -> None:
@@ -166,15 +168,15 @@ def optimize() -> None:
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
-        logging.info("Metadata of the original parquet files")
-        logging.info("")
+        logger.info("Metadata of the original parquet files")
+        logger.info("")
         print_metadata(connection, parquet_and_csv_files)
-        logging.info("")
+        logger.info("")
 
         # Read parquet files into DuckDB
         for table_file in parquet_and_csv_files.values():
-            connection.execute(f"CREATE TEMP TABLE {table_file.name} AS SELECT * FROM '{table_file.path}'")
-            logging.debug(f"Loaded table into DuckDB: {table_file.name}")
+            connection.execute("CREATE TEMP TABLE ? AS SELECT * FROM '?'", table_file.name, table_file.path)
+            logger.debug("Loaded table into DuckDB: %s", table_file.name)
 
         # Delete old parquet files from the target directory to keep it clean
         delete_old_parquet_and_csv_files(path_target, parquet_and_csv_files)
@@ -185,10 +187,10 @@ def optimize() -> None:
         )
 
         # Print metadata of the new parquet files
-        logging.info("Metadata of the newly created parquet files")
-        logging.info("")
+        logger.info("Metadata of the newly created parquet files")
+        logger.info("")
         print_metadata(connection, parquet_and_csv_files)
-        logging.info("")
+        logger.info("")
 
 
 def shrink() -> None:
@@ -223,14 +225,13 @@ def shrink() -> None:
 
     path_source = get_source_directory()
     parquet_files = load_parquet_and_csv_files(path_source)
-    # TODO only load the tables for a few species, which are used for testing
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
-        logging.info("Metadata of the original parquet files")
-        logging.info("")
+        logger.info("Metadata of the original parquet files")
+        logger.info("")
         print_metadata(connection, parquet_files)
-        logging.info("")
+        logger.info("")
 
         # Read and filter parquet files
         all_species: list[str] = []
@@ -238,44 +239,54 @@ def shrink() -> None:
         if "wigner" in parquet_files:
             parquet_file = parquet_files["wigner"]
             connection.execute(
-                f"CREATE TEMP TABLE {parquet_file.name} "
-                f"AS SELECT * FROM '{parquet_file.path}' "
-                f"WHERE f_initial BETWEEN 0 AND {max_f} AND f_final BETWEEN 0 AND {max_f}"
+                "CREATE TEMP TABLE ? AS SELECT * FROM '?' WHERE f_initial BETWEEN 0 AND ? AND f_final BETWEEN 0 AND ?",
+                parquet_file.name,
+                parquet_file.path,
+                max_f,
+                max_f,
             )
-            logging.debug(f"Filtered 'wigner' table with max_f={max_f}")
+            logger.debug("Filtered 'wigner' table with max_f=%s", max_f)
 
         for parquet_file in parquet_files.values():
             if parquet_file.name.endswith("_states"):
                 species = parquet_file.name.rsplit("_", 1)[0]
                 all_species.append(species)
                 connection.execute(
-                    f"CREATE TEMP TABLE {parquet_file.name} "
-                    f"AS SELECT * FROM '{parquet_file.path}' "
-                    f"WHERE nu BETWEEN {min_n} AND {max_n} AND f BETWEEN 0 AND {max_f}"
+                    "CREATE TEMP TABLE ? AS SELECT * FROM '?' WHERE nu BETWEEN ? AND ? AND f BETWEEN 0 AND ?",
+                    parquet_file.name,
+                    parquet_file.path,
+                    min_n,
+                    max_n,
+                    max_f,
                 )
-                logging.debug(f"Filtered '{parquet_file.name}' with nu between {min_n} and {max_n} and f <= {max_f}")
+                logger.debug(
+                    "Filtered '%s' with nu between %s and %s and f <= %s", parquet_file.name, min_n, max_n, max_f
+                )
 
         for parquet_file in parquet_files.values():
             if not parquet_file.name.endswith("_states") and parquet_file.name != "wigner":
-                species = next((s for s in all_species if parquet_file.name.startswith(s)), None)
+                species = next((s for s in all_species if parquet_file.name.startswith(s)), "")
                 if species:
                     state_db_name = f"{species}_states"
                     connection.execute(
-                        f"CREATE TEMP TABLE {parquet_file.name} AS "
-                        f"WITH s AS (SELECT * FROM '{parquet_file.path}') "
-                        f"SELECT s.* FROM s "
-                        f"JOIN {state_db_name} AS s1 ON s.id_initial = s1.id "
-                        f"JOIN {state_db_name} AS s2 ON s.id_final = s2.id"
+                        "CREATE TEMP TABLE ? AS "
+                        "WITH s AS (SELECT * FROM '?') "
+                        "SELECT s.* FROM s "
+                        "JOIN ? AS s1 ON s.id_initial = s1.id "
+                        "JOIN ? AS s2 ON s.id_final = s2.id",
+                        parquet_file.name,
+                        parquet_file.path,
+                        state_db_name,
+                        state_db_name,
                     )
-                    logging.debug(f"Shrunk table '{parquet_file.name}' based on '{state_db_name}'")
+                    logger.debug("Shrunk table '%s' based on '%s'", parquet_file.name, state_db_name)
 
         # Remove parquet files for which a recent version exists in the target directory
         for path in list(path_target.glob("*.parquet")) + list(path_target.glob("*.csv")):
             name, version_str = path.stem.rsplit("_v", 1)
             version = int(version_str)
-            if name in parquet_files:
-                if version > parquet_files[name].version:
-                    parquet_files.pop(name)
+            if name in parquet_files and version > parquet_files[name].version:
+                parquet_files.pop(name)
 
         # Delete old parquet files from the target directory to keep it clean
         delete_old_parquet_and_csv_files(path_target, parquet_files)
@@ -286,7 +297,7 @@ def shrink() -> None:
         )
 
         # Print metadata of the new parquet files
-        logging.info("Metadata of the newly created parquet files")
-        logging.info("")
+        logger.info("Metadata of the newly created parquet files")
+        logger.info("")
         print_metadata(connection, parquet_files)
-        logging.info("")
+        logger.info("")

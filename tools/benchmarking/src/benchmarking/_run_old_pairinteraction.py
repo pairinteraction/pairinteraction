@@ -1,6 +1,10 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+# Disable "module has no attribute" error because mypy does not
+# know that we use the old version of pairinteraction:
+# mypy: disable-error-code="attr-defined"
+
 # /// script
 # requires-python = "==3.13.*"
 # dependencies = [
