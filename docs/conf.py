@@ -1,4 +1,7 @@
-# noqa: INP001
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+# ruff: noqa: INP001
 
 # Configuration file for the Sphinx documentation builder.
 import os

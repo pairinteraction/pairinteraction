@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the Eigen3
+The binary builds of the pairinteraction software include the Eigen
 library. The use of this library is subject to the Mozilla Public License,
 Version 2.0:
 
