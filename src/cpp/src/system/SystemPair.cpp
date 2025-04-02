@@ -134,6 +134,11 @@ GreenTensor<Scalar> construct_green_tensor(
 
     // Dyadic green function of quadrupole-quadrupole interaction
     if (order >= 5) {
+        SPDLOG_WARN("Quadrupole-quadrupole interaction is considered but "
+                    "not dipole-octupole interaction although this interaction would be "
+                    "of the same order. We plan to implement dipole-octupole interaction "
+                    "in the future.");
+
         Eigen::Matrix<real_t, 9, 9> entries = Eigen::Matrix<real_t, 9, 9>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             for (Eigen::Index j = 0; j < 3; ++j) {
