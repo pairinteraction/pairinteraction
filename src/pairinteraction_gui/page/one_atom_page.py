@@ -5,7 +5,7 @@ import logging
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
-from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, calculate_one_atom
+from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
     BasisConfigOneAtom,
     KetConfigOneAtom,
@@ -26,7 +26,7 @@ class OneAtomPage(SimulationPage):
     title = "One Atom"
     tooltip = "Configure and analyze single atom systems"
 
-    plotwidget: PlotEnergies
+    results: ResultsOneAtom
 
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
@@ -39,23 +39,13 @@ class OneAtomPage(SimulationPage):
         self.system_config = SystemConfigOneAtom(self)
 
     def calculate(self) -> None:
-        super().calculate()
-
         self.parameters = ParametersOneAtom.from_page(self)
         self.results = calculate_one_atom(self.parameters)
 
     def update_plot(self) -> None:
-        energies = self.results.energies
-        overlaps = self.results.ket_overlaps
+        super().update_plot()
 
-        x_values = self.parameters.get_x_values()
-        x_label = self.parameters.get_x_label()
-
-        self.plotwidget.plot(x_values, energies, overlaps, x_label)
-
-        self.add_short_labels(energies)
-        self.plotwidget.add_cursor(x_values[0], energies[0], self.results.state_labels_0)
-
+        self.add_short_labels(self.results.energies)
         self.plotwidget.canvas.draw()
 
     def add_short_labels(

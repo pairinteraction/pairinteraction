@@ -1,13 +1,17 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 import os
 import signal
+from multiprocessing import Process
 from types import FrameType
-from typing import Optional
+from typing import ClassVar, Optional
 
-from PySide6.QtCore import QCoreApplication, QObject, QSocketNotifier, QTimer, Signal
+from PySide6.QtCore import QObject, QSocketNotifier, QThread, QTimer, Signal
 from PySide6.QtWidgets import QApplication
+
+logger = logging.getLogger(__name__)
 
 
 class MainSignals(QObject):
@@ -25,6 +29,8 @@ class Application(QApplication):
     """Add some global signals to the QApplication."""
 
     signals = MainSignals()
+    all_processes: ClassVar[set[Process]] = set()
+    all_threads: ClassVar[set[QThread]] = set()
 
     @classmethod
     def instance(cls) -> "Application":  # type: ignore  # overwrite type hints
@@ -42,8 +48,8 @@ class Application(QApplication):
 
         def handle_signal() -> None:
             os.read(pipe_r, 1)  # Read the byte from the pipe to clear it
-            print("\nCtrl+C detected. Shutting down gracefully...")
-            QCoreApplication.quit()
+            logger.info("Ctrl+C detected in terminal. Shutting down gracefully...")
+            self.quit()
 
         sn = QSocketNotifier(pipe_r, QSocketNotifier.Type.Read, parent=self)
         sn.activated.connect(handle_signal)
@@ -53,3 +59,23 @@ class Application(QApplication):
         timer = QTimer(self)
         timer.timeout.connect(lambda: None)  # Do nothing, just wake up the event loop
         timer.start(200)
+
+    @staticmethod
+    def quit() -> None:
+        """Quit the application."""
+        logger.debug("Calling Application.quit().")
+
+        for process in Application.all_processes:
+            if process.is_alive():
+                logger.debug("Terminating process %s.", process.pid)
+                process.terminate()
+                process.join(timeout=1)
+
+        for thread in Application.all_threads:
+            if thread.isRunning():
+                logger.debug("Terminating thread %s.", thread)
+                thread.terminate()
+                thread.wait()
+
+        QApplication.quit()
+        logger.debug("Application.quit() done.")

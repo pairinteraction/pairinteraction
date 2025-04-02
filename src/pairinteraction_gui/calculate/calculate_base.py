@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
 
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import NDArray
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+
+logger = logging.getLogger(__name__)
 
 # FIXME: having all kwargs dictionaries being Any is a hacky solution, it would be nice to use TypedDict in the future
 

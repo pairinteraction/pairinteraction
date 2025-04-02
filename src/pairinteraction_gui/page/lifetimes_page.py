@@ -41,8 +41,6 @@ class LifetimesPage(SimulationPage):
         self.ket_config = KetConfigLifetimes(self)
 
     def calculate(self) -> None:
-        super().calculate()
-
         ket = self.ket = self.ket_config.get_ket_atom(0)
         temperature = self.ket_config.get_temperature()
         self.kets_sp, self.transition_rates_sp = ket.get_spontaneous_transition_rates(unit="1/ms")
