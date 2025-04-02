@@ -19,7 +19,6 @@ from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from pairinteraction._wrapped.system.system import SystemBase
     from pairinteraction_gui.config.system_config import RangeObject
     from pairinteraction_gui.page import SimulationPage
 
@@ -84,7 +83,7 @@ class PlotEnergies(PlotWidget):
 
     def plot(
         self,
-        x_values: "NDArray[Any]",
+        x_values: Sequence[float],
         energies: Sequence["NDArray[Any]"],
         overlaps: Sequence["NDArray[Any]"],
         xlabel: str,
@@ -131,7 +130,7 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
 
-    def add_cursor(self, x_value: "NDArray[Any]", energies: "NDArray[Any]", system: "SystemBase[Any]") -> None:
+    def add_cursor(self, x_value: float, energies: "NDArray[Any]", corresponding_kets_0: list[str]) -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore
@@ -139,12 +138,10 @@ class PlotEnergies(PlotWidget):
             del self.mpl_cursor  # type: ignore
 
         ax = self.canvas.ax
-        basis0 = system.get_eigenbasis()
-        corresponding_kets = [basis0.get_corresponding_ket(i) for i in range(basis0.number_of_states)]
 
         artists = []
-        for e, ket in zip(energies, corresponding_kets):
-            artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=str(ket))
+        for e, ket_label in zip(energies, corresponding_kets_0):
+            artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=ket_label)
             artists.extend(artist)
 
         self.mpl_cursor = mplcursors.cursor(

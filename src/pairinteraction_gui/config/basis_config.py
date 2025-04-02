@@ -96,6 +96,14 @@ class BasisConfig(BaseConfig):
                 self.basis_label[atom].setText(str(err))
             self.basis_label[atom].setStyleSheet(self._label_style_sheet_error)
 
+    def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
+        """Return the quantum number deltas for the basis of interest."""
+        delta_qns: dict[str, float] = {}
+        for item in self.stacked_basis[atom].currentWidget().items:
+            if item.isChecked():
+                delta_qns[item.label.replace("Δ", "")] = item.value()
+        return delta_qns
+
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:

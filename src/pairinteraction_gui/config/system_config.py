@@ -66,6 +66,18 @@ class SystemConfig(BaseConfig):
             fields[key] = RangeObject(*value, steps)
         return fields
 
+    def get_fields_dict(self) -> dict[str, list[float]]:
+        """Return the electric and magnetic field ranges."""
+        steps = self.steps_spinbox.value()
+        fields_min_max: dict[str, tuple[float, float]] = {
+            item.label: item.values() if item.isChecked() else (0, 0)
+            for item in self.efield_range.items + self.bfield_range.items
+        }
+        fields: dict[str, list[float]] = {
+            key: np.linspace(value[0], value[1], steps).tolist() for key, value in fields_min_max.items()
+        }
+        return fields
+
     def get_systems(self, atom: int) -> Union[list["pi_real.SystemAtom"], list["pi_complex.SystemAtom"]]:
         """Return a list of system atoms and corresponding field min/max values for the given configuration."""
         fields = self.get_fields()
