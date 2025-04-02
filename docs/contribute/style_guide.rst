@@ -83,7 +83,7 @@ Python
 **Argument types** ``def my_func(arg1: ArgumentType1, arg2: ArgumentType2) -> ...:``
 
 - Argument types often don't need to be a specific type like `Duck`, but only have to be some `DuckLikeType` (see also
-  the `mypy cheat-sheet <https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html#standard-duck-types>`).
+  the `mypy cheat-sheet <https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html#standard-duck-types>`_).
 - List/Tuples of objects with a fixed length should typically be annotated as ``collections.abc.Sequence[Type]``; for a
   variable length use ``collections.abc.Iterable[Type]`` instead (see also `collections.abc abstract base classes
   <https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes>`_).
@@ -101,3 +101,16 @@ Python
 - Pint objects should be annotated as ``"pairinteraction.units.PintFloat"``, ``"pairinteraction.units.PintArray"`` or
   ``"pairinteraction.units.PintSparse"`` for scalar, dense matrix and sparse matrix respectively. These are aliases for
   ``PlainQuantity[float]``, ``PlainQuantity[NDArray]`` or ``PlainQuantity[csr_matrix]``.
+
+Adding License Information
+--------------------------
+
+The pairinteraction software is licensed under LGPL v3. Code files should contain the following license header:
+
+.. code-block::
+
+    SPDX-FileCopyrightText: <year of the creation of the file> Pairinteraction Developers
+    SPDX-License-Identifier: LGPL-3.0-or-later
+
+If a third-party library is used *and* binary builds of the pairinteraction software include it, license information for
+the library should be added to :github:`LICENSES/THIRD-PARTY-LICENSE-<library>.txt <tree/master/LICENSES>`.
