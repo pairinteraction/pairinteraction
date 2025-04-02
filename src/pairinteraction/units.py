@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 from collections.abc import Collection, Iterable
 from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 

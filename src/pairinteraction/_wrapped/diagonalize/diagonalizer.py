@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from pairinteraction import _backend, _wrapped

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
 
 #include "pairinteraction/enums/FloatType.hpp"

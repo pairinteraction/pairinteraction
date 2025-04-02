@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 #include "./Info.py.hpp"
 #include "./LoggerBridge.hpp"
 #include "./basis/Basis.py.hpp"

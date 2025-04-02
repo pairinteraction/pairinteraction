@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 """Test the pair potential calculation."""
 
 from pathlib import Path
