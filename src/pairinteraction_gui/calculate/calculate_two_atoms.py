@@ -1,0 +1,126 @@
+# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+from typing import TYPE_CHECKING, Optional, Union
+
+from attr import dataclass
+
+from pairinteraction import (
+    complex as pi_complex,
+    real as pi_real,
+)
+from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from pairinteraction_gui.page import TwoAtomsPage
+
+
+@dataclass
+class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
+    """Parameters for the two atoms calculation."""
+
+    pair_basis_energy_delta: float = 0
+    order: int = 3
+
+    @classmethod
+    def from_page(cls, page: "TwoAtomsPage") -> "Self":
+        obj = super().from_page(page)
+        obj.pair_basis_energy_delta = page.basis_config.delta_pair_energy.value()
+        obj.order = page.system_config.order.value()
+        return obj
+
+
+@dataclass
+class ResultsTwoAtoms(Results):
+    basis_0_label: Optional[str] = None
+
+
+def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
+    """Calculate the energy plot for one atom.
+
+    This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsTwoAtoms object.
+    """
+    pi = pi_real if parameters.is_real else pi_complex
+    n_atoms = 2
+
+    kets = tuple(pi.KetAtom(parameters.get_species(i), **parameters.get_quantum_numbers(i)) for i in range(n_atoms))
+    bases = tuple(
+        pi.BasisAtom(parameters.get_species(i), **parameters.get_quantum_number_restrictions(i)) for i in range(n_atoms)
+    )
+
+    fields = {k: v for k, v in parameters.ranges.items() if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz"]}
+
+    basis_pair_list: Union[list[pi_real.BasisPair], list[pi_complex.BasisPair]]
+    if all(v[0] == v[-1] for v in fields.values()):
+        # If all fields are constant, we can only have to diagonalize one SystemAtom per atom
+        # and can construct one BasisPair, which we can use for all steps
+        systems = tuple(
+            pi.SystemAtom(bases[i])
+            .set_electric_field(parameters.get_efield(0), unit="V/cm")
+            .set_magnetic_field(parameters.get_bfield(0), unit="G")
+            for i in range(n_atoms)
+        )
+        pi.diagonalize(systems, **parameters.diagonalize_kwargs)
+        ket_pair_energy_0 = sum(systems[i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
+        delta_energy = parameters.pair_basis_energy_delta
+        basis_pair = pi.BasisPair(
+            systems,
+            energy=(ket_pair_energy_0 - delta_energy, ket_pair_energy_0 + delta_energy),
+            energy_unit="GHz",
+        )
+        # not very elegant, but works (note that importantly this does not copy the basis_pair objects)
+        basis_pair_list = parameters.steps * [basis_pair]
+    else:
+        # Otherwise, we have to diagonalize one SystemAtom per atom and per step
+        # and construct one BasisPair per step
+        systems_list = []
+        for step in range(parameters.steps):
+            systems = tuple(
+                pi.SystemAtom(bases[i])
+                .set_electric_field(parameters.get_efield(step), unit="V/cm")
+                .set_magnetic_field(parameters.get_bfield(step), unit="G")
+                for i in range(n_atoms)
+            )
+            systems_list.append(systems)
+        systems_flattened = [system for systems in systems_list for system in systems]
+        pi.diagonalize(systems_flattened, **parameters.diagonalize_kwargs)
+        delta_energy = parameters.pair_basis_energy_delta
+        basis_pair_list = []
+        for step in range(parameters.steps):
+            ket_pair_energy = sum(
+                systems_list[step][i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms)
+            )
+            basis_pair = pi.BasisPair(
+                systems_list[step],
+                energy=(ket_pair_energy - delta_energy, ket_pair_energy + delta_energy),
+                energy_unit="GHz",
+            )
+            basis_pair_list.append(basis_pair)
+        ket_pair_energy_0 = sum(systems_list[-1][i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
+
+    system_pair_list: Union[list[pi_real.SystemPair], list[pi_complex.SystemPair]] = []
+    for step in range(parameters.steps):
+        system = pi.SystemPair(basis_pair_list[step])
+        system.set_interaction_order(parameters.order)
+        if "Distance" in parameters.ranges:
+            distance = parameters.ranges["Distance"][step]
+            angle: float = 0
+            if "Angle" in parameters.ranges:
+                angle = parameters.ranges["Angle"][step]
+            system.set_distance(distance, angle, unit="micrometer")
+        system_pair_list.append(system)
+
+    pi.diagonalize(
+        system_pair_list,
+        **parameters.diagonalize_kwargs,
+        **parameters.get_diagonalize_energy_range(ket_pair_energy_0),
+    )
+
+    results = ResultsTwoAtoms.from_calculate(system_pair_list, kets, ket_pair_energy_0)
+    results.basis_0_label = (
+        str(basis_pair_list[-1]) + f"\n  ⇒ Basis consists of {basis_pair_list[-1].number_of_kets} kets"
+    )
+
+    return results
