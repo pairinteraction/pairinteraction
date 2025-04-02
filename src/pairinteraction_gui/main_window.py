@@ -5,7 +5,7 @@ import logging
 from typing import TYPE_CHECKING, Optional, TypeVar
 
 from PySide6.QtCore import QObject, QSize, Qt
-from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
     QMainWindow,
@@ -236,7 +236,14 @@ class MainWindow(QMainWindow):
         """Initialize keyboard shortcuts."""
         # Add Ctrl+W shortcut to close the window
         close_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
+        close_shortcut.activated.connect(lambda: logger.info("Ctrl+W detected. Shutting down gracefully..."))
         close_shortcut.activated.connect(self.close)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """Make sure to also call Application.quit() when closing the window."""
+        logger.debug("Close event triggered.")
+        Application.quit()
+        event.accept()
 
     def ask_download_database(self, species: str) -> bool:
         msg_box = QMessageBox()
