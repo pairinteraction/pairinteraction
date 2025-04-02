@@ -113,4 +113,4 @@ The pairinteraction software is licensed under LGPL v3. Code files should contai
     SPDX-License-Identifier: LGPL-3.0-or-later
 
 If a third-party library is used *and* binary builds of the pairinteraction software include it, license information for
-the library should be added to :github:`LICENSES/THIRD-PARTY-LICENSE-<library>.txt <tree/master/LICENSES>`.
+the library should be added to the :github:`LICENSES-THIRD-PARTY <tree/master/LICENSES-THIRD-PARTY>` directory.
