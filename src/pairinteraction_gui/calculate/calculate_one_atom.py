@@ -1,11 +1,10 @@
-
 from attr import dataclass
 
 from pairinteraction import (
     complex as pi_complex,
     real as pi_real,
 )
-from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+from pairinteraction_gui.calculate.calculate_base import Parameters, Results, run_in_other_process
 
 
 @dataclass
@@ -18,7 +17,8 @@ class ResultsOneAtom(Results):
     """Results for the one atom calculation."""
 
 
-def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
+@run_in_other_process
+def calculate_one_atom(parameters: ParametersOneAtom) -> None:
     """Calculate the energy plot for one atom.
 
     This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsOneAtom object.
@@ -41,5 +41,4 @@ def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
         **parameters.diagonalize_kwargs,
         **parameters.get_diagonalize_energy_range(ket_energy),
     )
-
     return ResultsOneAtom.from_calculate(system_list, ket, ket_energy)
