@@ -11,7 +11,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
-from typing import Callable
+from types import ModuleType
+from typing import Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,6 +28,8 @@ from pairinteraction import __version__, configure_logging
 
 configure_logging("INFO")
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class BenchmarkResult:
@@ -37,8 +40,12 @@ class BenchmarkResult:
     duration_in_sec: float
 
 
-def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings: dict) -> list[BenchmarkResult]:
+def benchmark_pairinteraction(
+    pi: ModuleType, float_type: str, name: str, settings: dict[str, Any]
+) -> list[BenchmarkResult]:
     """Benchmark pairinteraction."""
+    assert pi is pi_real or pi is pi_complex
+
     species = settings["species"]
     n = settings["n"]
     l = settings["l"]
@@ -75,7 +82,7 @@ def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings
         _ = pair_systems[0].get_hamiltonian()
     results.append(BenchmarkResult("Construction", software_name, get_duration()))
 
-    logging.info(f"Number of kets: {pair_systems[0].basis.number_of_states}")
+    logger.info("Number of kets: %s", pair_systems[0].basis.number_of_states)
 
     with timer() as get_duration:
         pi.diagonalize(
@@ -87,18 +94,18 @@ def benchmark_pairinteraction(pi: Callable, float_type: str, name: str, settings
             energy_unit="GHz",
         )
 
-    logging.info(f"Number of states: {pair_systems[0].basis.number_of_states}")
+    logger.info("Number of states: %s", pair_systems[0].basis.number_of_states)
 
     results.append(BenchmarkResult("Diagonalization", software_name, get_duration()))
 
     return results
 
 
-def benchmark_external_script(script_path: Path, name: str, settings: dict) -> list[BenchmarkResult]:
+def benchmark_external_script(script_path: Path, name: str, settings: dict[str, Any]) -> list[BenchmarkResult]:
     """Benchmark external script."""
     try:
-        proc_result = subprocess.run(
-            ["uv", "run", "--script", script_path, json.dumps(settings)],
+        proc_result = subprocess.run(  # noqa: S603
+            ["uv", "run", "--script", script_path, json.dumps(settings)],  # noqa: S607
             capture_output=True,
             text=True,
             check=True,
@@ -113,8 +120,8 @@ def benchmark_external_script(script_path: Path, name: str, settings: dict) -> l
         raise RuntimeError(f"Unable to extract benchmarking results. Output of the subprocess: '{output}'") from e
     data = json.loads(json_line)
 
-    logging.info(f"Number of kets: {data['number_of_kets']}")
-    logging.info(f"Number of states: {data['number_of_states']}")
+    logger.info("Number of kets: %s", data["number_of_kets"])
+    logger.info("Number of states: %s", data["number_of_states"])
 
     return [
         BenchmarkResult("Construction", name, data["duration_construction"]),
@@ -122,14 +129,14 @@ def benchmark_external_script(script_path: Path, name: str, settings: dict) -> l
     ]
 
 
-def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
+def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
     """Plot the benchmark results."""
-    df = pd.DataFrame(all_results)
+    data = pd.DataFrame(all_results)
 
     sns.set_theme(style="ticks", rc={"axes.spines.right": False, "axes.spines.top": False})
 
     # Define color palette
-    unique_softwares = df["software"].unique()
+    unique_softwares = data["software"].unique()
     palette = {
         "Alkali.ne Rydberg Calculator": sns.color_palette("deep")[3],
         "old pairinteraction": sns.color_palette("deep")[1],
@@ -138,8 +145,8 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)))))
 
     # Set up a split plot if necessary
-    largest = sorted(df["duration_in_sec"])[-1]
-    second_largest = sorted(df["duration_in_sec"])[-2]
+    largest = sorted(data["duration_in_sec"])[-1]
+    second_largest = sorted(data["duration_in_sec"])[-2]
     is_split = largest > 3 * second_largest
 
     fig, axes = plt.subplots(
@@ -161,7 +168,7 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
             x="operation",
             y="duration_in_sec",
             hue="software",
-            data=df,
+            data=data,
             palette=palette,
             errorbar="sd",
             capsize=0.1,
@@ -263,15 +270,15 @@ def run() -> None:
 
     if args.floats:
         backends = {
-            "pairinteraction, real 32": [pi_real, "float32"],
-            "pairinteraction, real 64": [pi_real, "float64"],
-            "pairinteraction, complex 32": [pi_complex, "float32"],
-            "pairinteraction, complex 64": [pi_complex, "float64"],
+            "pairinteraction, real 32": (pi_real, "float32"),
+            "pairinteraction, real 64": (pi_real, "float64"),
+            "pairinteraction, complex 32": (pi_complex, "float32"),
+            "pairinteraction, complex 64": (pi_complex, "float64"),
         }
         external_scripts: dict[str, Path] = {}
     else:
         backends = {
-            "pairinteraction": [pi_real, "float32"],
+            "pairinteraction": (pi_real, "float32"),
         }
         external_scripts = {
             "old pairinteraction": Path(__file__).parent / "_run_old_pairinteraction.py",
@@ -280,13 +287,13 @@ def run() -> None:
 
     for _ in range(args.reps):
         # Benchmark pairinteraction backends
-        for name, [module, float_type] in backends.items():
-            logging.info(f"Benchmarking '{name}'")
+        for name, (module, float_type) in backends.items():
+            logger.info("Benchmarking '%s'", name)
             all_results += benchmark_pairinteraction(module, float_type, name, settings)
 
         # Benchmark ARC and old pairinteraction
         for name, script_path in external_scripts.items():
-            logging.info(f"Benchmarking '{name}'")
+            logger.info("Benchmarking '%s'", name)
             all_results.extend(benchmark_external_script(script_path, name, settings))
 
     # Generate meaningful output filenames
@@ -306,5 +313,5 @@ def run() -> None:
     plot_results(all_results, plot_path)
     with settings_path.open("w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4)
-    logging.info(f"Plot saved to '{plot_path}'")
-    logging.info(f"Settings saved to '{settings_path}'")
+    logger.info("Plot saved to '%s'", plot_path)
+    logger.info("Settings saved to '%s'", settings_path)

@@ -241,7 +241,6 @@ flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tools/*.py" = ["LOG015", "SIM", "G004", "S", "FIX", "TD", "PD", "D1"]
 "tests/*.py" = ["ANN", "N", "FIX", "TD", "PLR", "S", "D1"]
 "src/pairinteraction_gui/**" = ["ERA", "PLW", "TRY", "PGH", "FIX", "TD", "ARG", "N802", "PERF102", "D1"]
 
@@ -253,7 +252,6 @@ force-wrap-aliases = true
 [tool.mypy]
 exclude = [
     "^tests/.*$",
-    "^tools/.*$",
 ]
 strict = true
 disallow_untyped_decorators = false
