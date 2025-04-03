@@ -1,14 +1,6 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-try:
-    import pytest  # type: ignore[import-not-found]
-
-    pytest.skip(allow_module_level=True)
-except ImportError:
-    pass
-
-
 raise ImportError(
     "You likely have recently updated the pairinteraction package from version 0.x.x to a version >= 1.x.x."
     "This is a good thing; you can now use the improved performance"
