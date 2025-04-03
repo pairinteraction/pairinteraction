@@ -54,13 +54,14 @@ def test_lifetime_scaling() -> None:
 
     # Circular states
     try:
+        kets = [pi.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
+    except ValueError as err:
         # If the limited database which comes with the repository is used, creating the
         # kets will fail because the circular states are not included in the database.
         # This is expected.
-        with pytest.raises(ValueError, match="No state found"):
-            kets = [pi.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
-    except pytest.fail.Exception:
-        # If no ValueError was raised, proceed with the test
+        if "No state found" not in str(err):
+            raise
+    else:
         nu = [ket.nu for ket in kets]
         lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
         popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
