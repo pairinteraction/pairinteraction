@@ -4,6 +4,7 @@
 import logging
 import os
 import signal
+import time
 from types import FrameType
 from typing import Optional
 
@@ -61,5 +62,13 @@ class Application(QApplication):
     def quit() -> None:
         """Quit the application."""
         logger.debug("Calling Application.quit().")
+        from pairinteraction_gui.calculate.calculate_base import ALL_PROCESSES
+
+        while ALL_PROCESSES:
+            # FIXME
+            logger.warning("Waiting for all processes to finish...")
+            logger.warning("(You have to quit the terminal, if you want to terminate the application now.)")
+            time.sleep(2)
+
         QApplication.quit()
         logger.debug("Application.quit() done.")
