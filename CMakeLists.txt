@@ -71,7 +71,6 @@ if(WITH_COVERAGE)
 endif()
 
 # Find dependencies
-find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(fmt REQUIRED)
@@ -153,6 +152,21 @@ if(WIN32)
   set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
 endif()
 
+# Doctest
+# We use the dev version because it works with recent cmake versions that forbid a version < 3.5 for cmake_minimum_required
+FetchContent_Declare(
+  doctest
+  GIT_REPOSITORY https://github.com/doctest/doctest
+  GIT_TAG 3a01ec37828affe4c9650004edb5b304fb9d5b75 # v0.20.0
+)
+# Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
+# can add this argument directly to FetchContent_Declare.
+if(NOT doctest_POPULATED)
+  FetchContent_Populate(doctest)
+  add_subdirectory(${doctest_SOURCE_DIR} ${doctest_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+FetchContent_MakeAvailable(doctest)
+
 # Httplib
 set(HTTPLIB_REQUIRE_OPENSSL ON)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
@@ -162,7 +176,6 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib
   GIT_TAG 787a34ad7f01f20922a237d5142aae469828be72 # v0.20.0
 )
-
 # Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
 # can add this argument directly to FetchContent_Declare.
 FetchContent_GetProperties(httplib)
@@ -170,7 +183,6 @@ if(NOT httplib_POPULATED)
   FetchContent_Populate(httplib)
   add_subdirectory(${httplib_SOURCE_DIR} ${httplib_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
-
 FetchContent_MakeAvailable(httplib)
 
 # Find miniz
@@ -198,7 +210,6 @@ if(NOT cpptrace_FOUND)
     GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
     GIT_TAG 6689d14c203eed390ae7bb64f56a983cfd7dff9c # v0.7.5
   )
-
   # Add the EXCLUDE_FROM_ALL option to avoid adding files of cpptrace to the wheel. In the future, with cmake 3.28, we
   # can add this argument directly to FetchContent_Declare.
   FetchContent_GetProperties(cpptrace)
@@ -206,7 +217,6 @@ if(NOT cpptrace_FOUND)
     FetchContent_Populate(cpptrace)
     add_subdirectory(${cpptrace_SOURCE_DIR} ${cpptrace_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
-
   FetchContent_MakeAvailable(cpptrace)
   set_target_properties(cpptrace-lib PROPERTIES CXX_CLANG_TIDY "")
 endif()

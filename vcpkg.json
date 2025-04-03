@@ -3,7 +3,6 @@
     "version-string": "1",
     "dependencies": [
         "cpptrace",
-        "doctest",
         "eigen3",
         "fmt",
         "openssl",

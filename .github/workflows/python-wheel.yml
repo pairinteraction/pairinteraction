@@ -62,7 +62,7 @@ jobs:
 
     - name: Install macOS dependencies for x86_64
       if: ${{ matrix.os == 'macos-13' }}
-      run: brew install --force-bottle spdlog doctest nlohmann-json eigen tbb lapack fmt
+      run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
 
     - name: Install uv
       uses: astral-sh/setup-uv@v5
@@ -80,8 +80,8 @@ jobs:
     - name: Install macOS dependencies for arm64 cross-compilation
       if: ${{ matrix.os == 'macos-13' }}
       run: |
-        brew fetch --force --bottle-tag=arm64_ventura spdlog doctest nlohmann-json eigen tbb lapack fmt openssl gcc
-        brew reinstall $(brew --cache --bottle-tag=arm64_ventura spdlog doctest nlohmann-json eigen tbb lapack fmt openssl gcc)
+        brew fetch --force --bottle-tag=arm64_ventura spdlog nlohmann-json eigen tbb lapack fmt openssl gcc
+        brew reinstall $(brew --cache --bottle-tag=arm64_ventura spdlog nlohmann-json eigen tbb lapack fmt openssl gcc)
 
     - uses: pypa/cibuildwheel@v2.23  # Note: This will reuse the previously build stub files
       if: ${{ matrix.os == 'macos-13' }}
@@ -148,7 +148,7 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install --force-bottle spdlog doctest nlohmann-json eigen tbb lapack fmt
+      run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
 
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
