@@ -27,5 +27,9 @@ jobs:
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
       run: uv pip install .[mypy]
+    - name: Install the benchmarking tool
+      run: uv pip install tools/benchmarking[mypy]
+    - name: Install the dbmanager tool
+      run: uv pip install tools/dbmanager[mypy]
     - name: Run mypy
       run: uv run --no-project mypy . --warn-unused-ignores --disallow-subclassing-any --warn-return-any

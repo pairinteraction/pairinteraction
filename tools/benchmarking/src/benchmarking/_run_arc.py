@@ -12,9 +12,9 @@
 import json
 import sys
 
-import arc
+import arc  # type: ignore[import-not-found]
 import numpy as np
-from timer import timer
+from benchmark_timer import timer  # type: ignore[import-not-found]
 
 
 def main() -> None:

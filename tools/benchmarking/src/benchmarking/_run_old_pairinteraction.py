@@ -17,7 +17,7 @@ import json
 import sys
 
 import numpy as np
-from timer import timer
+from benchmark_timer import timer  # type: ignore[import-not-found]
 
 from pairinteraction import pireal as pi
 

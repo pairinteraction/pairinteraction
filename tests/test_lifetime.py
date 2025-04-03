@@ -33,8 +33,8 @@ def test_lifetime() -> None:
     lifetime4 = ket.get_lifetime(unit="us")
 
     assert lifetime1 == lifetime2 == lifetime3.to(ureg.us).magnitude < lifetime4
-    assert pytest.approx(lifetime1, rel=0.15) == 142.04845576112646
-    assert pytest.approx(lifetime4, rel=0.15) == 494.1653414977515
+    assert pytest.approx(lifetime1, rel=0.15) == 142.04845576112646  # NOSONAR
+    assert pytest.approx(lifetime4, rel=0.15) == 494.1653414977515  # NOSONAR
 
 
 def test_lifetime_scaling() -> None:
