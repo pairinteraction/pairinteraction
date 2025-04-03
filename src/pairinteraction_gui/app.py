@@ -1,13 +1,16 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 import os
 import signal
 from types import FrameType
 from typing import Optional
 
-from PySide6.QtCore import QCoreApplication, QObject, QSocketNotifier, QTimer, Signal
+from PySide6.QtCore import QObject, QSocketNotifier, QTimer, Signal
 from PySide6.QtWidgets import QApplication
+
+logger = logging.getLogger(__name__)
 
 
 class MainSignals(QObject):
@@ -42,8 +45,8 @@ class Application(QApplication):
 
         def handle_signal() -> None:
             os.read(pipe_r, 1)  # Read the byte from the pipe to clear it
-            print("\nCtrl+C detected. Shutting down gracefully...")
-            QCoreApplication.quit()
+            logger.info("Ctrl+C detected in terminal. Shutting down gracefully...")
+            self.quit()
 
         sn = QSocketNotifier(pipe_r, QSocketNotifier.Type.Read, parent=self)
         sn.activated.connect(handle_signal)
@@ -53,3 +56,10 @@ class Application(QApplication):
         timer = QTimer(self)
         timer.timeout.connect(lambda: None)  # Do nothing, just wake up the event loop
         timer.start(200)
+
+    @staticmethod
+    def quit() -> None:
+        """Quit the application."""
+        logger.debug("Calling Application.quit().")
+        QApplication.quit()
+        logger.debug("Application.quit() done.")
