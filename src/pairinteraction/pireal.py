@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 try:
-    import pytest
+    import pytest  # type: ignore[import-not-found]
 
     pytest.skip(allow_module_level=True)
 except ImportError:

@@ -13,6 +13,13 @@ dependencies = [
     "seaborn>=0.13.2",
 ]
 
+[project.optional-dependencies]
+mypy = [
+  "mypy >= 1.14",
+  "types-seaborn >= 0.13.2",
+  "pandas-stubs >= 2.2.3"
+]
+
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"

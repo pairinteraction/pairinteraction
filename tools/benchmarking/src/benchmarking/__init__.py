@@ -18,12 +18,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from cpuinfo import get_cpu_info
+from cpuinfo import get_cpu_info  # type: ignore[import-untyped]
 from matplotlib import ticker
 
 import pairinteraction.complex as pi_complex
 import pairinteraction.real as pi_real
-from benchmarking.timer import timer
+from benchmarking.benchmark_timer import timer
 from pairinteraction import __version__, configure_logging
 
 configure_logging("INFO")
@@ -157,8 +157,7 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
         gridspec_kw={"height_ratios": [1, 3] if is_split else [1]},
         constrained_layout=True,
     )
-    fig.get_layout_engine().set(h_pad=0, hspace=0, rect=[0.10, 0.03, 0.80, 0.92])
-
+    fig.get_layout_engine().set(h_pad=0, hspace=0, rect=[0.10, 0.03, 0.80, 0.92])  # type: ignore[union-attr, call-arg]
     if not isinstance(axes, Iterable):
         axes = [axes]
 

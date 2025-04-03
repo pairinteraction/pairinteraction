@@ -252,6 +252,7 @@ force-wrap-aliases = true
 [tool.mypy]
 exclude = [
     "^tests/.*$",
+    "build/.*$",
 ]
 strict = true
 disallow_untyped_decorators = false

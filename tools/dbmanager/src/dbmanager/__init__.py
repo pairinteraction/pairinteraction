@@ -24,7 +24,7 @@ class TableFile:
 
     species: str
     table: str
-    version: int
+    version: Version
     path: Path
 
 

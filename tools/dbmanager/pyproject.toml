@@ -11,6 +11,11 @@ dependencies = [
     "packaging>=24.2",
 ]
 
+[project.optional-dependencies]
+mypy = [
+  "mypy >= 1.14"
+]
+
 [build-system]
 requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
