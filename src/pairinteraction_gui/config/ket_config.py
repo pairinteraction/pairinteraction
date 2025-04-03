@@ -75,6 +75,11 @@ class KetConfig(BaseConfig):
     def postSetupWidget(self) -> None:
         self.layout().addStretch(30)
 
+    @property
+    def n_atoms(self) -> int:
+        """Return the number of atoms configured."""
+        return len(self.species_combo)
+
     def setupOneKetAtom(self) -> None:
         """Set up the UI components for a single ket atom."""
         atom = len(self.species_combo)

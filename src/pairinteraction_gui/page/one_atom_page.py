@@ -36,12 +36,12 @@ class OneAtomPage(SimulationPage):
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
         self.ket_config = KetConfigOneAtom(self)
         self.basis_config = BasisConfigOneAtom(self)
-        self.system_atom_config = SystemConfigOneAtom(self)
+        self.system_config = SystemConfigOneAtom(self)
 
     def calculate(self) -> None:
         super().calculate()
 
-        self.parameters = ParametersOneAtom.from_one_atom_page(self)
+        self.parameters = ParametersOneAtom.from_page(self)
         self.results = calculate_one_atom(self.parameters)
 
     def update_plot(self) -> None:
@@ -54,7 +54,7 @@ class OneAtomPage(SimulationPage):
         self.plotwidget.plot(x_values, energies, overlaps, x_label)
 
         self.add_short_labels(energies)
-        self.plotwidget.add_cursor(x_values[0], energies[0], self.results.corresponding_kets_0)
+        self.plotwidget.add_cursor(x_values[0], energies[0], self.results.state_labels_0)
 
         self.plotwidget.canvas.draw()
 
@@ -67,7 +67,7 @@ class OneAtomPage(SimulationPage):
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(self.results.corresponding_kets_0, energies[0]):
+        for ket_label, energy in zip(self.results.state_labels_0, energies[0]):
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")

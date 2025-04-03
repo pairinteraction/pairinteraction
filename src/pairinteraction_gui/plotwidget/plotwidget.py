@@ -129,7 +129,7 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
 
-    def add_cursor(self, x_value: float, energies: "NDArray[Any]", corresponding_kets_0: list[str]) -> None:
+    def add_cursor(self, x_value: float, energies: "NDArray[Any]", state_labels_0: list[str]) -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore
@@ -139,7 +139,7 @@ class PlotEnergies(PlotWidget):
         ax = self.canvas.ax
 
         artists = []
-        for e, ket_label in zip(energies, corresponding_kets_0):
+        for e, ket_label in zip(energies, state_labels_0):
             artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=ket_label)
             artists.extend(artist)
 
