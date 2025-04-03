@@ -46,7 +46,7 @@ jobs:
             BUILD_ARGS: "-- --keep-going"
           - os: windows-2019
             distro: windows
-            EXTRA_CMAKE_ARGS: -G "Visual Studio 16 2019" -DPython3_FIND_REGISTRY=LAST -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+            EXTRA_CMAKE_ARGS: -G "Visual Studio 16 2019" -DPython3_FIND_REGISTRY=LAST
             CXXFLAGS: "/Ox /arch:AVX2"
             TEST_TARGET: "RUN_TESTS"
             BUILD_ARGS: "--config RelWithDebInfo"
