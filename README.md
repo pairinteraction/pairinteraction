@@ -167,6 +167,7 @@ In addition, the following people contributed significantly to the current and/o
 * [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
 * [Eduard J. Braun] - Perturbative calculations, installation instructions for Windows
 * [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
+* [Nicolas Zuber] - Tutorial on Rydberg-ion interaction
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
 
 We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information!
@@ -194,6 +195,7 @@ The development of the pairinteraction software has been supported by the [Insti
 [Henri Menke]: https://github.com/hmenke
 [Frederic Hummel]: https://github.com/frederic-atom
 [Eduard J. Braun]: https://github.com/EduardJBraun
+[Nicolas Zuber]: https://github.com/tripiti
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
 [contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
