@@ -191,6 +191,8 @@ addopts = [
     "--import-mode=importlib",
     # "--nbmake",  # only run nbmake locally and in one dedicated CI job
     "--doctest-modules",
+    "--ignore=src/pairinteraction/pireal.py", # throws an import error to signal previous users of the old pairinteraction version breaking changes
+    "--ignore=src/pairinteraction/picomplex.py", # throws an import error to signal previous users of the old pairinteraction version breaking changes
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",
