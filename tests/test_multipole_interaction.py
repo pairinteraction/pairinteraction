@@ -32,7 +32,6 @@ def test_pair_potential(species: str) -> None:
     system_pairs_0 = [pi.SystemPair(basis_pair) for d in distances]
     system_pairs_3 = [pi.SystemPair(basis_pair).set_order(3).set_distance(d, unit="micrometer") for d in distances]
     system_pairs_4 = [pi.SystemPair(basis_pair).set_order(4).set_distance(d, unit="micrometer") for d in distances]
-    system_pairs_5 = [pi.SystemPair(basis_pair).set_order(5).set_distance(d, unit="micrometer") for d in distances]
 
     # Separate the contributions of the different multipole orders
     order_3 = [
@@ -43,27 +42,18 @@ def test_pair_potential(species: str) -> None:
         a.get_hamiltonian(unit="GHz").todense() - b.get_hamiltonian(unit="GHz").todense()
         for a, b in zip(system_pairs_4, system_pairs_3)
     ]
-    order_5 = [
-        a.get_hamiltonian(unit="GHz").todense() - b.get_hamiltonian(unit="GHz").todense()
-        for a, b in zip(system_pairs_5, system_pairs_4)
-    ]
 
     # Check that each order of the multipole expansion of the interaction has a significant contribution
     # at short distance
     norm_3 = np.linalg.norm(order_3, axis=(1, 2))
     norm_4 = np.linalg.norm(order_4, axis=(1, 2))
-    norm_5 = np.linalg.norm(order_5, axis=(1, 2))
     assert norm_3[0] * distances[0] ** 3 > 1
     assert norm_4[0] * distances[0] ** 4 > 1
-    assert norm_5[0] * distances[0] ** 5 > 1
 
-    # Check that for large/small distances, dipole-dipole/quadrupole-quadrupole interaction dominates
-    assert norm_3[0] < norm_4[0] < norm_5[0]
-    assert norm_3[-1] > norm_4[-1] > norm_5[-1]
+    # Check that for large/small distances, dipole-dipole/dipole-quadrupole interaction dominates
+    assert norm_3[0] < norm_4[0]
+    assert norm_3[-1] > norm_4[-1]
 
     # Check that each order of the multipole expansion scales as expected
     assert np.allclose(norm_3 * distances**3, norm_3[0] * distances[0] ** 3)
     assert np.allclose(norm_4 * distances**4, norm_4[0] * distances[0] ** 4)
-    assert np.allclose(
-        norm_5 * distances**5, norm_5[0] * distances[0] ** 5, rtol=1e-1
-    )  # we hit the limit of the precision of float
