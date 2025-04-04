@@ -4,7 +4,8 @@ from pairinteraction import (
     complex as pi_complex,
     real as pi_real,
 )
-from pairinteraction_gui.calculate.calculate_base import Parameters, Results, run_in_other_process
+from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+from pairinteraction_gui.worker import run_in_other_process
 
 
 @dataclass

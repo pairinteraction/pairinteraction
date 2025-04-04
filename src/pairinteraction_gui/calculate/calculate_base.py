@@ -1,7 +1,5 @@
 import logging
-from functools import wraps
-from multiprocessing import Process, SimpleQueue
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from attr import dataclass
 
@@ -197,28 +195,3 @@ class Results:
         state_labels_0 = [s.get_label("ket") for s in state_0]
 
         return cls(energies, energy_offset, ket_overlaps, state_labels_0)
-
-
-ALL_PROCESSES = set()
-
-
-def run_in_other_process(func: Callable[..., Any]) -> Callable[..., Any]:
-    @wraps(func)
-    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
-        def mp_func(queue: SimpleQueue, *args: Any, **kwargs: Any) -> None:
-            result = func(*args, **kwargs)
-            queue.put(result)
-
-        queue: SimpleQueue[Any] = SimpleQueue()
-        process = Process(target=mp_func, args=(queue, *args), kwargs=kwargs)
-        ALL_PROCESSES.add(process)
-        process.start()
-        logger.debug("Starting process %s", process.pid)
-        result = queue.get()
-        process.join()
-        logger.debug("Closing process %s", process.pid)
-        process.close()
-        ALL_PROCESSES.remove(process)
-        return result
-
-    return wrapper_func
