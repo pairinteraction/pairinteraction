@@ -55,7 +55,8 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
         .def("set_magnetic_field", &SystemAtom<T>::set_magnetic_field)
         .def("set_diamagnetism_enabled", &SystemAtom<T>::set_diamagnetism_enabled)
         .def("set_distance_vector_to_ion", &SystemAtom<T>::set_distance_vector_to_ion)
-        .def("set_ion_charge", &SystemAtom<T>::set_ion_charge);
+        .def("set_ion_charge", &SystemAtom<T>::set_ion_charge)
+        .def("set_ion_interaction_order", &SystemAtom<T>::set_ion_interaction_order);
 }
 
 template <typename T>

@@ -112,6 +112,10 @@ class SystemAtom(SystemBase[BasisType]):
         self._cpp.set_ion_charge(charge_au)
         return self
 
+    def set_ion_interaction_order(self: "Self", order: int) -> "Self":
+        self._cpp.set_ion_interaction_order(order)
+        return self
+
     @overload
     def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: None = None) -> "PintFloat": ...
 
