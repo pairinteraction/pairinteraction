@@ -25,7 +25,7 @@ class WorkerSignals(QObject):
     """Signals to be used by the Worker class."""
 
     finished = Signal(bool)
-    error = Signal(tuple)
+    error = Signal(Exception)
     result = Signal(object)
 
 
@@ -51,13 +51,8 @@ class Worker(QThread):
         try:
             result = self.fn(*self.args, **self.kwargs)
             success = True
-        except Exception:
-            import sys
-            import traceback
-
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        except Exception as err:
+            self.signals.error.emit(err)
         else:
             self.signals.result.emit(result)
         finally:

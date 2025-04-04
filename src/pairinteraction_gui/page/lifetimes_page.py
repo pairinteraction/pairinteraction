@@ -41,14 +41,14 @@ class LifetimesPage(SimulationPage):
         self.ket_config = KetConfigLifetimes(self)
 
     def calculate(self) -> None:
-        ket = self.ket = self.ket_config.get_ket_atom(0)
+        # since this calculation is rather fast, we can just call it directly and dont have to use a different process
+        ket = self.ket_config.get_ket_atom(0)
         temperature = self.ket_config.get_temperature()
         self.kets_sp, self.transition_rates_sp = ket.get_spontaneous_transition_rates(unit="1/ms")
         self.kets_bbr, self.transition_rates_bbr = ket.get_black_body_transition_rates(temperature, "K", unit="1/ms")
 
     def update_plot(self) -> None:
         ax = self.plotwidget.canvas.ax
-
         ax.clear()
 
         n_list = np.arange(0, np.max([s.n for s in self.kets_bbr]) + 1)
