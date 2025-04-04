@@ -9,19 +9,17 @@ from pairinteraction_gui.config import (
     KetConfigTwoAtoms,
     SystemConfigTwoAtoms,
 )
-from pairinteraction_gui.page.base_page import SimulationPage
+from pairinteraction_gui.page.base_page import CalculationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 
 logger = logging.getLogger(__name__)
 
 
-class TwoAtomsPage(SimulationPage):
+class TwoAtomsPage(CalculationPage):
     """Page for configuring and analyzing pair systems."""
 
     title = "Two Atoms"
     tooltip = "Configure and analyze pair systems"
-
-    results: ResultsTwoAtoms
 
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
@@ -37,11 +35,13 @@ class TwoAtomsPage(SimulationPage):
         self.basis_config.clear_basis_pair_label()
         return super().before_calculate()
 
-    def calculate(self) -> None:
-        self.parameters = ParametersTwoAtoms.from_page(self)
-        self.results = calculate_two_atoms(self.parameters)
+    def calculate(self) -> tuple[ParametersTwoAtoms, ResultsTwoAtoms]:
+        parameters = ParametersTwoAtoms.from_page(self)
+        results = calculate_two_atoms(parameters)
+        return parameters, results
 
-    def after_calculate(self, success: bool) -> None:
-        super().after_calculate(success)
-        if success:
-            self.basis_config.update_basis_pair_label(self.results.basis_0_label)
+    def update_plot(self, parameters: ParametersTwoAtoms, results: ResultsTwoAtoms) -> None:  # type: ignore[override]
+        super().update_plot(parameters, results)
+
+        if results.basis_0_label is not None:
+            self.basis_config.update_basis_pair_label(results.basis_0_label)

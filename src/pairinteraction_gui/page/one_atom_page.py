@@ -2,8 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
 
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
@@ -11,22 +9,17 @@ from pairinteraction_gui.config import (
     KetConfigOneAtom,
     SystemConfigOneAtom,
 )
-from pairinteraction_gui.page.base_page import SimulationPage
+from pairinteraction_gui.page.base_page import CalculationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
 
-class OneAtomPage(SimulationPage):
+class OneAtomPage(CalculationPage):
     """Page for configuring and analyzing single atom systems."""
 
     title = "One Atom"
     tooltip = "Configure and analyze single atom systems"
-
-    results: ResultsOneAtom
 
     def setupWidget(self) -> None:
         self.plotwidget = PlotEnergies(self)
@@ -38,26 +31,27 @@ class OneAtomPage(SimulationPage):
         self.basis_config = BasisConfigOneAtom(self)
         self.system_config = SystemConfigOneAtom(self)
 
-    def calculate(self) -> None:
-        self.parameters = ParametersOneAtom.from_page(self)
-        self.results = calculate_one_atom(self.parameters)
+    def calculate(self) -> tuple[ParametersOneAtom, ResultsOneAtom]:
+        parameters = ParametersOneAtom.from_page(self)
+        results = calculate_one_atom(parameters)
+        return parameters, results
 
-    def update_plot(self) -> None:
-        super().update_plot()
+    def update_plot(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
+        super().update_plot(parameters, results)
 
-        self.add_short_labels(self.results.energies)
+        self.add_short_labels(results)
         self.plotwidget.canvas.draw()
 
     def add_short_labels(
         self,
-        energies: Sequence["NDArray[Any]"],
+        results: ResultsOneAtom,
     ) -> None:
         ax = self.plotwidget.canvas.ax
         x_lim = ax.get_xlim()
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(self.results.state_labels_0, energies[0]):
+        for ket_label, energy in zip(results.state_labels_0, results.energies[0]):
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")

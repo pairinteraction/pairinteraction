@@ -40,7 +40,7 @@ class ResultsTwoAtoms(Results):
 
 @run_in_other_process
 def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
-    """Calculate the energy plot for one atom.
+    """Calculate the energy plot for two atoms.
 
     This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsTwoAtoms object.
     """
