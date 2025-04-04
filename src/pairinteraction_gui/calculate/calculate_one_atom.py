@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from typing import TYPE_CHECKING
+
 from attr import dataclass
 
 from pairinteraction import (
@@ -8,12 +10,14 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
-from pairinteraction_gui.page import OneAtomPage
 from pairinteraction_gui.worker import run_in_other_process
+
+if TYPE_CHECKING:
+    from pairinteraction_gui.page import OneAtomPage  # noqa: F401  # related to ruff extend-generics
 
 
 @dataclass
-class ParametersOneAtom(Parameters[OneAtomPage]):
+class ParametersOneAtom(Parameters["OneAtomPage"]):
     """Parameters for the one atom calculation."""
 
 
