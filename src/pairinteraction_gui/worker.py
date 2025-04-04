@@ -4,11 +4,19 @@
 import logging
 from functools import wraps
 from multiprocessing import Process, SimpleQueue
-from typing import Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 from PySide6.QtCore import QObject, QThread, Signal
 
 from pairinteraction_gui.app import Application
+
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
+    from pairinteraction_gui.calculate.calculate_base import Results
+
+    P = ParamSpec("P")
+    R = TypeVar("R", bound="Results")
 
 logger = logging.getLogger(__name__)
 
@@ -60,14 +68,14 @@ class Worker(QThread):
         ALL_THREADS.remove(self)
 
 
-def run_in_other_process(func: Callable[..., Any]) -> Callable[..., Any]:
+def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
     @wraps(func)
-    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
-        def mp_func(queue: SimpleQueue, *args: Any, **kwargs: Any) -> None:
+    def wrapper_func(*args: "P.args", **kwargs: "P.kwargs") -> "R":
+        def mp_func(queue: "SimpleQueue[R]", *args: "P.args", **kwargs: "P.kwargs") -> None:
             result = func(*args, **kwargs)
             queue.put(result)
 
-        queue = SimpleQueue()
+        queue: SimpleQueue[R] = SimpleQueue()
         process = Process(target=mp_func, args=(queue, *args), kwargs=kwargs, daemon=True)
         ALL_PROCESSES.add(process)
         process.start()

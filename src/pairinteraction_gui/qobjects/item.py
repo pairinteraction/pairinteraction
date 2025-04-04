@@ -124,7 +124,7 @@ class RangeItem(WidgetH):
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
-            self.checkbox = QSpacerItem(0, 0)
+            self.checkbox = QSpacerItem(25, 0)
 
         self.label = QLabel(short_label)
         self.label.setMinimumWidth(25)
@@ -143,7 +143,10 @@ class RangeItem(WidgetH):
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.layout().addWidget(self.checkbox)
+        if isinstance(self.checkbox, QCheckBox):
+            self.layout().addWidget(self.checkbox)
+        elif isinstance(self.checkbox, QSpacerItem):
+            self.layout().addItem(self.checkbox)
         self.layout().addWidget(self.label)
 
         self.layout().addWidget(self.min_spinbox)

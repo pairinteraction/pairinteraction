@@ -97,8 +97,8 @@ class PlotEnergies(PlotWidget):
             ax.plot(x_values, np.array(energies), c="0.9", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
-                for x, es in zip(x_values, energies):
-                    ax.plot([x] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
+                for x_value, es in zip(x_values, energies):
+                    ax.plot([x_value] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
             else:
                 raise err
 

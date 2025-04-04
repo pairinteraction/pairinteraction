@@ -43,5 +43,5 @@ class TwoAtomsPage(SimulationPage):
 
     def after_calculate(self, success: bool) -> None:
         super().after_calculate(success)
-        if success:
+        if success and self.results.basis_0_label is not None:
             self.basis_config.update_basis_pair_label(self.results.basis_0_label)

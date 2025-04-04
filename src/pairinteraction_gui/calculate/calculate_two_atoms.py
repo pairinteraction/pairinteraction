@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from attr import dataclass
 
@@ -19,11 +19,11 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class ParametersTwoAtoms(Parameters):
+class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     """Parameters for the two atoms calculation."""
 
-    pair_basis_energy_delta: float = None
-    order: int = None
+    pair_basis_energy_delta: float = 0
+    order: int = 3
 
     @classmethod
     def from_page(cls, page: "TwoAtomsPage") -> "Self":
@@ -35,7 +35,7 @@ class ParametersTwoAtoms(Parameters):
 
 @dataclass
 class ResultsTwoAtoms(Results):
-    basis_0_label: str = None
+    basis_0_label: Optional[str] = None
 
 
 @run_in_other_process

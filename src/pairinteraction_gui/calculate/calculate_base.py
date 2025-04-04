@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional, Union
+from abc import ABC
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
 
 from attr import dataclass
 
@@ -35,8 +36,11 @@ UNITS: dict[RangesKeys, str] = {
 }
 
 
+PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
+
+
 @dataclass
-class Parameters:
+class Parameters(ABC, Generic[PageType]):
     species: tuple[str, ...]
     quantum_numbers: tuple[dict[str, float], ...]
     quantum_number_deltas: tuple[dict[str, float], ...]
@@ -57,7 +61,7 @@ class Parameters:
             raise ValueError("All tuples must have the same length as the number of atoms")
 
     @classmethod
-    def from_page(cls, page: Union["OneAtomPage", "TwoAtomsPage"]) -> "Self":
+    def from_page(cls, page: PageType) -> "Self":
         """Create Parameters object from page."""
         n_atoms = page.ket_config.n_atoms
 
@@ -175,7 +179,7 @@ class Parameters:
 
 
 @dataclass
-class Results:
+class Results(ABC):
     energies: list["NDArray"]
     energy_offset: float
     ket_overlaps: list["NDArray"]
@@ -192,7 +196,7 @@ class Results:
     ) -> "Self":
         """Create Results object from ket, basis, and diagonalized systems."""
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
-        ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]
+        ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]
         basis_0 = system_list[-1].get_eigenbasis()
         state_0 = [basis_0.get_corresponding_ket(i) for i in range(basis_0.number_of_states)]
         state_labels_0 = [s.get_label("ket") for s in state_0]

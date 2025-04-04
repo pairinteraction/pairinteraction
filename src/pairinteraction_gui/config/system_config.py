@@ -74,8 +74,7 @@ class SystemConfig(BaseConfig):
         if len(ranges_min_max) == 0:
             ranges_min_max["Bz"] = (0, 0)
 
-        ranges_dict = {key: np.linspace(value[0], value[1], steps).tolist() for key, value in ranges_min_max.items()}
-        return ranges_dict
+        return {key: np.linspace(value[0], value[1], steps).tolist() for key, value in ranges_min_max.items()}  # type: ignore [misc]
 
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""

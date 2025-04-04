@@ -8,11 +8,12 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+from pairinteraction_gui.page import OneAtomPage
 from pairinteraction_gui.worker import run_in_other_process
 
 
 @dataclass
-class ParametersOneAtom(Parameters):
+class ParametersOneAtom(Parameters[OneAtomPage]):
     """Parameters for the one atom calculation."""
 
 
@@ -22,7 +23,7 @@ class ResultsOneAtom(Results):
 
 
 @run_in_other_process
-def calculate_one_atom(parameters: ParametersOneAtom) -> None:
+def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     """Calculate the energy plot for one atom.
 
     This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsOneAtom object.

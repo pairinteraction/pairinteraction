@@ -4,7 +4,7 @@
 import logging
 import time
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
@@ -44,7 +44,7 @@ class BasePage(WidgetV):
 class SimulationPage(BasePage):
     """Base class for all simulation pages in this application."""
 
-    parameters: Parameters
+    parameters: Parameters[Any]
     results: Results
     plotwidget: PlotEnergies
 
