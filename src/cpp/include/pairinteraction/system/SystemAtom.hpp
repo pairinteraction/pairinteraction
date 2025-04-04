@@ -47,7 +47,7 @@ public:
     Type &set_electric_field(const std::array<real_t, 3> &field);
     Type &set_magnetic_field(const std::array<real_t, 3> &field);
     Type &set_diamagnetism_enabled(bool enable);
-    Type &set_distance_vector_to_ion(std::array<real_t, 3> vector);
+    Type &set_distance_vector_to_ion(const std::array<real_t, 3> &vector);
     Type &set_ion_charge(real_t charge);
     Type &set_ion_interaction_order(int value);
 
@@ -55,8 +55,7 @@ private:
     std::array<Scalar, 3> electric_field_spherical{};
     std::array<Scalar, 3> magnetic_field_spherical{};
     bool diamagnetism_enabled{false};
-    std::array<Scalar, 3> ion_first_order{};
-    std::array<Scalar, 6> ion_second_order{};
+    std::array<real_t, 3> distance_vector_to_ion{0, 0, std::numeric_limits<real_t>::infinity()};
     real_t ion_charge{1};
     int order{3};
 
