@@ -83,8 +83,8 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_charge(real_t charge) {
 template <typename Scalar>
 SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
     this->hamiltonian_requires_construction = true;
-    if (order < 1 || order > 2) {
-        throw std::invalid_argument("The order of the Rydberg-ion interaction must be 1 or 2");
+    if (order < 2 || order > 3) {
+        throw std::invalid_argument("The order of the Rydberg-ion interaction must be 2 or 3");
     }
     order = value;
     return *this;

@@ -58,7 +58,7 @@ private:
     std::array<Scalar, 3> ion_first_order{};
     std::array<Scalar, 6> ion_second_order{};
     real_t ion_charge{1};
-    int order{2};
+    int order{3};
 
     void construct_hamiltonian() const override;
 };
