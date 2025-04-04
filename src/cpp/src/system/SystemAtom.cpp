@@ -81,6 +81,16 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_charge(real_t charge) {
 }
 
 template <typename Scalar>
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
+    this->hamiltonian_requires_construction = true;
+    if (order < 2 || order > 3) {
+        throw std::invalid_argument("The order of the Rydberg-ion interaction must be 2 or 3");
+    }
+    order = value;
+    return *this;
+}
+
+template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
 
@@ -97,26 +107,30 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // https://en.wikipedia.org/wiki/Multipole_expansion#Spherical_form for details)
 
     // Dipole order
-    for (int q = -1; q <= 1; ++q) {
-        if (std::abs(ion_first_order.at(q + 1)) > numerical_precision) {
-            *this->hamiltonian -= ion_charge * ion_first_order.at(q + 1) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
-            sort_by_parity = false;
-            sort_by_quantum_number_m &= (q == 0);
+    if (order >= 1) {
+        for (int q = -1; q <= 1; ++q) {
+            if (std::abs(ion_first_order.at(q + 1)) > numerical_precision) {
+                *this->hamiltonian -= ion_charge * ion_first_order.at(q + 1) *
+                    OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
+                this->hamiltonian_is_diagonal = false;
+                sort_by_quantum_number_f = false;
+                sort_by_parity = false;
+                sort_by_quantum_number_m &= (q == 0);
+            }
         }
     }
 
     // Quadrupole order (the last entry of ion_second_order would correspond to
     // ELECTRIC_QUADRUPOLE_ZERO and does not contribute to a *traceless* quadrupole)
-    for (int q = -2; q <= 2; ++q) {
-        if (std::abs(ion_second_order.at(q + 2)) > numerical_precision) {
-            *this->hamiltonian -= ion_charge * ion_second_order.at(q + 2) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, q);
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
-            sort_by_quantum_number_m &= (q == 0);
+    if (order >= 2) {
+        for (int q = -2; q <= 2; ++q) {
+            if (std::abs(ion_second_order.at(q + 2)) > numerical_precision) {
+                *this->hamiltonian -= ion_charge * ion_second_order.at(q + 2) *
+                    OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, q);
+                this->hamiltonian_is_diagonal = false;
+                sort_by_quantum_number_f = false;
+                sort_by_quantum_number_m &= (q == 0);
+            }
         }
     }
 

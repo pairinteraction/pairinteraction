@@ -49,6 +49,7 @@ public:
     Type &set_diamagnetism_enabled(bool enable);
     Type &set_distance_vector_to_ion(std::array<real_t, 3> vector);
     Type &set_ion_charge(real_t charge);
+    Type &set_ion_interaction_order(int value);
 
 private:
     std::array<Scalar, 3> electric_field_spherical{};
@@ -57,6 +58,7 @@ private:
     std::array<Scalar, 3> ion_first_order{};
     std::array<Scalar, 6> ion_second_order{};
     real_t ion_charge{1};
+    int order{3};
 
     void construct_hamiltonian() const override;
 };
