@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Union
+from typing import TYPE_CHECKING, ClassVar, Literal, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -11,14 +11,13 @@ from PySide6.QtWidgets import (
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import DoubleSpinBox, HalfIntSpinBox, IntSpinBox, NamedStackedWidget, QnItem, WidgetV
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_basis_atom
-from pairinteraction_gui.worker import threaded
+from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:
     from pairinteraction import (
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.basis.basis_pair import BasisPair
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
@@ -78,14 +77,16 @@ class BasisConfig(BaseConfig):
         self.basis_label.append(basis_label)
         self.update_basis_label(atom)
 
-    @threaded
     def update_basis_label(self, atom: int) -> None:
-        """Update the quantum state label with current values."""
-        try:
-            basis = self.get_basis(atom)
+        worker = Worker(self.get_basis, atom)
+
+        def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
             self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
             self.basis_label[atom].setStyleSheet(self._label_style_sheet)
-        except Exception as err:
+
+        worker.signals.result.connect(update_result)
+
+        def update_error(err: Exception) -> None:
             if isinstance(err, NoStateFoundError):
                 self.basis_label[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
             elif isinstance(err, DatabaseMissingError):
@@ -95,6 +96,10 @@ class BasisConfig(BaseConfig):
             else:
                 self.basis_label[atom].setText(str(err))
             self.basis_label[atom].setStyleSheet(self._label_style_sheet_error)
+
+        worker.signals.error.connect(update_error)
+
+        worker.start()
 
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
@@ -106,6 +111,14 @@ class BasisConfig(BaseConfig):
         }
         ket = self.page.ket_config.get_ket_atom(atom)
         return get_basis_atom(ket, **delta_qns, dtype=dtype)
+
+    def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
+        """Return the quantum number deltas for the basis of interest."""
+        delta_qns: dict[str, float] = {}
+        for item in self.stacked_basis[atom].currentWidget().items:
+            if item.isChecked():
+                delta_qns[item.label.replace("Δ", "")] = item.value()
+        return delta_qns
 
     def showEvent(self, event: QShowEvent) -> None:
         """Update the basis label when the widget is shown."""
@@ -149,9 +162,9 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.basis_pair_label.setWordWrap(True)
         self.layout().addWidget(self.basis_pair_label)
 
-    def update_basis_pair_label(self, basis_pair: "BasisPair[Any]") -> None:
+    def update_basis_pair_label(self, basis_pair_label: str) -> None:
         """Update the quantum state label with current values."""
-        self.basis_pair_label.setText(str(basis_pair) + f"\n  ⇒ Basis consists of {basis_pair.number_of_kets} kets")
+        self.basis_pair_label.setText(basis_pair_label)
         self.basis_pair_label.setStyleSheet(self._label_style_sheet)
 
     def clear_basis_pair_label(self) -> None:

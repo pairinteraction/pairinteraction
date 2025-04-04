@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 import mplcursors
 import numpy as np
-from PySide6.QtWidgets import QPushButton
 
 from pairinteraction_gui.config import KetConfigLifetimes
 from pairinteraction_gui.page.base_page import SimulationPage
@@ -30,27 +29,19 @@ class LifetimesPage(SimulationPage):
         self.layout().addWidget(self.plotwidget)
         super().setupWidget()
 
-        # Remove the calculate button from the control panel since we automatically update the plot
-        calc_widget = self.findChild(QPushButton, "Calculate")
-        self.layout().removeWidget(calc_widget)
-        calc_widget.hide()
-
         show_status_tip(self, "Ready", timeout=1)
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
         self.ket_config = KetConfigLifetimes(self)
 
     def calculate(self) -> None:
-        super().calculate()
-
-        ket = self.ket = self.ket_config.get_ket_atom(0)
+        ket = self.ket_config.get_ket_atom(0)
         temperature = self.ket_config.get_temperature()
         self.kets_sp, self.transition_rates_sp = ket.get_spontaneous_transition_rates(unit="1/ms")
         self.kets_bbr, self.transition_rates_bbr = ket.get_black_body_transition_rates(temperature, "K", unit="1/ms")
 
     def update_plot(self) -> None:
         ax = self.plotwidget.canvas.ax
-
         ax.clear()
 
         n_list = np.arange(0, np.max([s.n for s in self.kets_bbr]) + 1)

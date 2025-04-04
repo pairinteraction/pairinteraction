@@ -1,92 +1,90 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 from functools import wraps
-from typing import Any, Callable
+from multiprocessing import Process, SimpleQueue
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal, Slot
+from PySide6.QtCore import QObject, QThread, Signal
 
-THREADPOOL = QThreadPool()
-THREADPOOL.setMaxThreadCount(2)
+from pairinteraction_gui.app import Application
+
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
+    from pairinteraction_gui.calculate.calculate_base import Results
+
+    P = ParamSpec("P")
+    R = TypeVar("R", bound="Results")
+
+logger = logging.getLogger(__name__)
 
 
-class Worker(QRunnable):
+ALL_PROCESSES: set[Process] = set()
+ALL_THREADS: set[QThread] = set()
+
+
+class WorkerSignals(QObject):
+    """Signals to be used by the Worker class."""
+
+    finished = Signal(bool)
+    error = Signal(Exception)
+    result = Signal(object)
+
+
+class Worker(QThread):
     """Simple worker class to run a function in a separate thread."""
 
     def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
-        super().__init__()
+        super().__init__(Application.instance())
+
+        ALL_THREADS.add(self)
 
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
 
         self.signals = WorkerSignals()
+        self.finished.connect(self.finish_up)
 
-    @Slot()
     def run(self) -> None:
         """Initialise the runner function with passed args, kwargs."""
+        logger.debug("Starting thread %s", self)
+        success = False
         try:
             result = self.fn(*self.args, **self.kwargs)
-        except Exception:
-            import sys
-            import traceback
-
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
+            success = True
+        except Exception as err:
+            self.signals.error.emit(err)
         else:
             self.signals.result.emit(result)
         finally:
-            self.signals.finished.emit()
+            self.signals.finished.emit(success)
+
+    def finish_up(self) -> None:
+        """Perform any final cleanup or actions before the thread exits."""
+        logger.debug("Finishing up thread %s", self)
+        ALL_THREADS.remove(self)
 
 
-class WorkerSignals(QObject):
-    """Signals to be used by the Worker class."""
-
-    finished = Signal()
-    error = Signal(tuple)
-    result = Signal(object)
-    progress = Signal(int)
-
-
-def run_worker(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
-    """Run a function in a separate thread."""
-    worker = Worker(fn, *args, **kwargs)
-    THREADPOOL.start(worker)
-
-
-def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
+def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
     @wraps(func)
-    def wrapper_func(*args: Any, **kwargs: Any) -> Any:
-        worker = Worker(func, *args, **kwargs)
-        THREADPOOL.start(worker)
-        return worker.signals.result
+    def wrapper_func(*args: "P.args", **kwargs: "P.kwargs") -> "R":
+        def mp_func(queue: "SimpleQueue[R]", *args: "P.args", **kwargs: "P.kwargs") -> None:
+            result = func(*args, **kwargs)
+            queue.put(result)
+
+        queue: SimpleQueue[R] = SimpleQueue()
+        process = Process(target=mp_func, args=(queue, *args), kwargs=kwargs, daemon=True)
+        ALL_PROCESSES.add(process)
+        process.start()
+        logger.debug("Starting process %s", process.pid)
+        result = queue.get()
+        process.join()
+        logger.debug("Closing process %s", process.pid)
+        process.close()
+        ALL_PROCESSES.remove(process)
+        return result
 
     return wrapper_func
-
-
-# def threaded_factory(func_finished: Optional[Callable[..., Any]] = None) -> Callable[..., Any]:
-#     """Decorator to run the function in a separate thread."""
-
-#     def threaded(func: Callable[..., Any]) -> Callable[..., Any]:
-#         @wraps(func)
-#         def wrapper_func(*args: Any, **kwargs: Any) -> Any:
-#             worker = Worker(func, *args, **kwargs)
-#             if func_finished:
-#                 worker.signals.finished.connect(func_finished)
-#             THREADPOOL.start(worker)
-#             return worker.signals.result
-
-#         return wrapper_func
-
-#     return threaded
-
-
-"""
-def example_usage():
-    worker = Worker(execute_this_fn, "foo", "bar", baz=42)
-    worker.signals.result.connect(print_output)
-    worker.signals.finished.connect(thread_complete)
-    worker.signals.progress.connect(progress_fn)
-    THREADPOOL.start(worker)
-"""

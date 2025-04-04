@@ -236,7 +236,17 @@ class MainWindow(QMainWindow):
         """Initialize keyboard shortcuts."""
         # Add Ctrl+W shortcut to close the window
         close_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
+        close_shortcut.activated.connect(lambda: logger.info("Ctrl+W detected. Shutting down gracefully..."))
         close_shortcut.activated.connect(self.close)
+
+    def close(self) -> bool:
+        """Quit the complete application.
+
+        Call Application.quit() instead of super().close(),
+        to ensure there is one coherent way to shut down the application.
+        """
+        Application.quit()
+        return True
 
     def ask_download_database(self, species: str) -> bool:
         msg_box = QMessageBox()

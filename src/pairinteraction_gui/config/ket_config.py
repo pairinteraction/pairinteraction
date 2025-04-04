@@ -21,10 +21,11 @@ from pairinteraction_gui.qobjects import (
     WidgetV,
 )
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_ket_atom
-from pairinteraction_gui.worker import threaded
+from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:
     import pairinteraction.real as pi
+    from pairinteraction_gui.page.lifetimes_page import LifetimesPage
 
 
 AVAILABLE_SPECIES = [
@@ -75,6 +76,11 @@ class KetConfig(BaseConfig):
     def postSetupWidget(self) -> None:
         self.layout().addStretch(30)
 
+    @property
+    def n_atoms(self) -> int:
+        """Return the number of atoms configured."""
+        return len(self.species_combo)
+
     def setupOneKetAtom(self) -> None:
         """Set up the UI components for a single ket atom."""
         atom = len(self.species_combo)
@@ -113,7 +119,7 @@ class KetConfig(BaseConfig):
         self.ket_label.append(ket_label)
         self.on_qnitem_changed(atom)
 
-    def get_species(self, atom: int) -> str:
+    def get_species(self, atom: int = 0) -> str:
         """Return the selected species of the ... atom."""
         return self.species_combo[atom].currentText()
 
@@ -133,7 +139,7 @@ class KetConfig(BaseConfig):
             return "sqdt_triplet"
         return "sqdt_duplet"
 
-    def get_quantum_numbers(self, atom: int) -> dict[str, float]:
+    def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn[atom].currentWidget()
         return {item.label: item.value() for item in qn_widget.items if item.isChecked()}
@@ -173,6 +179,11 @@ class KetConfigOneAtom(KetConfig):
 
 
 class KetConfigLifetimes(KetConfig):
+    worker_label: Optional[Worker] = None
+    worker_plot: Optional[Worker] = None
+
+    page: "LifetimesPage"  # type: ignore [assignment]  # FIXME clean up the LifetimesPage and KetConfigLifetimes class
+
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
@@ -183,7 +194,7 @@ class KetConfigLifetimes(KetConfig):
         )
         self.item_temperature = QnItem(self, "Temperature", spin_box_temp, "K")
         self.layout().addWidget(self.item_temperature)
-        spin_box_temp.valueChanged.connect(lambda value: self.update_lifetime())
+        spin_box_temp.valueChanged.connect(lambda value: self.update_lifetime_label())
 
         self.layout().addStretch(2)
         # Add a label to display the lifetime
@@ -192,32 +203,49 @@ class KetConfigLifetimes(KetConfig):
         self.lifetime_label.setWordWrap(True)
         self.layout().addWidget(self.lifetime_label)
 
-        self.update_lifetime()
+        self.update_lifetime_label()
 
     def get_temperature(self) -> float:
         if self.item_temperature.isChecked():
             return self.item_temperature.value()
         return 0
 
-    @threaded
-    def update_lifetime(self) -> None:
-        try:
+    def update_lifetime_label(self) -> None:
+        if self.worker_label and self.worker_label.isRunning():
+            self.worker_label.quit()
+            self.worker_label.wait()
+
+        def get_lifetime() -> float:
             ket = self.get_ket_atom(0)
             temperature = self.get_temperature()
-            lifetime = ket.get_lifetime(temperature, temperature_unit="K", unit="mus")
+            return ket.get_lifetime(temperature, temperature_unit="K", unit="mus")
+
+        def update_result(lifetime: float) -> None:
             self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} μs")
             self.lifetime_label.setStyleSheet(self._label_style_sheet)
-        except Exception:
+
+        def update_error(err: Exception) -> None:
             self.lifetime_label.setText("Ket not found.")
             self.lifetime_label.setStyleSheet(self._label_style_sheet_error)
             self.page.plotwidget.clear()
-        else:
-            self.page._thread_calculate()
+
+        self.worker_label = Worker(get_lifetime)
+        self.worker_label.signals.result.connect(update_result)
+        self.worker_label.signals.error.connect(update_error)
+        self.worker_label.start()
+
+        if self.worker_plot and self.worker_plot.isRunning():
+            self.worker_plot.quit()
+            self.worker_plot.wait()
+
+        self.worker_plot = Worker(self.page.calculate)
+        self.worker_plot.signals.result.connect(self.page.update_plot)
+        self.worker_plot.start()
 
     def on_qnitem_changed(self, atom: int) -> None:
         super().on_qnitem_changed(atom)
         if hasattr(self, "item_temperature"):  # not yet initialized the first time this method is called
-            self.update_lifetime()
+            self.update_lifetime_label()
 
 
 class KetConfigTwoAtoms(KetConfig):
