@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 import mplcursors
 import numpy as np
-from PySide6.QtWidgets import QPushButton
 
 from pairinteraction_gui.config import KetConfigLifetimes
 from pairinteraction_gui.page.base_page import SimulationPage
@@ -25,17 +24,10 @@ class LifetimesPage(SimulationPage):
     title = "Lifetimes"
     tooltip = "Calculate the lifetimes and transition rates for a specified ket."
 
-    plotwidget: PlotWidget  # type: ignore [assignment]  # FIXME clean up the LifetimesPage class
-
     def setupWidget(self) -> None:
         self.plotwidget = PlotWidget(self)
         self.layout().addWidget(self.plotwidget)
         super().setupWidget()
-
-        # Remove the calculate button from the control panel since we automatically update the plot
-        calc_widget = self.findChild(QPushButton, "Calculate")
-        self.layout().removeWidget(calc_widget)
-        calc_widget.hide()
 
         show_status_tip(self, "Ready", timeout=1)
 
