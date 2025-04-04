@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
-from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
+from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.qobjects.events import show_status_tip
 from pairinteraction_gui.worker import Worker
@@ -44,9 +44,7 @@ class BasePage(WidgetV):
 class SimulationPage(BasePage):
     """Base class for all simulation pages in this application."""
 
-    parameters: Parameters
-    results: Results
-    plotwidget: PlotEnergies
+    plotwidget: PlotWidget
 
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
@@ -59,20 +57,6 @@ class SimulationPage(BasePage):
         self.loading_label.setMovie(self.loading_movie)
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.hide()
-
-        # Control panel below the plot
-        control_layout = QHBoxLayout()
-        calculate_button = QPushButton("Calculate")
-        calculate_button.setObjectName("Calculate")
-        calculate_button.clicked.connect(self.calculate_clicked)
-        control_layout.addWidget(calculate_button)
-
-        # export_button = QPushButton("Export")
-        # export_button.setObjectName("Export")
-        # export_button.clicked.connect(self.export)
-        # control_layout.addWidget(export_button)
-
-        self.layout().addLayout(control_layout)
 
     def postSetupWidget(self) -> None:
         self.layout().addStretch()
@@ -90,10 +74,35 @@ class SimulationPage(BasePage):
         super().hideEvent(event)
         self.window().dockwidget.setVisible(False)
 
+
+class CalculationPage(SimulationPage):
+    """Base class for all pages with a calculation button."""
+
+    plotwidget: PlotEnergies
+
+    def setupWidget(self) -> None:
+        super().setupWidget()
+
+        # Control panel below the plot
+        control_layout = QHBoxLayout()
+        calculate_button = QPushButton("Calculate")
+        calculate_button.setObjectName("Calculate")
+        calculate_button.clicked.connect(self.calculate_clicked)
+        control_layout.addWidget(calculate_button)
+
+        self.layout().addLayout(control_layout)
+
     def calculate_clicked(self) -> None:
         self.before_calculate()
 
+        def update_plot(
+            parameters_and_results: tuple[Parameters[Any], Results],
+        ) -> None:
+            worker_plot = Worker(self.update_plot, *parameters_and_results)
+            worker_plot.start()
+
         worker = Worker(self.calculate)
+        worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
         worker.start()
 
@@ -118,27 +127,25 @@ class SimulationPage(BasePage):
 
         if success:
             show_status_tip(self, f"Calculation finished after {time_needed:.2f} seconds.", logger=logger)
-            worker = Worker(self.update_plot)
-            worker.start()
         else:
             show_status_tip(self, f"Calculation failed after {time_needed:.2f} seconds.", logger=logger)
 
         self.findChild(QPushButton, "Calculate").setEnabled(True)
 
-    def calculate(self) -> None:
+    def calculate(self) -> tuple[Parameters[Any], Results]:
         raise NotImplementedError("Subclasses must implement this method")
 
-    def update_plot(self) -> None:
-        energies = self.results.energies
-        overlaps = self.results.ket_overlaps
+    def update_plot(self, parameters: Parameters[Any], results: Results) -> None:
+        energies = results.energies
+        overlaps = results.ket_overlaps
 
-        x_values = self.parameters.get_x_values()
-        x_label = self.parameters.get_x_label()
+        x_values = parameters.get_x_values()
+        x_label = parameters.get_x_label()
 
         self.plotwidget.plot(x_values, energies, overlaps, x_label)
 
-        ind = 0 if self.parameters.n_atoms == 1 else -1
-        self.plotwidget.add_cursor(x_values[ind], energies[ind], self.results.state_labels_0)
+        ind = 0 if parameters.n_atoms == 1 else -1
+        self.plotwidget.add_cursor(x_values[ind], energies[ind], results.state_labels_0)
 
         self.plotwidget.canvas.draw()
 

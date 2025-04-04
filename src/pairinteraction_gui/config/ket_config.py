@@ -25,6 +25,7 @@ from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:
     import pairinteraction.real as pi
+    from pairinteraction_gui.page.lifetimes_page import LifetimesPage
 
 
 AVAILABLE_SPECIES = [
@@ -180,6 +181,8 @@ class KetConfigOneAtom(KetConfig):
 class KetConfigLifetimes(KetConfig):
     worker_label: Optional[Worker] = None
     worker_plot: Optional[Worker] = None
+
+    page: "LifetimesPage"
 
     def setupWidget(self) -> None:
         super().setupWidget()
