@@ -81,7 +81,7 @@ class Parameters(ABC, Generic[PageType]):
         if page.plotwidget.energy_range.isChecked():
             diagonalize_relative_energy_range = page.plotwidget.energy_range.values()
 
-        return cls(
+        return cls(  # type: ignore [call-arg]  # mypy pre-commit can't handle @dataclass
             species,
             quantum_numbers,
             quantum_number_deltas,
@@ -201,4 +201,4 @@ class Results(ABC):
         state_0 = [basis_0.get_corresponding_ket(i) for i in range(basis_0.number_of_states)]
         state_labels_0 = [s.get_label("ket") for s in state_0]
 
-        return cls(energies, energy_offset, ket_overlaps, state_labels_0)
+        return cls(energies, energy_offset, ket_overlaps, state_labels_0)  # type: ignore [call-arg]  # mypy pre-commit can't handle @dataclass

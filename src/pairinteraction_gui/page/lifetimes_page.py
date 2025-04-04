@@ -25,6 +25,8 @@ class LifetimesPage(SimulationPage):
     title = "Lifetimes"
     tooltip = "Calculate the lifetimes and transition rates for a specified ket."
 
+    plotwidget: PlotWidget  # type: ignore [assignment]  # FIXME clean up the LifetimesPage class
+
     def setupWidget(self) -> None:
         self.plotwidget = PlotWidget(self)
         self.layout().addWidget(self.plotwidget)
