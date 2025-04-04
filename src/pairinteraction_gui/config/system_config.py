@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import IntSpinBox, WidgetForm
-from pairinteraction_gui.qobjects.new_item import RangeItem
+from pairinteraction_gui.qobjects.item import RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage

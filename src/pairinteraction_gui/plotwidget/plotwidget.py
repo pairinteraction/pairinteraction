@@ -14,7 +14,6 @@ from PySide6.QtWidgets import QPushButton
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.qobjects import WidgetH, WidgetV
 from pairinteraction_gui.qobjects.item import Item, RangeItem
-from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -70,10 +69,14 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
-        min_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=-0.5, decimals=2)
-        max_spinbox = DoubleSpinBox(self, vmin=-999, vmax=999, vdefault=0.5, decimals=2)
         self.energy_range = RangeItem(
-            self, "Calculate the energies from", min_spinbox, max_spinbox, "GHz", checked=False
+            self,
+            "Calculate the energies from",
+            (-999, 999),
+            (-0.5, 0.5),
+            unit="GHz",
+            checked=False,
+            long_label="energy",
         )
         self.plot_toolbar.layout().addWidget(self.energy_range)
 
