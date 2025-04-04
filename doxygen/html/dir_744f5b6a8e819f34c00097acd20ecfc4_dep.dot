@@ -1,0 +1,17 @@
+digraph "/__w/pairinteraction/pairinteraction/src/cpp/include/pairinteraction/database"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  compound=true
+  subgraph clusterdir_05aad1e1e71a0857d053653ff739ab1f {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", style="filled,dashed,", label="pairinteraction", fontname="Helvetica", fontsize="10", URL="dir_05aad1e1e71a0857d053653ff739ab1f.html"]
+  dir_2201cc560cca113e128cf7b0764a4919 [shape=box, label="enums", style="filled,", fillcolor="#a2b4d6", color="grey25", URL="dir_2201cc560cca113e128cf7b0764a4919.html"];
+  dir_4b348cb936e0e07f028cae262cb94480 [shape=box, label="utils", style="filled,", fillcolor="#a2b4d6", color="grey25", URL="dir_4b348cb936e0e07f028cae262cb94480.html"];
+  dir_744f5b6a8e819f34c00097acd20ecfc4 [shape=box, label="database", style="filled,bold,", fillcolor="#edf0f7", color="grey25", URL="dir_744f5b6a8e819f34c00097acd20ecfc4.html"];
+  }
+  dir_744f5b6a8e819f34c00097acd20ecfc4->dir_2201cc560cca113e128cf7b0764a4919 [headlabel="2", labeldistance=1.5 headhref="dir_000006_000012.html"];
+  dir_744f5b6a8e819f34c00097acd20ecfc4->dir_4b348cb936e0e07f028cae262cb94480 [headlabel="5", labeldistance=1.5 headhref="dir_000006_000034.html"];
+}
