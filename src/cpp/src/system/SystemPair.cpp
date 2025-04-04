@@ -47,7 +47,6 @@ GreenTensor<Scalar> construct_green_tensor(
     // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     GreenTensor<Scalar> green_tensor;
 
@@ -58,14 +57,6 @@ GreenTensor<Scalar> construct_green_tensor(
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
     if (distance == std::numeric_limits<real_t>::infinity()) {
         return green_tensor;
-    }
-    if (distance < numerical_precision) {
-        throw std::invalid_argument("The distance must be greater than zero.");
-    }
-    if (!traits::NumTraits<Scalar>::is_complex_v &&
-        std::abs(distance_vector[1]) > numerical_precision) {
-        throw std::invalid_argument(
-            "The distance vector must not have a y-component if the scalar type is real.");
     }
     Eigen::Vector3<real_t> vector_normalized = vector_map / distance;
 
@@ -262,7 +253,16 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
 template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
+
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+    if (!traits::NumTraits<Scalar>::is_complex_v &&
+        std::abs(distance_vector[1]) > numerical_precision) {
+        throw std::invalid_argument(
+            "The distance vector must not have a y-component if the scalar type is real.");
+    }
+
     distance_vector = vector;
+
     return *this;
 }
 
