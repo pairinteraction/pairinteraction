@@ -96,15 +96,15 @@ class SystemAtom(SystemBase[BasisType]):
         self: "Self", distance: Union[float, "PintFloat"], angle_degree: float = 0, unit: Optional[str] = None
     ) -> "Self":
         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
-        return self.set_distance_vector_to_ion(distance_vector, unit)
+        return self.set_ion_distance_vector(distance_vector, unit)
 
-    def set_distance_vector_to_ion(
+    def set_ion_distance_vector(
         self: "Self",
         distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
         distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "distance").to_base_unit() for v in distance]
-        self._cpp.set_distance_vector_to_ion(distance_au)
+        self._cpp.set_ion_distance_vector(distance_au)
         return self
 
     def set_ion_charge(self: "Self", charge: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":

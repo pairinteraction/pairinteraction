@@ -77,7 +77,7 @@ def benchmark_pairinteraction(
             product_of_parities="even",
         )
         pair_systems = [
-            pi.SystemPair(pair_basis).set_distance(d, unit="micrometer").set_order(order) for d in distances
+            pi.SystemPair(pair_basis).set_distance(d, unit="micrometer").set_interaction_order(order) for d in distances
         ]
         _ = pair_systems[0].get_hamiltonian()
     results.append(BenchmarkResult("Construction", software_name, get_duration()))

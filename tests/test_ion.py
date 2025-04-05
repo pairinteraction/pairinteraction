@@ -16,15 +16,15 @@ def test_ion() -> None:
     # Create systems for different distances to the ion
     distances = np.linspace(1, 10, 5)
     systems_x = [
-        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_distance_vector_to_ion([d, 0, 0], unit="um")
+        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_ion_distance_vector([d, 0, 0], unit="um")
         for d in distances
     ]
     systems_y = [
-        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_distance_vector_to_ion([0, d, 0], unit="um")
+        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_ion_distance_vector([0, d, 0], unit="um")
         for d in distances
     ]
     systems_z = [
-        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_distance_vector_to_ion([0, 0, d], unit="um")
+        pi.SystemAtom(basis).set_ion_charge(1, unit="e").set_ion_distance_vector([0, 0, d], unit="um")
         for d in distances
     ]
 
