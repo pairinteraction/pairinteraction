@@ -88,7 +88,7 @@ class TwoAtomsPage(SimulationPage):
         for step in range(steps):
             basis_pair = basis_pair_list[step % len(basis_pair_list)]
             system = pi.SystemPair(basis_pair)
-            system.set_order(self.system_pair_config.get_order())
+            system.set_interaction_order(self.system_pair_config.get_order())
             if not np.isinf(self.distance[step]):
                 system.set_distance(self.distance[step], self.angle[step], unit="micrometer")
             self.systems.append(system)

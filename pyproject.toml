@@ -238,6 +238,7 @@ extend-ignore = [
   "COM812",  # (missing-trailing-comma) incompatible with ruff format
   "D203",  # (incorrect-blank-line-before-class) incompatible with D211: no-blank-line-before-class
   "D213",  # (multi-line-summary-second-line) incompatible with D212: multi-line-summary-first-line
+  "TD", # Do not lint TODO comments as FIX002 forbids them anyway
 ]
 flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10

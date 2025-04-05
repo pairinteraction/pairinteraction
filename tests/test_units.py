@@ -56,7 +56,7 @@ def test_electric_dipole() -> None:
     system = pi.SystemAtom(basis)
     basis_pair = pi.BasisPair([system, system])
     system_pair = pi.SystemPair(basis_pair)
-    system_pair.set_order(3)
+    system_pair.set_interaction_order(3)
     system_pair.set_distance(distance)
     system.get_hamiltonian()
 
