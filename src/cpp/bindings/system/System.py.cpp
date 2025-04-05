@@ -54,7 +54,7 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
         .def("set_electric_field", &SystemAtom<T>::set_electric_field)
         .def("set_magnetic_field", &SystemAtom<T>::set_magnetic_field)
         .def("set_diamagnetism_enabled", &SystemAtom<T>::set_diamagnetism_enabled)
-        .def("set_distance_vector_to_ion", &SystemAtom<T>::set_distance_vector_to_ion)
+        .def("set_ion_distance_vector", &SystemAtom<T>::set_ion_distance_vector)
         .def("set_ion_charge", &SystemAtom<T>::set_ion_charge)
         .def("set_ion_interaction_order", &SystemAtom<T>::set_ion_interaction_order);
 }
@@ -65,7 +65,7 @@ static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
     using basis_t = typename SystemPair<T>::basis_t;
     nb::class_<SystemPair<T>, System<SystemPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("set_order", &SystemPair<T>::set_order)
+        .def("set_interaction_order", &SystemPair<T>::set_interaction_order)
         .def("set_distance_vector", &SystemPair<T>::set_distance_vector);
 }
 

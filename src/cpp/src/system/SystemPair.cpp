@@ -41,7 +41,8 @@ struct OperatorMatrices {
 
 template <typename Scalar>
 GreenTensor<Scalar> construct_green_tensor(
-    const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &distance_vector, int order) {
+    const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &distance_vector,
+    int interaction_order) {
     // https://doi.org/10.1103/PhysRevA.96.062509
     // https://doi.org/10.1103/PhysRevA.82.010901
     // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
@@ -61,7 +62,7 @@ GreenTensor<Scalar> construct_green_tensor(
     Eigen::Vector3<real_t> vector_normalized = vector_map / distance;
 
     // Dyadic green function of dipole-dipole interaction
-    if (order >= 3) {
+    if (interaction_order >= 3) {
         Eigen::Matrix3<Scalar> entries = Eigen::Matrix3<real_t>::Identity() -
             3 * vector_normalized * vector_normalized.transpose();
         entries /= std::pow(distance, 3);
@@ -70,7 +71,7 @@ GreenTensor<Scalar> construct_green_tensor(
     }
 
     // Dyadic green function of dipole-quadrupole interaction
-    if (order >= 4) {
+    if (interaction_order >= 4) {
         Eigen::Matrix<real_t, 3, 9> entries = Eigen::Matrix<real_t, 3, 9>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             Eigen::Index row = q;
@@ -97,7 +98,7 @@ GreenTensor<Scalar> construct_green_tensor(
     }
 
     // Dyadic green function of quadrupole-dipole interaction
-    if (order >= 4) {
+    if (interaction_order >= 4) {
         Eigen::Matrix<real_t, 9, 3> entries = Eigen::Matrix<real_t, 9, 3>::Zero();
         for (Eigen::Index q = 0; q < 3; ++q) {
             for (Eigen::Index j = 0; j < 3; ++j) {
@@ -124,7 +125,7 @@ GreenTensor<Scalar> construct_green_tensor(
     }
 
     // Dyadic green function of quadrupole-quadrupole interaction
-    if (order >= 5) {
+    if (interaction_order >= 5) {
         SPDLOG_WARN("Quadrupole-quadrupole interaction is considered but "
                     "not dipole-octupole interaction although this interaction would be "
                     "of the same order. We plan to implement dipole-octupole interaction "
@@ -241,12 +242,12 @@ SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
-SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
+SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
     this->hamiltonian_requires_construction = true;
     if (value < 3 || value > 5) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
     }
-    order = value;
+    interaction_order = value;
     return *this;
 }
 
@@ -272,7 +273,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
-    auto green_tensor = construct_green_tensor<Scalar>(distance_vector, order);
+    auto green_tensor = construct_green_tensor<Scalar>(distance_vector, interaction_order);
     auto op = construct_operator_matrices(green_tensor, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian

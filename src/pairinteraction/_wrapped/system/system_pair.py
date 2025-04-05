@@ -40,7 +40,7 @@ class SystemPair(SystemBase[BasisType]):
         ...     energy=(pair_energy - 3, pair_energy + 3),
         ...     energy_unit="GHz",
         ... )
-        >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_order(3)
+        >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_interaction_order(3)
         >>> print(pair_system)
         SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
         >>> pair_system = pair_system.diagonalize()
@@ -63,8 +63,8 @@ class SystemPair(SystemBase[BasisType]):
         super().__init__(basis)
         self._distance_vector_au = [0, 0, np.inf]
 
-    def set_order(self: "Self", order: int) -> "Self":
-        self._cpp.set_order(order)
+    def set_interaction_order(self: "Self", order: int) -> "Self":
+        self._cpp.set_interaction_order(order)
         return self
 
     def set_distance(

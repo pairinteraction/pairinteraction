@@ -51,11 +51,11 @@ public:
 
     SystemPair(std::shared_ptr<const basis_t> basis);
 
-    Type &set_order(int value);
+    Type &set_interaction_order(int value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
 
 private:
-    int order{3};
+    int interaction_order{3};
     std::array<real_t, 3> distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
 
     void construct_hamiltonian() const override;
