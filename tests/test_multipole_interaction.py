@@ -30,8 +30,12 @@ def test_pair_potential(species: str) -> None:
 
     distances = np.linspace(0.2, 5, 5)
     system_pairs_0 = [pi.SystemPair(basis_pair) for d in distances]
-    system_pairs_3 = [pi.SystemPair(basis_pair).set_order(3).set_distance(d, unit="micrometer") for d in distances]
-    system_pairs_4 = [pi.SystemPair(basis_pair).set_order(4).set_distance(d, unit="micrometer") for d in distances]
+    system_pairs_3 = [
+        pi.SystemPair(basis_pair).set_interaction_order(3).set_distance(d, unit="micrometer") for d in distances
+    ]
+    system_pairs_4 = [
+        pi.SystemPair(basis_pair).set_interaction_order(4).set_distance(d, unit="micrometer") for d in distances
+    ]
 
     # Separate the contributions of the different multipole orders
     order_3 = [

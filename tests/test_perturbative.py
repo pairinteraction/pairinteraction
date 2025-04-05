@@ -62,7 +62,7 @@ def _create_system_pair_sample():
     theta = 0
     r = 12
     system_pair.set_distance_vector(r * np.array([np.sin(theta), 0, np.cos(theta)]), "micrometer")
-    system_pair.set_order(3)
+    system_pair.set_interaction_order(3)
     return system_pair
 
 
