@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
+from typing import Any
 
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, ResultsTwoAtoms, calculate_two_atoms
 from pairinteraction_gui.config import (
@@ -45,3 +46,13 @@ class TwoAtomsPage(CalculationPage):
 
         if results.basis_0_label is not None:
             self.basis_config.update_basis_pair_label(results.basis_0_label)
+
+    def _get_export_replacements(self) -> dict[str, Any]:
+        parameters = ParametersTwoAtoms.from_page(self)
+        return parameters.to_replacement_dict()
+
+    def _get_export_notebook_template_name(self) -> str:
+        ranges = self.system_config.get_ranges_dict()
+        if all(v[0] == v[-1] for k, v in ranges.items() if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz"]):
+            return "two_atoms.ipynb"
+        return "two_atoms_variable_fields.ipynb"

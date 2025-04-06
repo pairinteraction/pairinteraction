@@ -177,6 +177,40 @@ class Parameters(ABC, Generic[PageType]):
         range_diffs: dict[RangesKeys, float] = {key: abs(r[-1] - r[0]) for key, r in self.ranges.items()}
         return max(range_diffs, key=lambda x: range_diffs.get(x, -1))
 
+    def to_replacement_dict(self) -> dict[str, str]:
+        """Return a dictionary with the parameters for replacement."""
+        replacements: dict[str, str] = {
+            "$PI_DTYPE": "real" if self.is_real else "complex",
+            "$X_VALUES": self._get_ranges_max_diff_key(),
+            "$X_LABEL": as_string(self.get_x_label(), raw_string=True),
+        }
+
+        for atom in range(self.n_atoms):
+            replacements[f"$SPECIES_{atom}"] = as_string(self.get_species(atom))
+            replacements[f"$QUANTUM_NUMBERS_{atom}"] = dict_to_repl(self.get_quantum_numbers(atom))
+            replacements[f"$QUANTUM_NUMBERS_RESTRICTIONS_{atom}"] = dict_to_repl(
+                self.get_quantum_number_restrictions(atom)
+            )
+
+        replacements["$STEPS"] = str(self.steps)
+        for key, values in self.ranges.items():
+            replacements[f"${key.upper()}_MIN"] = str(values[0])
+            replacements[f"${key.upper()}_MAX"] = str(values[-1])
+            if values[0] == values[-1]:
+                replacements[f"${key.upper()}_VALUE"] = str(values[0])
+
+        replacements["$DIAGONALIZE_KWARGS"] = dict_to_repl(self.diagonalize_kwargs)
+
+        if self.diagonalize_relative_energy_range is not None:
+            r_energy = self.diagonalize_relative_energy_range
+            replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = (
+                f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_unit="GHz"'
+            )
+        else:
+            replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = ""
+
+        return replacements
+
 
 @dataclass
 class Results(ABC):
@@ -202,3 +236,23 @@ class Results(ABC):
         state_labels_0 = [s.get_label("ket") for s in state_0]
 
         return cls(energies, energy_offset, ket_overlaps, state_labels_0)
+
+
+def as_string(value: str, *, raw_string: bool = False) -> str:
+    string = '"' + value + '"'
+    if raw_string:
+        string = "r" + string
+    return string
+
+
+def dict_to_repl(d: dict[str, Any]) -> str:
+    """Convert a dictionary to a string for replacement."""
+    if not d:
+        return ""
+    repl = ", "
+    for k, v in d.items():
+        if isinstance(v, str):
+            repl += f"{k}={as_string(v)}, "
+        else:
+            repl += f"{k}={v}, "
+    return repl

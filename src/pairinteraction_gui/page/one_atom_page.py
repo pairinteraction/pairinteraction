@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
+from typing import Any
 
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
@@ -61,3 +62,10 @@ class OneAtomPage(CalculationPage):
                 continue
             used.add(short_label)
             self.plotwidget.canvas.ax.text(x_lim[0], energy, short_label, va="center", ha="right")
+
+    def _get_export_notebook_template_name(self) -> str:
+        return "one_atom.ipynb"
+
+    def _get_export_replacements(self) -> dict[str, Any]:
+        parameters = ParametersOneAtom.from_page(self)
+        return parameters.to_replacement_dict()

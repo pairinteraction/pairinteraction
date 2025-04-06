@@ -58,6 +58,8 @@ dependencies = [
   "matplotlib >= 3.8",
   "mplcursors >= 0.6",
   "attrs >= 24.0",
+  "nbconvert >= 7.8",
+  "nbformat >= 5.10",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
@@ -67,7 +69,6 @@ docs = [
   "sphinx < 8.2", # FIXME
   "sphinx-rtd-theme >= 2.0",
   "nbsphinx >= 0.9",
-  "nbconvert >= 7.8",
   "jupyter >= 1.1",
   "sphinx_autodoc_typehints >= 1.24",
   "sphinx-autobuild >= 2021.3",
@@ -216,6 +217,7 @@ sources = ["src"]
 line-length = 120
 target-version = "py39"
 extend-include = ["*.ipynb"]
+extend-exclude = ["src/pairinteraction_gui/export_templates/"]
 
 [tool.ruff.lint]
 select = ["ALL"]
