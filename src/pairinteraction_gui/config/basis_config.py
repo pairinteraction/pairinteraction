@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import DoubleSpinBox, HalfIntSpinBox, IntSpinBox, NamedStackedWidget, QnItem, WidgetV
-from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_basis_atom
+from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
 from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:

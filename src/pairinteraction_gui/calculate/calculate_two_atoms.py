@@ -32,6 +32,12 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
         obj.order = page.system_config.order.value()
         return obj
 
+    def to_replacement_dict(self) -> dict[str, str]:
+        replacements = super().to_replacement_dict()
+        replacements["$MULTIPOLE_ORDER"] = str(self.order)
+        replacements["$PAIR_ENERGY_DELTA"] = str(self.pair_basis_energy_delta)
+        return replacements
+
 
 @dataclass
 class ResultsTwoAtoms(Results):

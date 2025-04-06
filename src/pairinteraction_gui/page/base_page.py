@@ -6,6 +6,8 @@ import time
 from pathlib import Path
 from typing import Any, Optional
 
+import nbformat
+from nbconvert import PythonExporter
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
 from PySide6.QtWidgets import (
@@ -211,15 +213,69 @@ class CalculationPage(SimulationPage):
         filename, _ = QFileDialog.getSaveFileName(self, "Save Plot", "", "PNG Files (*.png)")
 
         if filename:
-            if not filename.endswith(".png"):
-                filename += ".png"
+            filename = filename.removesuffix(".png") + ".png"
             self.plotwidget.canvas.fig.savefig(
                 filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
             )
             logger.info("Plot saved as %s", filename)
 
     def export_python(self) -> None:
+        """Export the current calculation as a Python script."""
         logger.debug("Exporting results as Python script...")
 
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Python Script", "", "Python Files (*.py)")
+
+        if filename:
+            filename = filename.removesuffix(".py") + ".py"
+
+            template_path = (
+                Path(__file__).parent.parent / "export_templates" / self._get_export_notebook_template_name()
+            )
+            with Path(template_path).open() as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
+            content, _ = exporter.from_notebook_node(notebook)
+
+            replacements = self._get_export_replacements()
+            for key, value in replacements.items():
+                content = content.replace(key, str(value))
+
+            with Path(filename).open("w") as f:
+                f.write(content)
+
+            logger.info("Python script saved as %s", filename)
+
     def export_notebook(self) -> None:
+        """Export the current calculation as a Jupyter notebook."""
         logger.debug("Exporting results as Jupyter notebook...")
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Jupyter Notebook", "", "Jupyter Notebooks (*.ipynb)")
+
+        if filename:
+            filename = filename.removesuffix(".ipynb") + ".ipynb"
+
+            template_path = (
+                Path(__file__).parent.parent / "export_templates" / self._get_export_notebook_template_name()
+            )
+            with Path(template_path).open() as f:
+                notebook = nbformat.read(f, as_version=4)
+
+            replacements = self._get_export_replacements()
+            for cell in notebook.cells:
+                if cell.cell_type == "code":
+                    source = cell.source
+                    for key, value in replacements.items():
+                        source = source.replace(key, str(value))
+                    cell.source = source
+
+            nbformat.write(notebook, filename)
+
+            logger.info("Jupyter notebook saved as %s", filename)
+
+    def _get_export_notebook_template_name(self) -> str:
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def _get_export_replacements(self) -> dict[str, str]:
+        # Override this method in subclasses to provide specific replacements for the export
+        return {}
