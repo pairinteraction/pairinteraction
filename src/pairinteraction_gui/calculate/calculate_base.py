@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 # FIXME: having all kwargs dictionaries being Any is a hacky solution, it would be nice to use TypedDict in the future
 
-UNITS: dict[RangesKeys, str] = {
+UnitFromRangeKey: dict[RangesKeys, str] = {
     "Ex": "V/cm",
     "Ey": "V/cm",
     "Ez": "V/cm",
@@ -35,6 +35,16 @@ UNITS: dict[RangesKeys, str] = {
     "Angle": r"$^\circ$",
 }
 
+VariableNameFromRangeKey: dict[RangesKeys, str] = {
+    "Ex": "efield_x",
+    "Ey": "efield_y",
+    "Ez": "efield_z",
+    "Bx": "bfield_x",
+    "By": "bfield_y",
+    "Bz": "bfield_z",
+    "Distance": "distance",
+    "Angle": "angle",
+}
 
 PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
 
@@ -164,7 +174,7 @@ class Parameters(ABC, Generic[PageType]):
     def get_x_label(self) -> str:
         """Return the x values for the plot."""
         max_key = self._get_ranges_max_diff_key()
-        x_label = f"{max_key} [{UNITS[max_key]}]"
+        x_label = f"{max_key} [{UnitFromRangeKey[max_key]}]"
 
         non_constant_keys = [key for key, values in self.ranges.items() if key != max_key and values[0] != values[-1]]
         if non_constant_keys:
@@ -179,9 +189,10 @@ class Parameters(ABC, Generic[PageType]):
 
     def to_replacement_dict(self) -> dict[str, str]:
         """Return a dictionary with the parameters for replacement."""
+        max_key = self._get_ranges_max_diff_key()
         replacements: dict[str, str] = {
             "$PI_DTYPE": "real" if self.is_real else "complex",
-            "$X_VALUES": self._get_ranges_max_diff_key(),
+            "$X_VARIABLE_NAME": VariableNameFromRangeKey[max_key],
             "$X_LABEL": as_string(self.get_x_label(), raw_string=True),
         }
 
@@ -249,10 +260,10 @@ def dict_to_repl(d: dict[str, Any]) -> str:
     """Convert a dictionary to a string for replacement."""
     if not d:
         return ""
-    repl = ", "
+    repl = ""
     for k, v in d.items():
         if isinstance(v, str):
-            repl += f"{k}={as_string(v)}, "
+            repl += f", {k}={as_string(v)}"
         else:
-            repl += f"{k}={v}, "
+            repl += f", {k}={v}"
     return repl
