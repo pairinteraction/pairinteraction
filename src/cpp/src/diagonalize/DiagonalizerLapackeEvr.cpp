@@ -65,6 +65,11 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::dispatch_eigh(
     Eigen::MatrixX<ScalarLim> shifted_matrix =
         this->template subtract_mean<ScalarLim>(matrix, shift, rtol);
     real_lim_t scaling = shifted_matrix.norm();
+
+    if (scaling < std::numeric_limits<real_lim_t>::epsilon()) {
+        scaling = 1; // Avoid division by zero if the matrix is zero
+    }
+
     shifted_matrix /= scaling; // This seems to increase the numerical stability of lapacke_evr
 
     // Diagonalize the shifted matrix
