@@ -133,14 +133,20 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
         if (info <= 100) {
             throw std::invalid_argument(
                 fmt::format("Diagonalization error: Argument {} to the FEAST *interface* "
-                            "had an illegal value (counting starts at one).",
+                            "had an illegal value (the counting of the arguments starts with one). "
+                            "For a documentation of the feast interface, see "
+                            "https://www.intel.com/content/www/us/en/docs/onemkl/"
+                            "developer-reference-c/2025-1/feast-syev-feast-heev.html.",
                             -info - 100));
         }
         if (info >= 100) {
-            throw std::invalid_argument(
-                fmt::format("Diagonalization error: Argument {} to the FEAST "
-                            "*initialization* had an illegal value (counting starts at one).",
-                            info - 100));
+            throw std::invalid_argument(fmt::format(
+                "Diagonalization error: Argument {} to the FEAST "
+                "*initialization* had an illegal value (the counting of the arguments starts with "
+                "one). For a documentation of the feast initialization, see "
+                "https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2025-1/"
+                "extended-eigensolver-input-parameters.html.",
+                info - 100));
         }
         throw std::runtime_error(fmt::format(
             "Diagonalization error: The FEAST routine failed with error code {}.", info));
