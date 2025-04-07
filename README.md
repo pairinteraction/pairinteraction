@@ -178,11 +178,11 @@ The development of the pairinteraction software has been supported by the [Insti
 [![Federal Ministry of Education and Research][bmbf-jpg]][bmbf-link]
 [![Atom Computing][atom-jpg]][atom-link]
 
-[stuttgart-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/uni_stuttgart.jpg
+[stuttgart-jpg]:  https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/uni_stuttgart.svg
 [stuttgart-link]: https://www.uni-stuttgart.de/en/
-[bmbf-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/bmbf.jpg
+[bmbf-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/bmbf.svg
 [bmbf-link]: https://www.bmbf.de/EN/
-[atom-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.jpg
+[atom-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.svg
 [atom-link]: https://atom-computing.com/
 
 [Institute for Theoretical Physics III]: https://www.itp3.uni-stuttgart.de/
