@@ -92,9 +92,13 @@ EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::dispatch_eigh(
 
     if (info != 0) {
         if (info < 0) {
-            throw std::invalid_argument(fmt::format("Diagonalization error: Argument {} to the "
-                                                    "lapacke_evr routine had an illegal value.",
-                                                    -info));
+            throw std::invalid_argument(
+                fmt::format("Diagonalization error: Argument {} to the "
+                            "lapacke_evr routine had an illegal value (the counting of the "
+                            "arguments starts with one). For a documentation of lapacke_evr, see "
+                            "https://www.intel.com/content/www/us/en/docs/onemkl/"
+                            "developer-reference-c/2025-1/syevr.html.",
+                            -info));
         }
         throw std::runtime_error(
             fmt::format("Diagonalization error: The lapacke_evr routine failed with error code {}. "
