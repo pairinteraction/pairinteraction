@@ -19,6 +19,8 @@ if TYPE_CHECKING:
     PintArray: TypeAlias = PlainQuantity[NDArray]
     # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
     PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
+    # and also for complex
+    PintComplex: TypeAlias = PlainQuantity[complex]  # type: ignore [type-var]
 
 ureg = UnitRegistry(system="atomic")
 

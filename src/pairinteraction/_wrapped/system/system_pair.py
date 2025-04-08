@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from pairinteraction._wrapped.basis.basis_pair import BasisPair
     from pairinteraction.units import PintArray, PintFloat
 
-BasisType = TypeVar("BasisType", bound="BasisPair[Any]", covariant=True)
+BasisType = TypeVar("BasisType", bound="BasisPair[Any, Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 

@@ -241,14 +241,15 @@ extend-ignore = [
   "COM812",  # (missing-trailing-comma) incompatible with ruff format
   "D203",  # (incorrect-blank-line-before-class) incompatible with D211: no-blank-line-before-class
   "D213",  # (multi-line-summary-second-line) incompatible with D212: multi-line-summary-first-line
-  "TD", # Do not lint TODO comments as FIX002 forbids them anyway
+  "FIX",  # Disallow TODOs, FIXMEs, etc.; enforcing this is a bit too strict
+  "TD",  # Linting TODOs; we dont need this
 ]
 flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["ANN", "N", "FIX", "TD", "PLR", "S", "D1"]
-"src/pairinteraction_gui/**" = ["ERA", "PLW", "TRY", "PGH", "FIX", "TD", "ARG", "N802", "PERF102", "D1"]
+"tests/*.py" = ["ANN", "N", "PLR", "S", "D1"]
+"src/pairinteraction_gui/**" = ["ERA", "PLW", "TRY", "PGH", "ARG", "N802", "PERF102", "D1"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true

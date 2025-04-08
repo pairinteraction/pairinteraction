@@ -243,7 +243,7 @@ class Results(ABC):
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]
         basis_0 = system_list[-1].get_eigenbasis()
-        state_0 = [basis_0.get_corresponding_ket(i) for i in range(basis_0.number_of_states)]
+        state_0 = [basis_0.kets[i] for i in range(basis_0.number_of_states)]
         state_labels_0 = [s.get_label("ket") for s in state_0]
 
         return cls(energies, energy_offset, ket_overlaps, state_labels_0)
