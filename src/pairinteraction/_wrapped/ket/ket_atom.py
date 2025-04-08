@@ -15,7 +15,7 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.units import NDArray, PintArray, PintFloat
+    from pairinteraction.units import NDArray, PintArray, PintComplex, PintFloat
 
 
 class KetAtom(KetBase):
@@ -243,14 +243,16 @@ class KetAtom(KetBase):
         return self._cpp.get_underspecified_channel_contribution()
 
     @overload
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: None = None) -> "PintFloat": ...
+    def get_matrix_element(
+        self, ket: "Self", operator: OperatorType, q: int, unit: None = None
+    ) -> Union["PintFloat", "PintComplex"]: ...  # type: ignore [type-var] # see "PintComplex"
 
     @overload
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> Union[float, complex]: ...
 
     def get_matrix_element(
         self, ket: "Self", operator: OperatorType, q: int, unit: Optional[str] = None
-    ) -> Union[float, "PintFloat"]:
+    ) -> Union["PintFloat", "PintComplex", float, complex]:
         """Get the matrix element between two atomic basis states from the database.
 
         Args:
@@ -267,9 +269,9 @@ class KetAtom(KetBase):
 
         basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
+        state_2 = basis.get_corresponding_state(ket)
 
-        matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
-        return matrixelements[0]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return state_1.get_matrix_element(state_2, operator, q, unit=unit)
 
     @overload
     def get_spontaneous_transition_rates(self, unit: None = None) -> tuple[list["KetAtom"], "PintArray"]: ...
@@ -298,33 +300,21 @@ class KetAtom(KetBase):
 
     @overload
     def get_black_body_transition_rates(
-        self,
-        temperature: Union[float, "PintFloat"],
-        temperature_unit: Optional[str] = None,
-        unit: None = None,
+        self, temperature: Union[float, "PintFloat"], temperature_unit: Optional[str] = None, unit: None = None
     ) -> tuple[list["KetAtom"], "PintArray"]: ...
 
     @overload
     def get_black_body_transition_rates(
-        self,
-        temperature: "PintFloat",
-        *,
-        unit: str,
+        self, temperature: "PintFloat", *, unit: str
     ) -> tuple[list["KetAtom"], "NDArray"]: ...
 
     @overload
     def get_black_body_transition_rates(
-        self,
-        temperature: float,
-        temperature_unit: str,
-        unit: str,
+        self, temperature: float, temperature_unit: str, unit: str
     ) -> tuple[list["KetAtom"], "NDArray"]: ...
 
     def get_black_body_transition_rates(
-        self,
-        temperature: Union[float, "PintFloat"],
-        temperature_unit: Optional[str] = None,
-        unit: Optional[str] = None,
+        self, temperature: Union[float, "PintFloat"], temperature_unit: Optional[str] = None, unit: Optional[str] = None
     ) -> tuple[list["KetAtom"], Union["NDArray", "PintArray"]]:
         """Calculate the black body transition rates of the KetAtom.
 
@@ -356,27 +346,13 @@ class KetAtom(KetBase):
     ) -> "PintFloat": ...
 
     @overload
-    def get_lifetime(
-        self,
-        *,
-        unit: str,
-    ) -> float: ...
+    def get_lifetime(self, *, unit: str) -> float: ...
 
     @overload
-    def get_lifetime(
-        self,
-        temperature: "PintFloat",
-        *,
-        unit: str,
-    ) -> float: ...
+    def get_lifetime(self, temperature: "PintFloat", *, unit: str) -> float: ...
 
     @overload
-    def get_lifetime(
-        self,
-        temperature: float,
-        temperature_unit: str,
-        unit: str,
-    ) -> float: ...
+    def get_lifetime(self, temperature: float, temperature_unit: str, unit: str) -> float: ...
 
     def get_lifetime(
         self,
@@ -411,9 +387,7 @@ class KetAtom(KetBase):
         return QuantityScalar.from_base_unit(lifetime_au, "time").to_pint_or_unit(unit)
 
     def _get_transition_rates(
-        self,
-        which_transitions: Literal["spontaneous", "black_body"],
-        temperature_au: Union[float, None] = None,
+        self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: Union[float, None] = None
     ) -> tuple[list["KetAtom"], "NDArray"]:
         from pairinteraction._wrapped.basis.basis_atom import BasisAtomReal
         from pairinteraction._wrapped.system.system_atom import SystemAtomReal

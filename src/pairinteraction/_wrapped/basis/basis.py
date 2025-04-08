@@ -1,20 +1,22 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, Union
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
-import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.ket.ket import KetBase
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-KetType = TypeVar("KetType", bound=KetBase, covariant=True)
+    from pairinteraction._wrapped.ket.ket import KetBase
+    from pairinteraction._wrapped.state.state import StateBase
+
+KetType = TypeVar("KetType", bound="KetBase", covariant=True)
+StateType = TypeVar("StateType", bound="StateBase[Any, Any]", covariant=True)
 UnionCPPBasis = Union[
     _backend.BasisAtomReal, _backend.BasisAtomComplex, _backend.BasisPairReal, _backend.BasisPairComplex
 ]
@@ -26,7 +28,7 @@ UnionTypeCPPBasisCreator = Union[
 ]
 
 
-class BasisBase(ABC, Generic[KetType]):
+class BasisBase(ABC, Generic[KetType, StateType]):
     """Base class for all Basis objects.
 
     The basis objects are meant to represent a set of kets, that span a Hilbert space and store a coefficient matrix,
@@ -41,7 +43,11 @@ class BasisBase(ABC, Generic[KetType]):
 
     _cpp: UnionCPPBasis
     _cpp_creator: ClassVar[UnionTypeCPPBasisCreator]
-    _TypeKet: type[KetType]  # should by ClassVar, but cannot be nested yet
+    _TypeKet: type[KetType]  # should be ClassVar, but cannot be nested yet
+    _TypeState: type[StateType]  # should be ClassVar, but cannot be nested yet
+
+    @abstractmethod
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     @classmethod
     def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPBasis) -> "Self":
@@ -62,14 +68,24 @@ class BasisBase(ABC, Generic[KetType]):
         return [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
 
     @property
-    def number_of_states(self) -> int:
-        """Return the number of states in the basis."""
-        return self._cpp.get_number_of_states()
+    def states(self) -> list[StateType]:
+        """Return a list containing the states of the basis."""
+        states: list[StateType] = []
+        for i in range(self.number_of_states):
+            state_cpp = self._cpp.get_state(i)
+            state_basis = type(self)._from_cpp_object(state_cpp)
+            states.append(self._TypeState._from_basis_object(state_basis))
+        return states
 
     @property
     def number_of_kets(self) -> int:
         """Return the number of kets in the basis."""
         return self._cpp.get_number_of_kets()
+
+    @property
+    def number_of_states(self) -> int:
+        """Return the number of states in the basis."""
+        return self._cpp.get_number_of_states()
 
     @property
     @deprecated("Use the `get_coefficients` method instead. Will be removed in v2.0")
@@ -90,26 +106,25 @@ class BasisBase(ABC, Generic[KetType]):
         """
         return self._cpp.get_coefficients()
 
-    def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
-        if isinstance(ket_or_index, (int, np.integer)):
-            cpp_basis = self._cpp.get_corresponding_state(ket_or_index)
-        else:
-            cpp_basis = self._cpp.get_corresponding_state(ket_or_index._cpp)  # type: ignore [arg-type]
-        return type(self)._from_cpp_object(cpp_basis)
+    def get_corresponding_ket(self: "Self", state: "StateBase[Any, Any]") -> KetType:
+        raise NotImplementedError("Not implemented yet.")
 
-    def get_corresponding_state_index(self, ket_or_index: Union[KetType, int]) -> int:
-        if isinstance(ket_or_index, (int, np.integer)):
-            return self._cpp.get_corresponding_state_index(ket_or_index)
-        return self._cpp.get_corresponding_state_index(ket_or_index._cpp)  # type: ignore [arg-type]
+    def get_corresponding_ket_index(self, state: "StateBase[Any, Any]") -> int:
+        raise NotImplementedError("Not implemented yet.")
 
-    def get_corresponding_ket(self: "Self", state_or_index: Union["Self", int]) -> KetType:
-        if isinstance(state_or_index, (int, np.integer)):
-            cpp_ket = self._cpp.get_corresponding_ket(state_or_index)
-        else:
-            cpp_ket = self._cpp.get_corresponding_ket(state_or_index._cpp)  # type: ignore [arg-type]
-        return self._TypeKet._from_cpp_object(cpp_ket)
+    def get_corresponding_state(self, ket: "KetBase") -> StateType:
+        state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
+        state_basis = type(self)._from_cpp_object(state_cpp)
+        return self._TypeState._from_basis_object(state_basis)
 
-    def get_corresponding_ket_index(self, state_or_index: Union["Self", int]) -> int:
-        if isinstance(state_or_index, (int, np.integer)):
-            return self._cpp.get_corresponding_ket_index(state_or_index)
-        return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [arg-type]
+    def get_corresponding_state_index(self, ket: "KetBase") -> int:
+        return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
+
+    @abstractmethod
+    def get_amplitudes(self, other: Any) -> Any: ...
+
+    @abstractmethod
+    def get_overlaps(self, other: Any) -> Any: ...
+
+    @abstractmethod
+    def get_matrix_elements(self, other: Any, *args: Any, **kwargs: Any) -> Any: ...

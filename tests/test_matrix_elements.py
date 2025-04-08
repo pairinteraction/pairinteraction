@@ -36,7 +36,8 @@ def test_electric_dipole_matrix_element() -> None:
     ket_final = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
     dipole = ket_initial.get_matrix_element(ket_final, "electric_dipole", 0, unit="e a0")
-    assert dipole > 0
+    assert dipole.real > 0
+    assert dipole.imag == 0
 
     # The dipole element between the same, unperturbed state should be zero
     dipole = ket_initial.get_matrix_element(ket_initial, "electric_dipole", 0, unit="e a0")
@@ -53,14 +54,15 @@ def test_electric_dipole_matrix_element() -> None:
 
     state = system.basis.get_corresponding_state(ket_initial)
 
-    dipole_zero = state.get_matrix_elements(state, "electric_dipole", 0, unit="e a0").todense()[0, 0]
-    dipole_plus = state.get_matrix_elements(state, "electric_dipole", 1, unit="e a0").todense()[0, 0]
-    dipole_minus = state.get_matrix_elements(state, "electric_dipole", -1, unit="e a0").todense()[0, 0]
+    dipole_zero = state.get_matrix_element(state, "electric_dipole", 0, unit="e a0")
+    dipole_plus = state.get_matrix_element(state, "electric_dipole", 1, unit="e a0")
+    dipole_minus = state.get_matrix_element(state, "electric_dipole", -1, unit="e a0")
 
     dipole_z = dipole_zero
     dipole_x = (dipole_minus - dipole_plus) / np.sqrt(2)
     dipole_y = 1j * (dipole_plus + dipole_minus) / np.sqrt(2)
 
-    assert dipole_z > 0
+    assert dipole_z.real > 0
+    assert dipole_z.imag == 0
     assert np.isclose(dipole_z, dipole_x)
     assert np.isclose(dipole_y, 0)

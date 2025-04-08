@@ -36,7 +36,7 @@ def test_diamagnetism() -> None:
     )
 
     # Compare to reference data
-    assert np.isclose(overlap, system.basis.get_corresponding_state(ket).get_overlaps(ket)[0])
+    assert np.isclose(overlap, system.basis.get_corresponding_state(ket).get_overlap(ket))
     assert np.isclose(overlap, 0.9823116102876408, atol=1e-10)
     assert np.isclose(eigenenergy, 4.113262772909366)
 

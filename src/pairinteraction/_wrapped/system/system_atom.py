@@ -3,7 +3,7 @@
 
 import logging
 from collections.abc import Collection
-from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
 from typing_extensions import deprecated
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pairinteraction._wrapped.ket.ket_atom import KetAtom
     from pairinteraction.units import PintArray, PintFloat
 
-BasisType = TypeVar("BasisType", bound="BasisAtom", covariant=True)
+BasisType = TypeVar("BasisType", bound="BasisAtom[Any]", covariant=True)
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
 UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
