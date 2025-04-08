@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 from typing import TYPE_CHECKING, Optional, Union
 
 from attr import dataclass
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction_gui.page import TwoAtomsPage
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -70,7 +73,9 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             .set_magnetic_field(parameters.get_bfield(0), unit="G")
             for i in range(n_atoms)
         )
+        logger.debug("Diagonalizing SystemAtoms...")
         pi.diagonalize(systems, **parameters.diagonalize_kwargs)
+        logger.debug("Done diagonalizing SystemAtoms.")
         ket_pair_energy_0 = sum(systems[i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
         delta_energy = parameters.pair_basis_energy_delta
         basis_pair = pi.BasisPair(
@@ -93,7 +98,9 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             )
             systems_list.append(systems)
         systems_flattened = [system for systems in systems_list for system in systems]
+        logger.debug("Diagonalizing SystemAtoms...")
         pi.diagonalize(systems_flattened, **parameters.diagonalize_kwargs)
+        logger.debug("Done diagonalizing SystemAtoms.")
         delta_energy = parameters.pair_basis_energy_delta
         basis_pair_list = []
         for step in range(parameters.steps):
@@ -120,11 +127,13 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             system.set_distance(distance, angle, unit="micrometer")
         system_pair_list.append(system)
 
+    logger.debug("Diagonalizing SystemPairs...")
     pi.diagonalize(
         system_pair_list,
         **parameters.diagonalize_kwargs,
         **parameters.get_diagonalize_energy_range(ket_pair_energy_0),
     )
+    logger.debug("Done diagonalizing SystemPairs.")
 
     results = ResultsTwoAtoms.from_calculate(system_pair_list, kets, ket_pair_energy_0)
     results.basis_0_label = (

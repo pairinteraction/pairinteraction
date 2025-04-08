@@ -14,7 +14,7 @@ WidgetType = TypeVar("WidgetType", bound=QWidget)
 
 
 class NamedStackedWidget(QStackedWidget, Generic[WidgetType]):
-    def __init__(self, parent: Optional[WidgetType] = None) -> None:
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self._widgets: dict[str, WidgetType] = {}
 

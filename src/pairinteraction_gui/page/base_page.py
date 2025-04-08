@@ -20,11 +20,13 @@ from PySide6.QtWidgets import (
     QToolBox,
 )
 
+from pairinteraction_gui.app import Application
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.qobjects.events import show_status_tip
+from pairinteraction_gui.qobjects.named_stacked_widget import NamedStackedWidget
 from pairinteraction_gui.worker import Worker
 
 logger = logging.getLogger(__name__)
@@ -89,15 +91,6 @@ class SimulationPage(BasePage):
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
-        # Setup loading animation
-        self.loading_label = QLabel(self)
-        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
-        self.loading_movie = QMovie(str(gif_path))
-        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
-        self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.loading_label.hide()
-
     def postSetupWidget(self) -> None:
         for attr in self.__dict__.values():
             if isinstance(attr, BaseConfig):
@@ -125,16 +118,35 @@ class CalculationPage(SimulationPage):
         self.plotwidget = PlotEnergies(self)
         self.layout().addWidget(self.plotwidget)
 
+        # Setup loading animation
+        self.loading_label = QLabel(self)
+        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
+        self.loading_movie = QMovie(str(gif_path))
+        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
+        self.loading_label.setMovie(self.loading_movie)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.loading_label.hide()
+
         # Control panel below the plot
         control_layout = QHBoxLayout()
 
-        # Calculate button
+        # Calculate/Abort stacked buttons
+        self.calculate_and_abort = NamedStackedWidget[QPushButton](self)
+
         calculate_button = QPushButton("Calculate")
-        calculate_button.setObjectName("Calculate")
         calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
         calculate_button.clicked.connect(self.calculate_clicked)
         calculate_button.setStyleSheet(self._button_style)
-        control_layout.addWidget(calculate_button)
+        self.calculate_and_abort.addNamedWidget(calculate_button, "Calculate")
+
+        abort_button = QPushButton("Abort")
+        abort_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop))
+        abort_button.clicked.connect(self.abort_clicked)
+        abort_button.setStyleSheet(self._button_style)
+        self.calculate_and_abort.addNamedWidget(abort_button, "Abort")
+
+        self.calculate_and_abort.setFixedHeight(50)
+        control_layout.addWidget(self.calculate_and_abort, stretch=2)
 
         # Create export button with menu
         export_button = QPushButton("Export")
@@ -147,7 +159,8 @@ class CalculationPage(SimulationPage):
         export_menu.addAction("Export as Python script", self.export_python)
         export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
         export_button.setMenu(export_menu)
-        control_layout.addWidget(export_button)
+        export_button.setFixedHeight(50)
+        control_layout.addWidget(export_button, stretch=1)
 
         self.layout().addLayout(control_layout)
 
@@ -167,7 +180,7 @@ class CalculationPage(SimulationPage):
 
     def before_calculate(self) -> None:
         show_status_tip(self, "Calculating... Please wait.", logger=logger)
-        self.findChild(QPushButton, "Calculate").setEnabled(False)
+        self.calculate_and_abort.setCurrentNamedWidget("Abort")
         self.plotwidget.clear()
 
         # run loading gif
@@ -189,7 +202,7 @@ class CalculationPage(SimulationPage):
         else:
             show_status_tip(self, f"Calculation failed after {time_needed:.2f} seconds.", logger=logger)
 
-        self.findChild(QPushButton, "Calculate").setEnabled(True)
+        self.calculate_and_abort.setCurrentNamedWidget("Calculate")
 
     def calculate(self) -> tuple[Parameters[Any], Results]:
         raise NotImplementedError("Subclasses must implement this method")
@@ -281,3 +294,11 @@ class CalculationPage(SimulationPage):
     def _get_export_replacements(self) -> dict[str, str]:
         # Override this method in subclasses to provide specific replacements for the export
         return {}
+
+    def abort_clicked(self) -> None:
+        """Handle abort button click."""
+        logger.debug("Aborting calculation.")
+        Application.terminate_all_processes()
+        Application.terminate_all_threads()
+        self.after_calculate(False)
+        show_status_tip(self, "Calculation aborted.", logger=logger)

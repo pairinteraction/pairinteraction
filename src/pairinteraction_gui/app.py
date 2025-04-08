@@ -64,18 +64,31 @@ class Application(QApplication):
     def quit() -> None:
         """Quit the application."""
         logger.debug("Calling Application.quit().")
+        Application.terminate_all_processes()
+        Application.terminate_all_threads()
+        QApplication.quit()
+        logger.debug("Application.quit() done.")
 
+    @staticmethod
+    def terminate_all_processes() -> None:
+        """Terminate all processes started by the application."""
         for process in Application.all_processes:
             if process.is_alive():
                 logger.debug("Terminating process %s.", process.pid)
                 process.terminate()
                 process.join(timeout=1)
 
+        Application.all_processes.clear()
+        logger.debug("All processes terminated.")
+
+    @staticmethod
+    def terminate_all_threads() -> None:
+        """Terminate all threads started by the application."""
         for thread in Application.all_threads:
             if thread.isRunning():
                 logger.debug("Terminating thread %s.", thread)
                 thread.terminate()
                 thread.wait()
 
-        QApplication.quit()
-        logger.debug("Application.quit() done.")
+        Application.all_threads.clear()
+        logger.debug("All threads terminated.")
