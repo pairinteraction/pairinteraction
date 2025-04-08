@@ -59,7 +59,7 @@ class Worker(QThread):
     def finish_up(self) -> None:
         """Perform any final cleanup or actions before the thread exits."""
         logger.debug("Finishing up thread %s", self)
-        Application.all_threads.remove(self)
+        Application.all_threads.discard(self)
 
 
 def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
@@ -78,7 +78,7 @@ def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
         process.join()
         logger.debug("Closing process %s", process.pid)
         process.close()
-        Application.all_processes.remove(process)
+        Application.all_processes.discard(process)
         return result
 
     return wrapper_func

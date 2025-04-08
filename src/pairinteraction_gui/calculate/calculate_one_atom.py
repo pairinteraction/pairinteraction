@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 from typing import TYPE_CHECKING
 
 from attr import dataclass
@@ -14,6 +15,8 @@ from pairinteraction_gui.worker import run_in_other_process
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage  # noqa: F401  # related to ruff extend-generics
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -45,9 +48,11 @@ def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
         for step in range(parameters.steps)
     ]
 
+    logger.debug("Diagonalizing SystemAtoms...")
     pi.diagonalize(
         system_list,
         **parameters.diagonalize_kwargs,
         **parameters.get_diagonalize_energy_range(ket_energy),
     )
+    logger.debug("Done diagonalizing SystemAtoms.")
     return ResultsOneAtom.from_calculate(system_list, ket, ket_energy)
