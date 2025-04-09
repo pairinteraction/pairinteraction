@@ -27,7 +27,8 @@ public:
             int n, double nu, double nui_exp, double nui_std, double l_exp, double l_std,
             double s_exp, double s_std, double j_exp, double j_std, double l_ryd_exp,
             double l_ryd_std, double j_ryd_exp, double j_ryd_std, bool is_j_total_momentum,
-            bool is_calculated_with_mqdt, Database &database, size_t id_in_database);
+            bool is_calculated_with_mqdt, double underspecified_channel_contribution,
+            Database &database, size_t id_in_database);
 
     Database &get_database() const;
     size_t get_id_in_database() const;
@@ -49,6 +50,9 @@ public:
     double get_quantum_number_j_std() const;
     double get_quantum_number_l_ryd_std() const;
     double get_quantum_number_j_ryd_std() const;
+    bool is_j_total_momentum() const;
+    bool is_calculated_with_mqdt() const;
+    double get_underspecified_channel_contribution() const;
 
     bool operator==(const KetAtom &other) const;
     bool operator!=(const KetAtom &other) const;
@@ -73,8 +77,9 @@ private:
     double quantum_number_l_ryd_std;
     double quantum_number_j_ryd_exp;
     double quantum_number_j_ryd_std;
-    bool is_j_total_momentum;
-    bool is_calculated_with_mqdt;
+    bool is_j_total_momentum_;
+    bool is_calculated_with_mqdt_;
+    double underspecified_channel_contribution;
     Database &database;
     size_t id_in_database;
 };

@@ -47,7 +47,17 @@ static void declare_ket_atom(nb::module_ &m) {
         .def("get_quantum_number_s", &KetAtom::get_quantum_number_s)
         .def("get_quantum_number_j", &KetAtom::get_quantum_number_j)
         .def("get_quantum_number_l_ryd", &KetAtom::get_quantum_number_l_ryd)
-        .def("get_quantum_number_j_ryd", &KetAtom::get_quantum_number_j_ryd);
+        .def("get_quantum_number_j_ryd", &KetAtom::get_quantum_number_j_ryd)
+        .def("get_quantum_number_nui_std", &KetAtom::get_quantum_number_nui_std)
+        .def("get_quantum_number_l_std", &KetAtom::get_quantum_number_l_std)
+        .def("get_quantum_number_s_std", &KetAtom::get_quantum_number_s_std)
+        .def("get_quantum_number_j_std", &KetAtom::get_quantum_number_j_std)
+        .def("get_quantum_number_l_ryd_std", &KetAtom::get_quantum_number_l_ryd_std)
+        .def("get_quantum_number_j_ryd_std", &KetAtom::get_quantum_number_j_ryd_std)
+        .def("is_j_total_momentum", &KetAtom::is_j_total_momentum)
+        .def("is_calculated_with_mqdt", &KetAtom::is_calculated_with_mqdt)
+        .def("get_underspecified_channel_contribution",
+             &KetAtom::get_underspecified_channel_contribution);
 }
 
 static void declare_ket_atom_creator(nb::module_ &m) {

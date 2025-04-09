@@ -22,15 +22,17 @@ KetAtom::KetAtom(Private /*unused*/, double energy, double f, double m, Parity p
                  std::string species, int n, double nu, double nui_exp, double nui_std,
                  double l_exp, double l_std, double s_exp, double s_std, double j_exp, double j_std,
                  double l_ryd_exp, double l_ryd_std, double j_ryd_exp, double j_ryd_std,
-                 bool is_j_total_momentum, bool is_calculated_with_mqdt, Database &database,
+                 bool is_j_total_momentum, bool is_calculated_with_mqdt,
+                 double underspecified_channel_contribution, Database &database,
                  size_t id_in_database)
     : Ket(energy, f, m, p), species(std::move(species)), quantum_number_n(n), quantum_number_nu(nu),
       quantum_number_nui_exp(nui_exp), quantum_number_nui_std(nui_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
       quantum_number_j_exp(j_exp), quantum_number_j_std(j_std), quantum_number_l_ryd_exp(l_ryd_exp),
       quantum_number_l_ryd_std(l_ryd_std), quantum_number_j_ryd_exp(j_ryd_exp),
-      quantum_number_j_ryd_std(j_ryd_std), is_j_total_momentum(is_j_total_momentum),
-      is_calculated_with_mqdt(is_calculated_with_mqdt), database(database),
+      quantum_number_j_ryd_std(j_ryd_std), is_j_total_momentum_(is_j_total_momentum),
+      is_calculated_with_mqdt_(is_calculated_with_mqdt),
+      underspecified_channel_contribution(underspecified_channel_contribution), database(database),
       id_in_database(id_in_database) {}
 
 Database &KetAtom::get_database() const { return database; }
@@ -42,7 +44,7 @@ std::string KetAtom::get_label() const {
     std::string label = (pos != std::string::npos) ? species.substr(0, pos) : species;
     label[0] = static_cast<char>(std::toupper(label[0]));
 
-    if (!is_calculated_with_mqdt) {
+    if (!is_calculated_with_mqdt_) {
         if (quantum_number_s_exp == 0) {
             label += "_singlet";
         } else if (quantum_number_s_exp == 1) {
@@ -55,10 +57,10 @@ std::string KetAtom::get_label() const {
 
     label += ":";
 
-    if (is_calculated_with_mqdt) {
+    if (is_calculated_with_mqdt_) {
         label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},", quantum_number_s_exp,
                              quantum_number_nu, quantum_number_l_exp);
-        label += this->is_j_total_momentum ? "J=" : "F=";
+        label += this->is_j_total_momentum_ ? "J=" : "F=";
     } else {
         label += fmt::format("{:d},", quantum_number_n);
         if (quantum_number_l_exp == std::rint(quantum_number_l_exp) &&
@@ -71,7 +73,7 @@ std::string KetAtom::get_label() const {
     }
 
     double total_momentum =
-        this->is_j_total_momentum ? this->quantum_number_j_exp : this->quantum_number_f;
+        this->is_j_total_momentum_ ? this->quantum_number_j_exp : this->quantum_number_f;
     if (total_momentum == std::rint(total_momentum)) {
         label += fmt::format("{:.0f}", total_momentum);
     } else if (2 * total_momentum == std::rint(2 * total_momentum)) {
@@ -129,6 +131,14 @@ double KetAtom::get_quantum_number_j_std() const { return quantum_number_j_std; 
 double KetAtom::get_quantum_number_l_ryd_std() const { return quantum_number_l_ryd_std; }
 
 double KetAtom::get_quantum_number_j_ryd_std() const { return quantum_number_j_ryd_std; }
+
+bool KetAtom::is_j_total_momentum() const { return is_j_total_momentum_; }
+
+bool KetAtom::is_calculated_with_mqdt() const { return is_calculated_with_mqdt_; }
+
+double KetAtom::get_underspecified_channel_contribution() const {
+    return underspecified_channel_contribution;
+}
 
 bool KetAtom::operator==(const KetAtom &other) const {
     return Ket::operator==(other) && species == other.species &&
