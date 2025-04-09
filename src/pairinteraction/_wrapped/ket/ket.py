@@ -49,8 +49,16 @@ class KetBase(ABC):
     def __str__(self) -> str:
         return self.get_label("ket")
 
-    def get_label(self, fmt: Literal["ket", "bra", "raw"]) -> str:
-        """Label representing the ket."""
+    def get_label(self, fmt: Literal["raw", "ket", "bra"]) -> str:
+        """Label representing the ket.
+
+        Args:
+            fmt: The format of the label, i.e. whether to return the raw label, or the label in ket or bra notation.
+
+        Returns:
+            The label of the ket in the given format.
+
+        """
         raw = self._cpp.get_label()
         if fmt == "raw":
             return raw
