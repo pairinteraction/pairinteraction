@@ -1,0 +1,40 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      python_wheel_workflow_run_id:
+        description: 'Workflow run ID of previously finished python-wheel workflow'  # the run ID is part of the url of the workflow run
+        required: true
+        type: string
+
+env:
+  VERBOSE: 1
+
+jobs:
+  publish-to-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pairinteraction
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download artifact
+      id: download-artifact
+      uses: dawidd6/action-download-artifact@v9
+      with:
+        run_id: ${{ github.event.inputs.python_wheel_workflow_run_id }}
+        name: dist-*
+        name_is_regexp: true
+        path: dist
+
+    - name: Publish distribution to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: dist/
