@@ -27,9 +27,10 @@ build-backend = "setuptools.build_meta"
 [project.scripts]
 benchmark = "benchmarking:run"
 
-[tool.uv.sources]
-pairinteraction = { index = "test-pypi" } # alternative: { path = "../../" }
-[[tool.uv.index]]
-name = "test-pypi"
-url = "https://test.pypi.org/simple"
-explicit = true
+# if you want to use the package from test-pypi or a local path, uncomment the following lines
+# [tool.uv.sources]
+# pairinteraction = { index = "test-pypi" } # alternative: { path = "../../" }
+# [[tool.uv.index]]
+# name = "test-pypi"
+# url = "https://test.pypi.org/simple"
+# explicit = true
