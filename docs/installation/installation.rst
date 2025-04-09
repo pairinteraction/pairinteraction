@@ -11,10 +11,10 @@ pairinteraction from the `Python Package Index`_ by calling
 
 .. code-block:: bash
 
-    pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
+    pip install pairinteraction
 
-from the command line if you are using the pip_ package manager. Alternatively, you can run ``uv pip install [...]``, if
-you are using the uv_ package manager.
+from the command line if you are using the pip_ package manager. Alternatively, you can run ``uv pip install
+pairinteraction``, if you are using the uv_ package manager. Note that pairinteraction v2 requires Python 3.9 or higher.
 
 This gives you access to the pairinteraction Python library. Before starting to use the pairinteraction library, we
 recommend running the following commands in the terminal to ensure that the package is correctly installed:

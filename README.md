@@ -1,5 +1,6 @@
 # Pairinteraction - A Rydberg Interaction Calculator
 
+[![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
 [![CI Workflow][gh-workflow-svg]][gh-workflow-link]
@@ -9,12 +10,12 @@
 [![Python Coverage - pytest][coverage-python-pytest-svg]][coverage-python-pytest-link]
 [![Documentation][docs-svg]][docs-link]
 
+[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
+[pypi-link]: https://pypi.org/project/pairinteraction/
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
 [license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
-[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
-[pypi-link]: https://pypi.org/project/pairinteraction/
 [gh-workflow-svg]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
 [gh-workflow-link]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
 [sonarcloud-svg]: https://sonarcloud.io/api/project_badges/measure?project=pairinteraction_pairinteraction&metric=alert_status
@@ -28,12 +29,12 @@
 [docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
 [docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
 
-**Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0. Breaking changes can occur until the software reaches v2.0.**
+**Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0.**
 
-The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip:
+The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip (requires Python >= 3.9):
 
 ```bash
-pip install --only-binary pairinteraction --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
+pip install pairinteraction
 ```
 
 You can use the pairinteraction software [as a Python library][tutorial-link], or you can launch its graphical user interface from the command line:
