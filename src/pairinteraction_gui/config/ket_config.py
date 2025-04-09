@@ -290,7 +290,7 @@ class QnSQDT(QnBase):
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
 
-        spin_boxes["n"] = IntSpinBox(self, vmin=1, vdefault=80, tooltip="Principal quantum number n")
+        spin_boxes["n"] = IntSpinBox(self, vmin=1, vdefault=60, tooltip="Principal quantum number n")
 
         spin_boxes["l"] = IntSpinBox(self, tooltip="Orbital angular momentum l")
 
@@ -315,7 +315,7 @@ class QnMQDT(QnBase):
     def setupWidget(self) -> None:
         spin_boxes = self._spin_boxes = {}
         spin_boxes["nu"] = DoubleSpinBox(
-            self, vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
+            self, vmin=1, vdefault=60, vstep=1, tooltip="Effective principal quantum number nu"
         )
         spin_boxes["s"] = DoubleSpinBox(self, vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
         spin_boxes["j"] = DoubleSpinBox(self, vstep=1, tooltip="Total angular momentum j")
