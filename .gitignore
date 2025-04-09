@@ -35,6 +35,8 @@ dist/
 .pytest_cache/
 .coverage
 coverage.lcov
+coverage.info
+docs/coverage/
 
 # Ignore lockfiles as the software should work for different dependency versions
 uv.lock

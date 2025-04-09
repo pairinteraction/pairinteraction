@@ -120,9 +120,9 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install .[tests]
+      run: uv pip install -e .[tests]  # -e is needed for coverage to work
     - name: Run pytest with coverage
-      run: uv run --no-project coverage run -m pytest
+      run: uv run --no-project coverage run --source=src,tests -m pytest
     - name: Generate Code Coverage
       run: |
         uv run --no-project coverage lcov -o coverage.info
