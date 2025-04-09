@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, get_args, overload
+from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, overload
 
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.enums import Parity
+from pairinteraction._wrapped.enums import Parity, get_python_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -74,10 +74,7 @@ class KetBase(ABC):
     def parity(self) -> Parity:
         """The parity of the ket."""
         parity_cpp = self._cpp.get_parity()
-        parity = parity_cpp.name
-        if parity in get_args(Parity):
-            return parity  # type: ignore [return-value]
-        raise ValueError(f"Unknown parity {parity}")
+        return get_python_parity(parity_cpp)
 
     @property
     @deprecated("Use the `get_energy` method instead. Will be removed in v2.0")
