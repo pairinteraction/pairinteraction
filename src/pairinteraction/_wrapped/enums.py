@@ -59,3 +59,10 @@ def get_cpp_parity(parity: Parity) -> _backend.Parity:
     if parity not in _ParityDict:
         raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityDict.keys())}")
     return _ParityDict[parity]
+
+
+def get_python_parity(parity: _backend.Parity) -> Parity:
+    """Convert a cpp Parity enum to a python Parity string."""
+    if parity not in _ParityDict.values():
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityDict.values())}")
+    return next(k for k, v in _ParityDict.items() if v == parity)
