@@ -26,7 +26,6 @@ lifetimes to calculations of pair potentials.
 
 .. nbgallery::
 
-    examples_python/overview
     examples_python/stark_map
     examples_python/pair_potentials
     examples_python/lifetimes
@@ -41,20 +40,20 @@ We show how pairinteraction's Python API can be applied to solve complex problem
     examples_python/perturbative_h_eff
     examples_python/pair_potential_efield_sensitivity
     examples_python/atom_ion_interaction
+    examples_python/mqdt
 
 .. _tutorial-gui:
 
 Tutorials - Graphical User Interface
 ------------------------------------
 
-After following the :ref:`installation instructions <installation>`, the graphical user interface (GUI) of
-pairinteraction can be started by executing
+The graphical user interface (GUI) of pairinteraction can be started by executing
 
 .. code-block:: bash
 
     pairinteraction gui
 
-from the command line. Here as quick preview of the GUI:
+from the command line. Tutorials for the graphical user interface will be added in the future.
 
 .. image:: examples_gui/preview.png
     :alt: GUI Preview
