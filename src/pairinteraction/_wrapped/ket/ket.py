@@ -4,8 +4,6 @@
 from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, overload
 
-from typing_extensions import deprecated
-
 from pairinteraction import _backend
 from pairinteraction._wrapped.enums import Parity, get_python_parity
 from pairinteraction.units import QuantityScalar
@@ -83,12 +81,6 @@ class KetBase(ABC):
         """The parity of the ket."""
         parity_cpp = self._cpp.get_parity()
         return get_python_parity(parity_cpp)
-
-    @property
-    @deprecated("Use the `get_energy` method instead. Will be removed in v2.0")
-    def energy(self) -> "PintFloat":
-        """The energy of the ket: E=I-Ry/nu^2."""
-        return self.get_energy()
 
     @overload
     def get_energy(self, unit: None = None) -> "PintFloat": ...

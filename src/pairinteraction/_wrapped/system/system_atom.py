@@ -6,7 +6,6 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
-from typing_extensions import deprecated
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
@@ -83,10 +82,6 @@ class SystemAtom(SystemBase[BasisType]):
         ]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
-
-    @deprecated("Use `set_diamagnetism_enabled` instead. Will be removed in v2.0")
-    def enable_diamagnetism(self: "Self", enable: bool = True) -> "Self":
-        return self.set_diamagnetism_enabled(enable)
 
     def set_diamagnetism_enabled(self: "Self", enable: bool = True) -> "Self":
         self._cpp.set_diamagnetism_enabled(enable)

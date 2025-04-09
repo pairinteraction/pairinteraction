@@ -5,7 +5,6 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
 import numpy as np
-from typing_extensions import deprecated
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
@@ -137,10 +136,6 @@ class SystemBase(ABC, Generic[BasisType]):
     def get_eigenbasis(self) -> BasisType:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
-
-    @deprecated("Use `get_eigenenergies` instead. Will be removed in v2.0")
-    def get_eigenvalues(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
-        return self.get_eigenenergies(unit=unit)
 
     @overload
     def get_eigenenergies(self, unit: None = None) -> "PintArray": ...
