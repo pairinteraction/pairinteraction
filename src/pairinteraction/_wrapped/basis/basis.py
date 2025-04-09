@@ -63,10 +63,12 @@ class BasisBase(ABC, Generic[KetType]):
 
     @property
     def number_of_states(self) -> int:
+        """Return the number of states in the basis."""
         return self._cpp.get_number_of_states()
 
     @property
     def number_of_kets(self) -> int:
+        """Return the number of kets in the basis."""
         return self._cpp.get_number_of_kets()
 
     @property
@@ -75,7 +77,17 @@ class BasisBase(ABC, Generic[KetType]):
         return self.get_coefficients()
 
     def get_coefficients(self) -> "csr_matrix":
-        """Return the coefficients of the basis as a sparse matrix."""
+        """Return the coefficients of the basis as a sparse matrix.
+
+        The coefficients are stored in a sparse matrix with shape (number_of_kets, number_of_states),
+        where the first index correspond to the kets and the second index correspond to the states.
+        For example `basis.get_coefficients()[i, j]` is the i-th coefficient
+        (i.e. the coefficient corresponding to the i-th ket) of the j-th state.
+
+        The coefficients are normalized, i.e. the sum of the absolute values of the coefficients
+        in each row is equal to 1.
+
+        """
         return self._cpp.get_coefficients()
 
     def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
