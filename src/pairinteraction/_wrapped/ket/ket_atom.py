@@ -194,8 +194,53 @@ class KetAtom(KetBase):
 
     @property
     def j_ryd(self) -> float:
-        """The expectation value of the total angular quantum number j_{Ryd} the Rydberg electron."""
+        """The expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron."""
         return self._cpp.get_quantum_number_j_ryd()
+
+    @property
+    def nui_std(self) -> float:
+        """The standard deviation of the effective principal quantum numbers nu_i of the channels."""
+        return self._cpp.get_quantum_number_nui_std()
+
+    @property
+    def l_std(self) -> float:
+        """The standard deviation of the orbital quantum number l of all valence electrons."""
+        return self._cpp.get_quantum_number_l_std()
+
+    @property
+    def s_std(self) -> float:
+        """The standard deviation of the total spin quantum number s of all valence electrons."""
+        return self._cpp.get_quantum_number_s_std()
+
+    @property
+    def j_std(self) -> float:
+        """The standard deviation of the total angular quantum number j of all valence electrons."""
+        return self._cpp.get_quantum_number_j_std()
+
+    @property
+    def l_ryd_std(self) -> float:
+        """The standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron."""
+        return self._cpp.get_quantum_number_l_ryd_std()
+
+    @property
+    def j_ryd_std(self) -> float:
+        """The standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron."""
+        return self._cpp.get_quantum_number_j_ryd_std()
+
+    @property
+    def is_j_total_momentum(self) -> bool:
+        """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number."""
+        return self._cpp.is_j_total_momentum()
+
+    @property
+    def is_calculated_with_mqdt(self) -> bool:
+        """Whether the state was calculated with multi-channel quantum defect theory."""
+        return self._cpp.is_calculated_with_mqdt()
+
+    @property
+    def underspecified_channel_contribution(self) -> float:
+        """The contribution of channels whose quantum numbers are not exactly known."""
+        return self._cpp.get_underspecified_channel_contribution()
 
     @overload
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: None = None) -> "PintFloat": ...

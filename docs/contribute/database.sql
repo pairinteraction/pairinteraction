@@ -43,7 +43,7 @@ CREATE TABLE states (
     exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number j of all valence electrons
     exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number s of all valence electrons
     exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron
-    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number j_{Ryd} the Rydberg electron
+    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron
     std_nui REAL NOT NULL, -- the standard deviation of the effective principal quantum numbers nu_i of the channels
     std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number l of all valence electrons
     std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number j of all valence electrons
