@@ -27,9 +27,7 @@ static void declare_transformation(nb::module_ &m, std::string const &type_name)
 
 static void declare_sorting(nb::module_ &m) {
     nb::class_<Sorting> pyclass(m, "Sorting");
-    pyclass.def(nb::init<>())
-        .def_rw("matrix", &Sorting::matrix)
-        .def_rw("transformation_type", &Sorting::transformation_type);
+    pyclass.def(nb::init<>()).def_rw("transformation_type", &Sorting::transformation_type);
 }
 
 static void declare_indices_of_blocks(nb::module_ &m) {
