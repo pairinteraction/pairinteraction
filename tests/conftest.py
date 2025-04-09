@@ -1,11 +1,16 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import multiprocessing as mp
 import os
 from typing import TYPE_CHECKING
 
 import pytest
 from pint import UnitRegistry
+
+if TYPE_CHECKING:
+    from pairinteraction_gui.app import Application
+
 
 if TYPE_CHECKING:
     from _pytest.config import Config
@@ -48,3 +53,15 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     from pairinteraction import _setup_test_mode
 
     _setup_test_mode(download_missing, database_dir)
+
+    # FIXME: workaround for test_gui.py, see also https://github.com/pytest-dev/pytest/issues/11174
+    mp.set_start_method("spawn", force=True)
+
+
+@pytest.fixture(scope="session")
+def qapp_cls() -> type["Application"]:
+    """Let the qapp and qtbot fixtures use our custom Application class."""
+    # make sure to run pytest_sessionstart before importing pairinteraction_gui
+    from pairinteraction_gui.app import Application
+
+    return Application
