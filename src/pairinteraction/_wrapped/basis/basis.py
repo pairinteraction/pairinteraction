@@ -4,8 +4,6 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
-from typing_extensions import deprecated
-
 from pairinteraction import _backend
 
 if TYPE_CHECKING:
@@ -86,11 +84,6 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def number_of_states(self) -> int:
         """Return the number of states in the basis."""
         return self._cpp.get_number_of_states()
-
-    @property
-    @deprecated("Use the `get_coefficients` method instead. Will be removed in v2.0")
-    def coefficients(self) -> "csr_matrix":
-        return self.get_coefficients()
 
     def get_coefficients(self) -> "csr_matrix":
         """Return the coefficients of the basis as a sparse matrix.
