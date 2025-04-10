@@ -86,6 +86,9 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
 
         self._qns: dict[str, tuple[float, float]] = {}
         if n is not None:
+            if not all(isinstance(x, int) or x.is_integer() for x in n):
+                raise ValueError("Quantum numbers n must be integers.")
+            n = (int(n[0]), int(n[1]))
             creator.restrict_quantum_number_n(*n)
             self._qns["n"] = n
         if nu is not None:

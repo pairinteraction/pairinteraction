@@ -30,7 +30,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "nbsphinx",
-    "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
     "myst_parser",
 ]
