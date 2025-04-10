@@ -32,7 +32,13 @@ jobs:
         run_id: ${{ github.event.inputs.python_wheel_workflow_run_id }}
         name: dist-*
         name_is_regexp: true
-        path: dist
+        path: dist-nested
+
+    - name: Merge distributions
+      run: |
+        mkdir dist
+        mv dist-nested/*/*.tar.gz dist/
+        mv dist-nested/*/*.whl dist/
 
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
