@@ -13,13 +13,13 @@ database repositories:
 - database-sqdt_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool
   ryd-numerov_.
 - database-mqdt_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool
-  jl-mqdt_.
+  MQDT.jl_.
 
 .. _database-mqdt: https://github.com/pairinteraction/database-mqdt/releases
 
 .. _database-sqdt: https://github.com/pairinteraction/database-sqdt/releases
 
-.. _jl-mqdt: http://mqdt.pairinteraction.org
+.. _mqdt.jl: https://github.com/pairinteraction/MQDT.jl
 
 .. _ryd-numerov: https://github.com/pairinteraction/ryd-numerov
 

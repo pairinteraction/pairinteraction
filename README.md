@@ -141,7 +141,7 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 **Utility Tools [External Links]**
 
-- [jl-mqdt] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
+- [MQDT.jl] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 
 - [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
 
@@ -153,7 +153,7 @@ these tutorials enable you to leverage pairinteraction for your projects.
 [Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/architecture.html
 [Style Guide]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/database.html
-[jl-mqdt]: https://github.com/pairinteraction/jl-mqdt/
+[MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
 ## Contributors
