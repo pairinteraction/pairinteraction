@@ -31,15 +31,8 @@ repos:
     rev: v0.11.2
     hooks:
       - id: ruff
-        name: ruff (all code files)
         args: ["--fix", "--exit-non-zero-on-fix"]
-        exclude: "^docs/.*\\.ipynb$"
-      - id: ruff
-        name: ruff (notebook files in docs)
-        args: [ "--line-length", "95", "--fix", "--exit-non-zero-on-fix"]
-        files: "^docs/.*\\.ipynb$"
       - id: ruff-format
-        exclude: "^docs/.*\\.ipynb$"
 
   - repo: https://github.com/PyCQA/doc8
     rev: 'v1.1.2'
