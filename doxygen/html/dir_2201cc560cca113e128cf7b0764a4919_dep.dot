@@ -1,0 +1,13 @@
+digraph "/__w/pairinteraction/pairinteraction/src/cpp/include/pairinteraction/enums"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  compound=true
+  subgraph clusterdir_05aad1e1e71a0857d053653ff739ab1f {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", style="filled,dashed,", label="pairinteraction", fontname="Helvetica", fontsize="10", URL="dir_05aad1e1e71a0857d053653ff739ab1f.html"]
+  dir_2201cc560cca113e128cf7b0764a4919 [shape=box, label="enums", style="filled,bold,", fillcolor="#edf0f7", color="grey25", URL="dir_2201cc560cca113e128cf7b0764a4919.html"];
+  }
+}
