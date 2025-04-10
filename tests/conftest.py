@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import pytest
 from pint import UnitRegistry
 
+from pairinteraction_gui.app import Application
+
 if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.config.argparsing import Parser
@@ -48,3 +50,9 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     from pairinteraction import _setup_test_mode
 
     _setup_test_mode(download_missing, database_dir)
+
+
+@pytest.fixture(scope="session")
+def qapp_cls() -> type["Application"]:
+    """Let the qapp and qtbot fixtures use our custom Application class."""
+    return Application

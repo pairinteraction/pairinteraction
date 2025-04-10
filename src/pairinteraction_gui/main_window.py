@@ -134,13 +134,13 @@ class MainWindow(QMainWindow):
         stacked_pages = NamedStackedWidget["BasePage"]()
         self.setCentralWidget(stacked_pages)
 
-        stacked_pages.addNamedWidget(OneAtomPage(), "system_atom")
-        stacked_pages.addNamedWidget(TwoAtomsPage(), "system_pair")
-        stacked_pages.addNamedWidget(LifetimesPage(), "lifetimes")
-        # stacked_pages.addNamedWidget(C6Page(), "c6")
+        stacked_pages.addNamedWidget(OneAtomPage(), "OneAtomPage")
+        stacked_pages.addNamedWidget(TwoAtomsPage(), "TwoAtomsPage")
+        stacked_pages.addNamedWidget(LifetimesPage(), "LifetimesPage")
+        # stacked_pages.addNamedWidget(C6Page(), "C6Page")
 
-        # stacked_pages.addNamedWidget(SettingsPage(), "settings")
-        # stacked_pages.addNamedWidget(AboutPage(), "about")
+        # stacked_pages.addNamedWidget(SettingsPage(), "SettingsPage")
+        # stacked_pages.addNamedWidget(AboutPage(), "AboutPage")
         return stacked_pages
 
     def setup_toolbar(self) -> QToolBar:
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
 
             action.triggered.connect(lambda checked, name=name: self.stacked_pages.setCurrentNamedWidget(name))
 
-        default_page = "system_atom"
+        default_page = "OneAtomPage"
         self.findChild(QAction, default_page).setChecked(True)
         self.stacked_pages.setCurrentNamedWidget(default_page)
 
