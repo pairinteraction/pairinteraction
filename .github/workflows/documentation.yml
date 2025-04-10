@@ -122,7 +122,10 @@ jobs:
     - name: Install pairinteraction into virtual environment
       run: uv pip install -e .[tests]  # -e is needed for coverage to work
     - name: Run pytest with coverage
-      run: uv run --no-project coverage run --source=src,tests -m pytest
+      run: |  # also run with --generate-reference to get 100% tests coverage and test the reference generation
+        uv run --no-project coverage run --source=src,tests -m pytest
+        uv run --no-project coverage run --append --source=src,tests -m pytest --generate-reference
+        uv run --no-project coverage run --append --source=src,tests -m pytest
     - name: Generate Code Coverage
       run: |
         uv run --no-project coverage lcov -o coverage.info

@@ -116,7 +116,9 @@ class KetAtom(KetBase):
         if parity is not None:
             creator.set_parity(get_cpp_parity(parity))
         if n is not None:
-            creator.set_quantum_number_n(n)
+            if not (isinstance(n, int) or n.is_integer()):
+                raise ValueError("Quantum number n must be an integer.")
+            creator.set_quantum_number_n(int(n))
         if nu is not None:
             creator.set_quantum_number_nu(nu)
         if nui is not None:

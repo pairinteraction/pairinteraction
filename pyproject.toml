@@ -26,10 +26,10 @@ maintainers = [
     { name = "Sebastian Weber", email = "seweber@posteo.de" },
     { name = "Johannes Mögerle", email = "johannes.moegerle@itp3.uni-stuttgart.de" },
 ]
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE.txt", "LICENSES/*", "LICENSES-THIRD-PARTY/*"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
   "Operating System :: MacOS",
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
@@ -107,7 +107,6 @@ wheel.packages = [
   "src/pairinteraction",
   "src/pairinteraction_gui",
 ]
-wheel.license-files = ["LICENSE.txt", "LICENSES/*", "LICENSES-THIRD-PARTY/*"]
 sdist.include = ["*.pyi"]  # HACK: Include stub files (needed for macos cross compilation)
 sdist.exclude = [
   "/tools/",
@@ -119,6 +118,7 @@ sdist.exclude = [
   ".pre-commit-config.yaml",
   ".cmake-format.json",
   ".build_requirements.txt",
+  ".sonarcloud.properties",
 ]
 
 [tool.scikit-build.metadata.version]
@@ -222,6 +222,7 @@ extend-exclude = ["src/pairinteraction_gui/export_templates/"]
 [tool.ruff.lint]
 select = ["ALL"]
 extend-ignore = [
+  # FIXME: we want to fix these in the future
   "EM",  # Exceptions ...
   "TRY003",  # Avoid specifying long messages outside the exception class
   "FA",  # from __future__ ...
@@ -230,19 +231,20 @@ extend-ignore = [
   "PLC0105",  # covariant variable names
   "SLF001",  # Private member accessed
   "PLR0913",  # Too many arguments in function definition (... > 5)
-  "SIM114",  # this breaks mypy
-  "E741",  # Ambiguous variable name, does not like quantum number 'l'
   "PLR2004",  # FIXME: Magic value used in comparison
   "T2",  # FIXME: print statements
   "DTZ",  # FIXME: Datetime
   "ANN401",  # FIXME: Dynamically typed expressions (typing.Any) are disallowed in {name}
   "D1",  # FIXME: remove once more docstrings are added
   "S101",  # FIXME: Use of assert detected
+  # We don't use the following rules
   "COM812",  # (missing-trailing-comma) incompatible with ruff format
   "D203",  # (incorrect-blank-line-before-class) incompatible with D211: no-blank-line-before-class
   "D213",  # (multi-line-summary-second-line) incompatible with D212: multi-line-summary-first-line
+  "SIM114",  # Combine if branches using logical or operator; this breaks mypy, so we disable it for now
   "FIX",  # Disallow TODOs, FIXMEs, etc.; enforcing this is a bit too strict
   "TD",  # Linting TODOs; we dont need this
+  "E741",  # Ambiguous variable name, does not like quantum number 'l'
 ]
 flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
