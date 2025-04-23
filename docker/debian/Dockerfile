@@ -31,5 +31,6 @@ RUN apt-get update \
     ca-certificates \
     libgl1 \
     libgraphviz-dev \
+    libxkbcommon-x11-0 \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
