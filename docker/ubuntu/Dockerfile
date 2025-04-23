@@ -29,4 +29,5 @@ RUN apt-get update -qq \
     ca-certificates \
     libgl1 \
     libgraphviz-dev \
+    libxkbcommon-x11-0 freeglut3-dev \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
