@@ -44,4 +44,5 @@ RUN yum install -y epel-release \
     cpp-httplib-devel \
     libglvnd \
     graphviz-devel \
+    libxkbcommon-x11 freeglut-devel \
     && yum clean all
