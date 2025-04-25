@@ -664,145 +664,71 @@ def _create_system(
     if electric_field.magnitude[1] != 0 or magnetic_field.magnitude[1] != 0:
         pi = pi_complex
 
-    n_1 = []
-    l_1 = []
-    j_1 = []
-    m_1 = []
-    energ_au = []
-    n_2 = []
-    l_2 = []
-    j_2 = []
-    m_2 = []
-    for ket1, ket2 in ket_tuple_list:
-        n_1.append(ket1.n)
-        l_1.append(ket1.l)
-        j_1.append(ket1.j)
-        m_1.append(ket1.m)
-        n_2.append(ket2.n)
-        l_2.append(ket2.l)
-        j_2.append(ket2.j)
-        m_2.append(ket2.m)
-        energ_au.append(ket1.get_energy().magnitude + ket2.get_energy().magnitude)
-    species = [ket_tuple_list[0][0].species, ket_tuple_list[0][1].species]
-    n_max = [np.max(n_1), np.max(n_2)]
-    l_max = [np.max(l_1), np.max(l_2)]
-    j_max = [np.max(j_1), np.max(j_2)]
-    m_max = [np.max(m_1), np.max(m_2)]
-    n_min = [np.min(n_1), np.min(n_2)]
-    l_min = [np.min(l_1), np.min(l_2)]
-    j_min = [np.min(j_1), np.min(j_2)]
-    m_min = [np.min(m_1), np.min(m_2)]
-    ket_max = ket_tuple_list[np.argmax(energ_au)]
-    ket_min = ket_tuple_list[np.argmin(energ_au)]
+    basises = []
+    max_dipoles = []
 
-    delta_n = 7  # covers also highest angular momentum
-    angular_momentum_steps = perturbative_order * (multipole_order - 2)
-    n_range = [(n_min[i] - delta_n, n_max[i] + delta_n) for i in [0, 1]]
-    l_range = [
-        (
-            l_min[i] - angular_momentum_steps,
-            l_max[i] + angular_momentum_steps,
-        )
-        for i in [0, 1]
-    ]
-    j_range = [None, None]
-    m_range = [None, None]
-
-    if (
+    # check whether problem is cylindrical symmetric
+    cylindrical_symmetric = (
         magnetic_field[0].magnitude
         == magnetic_field[1].magnitude
         == electric_field[0].magnitude
         == electric_field[1].magnitude
         == 0
-    ):
-        j_range = [
-            (
-                np.maximum(0, j_min[i] - angular_momentum_steps),
-                j_max[i] + angular_momentum_steps,
-            )
-            for i in [0, 1]
-        ]
-        m_range = [
-            (
-                m_min[i] - angular_momentum_steps,
-                m_max[i] + angular_momentum_steps,
-            )
-            for i in [0, 1]
-        ]
+    )
+    delta_n = 7
+    delta_l = perturbative_order * (multipole_order - 2)
+    for i in range(2):
+        kets = [ketpair[i] for ketpair in ket_tuple_list]
+        nljm = np.array([[ket.n, ket.l, ket.j, ket.m] for ket in kets])
+        n_range = (int(np.min(nljm[:, 0])) - delta_n, int(np.max(nljm[:, 0])) + delta_n)
+        l_range = (np.min(nljm[:, 1]) - delta_l, np.max(nljm[:, 1]) + delta_l)
+        j_range = None
+        m_range = None
+        if cylindrical_symmetric:
+            j_range = (np.min(nljm[:, 2]) - delta_l, np.max(nljm[:, 2]) + delta_l)
+            m_range = (np.min(nljm[:, 3]) - delta_l, np.max(nljm[:, 3]) + delta_l)
+        basis = pi.BasisAtom(kets[0].species, n=n_range, l=l_range, j=j_range, m=m_range)
+        max_dipole = max(
+            abs(basis.get_matrix_elements(ket, "ELECTRIC_DIPOLE", q=q)).max() for ket in kets for q in [+1, -1, 0]
+        )
+        basises.append(basis)
+        max_dipoles.append(max_dipole)
+    energs = np.array([np.sum([ket.get_energy().magnitude for ket in ketpair]) for ketpair in ket_tuple_list])
+    max_energ = QuantityScalar.from_base_unit(float(np.max(energs)), "ENERGY").to_pint_or_unit(None)
+    min_energ = QuantityScalar.from_base_unit(float(np.min(energs)), "ENERGY").to_pint_or_unit(None)
 
-    bases = [pi.BasisAtom(species[i], n=n_range[i], l=l_range[i], j=j_range[i], m=m_range[i]) for i in [0, 1]]
-
+    # calculate distance from vector given by user
     distance_unit = distance_vector.units
     vector = distance_vector.magnitude
     distance = ureg.Quantity(np.linalg.norm(vector), distance_unit)
 
-    e_max = ket_max[0].get_energy() + ket_max[1].get_energy()
-    delta_energy_max = _get_delta_energy(ket_max, distance) * perturbative_order
-    e_min = ket_min[0].get_energy() + ket_min[1].get_energy()
-    delta_energy_min = _get_delta_energy(ket_min, distance) * perturbative_order
+    # estimate energy windows from population of other states due to interaction
+    int_energ_max = (max_dipoles[0] * max_dipoles[1] * ureg.coulomb_constant / distance**3).to(
+        "planck_constant * gigahertz"
+    )
+    population_admixture = 1e-4
+    delta_energ_small_distance = int_energ_max / np.sqrt(population_admixture)
 
-    systems = [pi.SystemAtom(basis=basis) for basis in bases]
+    # estimate energy window from difference between two adjacent s-states for the lowest n occuring
+    n_min = min(ket.n for ket in ket_tuple_list[np.argmax(energs)])
+    delta_energ_large_distance = abs(
+        pi.KetAtom(kets[0].species, n_min + 1, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+        - 2 * pi.KetAtom(kets[0].species, n=n_min, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+        + pi.KetAtom(kets[0].species, n=n_min - 1, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+    )
+
+    # use highest energy taken into account
+    delta_e = max(delta_energ_small_distance, delta_energ_large_distance) * perturbative_order
+
+    systems = [pi.SystemAtom(basis=basis) for basis in basises]
     for system in systems:
         system.enable_diamagnetism(with_diamagnetism)
         system.set_magnetic_field(magnetic_field)
         system.set_electric_field(electric_field)
     if not all(system.is_diagonal for system in systems):
         pi.diagonalize(systems, diagonalizer="eigen", sort_by_energy=False)
-    basis_pair = pi.BasisPair(systems, energy=(e_min - delta_energy_min, e_max + delta_energy_max))
+    basis_pair = pi.BasisPair(systems, energy=(min_energ - delta_e, max_energ + delta_e))
     system_pair = pi.SystemPair(basis_pair)
     system_pair.set_distance_vector(distance_vector)
     system_pair.set_order(multipole_order)
     return system_pair
-
-
-def _get_delta_energy(ket_tuple: "KetPairLike", distance: "PlainQuantity[float]") -> "PlainQuantity[float]":
-    r"""Get an estimate for the energy range for perturbative caluclations for a two-atom state.
-
-    This function takes a 2-tuple of a ket state and calculates an estimate for the energy range
-    which needs to be included for a perturbative treatment.
-
-    Args:
-        ket_tuple: 2-tuple of ket states. The energy range is calculated for this two-atom state.
-        distance: Distance between the atoms.
-
-    Returns:
-        Energy range (with unit) for the perturbative calculations.
-
-    """
-    # only need to use real values to estimate dipole moments.
-    pi = pi_real
-    # extract needed information from pair state.
-    species = [ket_tuple[0].species, ket_tuple[1].species]
-    spin = [ket_tuple[0].s, ket_tuple[1].s]
-    n = [ket_tuple[0].n, ket_tuple[1].n]
-    l = [ket_tuple[0].l, ket_tuple[1].l]
-    j = [ket_tuple[0].j, ket_tuple[1].j]
-    m = [ket_tuple[0].m, ket_tuple[1].m]
-    # Calculate estimate based on dipole-dipole approximation for small distance R.
-    ## largest dipole-dipole interaction for spherical Rydberg states, upper bound for dme.
-    dipole = [
-        pi.KetAtom(species[i], n=n[i], l=n[i] - 1, j=n[i] - 1 + spin[0], m=n[i] - 1 + spin[0]).get_matrix_element(
-            pi.KetAtom(species[i], n=n[i] + 1, l=n[i], j=n[i] + spin[0], m=n[i] + spin[0]),
-            operator="ELECTRIC_DIPOLE",
-            q=1,
-        )
-        for i in [0, 1]
-    ]
-    ## minimal population admixture included due to dipole-dipole interaction
-    population_admixture = 1e-4
-
-    int_energ = dipole[0] * dipole[1] * ureg.coulomb_constant / distance**3
-    delta_energ_small_distance = abs(int_energ) / np.sqrt(population_admixture)
-
-    # Calculate estimate based on infinite R.
-    energies = [
-        abs(
-            pi.KetAtom(species[i], n=n[i] + 1, l=l[i], j=j[i], m=m[i]).get_energy()
-            - 2 * pi.KetAtom(species[i], n=n[i], l=l[i], j=j[i], m=m[i]).get_energy()
-            + pi.KetAtom(species[i], n=n[i] - 1, l=l[i], j=j[i], m=m[i]).get_energy()
-        )
-        for i in [0, 1]
-    ]
-    delta_energ_large_distance = max(energies)
-    # Return maximum of calculated values.
-    return max(delta_energ_small_distance, delta_energ_large_distance)
