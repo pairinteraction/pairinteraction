@@ -1,3 +1,5 @@
+.. _getting_started_as_a_contributor:
+
 Getting Started as a Contributor
 ================================
 
@@ -30,7 +32,7 @@ Developing Features or Resolving Bugs
 
     You can either implement new features in the C++ backend and write Python bindings and wrappers for them (as an
     example, see the :github:`function for diagonalizing the Hamiltonians of multiple systems in parallel
-    <tree/master/src/cpp/src/diagonalizer/diagonalize.cpp>`), or write them purely in Python (as an example, see the
+    <tree/master/src/cpp/src/diagonalize/diagonalize.cpp>`), or write them purely in Python (as an example, see the
     :github:`perturbative calculation of dispersion coefficients and effective Hamiltonians
     <tree/master/src/pairinteraction/perturbative>`).
 
@@ -104,7 +106,7 @@ necessary steps:
       pip install -e .[tests,docs]
 
   Or, you can build solely the C++ backend using ``cmake``. This manual approach is recommended if you are planning to
-  contribute to the C++ backend because it allows for a faster build more fine-grained control.
+  contribute to the C++ backend because it allows for a faster build and more fine-grained control.
 
   .. code-block:: bash
 

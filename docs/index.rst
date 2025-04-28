@@ -3,6 +3,12 @@
 
 .. toctree::
     :maxdepth: 2
+    :hidden:
+
+    about.rst
+
+.. toctree::
+    :maxdepth: 2
     :caption: User Guide
     :hidden:
 

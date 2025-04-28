@@ -31,7 +31,7 @@
 
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0.**
 
-The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. The software can be installed via pip (requires Python >= 3.9):
+The *pairinteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. For a more detailed description of the software that is written to be accessible also to non-specialists, see the [About page][about-link] of the project. The software can be installed via pip (requires Python >= 3.9):
 
 ```bash
 pip install pairinteraction
@@ -43,6 +43,7 @@ You can use the pairinteraction software [as a Python library][tutorial-link], o
 pairinteraction gui
 ```
 
+[about-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/about.html
 [tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
 
 ## Highlights
@@ -71,6 +72,9 @@ If you use pairinteraction in your research, please cite our tutorial paper:
 
 > Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
 
+**Quantum Defects**
+<a id="quantum-defects"></a>
+
 Pairinteraction relies on quantum defects provided by the community. Consider citing relevant publications for your atomic species alongside pairinteraction.
 
 <p><details>
@@ -93,6 +97,7 @@ Pairinteraction relies on quantum defects provided by the community. Consider ci
 | Yb174   | MQDT                  | `Yb174_mqdt`   | [10.48550/arXiv.2406.01482] (2024)                                                                                                                           |
 
 The identifier can be used to specify an atomic species in the pairinteraction software.
+
 
 </details></p>
 
