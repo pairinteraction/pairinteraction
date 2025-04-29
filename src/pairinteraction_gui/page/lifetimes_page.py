@@ -67,7 +67,7 @@ class LifetimesPage(SimulationPage):
 
         self.add_cursor()
 
-        self.plotwidget.canvas.draw()
+        self.plotwidget.canvas.draw(True)
 
     def add_cursor(self) -> None:
         """Add interactive cursor to the plot."""
