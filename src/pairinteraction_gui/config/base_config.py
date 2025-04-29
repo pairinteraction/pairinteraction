@@ -18,3 +18,6 @@ class BaseConfig(WidgetV):
         """Initialize the base section."""
         self.page = parent
         super().__init__(parent)
+
+    def postSetupWidget(self) -> None:
+        self.layout().addStretch(1)

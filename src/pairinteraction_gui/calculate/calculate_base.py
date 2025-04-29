@@ -83,13 +83,13 @@ class Parameters(ABC, Generic[PageType]):
         ranges = page.system_config.get_ranges_dict()
 
         diagonalize_kwargs = {}
-        if page.plotwidget.fast_mode.isChecked():
+        if page.fast_mode.isChecked():
             diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
             diagonalize_kwargs["float_type"] = "float32"
 
         diagonalize_relative_energy_range = None
-        if page.plotwidget.energy_range.isChecked():
-            diagonalize_relative_energy_range = page.plotwidget.energy_range.values()
+        if page.energy_range.isChecked():
+            diagonalize_relative_energy_range = page.energy_range.values()
 
         return cls(
             species,

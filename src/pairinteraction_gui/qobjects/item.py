@@ -51,14 +51,13 @@ class Item(WidgetH):
             self._unit = QLabel(self.unit)
             self.layout().addWidget(self._unit)
 
-        self.layout().addStretch()
+        self.layout().addStretch(1)
 
         # Initial state
         self._on_checkbox_changed(self.isChecked())
 
     def _on_checkbox_changed(self, state: bool) -> None:
         """Update the enabled state of widgets when checkbox changes."""
-        self.setStyleSheet("color: black" if state else "color: gray")
         for spinbox in self.spinboxes.values():
             spinbox.setEnabled(state)
 
@@ -154,9 +153,9 @@ class RangeItem(WidgetH):
         self.layout().addWidget(self.max_spinbox)
 
         self.layout().addWidget(self.unit)
-        self.layout().addStretch()
 
     def postSetupWidget(self) -> None:
+        self.layout().addStretch(1)
         self._on_checkbox_changed(self.isChecked())
 
     @property
@@ -173,7 +172,6 @@ class RangeItem(WidgetH):
 
     def _on_checkbox_changed(self, state: bool) -> None:
         """Update the enabled state of widgets when checkbox changes."""
-        self.setStyleSheet("color: black" if state else "color: gray")
         for spinbox in self.spinboxes:
             spinbox.setEnabled(state)
 
