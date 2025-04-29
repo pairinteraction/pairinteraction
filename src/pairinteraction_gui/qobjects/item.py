@@ -108,8 +108,8 @@ class RangeItem(WidgetH):
         self,
         parent: QWidget,
         label: str,
-        value_range: tuple[float, float] = (0, 999),
-        value_defaults: tuple[float, float] = (0, 0),
+        vdefaults: tuple[float, float] = (0, 0),
+        vrange: tuple[float, float] = (-999, 999),
         unit: str = "",
         tooltip_label: Optional[str] = None,
         checkable: bool = True,
@@ -128,12 +128,8 @@ class RangeItem(WidgetH):
         self.label = QLabel(label)
         self.label.setMinimumWidth(25)
 
-        self.min_spinbox = DoubleSpinBox(
-            parent, *value_range, value_defaults[0], tooltip=f"Minimum {tooltip_label} in {unit}"
-        )
-        self.max_spinbox = DoubleSpinBox(
-            parent, *value_range, value_defaults[1], tooltip=f"Maximum {tooltip_label} in {unit}"
-        )
+        self.min_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[0], tooltip=f"Minimum {tooltip_label} in {unit}")
+        self.max_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[1], tooltip=f"Maximum {tooltip_label} in {unit}")
         self.min_spinbox.setObjectName(f"{label.lower()}_min")
         self.max_spinbox.setObjectName(f"{label.lower()}_max")
 
