@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, ClassVar, Literal, Union
+from typing import TYPE_CHECKING, Literal, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -13,13 +13,14 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import DoubleSpinBox, HalfIntSpinBox, IntSpinBox, NamedStackedWidget, QnItem, WidgetV
+from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
 from pairinteraction_gui.worker import Worker
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+    from pairinteraction_gui.qobjects.item import _QnItem
 
 
 class BasisConfig(BaseConfig):
@@ -42,7 +43,7 @@ class BasisConfig(BaseConfig):
         stacked_basis.addNamedWidget(RestrictionsMQDT(), "mqdt")
 
         for _, widget in stacked_basis.items():
-            for item in widget.items:
+            for _, item in widget.items.items():
                 item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_basis)
 
@@ -85,13 +86,12 @@ class BasisConfig(BaseConfig):
         """Return the quantum number restrictions to construct a BasisAtom."""
         ket = self.page.ket_config.get_ket_atom(atom)
         basis_widget = self.stacked_basis[atom].currentWidget()
-        delta_qns: dict[str, float] = {item.label: item.value() for item in basis_widget.items if item.isChecked()}
+        delta_qns: dict[str, float] = {
+            key: item.value() for key, item in basis_widget.items.items() if item.isChecked()
+        }
 
         qns: dict[str, tuple[float, float]] = {}
         for key, value in delta_qns.items():
-            if value < 0:
-                continue
-            key = key.replace("Δ", "")
             qn: float = getattr(ket, key)
             qns[key] = (qn - value, qn + value)
 
@@ -109,11 +109,8 @@ class BasisConfig(BaseConfig):
 
     def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum number deltas for the basis of interest."""
-        delta_qns: dict[str, float] = {}
-        for item in self.stacked_basis[atom].currentWidget().items:
-            if item.isChecked():
-                delta_qns[item.label.replace("Δ", "")] = item.value()
-        return delta_qns
+        stacked_basis = self.stacked_basis[atom].currentWidget()
+        return {key: item.value() for key, item in stacked_basis.items.items() if item.isChecked()}
 
     def showEvent(self, event: QShowEvent) -> None:
         """Update the basis label when the widget is shown."""
@@ -147,10 +144,15 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.layout().addSpacing(15)
 
         self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
-        self.delta_pair_energy = DoubleSpinBox(
-            self, vmin=0, vdefault=5, tooltip="Restriction for the pair energy difference to the state of interest"
+        self.delta_pair_energy = QnItemDouble(
+            self,
+            "ΔEnergy",
+            vdefault=5,
+            vmin=0,
+            unit="GHz",
+            tooltip="Restriction for the pair energy difference to the state of interest",
         )
-        self.layout().addWidget(QnItem(self, "ΔEnergy", self.delta_pair_energy, "GHz"))
+        self.layout().addWidget(self.delta_pair_energy)
 
         self.basis_pair_label = QLabel()
         self.basis_pair_label.setStyleSheet(label_theme)
@@ -173,50 +175,47 @@ class RestrictionsBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    default_deactivated: ClassVar[list[str]] = []
-    _spin_boxes: dict[str, Union[IntSpinBox, HalfIntSpinBox, DoubleSpinBox]]
-    items: list[QnItem]
+    items: dict[str, "_QnItem"]
 
     def postSetupWidget(self) -> None:
-        self.items = []
-        for key, spin_box in self._spin_boxes.items():
-            unit = "GHz" if "Energy" in key else ""
-            checked = key not in self.default_deactivated
-            item = QnItem(self, key, spin_box, unit, checked)
-            self.items.append(item)
+        for _key, item in self.items.items():
             self.layout().addWidget(item)
 
 
 class RestrictionsSQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    default_deactivated: ClassVar[list[str]] = ["Δj", "Δm"]
-
     def setupWidget(self) -> None:
-        spin_boxes = self._spin_boxes = {}
-        spin_boxes["Δn"] = IntSpinBox(self, vdefault=3, tooltip="Restriction for the Principal quantum number n")
-        spin_boxes["Δl"] = IntSpinBox(self, vdefault=2, tooltip="Restriction for the Orbital angular momentum l")
-        spin_boxes["Δj"] = IntSpinBox(self, tooltip="Restriction for the Total angular momentum j")
-        spin_boxes["Δm"] = IntSpinBox(self, tooltip="Restriction for the Magnetic quantum number m")
+        self.items = {}
+        self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the Principal quantum number n")
+        self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the Orbital angular momentum l")
+        self.items["j"] = QnItemInt(self, "Δj", tooltip="Restriction for the Total angular momentum j", checked=False)
+        self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the Magnetic quantum number m", checked=False)
 
 
 class RestrictionsMQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    default_deactivated: ClassVar[list[str]] = ["Δf", "Δm", "Δl_ryd"]
-
     def setupWidget(self) -> None:
-        spin_boxes = self._spin_boxes = {}
-        spin_boxes["Δnu"] = DoubleSpinBox(
-            self, vdefault=4, tooltip="Restriction for the Effective principal quantum number nu"
+        self.items = {}
+        self.items["nu"] = QnItemDouble(
+            self, "Δnu", vdefault=4, tooltip="Restriction for the Effective principal quantum number nu"
         )
-        spin_boxes["Δs"] = DoubleSpinBox(self, vdefault=0.5, tooltip="Restriction for the Spin s")
-        spin_boxes["Δj"] = DoubleSpinBox(self, vdefault=3, tooltip="Restriction for the Total angular momentum j")
+        self.items["s"] = QnItemDouble(self, "Δs", vdefault=0.5, tooltip="Restriction for the Spin s")
+        self.items["j"] = QnItemDouble(self, "Δj", vdefault=3, tooltip="Restriction for the Total angular momentum j")
 
-        spin_boxes["Δf"] = IntSpinBox(self, vdefault=5, tooltip="Restriction for the Total angular momentum f")
-        spin_boxes["Δm"] = IntSpinBox(self, vdefault=5, tooltip="Restriction for the Magnetic quantum number m")
+        self.items["f"] = QnItemInt(
+            self, "Δf", vdefault=5, tooltip="Restriction for the Total angular momentum f", checked=False
+        )
+        self.items["m"] = QnItemInt(
+            self, "Δm", vdefault=5, tooltip="Restriction for the Magnetic quantum number m", checked=False
+        )
 
         # TODO this is not yet implemented
-        # spin_boxes["Δl_ryd"] = DoubleSpinBox(
-        #     self, vdefault=3, tooltip="Restriction for the Orbital angular momentum l_ryd of the Rydberg electron"
+        # self.items["l_ryd"] = QnItemDouble(
+        #     self,
+        #     "Δl_ryd",
+        #     vdefault=3,
+        #     tooltip="Restriction for the Orbital angular momentum l_ryd of the Rydberg electron",
+        #     checked=False,
         # )
