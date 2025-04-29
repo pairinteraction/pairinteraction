@@ -50,22 +50,31 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         return obj
 
     def __repr__(self) -> str:
-        coefficients = self.get_coefficients()
-        max_inds = np.argsort(np.abs(coefficients))[::-1]
-        txt = ""
-        overlap = 0
-        for i, ind in enumerate(max_inds):
-            txt += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
-            overlap += abs(coefficients[ind]) ** 2
-            if overlap > 0.9 or i == 2:
-                break
-            txt += " + "
-        if overlap <= 1 - 100 * np.finfo(float).eps:
-            txt += " + ... "
-        return f"{type(self).__name__}({txt})"
+        return f"{type(self).__name__}({self.get_label()})"
 
     def __str__(self) -> str:
         return self.__repr__().replace("Real", "").replace("Complex", "")
+
+    def get_label(self, max_kets: int = 3) -> str:
+        """Label representing the state.
+
+        Returns:
+            The label of the ket in the given format.
+
+        """
+        coefficients = self.get_coefficients()
+        sorted_inds = np.argsort(np.abs(coefficients))[::-1]
+        raw = ""
+        overlap = 0
+        for i, ind in enumerate(sorted_inds, 1):
+            raw += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
+            overlap += abs(coefficients[ind]) ** 2
+            if overlap > 0.9 or i >= max_kets:
+                break
+            raw += " + "
+        if overlap <= 1 - 100 * np.finfo(float).eps:
+            raw += " + ... "
+        return raw
 
     @property
     def kets(self) -> list[KetType]:
