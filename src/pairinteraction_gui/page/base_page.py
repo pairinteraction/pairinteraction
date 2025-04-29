@@ -54,41 +54,6 @@ class SimulationPage(BasePage):
 
     plotwidget: PlotWidget
 
-    _button_style = """
-        QPushButton {
-            padding: 8px 16px;
-            background-color: #343a40;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        QPushButton:hover {
-            background-color: #495057;
-        }
-        QPushButton:pressed {
-            background-color: #000000;
-        }
-    """
-
-    _button_menu_style = """
-        QMenu {
-            background-color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 4px;
-            padding: 4px;
-        }
-        QMenu::item {
-            padding: 6px 24px;
-            color: #000000;
-            font-size: 14px;
-        }
-        QMenu::item:selected {
-            background-color: #ffffff;
-        }
-    """
-
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
@@ -137,13 +102,11 @@ class CalculationPage(SimulationPage):
         calculate_button = QPushButton("Calculate")
         calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
         calculate_button.clicked.connect(self.calculate_clicked)
-        calculate_button.setStyleSheet(self._button_style)
         self.calculate_and_abort.addNamedWidget(calculate_button, "Calculate")
 
         abort_button = QPushButton("Abort")
         abort_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop))
         abort_button.clicked.connect(self.abort_clicked)
-        abort_button.setStyleSheet(self._button_style)
         self.calculate_and_abort.addNamedWidget(abort_button, "Abort")
 
         self.calculate_and_abort.setFixedHeight(50)
@@ -153,9 +116,7 @@ class CalculationPage(SimulationPage):
         export_button = QPushButton("Export")
         export_button.setObjectName("Export")
         export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
-        export_button.setStyleSheet(self._button_style)
         export_menu = QMenu(self)
-        export_menu.setStyleSheet(self._button_menu_style)
         export_menu.addAction("Export as PNG", self.export_png)
         export_menu.addAction("Export as Python script", self.export_python)
         export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
