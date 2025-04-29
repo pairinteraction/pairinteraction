@@ -23,6 +23,7 @@ from pairinteraction_gui.page import (
     TwoAtomsPage,
 )
 from pairinteraction_gui.qobjects import NamedStackedWidget
+from pairinteraction_gui.theme import main_theme
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import BasePage
@@ -41,8 +42,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("PairInteraction")
         self.resize(1200, 800)
-
-        self.apply_modern_style()
+        self.setStyleSheet(main_theme)
 
         self.statusbar = self.setup_statusbar()
         self.dockwidget = self.setup_dockwidget()
@@ -66,18 +66,6 @@ class MainWindow(QMainWindow):
             options = Qt.FindChildOption.FindChildrenRecursively
         return super().findChild(type_, name, options)  # type: ignore [return-value] # explicitly override type hints
 
-    def apply_modern_style(self) -> None:
-        """Apply modern styling to the application."""
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #ffffff;
-            }
-            QStatusBar {
-                background-color: #343a40;
-                color: #ffffff;
-            }
-        """)
-
     def setup_statusbar(self) -> QStatusBar:
         """Set up the status bar.
 
@@ -100,31 +88,6 @@ class MainWindow(QMainWindow):
         dockwidget.setTitleBarWidget(QWidget())  # This removes the title bar
 
         dockwidget.setMinimumWidth(375)
-        dockwidget.setStyleSheet("""
-            QToolBox {
-                background-color: white;
-                border: 1px solid #ffffff;
-                border-radius: 5px;
-            }
-            QToolBox::tab {
-                background-color: #343a40;
-                border: 1px solid #ffffff;
-                border-radius: 4px;
-                color: #ffffff;
-                font-weight: bold;
-                font-size: 15px;
-            }
-            QToolBox::tab:selected {
-                background-color: #007bff;
-            }
-            QToolBox::tab:hover:!selected {
-                background-color: #495057;
-            }
-            QLabel {
-                color: black;
-                font-size: 14px;
-            }
-        """)
         dockwidget.setVisible(False)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dockwidget)
         return dockwidget
@@ -150,31 +113,6 @@ class MainWindow(QMainWindow):
         toolbar.setOrientation(Qt.Orientation.Vertical)
         toolbar.setIconSize(QSize(32, 32))
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
-        toolbar.setStyleSheet("""
-            QToolBar {
-                background-color: #343a40;
-                border: none;
-                spacing: 15px;
-                padding: 10px 5px;
-            }
-            QToolButton {
-                border: none;
-                padding: 8px;
-                margin: 5px;
-                color: #ffffff;
-                font-weight: bold;
-                font-size: 15px;
-            }
-            QToolButton:hover {
-                background-color: #495057;
-            }
-            QToolButton:pressed {
-                background-color: #000000;
-            }
-            QToolButton:checked {
-                background-color: #007bff;
-            }
-        """)
 
         toolbar_group = QActionGroup(self)
         toolbar_group.setExclusive(True)
