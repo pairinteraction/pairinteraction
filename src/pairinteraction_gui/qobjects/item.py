@@ -51,7 +51,7 @@ class Item(WidgetH):
             self._unit = QLabel(self.unit)
             self.layout().addWidget(self._unit)
 
-        self.layout().addStretch()
+        self.layout().addStretch(1)
 
         # Initial state
         self._on_checkbox_changed(self.isChecked())
@@ -153,9 +153,9 @@ class RangeItem(WidgetH):
         self.layout().addWidget(self.max_spinbox)
 
         self.layout().addWidget(self.unit)
-        self.layout().addStretch()
 
     def postSetupWidget(self) -> None:
+        self.layout().addStretch(1)
         self._on_checkbox_changed(self.isChecked())
 
     @property
