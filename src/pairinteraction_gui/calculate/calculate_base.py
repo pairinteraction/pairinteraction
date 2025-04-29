@@ -100,7 +100,7 @@ class Parameters(ABC, Generic[PageType]):
             ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
-            page.number_state_labels.value() if page.number_state_labels.isChecked() else 0,
+            page.number_state_labels.value(default=0),
         )
 
     @property

@@ -151,6 +151,7 @@ class BasisConfigTwoAtoms(BasisConfig):
             vmin=0,
             unit="GHz",
             tooltip="Restriction for the pair energy difference to the state of interest",
+            checkable=False,
         )
         self.layout().addWidget(self.delta_pair_energy)
 
