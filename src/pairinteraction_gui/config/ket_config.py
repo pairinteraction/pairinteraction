@@ -73,9 +73,6 @@ class KetConfig(BaseConfig):
         self.stacked_qn: list[NamedStackedWidget[QnBase]] = []
         self.ket_label: list[QLabel] = []
 
-    def postSetupWidget(self) -> None:
-        self.layout().addStretch(30)
-
     @property
     def n_atoms(self) -> int:
         """Return the number of atoms configured."""
@@ -187,16 +184,16 @@ class KetConfigLifetimes(KetConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
         self.setupOneKetAtom()
+        self.layout().addSpacing(15)
 
-        self.layout().addStretch(2)
         spin_box_temp = DoubleSpinBox(
             self, vdefault=300, tooltip="Temperature in Kelvin (0K considers only spontaneous decay)"
         )
         self.item_temperature = QnItem(self, "Temperature", spin_box_temp, "K")
         self.layout().addWidget(self.item_temperature)
         spin_box_temp.valueChanged.connect(lambda value: self.update_lifetime_label())
+        self.layout().addSpacing(15)
 
-        self.layout().addStretch(2)
         # Add a label to display the lifetime
         self.lifetime_label = QLabel()
         self.lifetime_label.setStyleSheet(self._label_style_sheet)
@@ -254,8 +251,8 @@ class KetConfigTwoAtoms(KetConfig):
 
         self.layout().addWidget(QLabel("<b>Atom 1</b>"))
         self.setupOneKetAtom()
+        self.layout().addSpacing(15)
 
-        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneKetAtom()
 

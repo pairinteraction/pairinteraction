@@ -49,9 +49,6 @@ class BasisConfig(BaseConfig):
         self.stacked_basis: list[NamedStackedWidget[RestrictionsBase]] = []
         self.basis_label: list[QLabel] = []
 
-    def postSetupWidget(self) -> None:
-        self.layout().addStretch(30)
-
     def setupOneBasisAtom(self) -> None:
         """Set up the UI components for a single basis atom."""
         atom = len(self.stacked_basis)
@@ -160,12 +157,12 @@ class BasisConfigTwoAtoms(BasisConfig):
 
         self.layout().addWidget(QLabel("<b>Atom 1</b>"))
         self.setupOneBasisAtom()
+        self.layout().addSpacing(15)
 
-        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
         self.setupOneBasisAtom()
+        self.layout().addSpacing(15)
 
-        self.layout().addStretch(5)
         self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
         self.delta_pair_energy = DoubleSpinBox(
             self, vmin=0, vdefault=5, tooltip="Restriction for the pair energy difference to the state of interest"

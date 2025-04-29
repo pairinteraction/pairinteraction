@@ -28,9 +28,6 @@ class SystemConfig(BaseConfig):
     title = "System"
     page: Union["OneAtomPage", "TwoAtomsPage"]
 
-    def postSetupWidget(self) -> None:
-        self.layout().addStretch()
-
     def setupEField(self) -> None:
         efield_label = QLabel("<b>Electric field</b>")
         self.layout().addWidget(efield_label)
