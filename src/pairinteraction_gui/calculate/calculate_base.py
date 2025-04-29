@@ -5,6 +5,7 @@ import logging
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
 
+import numpy as np
 from attr import dataclass
 
 from pairinteraction import (
@@ -57,6 +58,7 @@ class Parameters(ABC, Generic[PageType]):
     ranges: dict[RangesKeys, list[float]]
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: Union[tuple[float, float], None]
+    number_state_labels: int
 
     def __post_init__(self) -> None:
         """Post-initialization processing."""
@@ -98,6 +100,7 @@ class Parameters(ABC, Generic[PageType]):
             ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
+            page.number_state_labels.value() if page.number_state_labels.isChecked() else 0,
         )
 
     @property
@@ -228,11 +231,12 @@ class Results(ABC):
     energies: list["NDArray"]
     energy_offset: float
     ket_overlaps: list["NDArray"]
-    state_labels_0: list[str]
+    state_labels: dict[int, list[str]]
 
     @classmethod
     def from_calculate(
         cls,
+        parameters: Parameters[Any],
         system_list: Union[
             list[pi_real.SystemPair], list[pi_complex.SystemPair], list[pi_real.SystemAtom], list[pi_complex.SystemAtom]
         ],
@@ -242,11 +246,12 @@ class Results(ABC):
         """Create Results object from ket, basis, and diagonalized systems."""
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]
-        basis_0 = system_list[-1].get_eigenbasis()
-        state_0 = [basis_0.kets[i] for i in range(basis_0.number_of_states)]
-        state_labels_0 = [s.get_label("ket") for s in state_0]
 
-        return cls(energies, energy_offset, ket_overlaps, state_labels_0)
+        steps_with_labels = [int(i) for i in np.linspace(0, parameters.steps - 1, parameters.number_state_labels)]
+        states_dict = {i: system_list[i].get_eigenbasis().states for i in steps_with_labels}
+        state_labels = {i: [s.get_label() for s in states] for i, states in states_dict.items()}
+
+        return cls(energies, energy_offset, ket_overlaps, state_labels)
 
 
 def as_string(value: str, *, raw_string: bool = False) -> str:

@@ -36,7 +36,6 @@ class OneAtomPage(CalculationPage):
 
     def update_plot(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
         super().update_plot(parameters, results)
-
         self.add_short_labels(results)
         self.plotwidget.canvas.draw(True)
 
@@ -44,12 +43,15 @@ class OneAtomPage(CalculationPage):
         self,
         results: ResultsOneAtom,
     ) -> None:
+        if 0 not in results.state_labels:
+            return
+
         ax = self.plotwidget.canvas.ax
         x_lim = ax.get_xlim()
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(results.state_labels_0, results.energies[0]):
+        for ket_label, energy in zip(results.state_labels[0], results.energies[0]):
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")
