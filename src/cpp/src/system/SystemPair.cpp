@@ -242,6 +242,9 @@ SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
+SystemPair<Scalar>::~SystemPair() = default;
+
+template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
     this->hamiltonian_requires_construction = true;
     if (value < 3 || value > 5) {
@@ -283,6 +286,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     bool sort_by_quantum_number_m = basis->has_quantum_number_m();
     bool sort_by_parity = basis->has_parity();
 
+    // Store the energies (they are needed in case of a OmegaDependentEntry)
+    auto energies = this->hamiltonian->get_matrix().diagonal().real();
+
     // Dipole-dipole interaction
     for (const auto &entry : green_tensor.get_entries(1, 1)) {
         if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
@@ -291,11 +297,25 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             if (ce->row() != ce->col()) {
                 sort_by_quantum_number_m = false;
             }
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
         } else {
-            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
+            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
+            assert(oe != nullptr);
+            auto tensor_product =
+                utils::calculate_tensor_product(basis, basis, op.d1[oe->row()], op.d2[oe->col()]);
+            for (int k = 0; k < tensor_product.outerSize(); ++k) {
+                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
+                         tensor_product, k);
+                     it; ++it) {
+                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
+                }
+            }
+            this->hamiltonian->get_matrix() += tensor_product;
+            if (oe->row() != oe->col()) {
+                sort_by_quantum_number_m = false;
+            }
         }
+        this->hamiltonian_is_diagonal = false;
+        sort_by_quantum_number_f = false;
     }
 
     // Dipole-quadrupole interaction
@@ -306,11 +326,25 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             if (ce->row() != ce->col() - 1) {
                 sort_by_quantum_number_m = false;
             }
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
         } else {
-            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
+            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
+            assert(oe != nullptr);
+            auto tensor_product =
+                utils::calculate_tensor_product(basis, basis, op.d1[oe->row()], op.q2[oe->col()]);
+            for (int k = 0; k < tensor_product.outerSize(); ++k) {
+                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
+                         tensor_product, k);
+                     it; ++it) {
+                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
+                }
+            }
+            this->hamiltonian->get_matrix() += tensor_product;
+            if (oe->row() != oe->col() - 1) {
+                sort_by_quantum_number_m = false;
+            }
         }
+        this->hamiltonian_is_diagonal = false;
+        sort_by_quantum_number_f = false;
     }
 
     // Quadrupole-dipole interaction
@@ -321,11 +355,25 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             if (ce->row() - 1 != ce->col()) {
                 sort_by_quantum_number_m = false;
             }
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
         } else {
-            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
+            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
+            assert(oe != nullptr);
+            auto tensor_product =
+                utils::calculate_tensor_product(basis, basis, op.q1[oe->row()], op.d2[oe->col()]);
+            for (int k = 0; k < tensor_product.outerSize(); ++k) {
+                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
+                         tensor_product, k);
+                     it; ++it) {
+                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
+                }
+            }
+            this->hamiltonian->get_matrix() += tensor_product;
+            if (oe->row() - 1 != oe->col()) {
+                sort_by_quantum_number_m = false;
+            }
         }
+        this->hamiltonian_is_diagonal = false;
+        sort_by_quantum_number_f = false;
     }
 
     // Quadrupole-quadrupole interaction
@@ -336,11 +384,25 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             if (ce->row() != ce->col()) {
                 sort_by_quantum_number_m = false;
             }
-            this->hamiltonian_is_diagonal = false;
-            sort_by_quantum_number_f = false;
         } else {
-            throw std::invalid_argument("Omega-dependent entries are not yet supported.");
+            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
+            assert(oe != nullptr);
+            auto tensor_product =
+                utils::calculate_tensor_product(basis, basis, op.q1[oe->row()], op.q2[oe->col()]);
+            for (int k = 0; k < tensor_product.outerSize(); ++k) {
+                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
+                         tensor_product, k);
+                     it; ++it) {
+                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
+                }
+            }
+            this->hamiltonian->get_matrix() += tensor_product;
+            if (oe->row() != oe->col()) {
+                sort_by_quantum_number_m = false;
+            }
         }
+        this->hamiltonian_is_diagonal = false;
+        sort_by_quantum_number_f = false;
     }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
