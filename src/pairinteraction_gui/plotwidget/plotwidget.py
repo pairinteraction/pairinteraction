@@ -15,7 +15,6 @@ from PySide6.QtWidgets import QPushButton
 from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.qobjects import WidgetH, WidgetV
-from pairinteraction_gui.qobjects.item import Item, RangeItem
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -69,20 +68,6 @@ class PlotEnergies(PlotWidget):
 
     def setupWidget(self) -> None:
         super().setupWidget()
-
-        self.energy_range = RangeItem(
-            self,
-            "Calculate the energies from",
-            (-999, 999),
-            (-0.5, 0.5),
-            unit="GHz",
-            checked=False,
-            tooltip_label="energy",
-        )
-        self.plot_toolbar.layout().addWidget(self.energy_range)
-
-        self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=True)
-        self.plot_toolbar.layout().addWidget(self.fast_mode)
 
         mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
         self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest")

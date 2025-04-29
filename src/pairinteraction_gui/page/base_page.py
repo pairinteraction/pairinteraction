@@ -26,6 +26,7 @@ from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.qobjects.events import show_status_tip
+from pairinteraction_gui.qobjects.item import Item, RangeItem
 from pairinteraction_gui.qobjects.named_stacked_widget import NamedStackedWidget
 from pairinteraction_gui.worker import Worker
 
@@ -163,6 +164,20 @@ class CalculationPage(SimulationPage):
         control_layout.addWidget(export_button, stretch=1)
 
         self.layout().addLayout(control_layout)
+
+        self.energy_range = RangeItem(
+            self,
+            "Calculate the energies from",
+            (-999, 999),
+            (-0.5, 0.5),
+            unit="GHz",
+            checked=False,
+            tooltip_label="energy",
+        )
+        self.layout().addWidget(self.energy_range)
+
+        self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=True)
+        self.layout().addWidget(self.fast_mode)
 
     def calculate_clicked(self) -> None:
         self.before_calculate()
