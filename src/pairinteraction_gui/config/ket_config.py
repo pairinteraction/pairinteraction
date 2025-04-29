@@ -205,9 +205,7 @@ class KetConfigLifetimes(KetConfig):
         self.update_lifetime_label()
 
     def get_temperature(self) -> float:
-        if self.item_temperature.isChecked():
-            return self.item_temperature.value()
-        return 0
+        return self.item_temperature.value(default=0)
 
     def update_lifetime_label(self) -> None:
         if self.worker_label and self.worker_label.isRunning():
