@@ -119,13 +119,20 @@ class _QnItem(WidgetH):
             return True
         return self.checkbox.isChecked()
 
-    def value(self) -> float:
+    def value(self, default: Optional[float] = None) -> float:
         """Return the value of the spinbox."""
+        if not self.isChecked():
+            if default is None:
+                raise ValueError("Checkbox is not checked and no default value is provided.")
+            return default
         return self.spinbox.value()
 
 
 class QnItemInt(_QnItem):
     _spinbox_class = IntSpinBox
+
+    def value(self, default: Optional[int] = None) -> int:  # type: ignore [override]
+        return super().value(default)  # type: ignore [return-value]
 
 
 class QnItemHalfInt(_QnItem):
@@ -215,6 +222,10 @@ class RangeItem(WidgetH):
             return True
         return self.checkbox.isChecked()
 
-    def values(self) -> tuple[float, float]:
+    def values(self, default: Optional[tuple[float, float]] = None) -> tuple[float, float]:
         """Return the values of the min and max spinboxes."""
+        if not self.isChecked():
+            if default is None:
+                raise ValueError("Checkbox is not checked and no default value is provided.")
+            return default
         return (self.min_spinbox.value(), self.max_spinbox.value())

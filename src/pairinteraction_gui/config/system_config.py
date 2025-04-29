@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import IntSpinBox, WidgetForm
-from pairinteraction_gui.qobjects.item import RangeItem
+from pairinteraction_gui.qobjects.item import QnItemInt, RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
@@ -116,10 +116,16 @@ class SystemConfigTwoAtoms(SystemConfig):
         steps_label = QLabel("<b>Multipole expansion order</b>")
         self.layout().addWidget(steps_label)
 
-        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
-        self.order = IntSpinBox(self, vmin=3, vmax=5, vdefault=3, tooltip="Select the order of the multipole expansion")
-        steps_widget.layout().addRow("Multipole order", self.order)
-        self.layout().addWidget(steps_widget)
+        self.order = QnItemInt(
+            self,
+            "Multipole order",
+            vmin=3,
+            vmax=5,
+            vdefault=3,
+            tooltip="Select the order of the multipole expansion",
+            checkable=False,
+        )
+        self.layout().addWidget(self.order)
 
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
