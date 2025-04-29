@@ -136,7 +136,7 @@ class CalculationPage(SimulationPage):
         )
         self.layout().addWidget(self.energy_range)
 
-        self.fast_mode = Item(self, "Use fast calculation mode", {}, "", checked=True)
+        self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
         self.layout().addWidget(self.fast_mode)
 
     def calculate_clicked(self) -> None:

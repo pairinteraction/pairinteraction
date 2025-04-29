@@ -19,15 +19,15 @@ def test_main_window_basic(qtbot: "QtBot") -> None:
     qtbot.addWidget(window)
 
     one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
-    qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items[0]
-    qn_item.spinboxes["value"].setValue(60)
+    qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
+    qn_item.spinbox.setValue(60)
 
     ket_label = one_atom_page.ket_config.ket_label[0].text()
     assert all(x in ket_label for x in ["Rb", "60", "S", "1/2"])
-    assert qn_item.label == "n"
+    assert qn_item.label.text() == "n"
     assert qn_item.value() == 60
 
-    qn_item.spinboxes["value"].setValue(61)
+    qn_item.spinbox.setValue(61)
     ket_label = one_atom_page.ket_config.ket_label[0].text()
     assert qn_item.value() == 61
     assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])

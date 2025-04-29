@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import re
-from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional
 
 from PySide6.QtWidgets import (
     QComboBox,
@@ -12,11 +12,10 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import (
-    DoubleSpinBox,
-    HalfIntSpinBox,
-    IntSpinBox,
     NamedStackedWidget,
-    QnItem,
+    QnItemDouble,
+    QnItemHalfInt,
+    QnItemInt,
     WidgetForm,
     WidgetV,
 )
@@ -26,7 +25,7 @@ from pairinteraction_gui.worker import Worker
 if TYPE_CHECKING:
     import pairinteraction.real as pi
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
-
+    from pairinteraction_gui.qobjects.item import _QnItem
 
 AVAILABLE_SPECIES = [
     "Rb",
@@ -100,7 +99,7 @@ class KetConfig(BaseConfig):
         stacked_qn.addNamedWidget(QnMQDT(m_is_int=False), "mqdt_halfint")
 
         for _, widget in stacked_qn.items():
-            for item in widget.items:
+            for _, item in widget.items.items():
                 item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_qn)
 
@@ -139,7 +138,7 @@ class KetConfig(BaseConfig):
     def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn[atom].currentWidget()
-        return {item.label: item.value() for item in qn_widget.items if item.isChecked()}
+        return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}
 
     def get_ket_atom(self, atom: int) -> "pi.KetAtom":
         """Return the ket of interest of the ... atom."""
@@ -186,12 +185,15 @@ class KetConfigLifetimes(KetConfig):
         self.setupOneKetAtom()
         self.layout().addSpacing(15)
 
-        spin_box_temp = DoubleSpinBox(
-            self, vdefault=300, tooltip="Temperature in Kelvin (0K considers only spontaneous decay)"
+        self.item_temperature = QnItemDouble(
+            self,
+            "Temperature",
+            vdefault=300,
+            unit="K",
+            tooltip="Temperature in Kelvin (0K considers only spontaneous decay)",
         )
-        self.item_temperature = QnItem(self, "Temperature", spin_box_temp, "K")
+        self.item_temperature.connectAll(self.update_lifetime_label)
         self.layout().addWidget(self.item_temperature)
-        spin_box_temp.valueChanged.connect(lambda value: self.update_lifetime_label())
         self.layout().addSpacing(15)
 
         # Add a label to display the lifetime
@@ -263,17 +265,10 @@ class QnBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    default_deactivated: ClassVar[list[str]] = []
-    _spin_boxes: dict[str, Union[IntSpinBox, HalfIntSpinBox, DoubleSpinBox]]
-    items: list[QnItem]
+    items: dict[str, "_QnItem"]
 
     def postSetupWidget(self) -> None:
-        self.items = []
-        for key, spin_box in self._spin_boxes.items():
-            unit = "GHz" if "Energy" in key else ""
-            checked = key not in self.default_deactivated
-            item = QnItem(self, key, spin_box, unit, checked)
-            self.items.append(item)
+        for _key, item in self.items.items():
             self.layout().addWidget(item)
 
 
@@ -282,48 +277,44 @@ class QnSQDT(QnBase):
 
     def __init__(self, parent: Optional[QWidget] = None, s: float = 0.5) -> None:
         self.s = s
+        self.items = {}
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        spin_boxes = self._spin_boxes = {}
-
-        spin_boxes["n"] = IntSpinBox(self, vmin=1, vdefault=80, tooltip="Principal quantum number n")
-
-        spin_boxes["l"] = IntSpinBox(self, tooltip="Orbital angular momentum l")
+        self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=80, tooltip="Principal quantum number n")
+        self.items["l"] = QnItemInt(self, "l", tooltip="Orbital angular momentum l")
 
         s = self.s
         if s % 1 == 0:
-            spin_boxes["j"] = IntSpinBox(self, vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
-            spin_boxes["m"] = IntSpinBox(self, vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
+            self.items["j"] = QnItemInt(self, "j", vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
+            self.items["m"] = QnItemInt(self, "m", vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
-            spin_boxes["j"] = HalfIntSpinBox(self, vmin=s, vdefault=s, tooltip="Total angular momentum j")
-            spin_boxes["m"] = HalfIntSpinBox(self, vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
+            self.items["j"] = QnItemHalfInt(self, "j", vmin=s, vdefault=s, tooltip="Total angular momentum j")
+            self.items["m"] = QnItemHalfInt(self, "m", vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
 
 
 class QnMQDT(QnBase):
     """Configuration for earth alkali atoms using MQDT."""
 
-    default_deactivated: ClassVar = ["l_ryd"]
-
     def __init__(self, parent: Optional[QWidget] = None, m_is_int: bool = False) -> None:
         self.m_is_int = m_is_int
+        self.items = {}
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        spin_boxes = self._spin_boxes = {}
-        spin_boxes["nu"] = DoubleSpinBox(
-            self, vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
+        self.items["nu"] = QnItemDouble(
+            self, "nu", vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
         )
-        spin_boxes["s"] = DoubleSpinBox(self, vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
-        spin_boxes["j"] = DoubleSpinBox(self, vstep=1, tooltip="Total angular momentum j")
+        self.items["s"] = QnItemDouble(self, "s", vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
+        self.items["j"] = QnItemDouble(self, "j", vstep=1, tooltip="Total angular momentum j")
 
         if self.m_is_int:
-            spin_boxes["f"] = IntSpinBox(self, vmin=0, vdefault=0, tooltip="Total angular momentum f")
-            spin_boxes["m"] = IntSpinBox(self, vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
+            self.items["f"] = QnItemInt(self, "f", vmin=0, vdefault=0, tooltip="Total angular momentum f")
+            self.items["m"] = QnItemInt(self, "m", vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
-            spin_boxes["f"] = HalfIntSpinBox(self, vmin=0.5, vdefault=0.5, tooltip="Total angular momentum f")
-            spin_boxes["m"] = HalfIntSpinBox(self, vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
+            self.items["f"] = QnItemHalfInt(self, "f", vmin=0.5, vdefault=0.5, tooltip="Total angular momentum f")
+            self.items["m"] = QnItemHalfInt(self, "m", vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
 
-        spin_boxes["l_ryd"] = DoubleSpinBox(
-            self, vstep=1, tooltip="Orbital angular momentum l_ryd of the Rydberg electron"
+        self.items["l_ryd"] = QnItemDouble(
+            self, "l_ryd", vstep=1, tooltip="Orbital angular momentum l_ryd of the Rydberg electron", checked=False
         )
