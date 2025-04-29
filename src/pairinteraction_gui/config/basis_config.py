@@ -14,6 +14,7 @@ from pairinteraction import (
 )
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import DoubleSpinBox, HalfIntSpinBox, IntSpinBox, NamedStackedWidget, QnItem, WidgetV
+from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
 from pairinteraction_gui.worker import Worker
 
@@ -26,24 +27,6 @@ class BasisConfig(BaseConfig):
 
     title = "Basis"
     page: Union["OneAtomPage", "TwoAtomsPage"]
-
-    _label_style_sheet = """
-        background-color: #ffffff;
-        color: #000000;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin: 12px 24px 0px 24px;
-        border: 1px solid #aaaaaa;
-    """
-
-    _label_style_sheet_error = """
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin: 12px 24px 0px 24px;
-        border: 1px solid #aaaaaa;
-    """
 
     def setupWidget(self) -> None:
         self.stacked_basis: list[NamedStackedWidget[RestrictionsBase]] = []
@@ -65,7 +48,7 @@ class BasisConfig(BaseConfig):
 
         # Add a label to display the current basis
         basis_label = QLabel()
-        basis_label.setStyleSheet(self._label_style_sheet)
+        basis_label.setStyleSheet(label_theme)
         basis_label.setWordWrap(True)
         self.layout().addWidget(basis_label)
 
@@ -79,7 +62,7 @@ class BasisConfig(BaseConfig):
 
         def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
             self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
-            self.basis_label[atom].setStyleSheet(self._label_style_sheet)
+            self.basis_label[atom].setStyleSheet(label_theme)
 
         worker.signals.result.connect(update_result)
 
@@ -92,7 +75,7 @@ class BasisConfig(BaseConfig):
                 )
             else:
                 self.basis_label[atom].setText(str(err))
-            self.basis_label[atom].setStyleSheet(self._label_style_sheet_error)
+            self.basis_label[atom].setStyleSheet(label_error_theme)
 
         worker.signals.error.connect(update_error)
 
@@ -170,14 +153,14 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.layout().addWidget(QnItem(self, "ΔEnergy", self.delta_pair_energy, "GHz"))
 
         self.basis_pair_label = QLabel()
-        self.basis_pair_label.setStyleSheet(self._label_style_sheet)
+        self.basis_pair_label.setStyleSheet(label_theme)
         self.basis_pair_label.setWordWrap(True)
         self.layout().addWidget(self.basis_pair_label)
 
     def update_basis_pair_label(self, basis_pair_label: str) -> None:
         """Update the quantum state label with current values."""
         self.basis_pair_label.setText(basis_pair_label)
-        self.basis_pair_label.setStyleSheet(self._label_style_sheet)
+        self.basis_pair_label.setStyleSheet(label_theme)
 
     def clear_basis_pair_label(self) -> None:
         """Clear the basis pair label."""
