@@ -194,7 +194,7 @@ class CalculationPage(SimulationPage):
         ind = 0 if parameters.n_atoms == 1 else -1
         self.plotwidget.add_cursor(x_values[ind], energies[ind], results.state_labels_0)
 
-        self.plotwidget.canvas.draw()
+        self.plotwidget.canvas.draw(True)
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""

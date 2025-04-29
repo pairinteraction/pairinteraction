@@ -38,7 +38,7 @@ class OneAtomPage(CalculationPage):
         super().update_plot(parameters, results)
 
         self.add_short_labels(results)
-        self.plotwidget.canvas.draw()
+        self.plotwidget.canvas.draw(True)
 
     def add_short_labels(
         self,

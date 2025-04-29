@@ -52,7 +52,7 @@ class PlotWidget(WidgetV):
         reset_zoom_button.setToolTip(
             "Reset the plot view to its original state. You can zoom in/out using the mousewheel."
         )
-        reset_zoom_button.clicked.connect(self.canvas.reset_view)
+        reset_zoom_button.clicked.connect(self.canvas.reset_zoom)
         top_row.layout().addWidget(reset_zoom_button)
 
         self.layout().addWidget(top_row)
