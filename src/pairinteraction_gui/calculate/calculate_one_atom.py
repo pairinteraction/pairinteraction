@@ -55,4 +55,4 @@ def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
         **parameters.get_diagonalize_energy_range(ket_energy),
     )
     logger.debug("Done diagonalizing SystemAtoms.")
-    return ResultsOneAtom.from_calculate(system_list, ket, ket_energy)
+    return ResultsOneAtom.from_calculate(parameters, system_list, ket, ket_energy)

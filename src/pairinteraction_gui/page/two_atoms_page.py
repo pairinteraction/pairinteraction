@@ -23,6 +23,8 @@ class TwoAtomsPage(CalculationPage):
 
     def setupWidget(self) -> None:
         super().setupWidget()
+        self.number_state_labels.spinbox.setValue(5)
+        self.number_state_labels.checkbox.setChecked(False)  # type: ignore [union-attr]
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
         self.ket_config = KetConfigTwoAtoms(self)

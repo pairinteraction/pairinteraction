@@ -135,7 +135,7 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     )
     logger.debug("Done diagonalizing SystemPairs.")
 
-    results = ResultsTwoAtoms.from_calculate(system_pair_list, kets, ket_pair_energy_0)
+    results = ResultsTwoAtoms.from_calculate(parameters, system_pair_list, kets, ket_pair_energy_0)
     results.basis_0_label = (
         str(basis_pair_list[-1]) + f"\n  ⇒ Basis consists of {basis_pair_list[-1].number_of_kets} kets"
     )
