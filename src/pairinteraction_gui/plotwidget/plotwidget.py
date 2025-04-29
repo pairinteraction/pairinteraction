@@ -116,7 +116,9 @@ class PlotEnergies(PlotWidget):
         ax.set_ylabel("Energy [GHz]")
         self.canvas.fig.tight_layout()
 
-    def add_cursor(self, x_value: float, energies: "NDArray[Any]", state_labels_0: list[str]) -> None:
+    def add_cursor(
+        self, x_value: list[float], energies: list["NDArray[Any]"], state_labels: dict[int, list[str]]
+    ) -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore
@@ -126,9 +128,11 @@ class PlotEnergies(PlotWidget):
         ax = self.canvas.ax
 
         artists = []
-        for e, ket_label in zip(energies, state_labels_0):
-            artist = ax.plot(x_value, e, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=ket_label)
-            artists.extend(artist)
+        for idx, labels in state_labels.items():
+            x = x_value[idx]
+            for energy, label in zip(energies[idx], labels):
+                artist = ax.plot(x, energy, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=label)
+                artists.extend(artist)
 
         self.mpl_cursor = mplcursors.cursor(
             artists,
@@ -142,4 +146,4 @@ class PlotEnergies(PlotWidget):
         @self.mpl_cursor.connect("add")
         def on_add(sel: mplcursors.Selection) -> None:
             label = sel.artist.get_label()
-            sel.annotation.set_text(label)
+            sel.annotation.set_text(label.replace(" + ", "\n + "))

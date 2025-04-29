@@ -26,7 +26,7 @@ from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.qobjects.events import show_status_tip
-from pairinteraction_gui.qobjects.item import Item, RangeItem
+from pairinteraction_gui.qobjects.item import Item, QnItemInt, RangeItem
 from pairinteraction_gui.qobjects.named_stacked_widget import NamedStackedWidget
 from pairinteraction_gui.worker import Worker
 
@@ -139,6 +139,16 @@ class CalculationPage(SimulationPage):
         self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
         self.layout().addWidget(self.fast_mode)
 
+        self.number_state_labels = QnItemInt(
+            self,
+            "Calculate and annotate",
+            unit="state labels",
+            vdefault=10,
+            tooltip="Number of steps, for which the overlap is calculated and the corresponding state labels"
+            " can be shown by clicking on the info circles.",
+        )
+        self.layout().addWidget(self.number_state_labels)
+
     def calculate_clicked(self) -> None:
         self.before_calculate()
 
@@ -191,8 +201,7 @@ class CalculationPage(SimulationPage):
 
         self.plotwidget.plot(x_values, energies, overlaps, x_label)
 
-        ind = 0 if parameters.n_atoms == 1 else -1
-        self.plotwidget.add_cursor(x_values[ind], energies[ind], results.state_labels_0)
+        self.plotwidget.add_cursor(x_values, energies, results.state_labels)
 
         self.plotwidget.canvas.draw(True)
 
