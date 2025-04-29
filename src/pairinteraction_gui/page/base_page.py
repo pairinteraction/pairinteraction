@@ -129,8 +129,7 @@ class CalculationPage(SimulationPage):
         self.energy_range = RangeItem(
             self,
             "Calculate the energies from",
-            (-999, 999),
-            (-0.5, 0.5),
+            vdefaults=(-0.5, 0.5),
             unit="GHz",
             checked=False,
             tooltip_label="energy",
