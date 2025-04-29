@@ -38,16 +38,11 @@ class PlotWidget(WidgetV):
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.plot_toolbar = WidgetV(self)
         self.canvas = MatplotlibCanvas(self)
 
     def postSetupWidget(self) -> None:
         top_row = WidgetH(self)
-
-        # Add plot toolbar on left
-        top_row.layout().addWidget(self.plot_toolbar)
-
-        # Add reset zoom button on right
+        top_row.layout().addStretch(1)
         reset_zoom_button = QPushButton("Reset Zoom", self)
         reset_zoom_button.setToolTip(
             "Reset the plot view to its original state. You can zoom in/out using the mousewheel."
