@@ -58,7 +58,6 @@ class Item(WidgetH):
 
     def _on_checkbox_changed(self, state: bool) -> None:
         """Update the enabled state of widgets when checkbox changes."""
-        self.setStyleSheet("color: black" if state else "color: gray")
         for spinbox in self.spinboxes.values():
             spinbox.setEnabled(state)
 
@@ -173,7 +172,6 @@ class RangeItem(WidgetH):
 
     def _on_checkbox_changed(self, state: bool) -> None:
         """Update the enabled state of widgets when checkbox changes."""
-        self.setStyleSheet("color: black" if state else "color: gray")
         for spinbox in self.spinboxes:
             spinbox.setEnabled(state)
 
