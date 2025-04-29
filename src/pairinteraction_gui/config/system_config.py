@@ -32,9 +32,9 @@ class SystemConfig(BaseConfig):
         efield_label = QLabel("<b>Electric field</b>")
         self.layout().addWidget(efield_label)
 
-        self.Ex = RangeItem(self, "Ex", (-999, 999), unit="V/cm", tooltip_label="electric field in x-direction")
-        self.Ey = RangeItem(self, "Ey", (-999, 999), unit="V/cm", tooltip_label="electric field in y-direction")
-        self.Ez = RangeItem(self, "Ez", (-999, 999), unit="V/cm", tooltip_label="electric field in z-direction")
+        self.Ex = RangeItem(self, "Ex", unit="V/cm", tooltip_label="electric field in x-direction")
+        self.Ey = RangeItem(self, "Ey", unit="V/cm", tooltip_label="electric field in y-direction")
+        self.Ez = RangeItem(self, "Ez", unit="V/cm", tooltip_label="electric field in z-direction")
 
         self.layout().addWidget(self.Ex)
         self.layout().addWidget(self.Ey)
@@ -44,9 +44,9 @@ class SystemConfig(BaseConfig):
         bfield_label = QLabel("<b>Magnetic field</b>")
         self.layout().addWidget(bfield_label)
 
-        self.Bx = RangeItem(self, "Bx", (-999, 999), unit="Gauss", tooltip_label="magnetic field in x-direction")
-        self.By = RangeItem(self, "By", (-999, 999), unit="Gauss", tooltip_label="magnetic field in y-direction")
-        self.Bz = RangeItem(self, "Bz", (-999, 999), unit="Gauss", tooltip_label="magnetic field in z-direction")
+        self.Bx = RangeItem(self, "Bx", unit="Gauss", tooltip_label="magnetic field in x-direction")
+        self.By = RangeItem(self, "By", unit="Gauss", tooltip_label="magnetic field in y-direction")
+        self.Bz = RangeItem(self, "Bz", unit="Gauss", tooltip_label="magnetic field in z-direction")
 
         self.layout().addWidget(self.Bx)
         self.layout().addWidget(self.By)
@@ -102,14 +102,14 @@ class SystemConfigTwoAtoms(SystemConfig):
         label = QLabel("<b>Distance</b>")
         self.layout().addWidget(label)
 
-        self.distance = RangeItem(self, "Distance", (0, 999), (3, 8), unit="<span>&mu;m</span>")
+        self.distance = RangeItem(self, "Distance", vdefaults=(3, 8), vrange=(0, 999), unit="<span>&mu;m</span>")
         self.layout().addWidget(self.distance)
 
     def setupAngle(self) -> None:
         label = QLabel("<b>Angle</b> (0° = z-axis, 90° = x-axis)")
         self.layout().addWidget(label)
 
-        self.angle = RangeItem(self, "Angle", (0, 360), (0, 0), unit="degree")
+        self.angle = RangeItem(self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree")
         self.layout().addWidget(self.angle)
 
     def setupOrder(self) -> None:

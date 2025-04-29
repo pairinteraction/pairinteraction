@@ -19,6 +19,7 @@ class IntSpinBox(QSpinBox):
         vmin: int = 0,
         vmax: int = 999,
         vdefault: int = 0,
+        vstep: int = 1,
         suffix: Optional[str] = None,
         tooltip: Optional[str] = None,
     ) -> None:
@@ -27,6 +28,7 @@ class IntSpinBox(QSpinBox):
 
         self.setRange(int(vmin), int(vmax))
         self.setValue(int(vdefault))
+        self.setSingleStep(vstep)
 
         if suffix:
             self.setSuffix(suffix)
@@ -43,6 +45,7 @@ class HalfIntSpinBox(QDoubleSpinBox):
         vmin: float = 0.5,
         vmax: float = 999.5,
         vdefault: float = 0.5,
+        vstep: int = 1,
         suffix: Optional[str] = None,
         tooltip: Optional[str] = None,
     ) -> None:
@@ -51,7 +54,7 @@ class HalfIntSpinBox(QDoubleSpinBox):
 
         self.setRange(vmin, vmax)
         self.setValue(vdefault)
-        self.setSingleStep(1)
+        self.setSingleStep(vstep)
         self.setDecimals(1)
 
         if suffix:
