@@ -107,7 +107,10 @@ wheel.packages = [
   "src/pairinteraction",
   "src/pairinteraction_gui",
 ]
-sdist.include = ["*.pyi"]  # HACK: Include stub files (needed for macos cross compilation)
+sdist.include = [
+  "/src/pairinteraction/_backend.pyi",  # HACK: Include _backend.pyi stub file (needed for macos cross compilation)
+  "/src/pairinteraction/_wrapped/database/database.sql",
+]
 sdist.exclude = [
   "/tools/",
   "/tests/",
