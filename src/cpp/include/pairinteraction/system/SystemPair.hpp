@@ -53,10 +53,10 @@ public:
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
     SystemPair(std::shared_ptr<const basis_t> basis);
-    ~SystemPair() override;
 
     Type &set_interaction_order(int value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
+    Type &set_green_tensor(std::shared_ptr<const GreenTensor<Scalar>> &green_tensor);
 
 private:
     int interaction_order{3};

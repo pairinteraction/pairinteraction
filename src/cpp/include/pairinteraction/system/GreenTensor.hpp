@@ -23,28 +23,32 @@ public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using complex_t = std::complex<real_t>;
 
-    class ConstantEntry final {
+    class ConstantEntry {
+        friend class GreenTensor;
+
     public:
-        ConstantEntry(int row, int col, Scalar val);
         Scalar val() const;
         int row() const noexcept;
         int col() const noexcept;
 
     private:
+        ConstantEntry(int row, int col, Scalar val);
         int row_;
         int col_;
         Scalar val_;
     };
 
-    class OmegaDependentEntry final {
+    class OmegaDependentEntry {
+        friend class GreenTensor;
+
     public:
-        OmegaDependentEntry(int row, int col, Eigen::Spline<real_t, 1> real_spline,
-                            Eigen::Spline<real_t, 1> imag_spline);
         Scalar val(double omega) const;
         int row() const noexcept;
         int col() const noexcept;
 
     private:
+        OmegaDependentEntry(int row, int col, Eigen::Spline<real_t, 1> real_spline,
+                            Eigen::Spline<real_t, 1> imag_spline);
         int row_;
         int col_;
         Eigen::Spline<real_t, 1> real_spline;
