@@ -114,7 +114,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     SPDLOG_DEBUG("Distance to the ion: {}", distance);
 
     // Dipole order
-    if (distance != std::numeric_limits<real_t>::infinity() && ion_interaction_order >= 2) {
+    if (std::isfinite(distance) && ion_interaction_order >= 2) {
         // Calculate sqrt(4pi/3) * r * Y_1,q with q = -1, 0, 1 for the first three elements. Take
         // the conjugate of the result and scale it by 1/distance^2.
         Eigen::Vector3<Scalar> vector_dipole_order =
@@ -135,7 +135,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
 
     // Quadrupole order (the last entry of vector_quadrupole_order would correspond to
     // ELECTRIC_QUADRUPOLE_ZERO and does not contribute to a *traceless* quadrupole)
-    if (distance != std::numeric_limits<real_t>::infinity() && ion_interaction_order >= 3) {
+    if (std::isfinite(distance) && ion_interaction_order >= 3) {
         // Calculate sqrt(4pi/5) * r^2 * Y_2,q / 3 with q = -2, -1, 0, 1, 2 for the first five
         // elements and (x^2 + y^2 + z^2) / 6 as the last element. Take the conjugate of the
         // result and scale it by 1/distance^3.
