@@ -20,6 +20,7 @@
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/system/GreenTensor.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/tools/run_unit_tests.hpp"

@@ -242,15 +242,16 @@ SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
-SystemPair<Scalar>::~SystemPair() = default;
-
-template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
     this->hamiltonian_requires_construction = true;
+
     if (value < 3 || value > 5) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
     }
+
     interaction_order = value;
+    user_defined_green_tensor = nullptr;
+
     return *this;
 }
 
@@ -266,6 +267,17 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
     }
 
     distance_vector = vector;
+    user_defined_green_tensor = nullptr;
+
+    return *this;
+}
+
+template <typename Scalar>
+SystemPair<Scalar> &
+SystemPair<Scalar>::set_green_tensor(std::shared_ptr<const GreenTensor<Scalar>> &green_tensor) {
+    this->hamiltonian_requires_construction = true;
+
+    user_defined_green_tensor = green_tensor;
 
     return *this;
 }
@@ -276,8 +288,15 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
-    auto green_tensor = construct_green_tensor<Scalar>(distance_vector, interaction_order);
-    auto op = construct_operator_matrices(green_tensor, basis1, basis2);
+    std::shared_ptr<const GreenTensor<Scalar>> green_tensor_ptr;
+    if (user_defined_green_tensor) {
+        green_tensor_ptr = user_defined_green_tensor;
+    } else {
+        green_tensor_ptr = std::make_shared<const GreenTensor<Scalar>>(
+            construct_green_tensor<Scalar>(distance_vector, interaction_order));
+    }
+
+    auto op = construct_operator_matrices(*green_tensor_ptr, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorPair<Scalar>>(basis, OperatorType::ENERGY);
@@ -290,7 +309,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto energies = this->hamiltonian->get_matrix().diagonal().real();
 
     // Dipole-dipole interaction
-    for (const auto &entry : green_tensor.get_entries(1, 1)) {
+    for (const auto &entry : green_tensor_ptr->get_entries(1, 1)) {
         if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
             this->hamiltonian->get_matrix() += ce->val() *
                 utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.d2[ce->col()]);
@@ -319,7 +338,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     }
 
     // Dipole-quadrupole interaction
-    for (const auto &entry : green_tensor.get_entries(1, 2)) {
+    for (const auto &entry : green_tensor_ptr->get_entries(1, 2)) {
         if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
             this->hamiltonian->get_matrix() += ce->val() *
                 utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.q2[ce->col()]);
@@ -348,7 +367,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     }
 
     // Quadrupole-dipole interaction
-    for (const auto &entry : green_tensor.get_entries(2, 1)) {
+    for (const auto &entry : green_tensor_ptr->get_entries(2, 1)) {
         if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
             this->hamiltonian->get_matrix() += ce->val() *
                 utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.d2[ce->col()]);
@@ -377,7 +396,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     }
 
     // Quadrupole-quadrupole interaction
-    for (const auto &entry : green_tensor.get_entries(2, 2)) {
+    for (const auto &entry : green_tensor_ptr->get_entries(2, 2)) {
         if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
             this->hamiltonian->get_matrix() += ce->val() *
                 utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.q2[ce->col()]);
