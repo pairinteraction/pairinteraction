@@ -56,18 +56,17 @@ GreenTensor<Scalar> construct_green_tensor(
                                                         distance_vector.size());
     real_t distance = vector_map.norm();
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
-    if (distance == std::numeric_limits<real_t>::infinity()) {
+    if (!std::isfinite(distance)) {
         return green_tensor;
     }
-    Eigen::Vector3<real_t> vector_normalized = vector_map / distance;
+    Eigen::Vector3<real_t> unitvec = vector_map / distance;
 
     // Dyadic green function of dipole-dipole interaction
     if (interaction_order >= 3) {
-        Eigen::Matrix3<Scalar> entries = Eigen::Matrix3<real_t>::Identity() -
-            3 * vector_normalized * vector_normalized.transpose();
-        entries /= std::pow(distance, 3);
+        Eigen::Matrix3<Scalar> entries =
+            Eigen::Matrix3<real_t>::Identity() - 3 * unitvec * unitvec.transpose();
 
-        green_tensor.set_entries(1, 1, entries.template cast<Scalar>());
+        green_tensor.set_entries(1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
     }
 
     // Dyadic green function of dipole-quadrupole interaction
@@ -78,23 +77,16 @@ GreenTensor<Scalar> construct_green_tensor(
             for (Eigen::Index j = 0; j < 3; ++j) {
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     Eigen::Index col = 3 * j + i;
-                    entries(row, col) +=
-                        15 * vector_normalized[q] * vector_normalized[j] * vector_normalized[i];
-                    if (i == j) {
-                        entries(row, col) += -3 * vector_normalized[q];
-                    }
-                    if (i == q) {
-                        entries(row, col) += -3 * vector_normalized[j];
-                    }
-                    if (j == q) {
-                        entries(row, col) += -3 * vector_normalized[i];
-                    }
+                    real_t v = 15 * unitvec[q] * unitvec[j] * unitvec[i];
+                    if (i == j) v += -3 * unitvec[q];
+                    if (i == q) v += -3 * unitvec[j];
+                    if (j == q) v += -3 * unitvec[i];
+                    entries(row, col) += v;
                 }
             }
         }
-        entries /= std::pow(distance, 4);
 
-        green_tensor.set_entries(1, 2, entries.template cast<Scalar>());
+        green_tensor.set_entries(1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-dipole interaction
@@ -105,23 +97,16 @@ GreenTensor<Scalar> construct_green_tensor(
                 Eigen::Index row = 3 * q + j;
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     Eigen::Index col = i;
-                    entries(row, col) +=
-                        -15 * vector_normalized[q] * vector_normalized[j] * vector_normalized[i];
-                    if (i == j) {
-                        entries(row, col) += 3 * vector_normalized[q];
-                    }
-                    if (i == q) {
-                        entries(row, col) += 3 * vector_normalized[j];
-                    }
-                    if (j == q) {
-                        entries(row, col) += 3 * vector_normalized[i];
-                    }
+                    real_t v = -15 * unitvec[q] * unitvec[j] * unitvec[i];
+                    if (i == j) v += 3 * unitvec[q];
+                    if (i == q) v += 3 * unitvec[j];
+                    if (j == q) v += 3 * unitvec[i];
+                    entries(row, col) += v;
                 }
             }
         }
-        entries /= std::pow(distance, 4);
 
-        green_tensor.set_entries(2, 1, entries.template cast<Scalar>());
+        green_tensor.set_entries(2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-quadrupole interaction
@@ -138,42 +123,23 @@ GreenTensor<Scalar> construct_green_tensor(
                 for (Eigen::Index i = 0; i < 3; ++i) {
                     for (Eigen::Index k = 0; k < 3; ++k) {
                         Eigen::Index col = 3 * i + k;
-                        entries(row, col) += 105 * vector_normalized[q] * vector_normalized[j] *
-                            vector_normalized[i] * vector_normalized[k];
-                        if (i == j) {
-                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[k];
-                        }
-                        if (i == q) {
-                            entries(row, col) += -15 * vector_normalized[j] * vector_normalized[k];
-                        }
-                        if (j == q) {
-                            entries(row, col) += -15 * vector_normalized[i] * vector_normalized[k];
-                        }
-                        if (k == q) {
-                            entries(row, col) += -15 * vector_normalized[j] * vector_normalized[i];
-                        }
-                        if (k == j) {
-                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[i];
-                        }
-                        if (k == i) {
-                            entries(row, col) += -15 * vector_normalized[q] * vector_normalized[j];
-                        }
-                        if (q == k && i == j) {
-                            entries(row, col) += 3;
-                        }
-                        if (i == k && j == q) {
-                            entries(row, col) += 3;
-                        }
-                        if (j == k && i == q) {
-                            entries(row, col) += 3;
-                        }
+                        real_t v = 105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
+                        if (i == j) v += -15 * unitvec[q] * unitvec[k];
+                        if (i == q) v += -15 * unitvec[j] * unitvec[k];
+                        if (j == q) v += -15 * unitvec[i] * unitvec[k];
+                        if (k == q) v += -15 * unitvec[j] * unitvec[i];
+                        if (k == j) v += -15 * unitvec[q] * unitvec[i];
+                        if (k == i) v += -15 * unitvec[q] * unitvec[j];
+                        if (q == k && i == j) v += 3;
+                        if (i == k && j == q) v += 3;
+                        if (j == k && i == q) v += 3;
+                        entries(row, col) += v;
                     }
                 }
             }
         }
-        entries /= std::pow(distance, 5);
 
-        green_tensor.set_entries(2, 2, entries.template cast<Scalar>());
+        green_tensor.set_entries(2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
     }
 
     return green_tensor;
@@ -184,58 +150,49 @@ OperatorMatrices<Scalar>
 construct_operator_matrices(const GreenTensor<Scalar> &green_tensor,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis2) {
+    // Helper function for constructing matrices of spherical harmonics operators
+    auto get_matrices = [](auto basis, OperatorType type, std::initializer_list<int> m,
+                           bool conjugate) {
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrices;
+        matrices.reserve(m.size());
+        int factor = conjugate ? -1 : 1;
+        std::transform(m.begin(), m.end(), std::back_inserter(matrices), [&](int q) {
+            return (std::pow(factor, q) *
+                    OperatorAtom<Scalar>(basis, type, factor * q).get_matrix())
+                .eval();
+        });
+        return matrices;
+    };
+
     OperatorMatrices<Scalar> op;
 
+    // Operator matrices for Rydberg-Rydberg interaction
     if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(1, 2).empty()) {
-        op.d1.push_back(
-            -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1).get_matrix());
-        op.d1.push_back(
-            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 0).get_matrix());
-        op.d1.push_back(
-            -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1).get_matrix());
+        op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-
     if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(2, 1).empty()) {
-        op.d2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, -1).get_matrix());
-        op.d2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 0).get_matrix());
-        op.d2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 1).get_matrix());
+        op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
-
     if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(2, 1).empty()) {
-        op.q1.push_back(
-            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, 2).get_matrix());
-        op.q1.push_back(
-            -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, 1).get_matrix());
-        op.q1.push_back(
-            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, 0).get_matrix());
-        op.q1.push_back(
-            -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, -1).get_matrix());
-        op.q1.push_back(
-            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, -2).get_matrix());
-        op.q1.push_back(
-            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0).get_matrix());
+        op.q1 = get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, true);
+        op.q1.push_back(get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, true)[0]);
     }
-
     if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(1, 2).empty()) {
+        op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, -2).get_matrix());
-        op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, -1).get_matrix());
-        op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, 0).get_matrix());
-        op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, 1).get_matrix());
-        op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, 2).get_matrix());
-        op.q2.push_back(
-            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0).get_matrix());
+            get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
     }
 
     return op;
 }
+
+// "overloaded" pattern for std::visit
+template <class... Ts>
+struct overloaded : Ts... {
+    using Ts::operator()...;
+};
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
 template <typename Scalar>
 SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
@@ -305,124 +262,61 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     bool sort_by_quantum_number_m = basis->has_quantum_number_m();
     bool sort_by_parity = basis->has_parity();
 
-    // Store the energies (they are needed in case of a OmegaDependentEntry)
+    // Store the energies (they are needed in case of Rydberg-Rydberg interaction with an
+    // OmegaDependentEntry)
     auto energies = this->hamiltonian->get_matrix().diagonal().real();
 
-    // Dipole-dipole interaction
-    for (const auto &entry : green_tensor_ptr->get_entries(1, 1)) {
-        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
-            this->hamiltonian->get_matrix() += ce->val() *
-                utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.d2[ce->col()]);
-            if (ce->row() != ce->col()) {
-                sort_by_quantum_number_m = false;
-            }
-        } else {
-            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
-            assert(oe != nullptr);
-            auto tensor_product =
-                utils::calculate_tensor_product(basis, basis, op.d1[oe->row()], op.d2[oe->col()]);
-            for (int k = 0; k < tensor_product.outerSize(); ++k) {
-                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                         tensor_product, k);
-                     it; ++it) {
-                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
-                }
-            }
-            this->hamiltonian->get_matrix() += tensor_product;
-            if (oe->row() != oe->col()) {
-                sort_by_quantum_number_m = false;
-            }
+    // Helper function for adding Rydberg-Rydberg interaction
+    auto add_interaction = [this, &basis, &energies, &sort_by_quantum_number_f,
+                            &sort_by_quantum_number_m](const auto &entries, const auto &op1,
+                                                       const auto &op2, int delta) {
+        for (const auto &entry : entries) {
+            std::visit(
+                overloaded{
+                    [this, &basis, &sort_by_quantum_number_m, &op1, &op2,
+                     &delta](const typename GreenTensor<Scalar>::ConstantEntry &ce) {
+                        this->hamiltonian->get_matrix() += ce.val() *
+                            utils::calculate_tensor_product(basis, basis, op1[ce.row()],
+                                                            op2[ce.col()]);
+                        if (ce.row() != ce.col() + delta) {
+                            sort_by_quantum_number_m = false;
+                        }
+                    },
+
+                    [this, &basis, &energies, &sort_by_quantum_number_m, &op1, &op2,
+                     &delta](const typename GreenTensor<Scalar>::OmegaDependentEntry &oe) {
+                        auto tensor_product = utils::calculate_tensor_product(
+                            basis, basis, op1[oe.row()], op2[oe.col()]);
+                        for (int k = 0; k < tensor_product.outerSize(); ++k) {
+                            for (typename Eigen::SparseMatrix<
+                                     Scalar, Eigen::RowMajor>::InnerIterator it(tensor_product, k);
+                                 it; ++it) {
+                                it.valueRef() *= oe.val(energies(it.row()) - energies(it.col()));
+                            }
+                        }
+                        this->hamiltonian->get_matrix() += tensor_product;
+                        if (oe.row() != oe.col() + delta) {
+                            sort_by_quantum_number_m = false;
+                        }
+                    }},
+                entry);
+
+            this->hamiltonian_is_diagonal = false;
+            sort_by_quantum_number_f = false;
         }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
-    }
+    };
+
+    // Dipole-dipole interaction
+    add_interaction(green_tensor_ptr->get_entries(1, 1), op.d1, op.d2, 0);
 
     // Dipole-quadrupole interaction
-    for (const auto &entry : green_tensor_ptr->get_entries(1, 2)) {
-        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
-            this->hamiltonian->get_matrix() += ce->val() *
-                utils::calculate_tensor_product(basis, basis, op.d1[ce->row()], op.q2[ce->col()]);
-            if (ce->row() != ce->col() - 1) {
-                sort_by_quantum_number_m = false;
-            }
-        } else {
-            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
-            assert(oe != nullptr);
-            auto tensor_product =
-                utils::calculate_tensor_product(basis, basis, op.d1[oe->row()], op.q2[oe->col()]);
-            for (int k = 0; k < tensor_product.outerSize(); ++k) {
-                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                         tensor_product, k);
-                     it; ++it) {
-                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
-                }
-            }
-            this->hamiltonian->get_matrix() += tensor_product;
-            if (oe->row() != oe->col() - 1) {
-                sort_by_quantum_number_m = false;
-            }
-        }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
-    }
+    add_interaction(green_tensor_ptr->get_entries(1, 2), op.d1, op.q2, -1);
 
     // Quadrupole-dipole interaction
-    for (const auto &entry : green_tensor_ptr->get_entries(2, 1)) {
-        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
-            this->hamiltonian->get_matrix() += ce->val() *
-                utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.d2[ce->col()]);
-            if (ce->row() - 1 != ce->col()) {
-                sort_by_quantum_number_m = false;
-            }
-        } else {
-            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
-            assert(oe != nullptr);
-            auto tensor_product =
-                utils::calculate_tensor_product(basis, basis, op.q1[oe->row()], op.d2[oe->col()]);
-            for (int k = 0; k < tensor_product.outerSize(); ++k) {
-                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                         tensor_product, k);
-                     it; ++it) {
-                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
-                }
-            }
-            this->hamiltonian->get_matrix() += tensor_product;
-            if (oe->row() - 1 != oe->col()) {
-                sort_by_quantum_number_m = false;
-            }
-        }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
-    }
+    add_interaction(green_tensor_ptr->get_entries(2, 1), op.q1, op.d2, +1);
 
     // Quadrupole-quadrupole interaction
-    for (const auto &entry : green_tensor_ptr->get_entries(2, 2)) {
-        if (auto ce = std::get_if<typename GreenTensor<Scalar>::ConstantEntry>(&entry)) {
-            this->hamiltonian->get_matrix() += ce->val() *
-                utils::calculate_tensor_product(basis, basis, op.q1[ce->row()], op.q2[ce->col()]);
-            if (ce->row() != ce->col()) {
-                sort_by_quantum_number_m = false;
-            }
-        } else {
-            auto oe = std::get_if<typename GreenTensor<Scalar>::OmegaDependentEntry>(&entry);
-            assert(oe != nullptr);
-            auto tensor_product =
-                utils::calculate_tensor_product(basis, basis, op.q1[oe->row()], op.q2[oe->col()]);
-            for (int k = 0; k < tensor_product.outerSize(); ++k) {
-                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
-                         tensor_product, k);
-                     it; ++it) {
-                    it.valueRef() *= oe->val(energies(it.row()) - energies(it.col()));
-                }
-            }
-            this->hamiltonian->get_matrix() += tensor_product;
-            if (oe->row() != oe->col()) {
-                sort_by_quantum_number_m = false;
-            }
-        }
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
-    }
+    add_interaction(green_tensor_ptr->get_entries(2, 2), op.q1, op.q2, 0);
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
