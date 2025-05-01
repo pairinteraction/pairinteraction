@@ -185,6 +185,9 @@ template <typename Derived>
 Derived Operator<Derived>::transformed(
     const Transformation<typename Operator<Derived>::scalar_t> &transformation) const {
     auto transformed = derived();
+    if (matrix.cols() == 0) {
+        return transformed;
+    }
     transformed.matrix = transformation.matrix.adjoint() * matrix * transformation.matrix;
     transformed.basis = basis->transformed(transformation);
     return transformed;
@@ -193,6 +196,9 @@ Derived Operator<Derived>::transformed(
 template <typename Derived>
 Derived Operator<Derived>::transformed(const Sorting &transformation) const {
     auto transformed = derived();
+    if (matrix.cols() == 0) {
+        return transformed;
+    }
     transformed.matrix = matrix.twistedBy(transformation.matrix.inverse());
     transformed.basis = basis->transformed(transformation);
     return transformed;
