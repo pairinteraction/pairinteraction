@@ -580,8 +580,12 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
 
+    if (coefficients.matrix.cols() == 0) {
+        return transformed;
+    }
+
     // Apply the transformation
-    transformed->coefficients.matrix = transformed->coefficients.matrix * transformation.matrix;
+    transformed->coefficients.matrix = coefficients.matrix * transformation.matrix;
     transformed->coefficients.transformation_type = transformation.transformation_type;
 
     transformed->state_index_to_quantum_number_f.resize(transformation.matrix.size());
@@ -637,6 +641,10 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
 
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
+
+    if (coefficients.matrix.cols() == 0) {
+        return transformed;
+    }
 
     // Apply the transformation
     // If a quantum number turns out to be conserved by the transformation, it will be
