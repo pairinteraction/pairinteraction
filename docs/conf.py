@@ -62,18 +62,19 @@ nbsphinx_prolog = """
 .. raw:: html
 
     <style>
-        .nbinput .prompt,
-        .nboutput .prompt {
-            display: none;
-        }
+      .nbinput .prompt,
+      .nboutput .prompt {
+        display: none;
+      }
     </style>
 
     <div class="admonition note">
       This page was generated from the Jupyter notebook
       <a class="reference external" href="{{ docname|e }}">{{ docname|e }}</a>.
+      Open in
+      <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/{{ docname|e }}">Google Colab</a>.
     </div>
-"""
-
+"""  # noqa: E501
 
 # -- Options forautosummary -------------------------------------------
 autosummary_ignore_module_all = False
