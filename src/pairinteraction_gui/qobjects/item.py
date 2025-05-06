@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from collections.abc import Sequence
 from typing import Callable, Optional, Union
 
 from PySide6.QtWidgets import (
@@ -127,6 +128,12 @@ class _QnItem(WidgetH):
             return default
         return self.spinbox.value()
 
+    def setValue(self, value: float) -> None:
+        """Set the value of the spinbox and set the checkbox state to checked if applicable."""
+        if isinstance(self.checkbox, QCheckBox):
+            self.checkbox.setChecked(True)
+        self.spinbox.setValue(value)  # type: ignore [arg-type]
+
 
 class QnItemInt(_QnItem):
     _spinbox_class = IntSpinBox
@@ -229,3 +236,10 @@ class RangeItem(WidgetH):
                 raise ValueError("Checkbox is not checked and no default value is provided.")
             return default
         return (self.min_spinbox.value(), self.max_spinbox.value())
+
+    def setValues(self, values: Sequence[float]) -> None:
+        """Set the values of the min and max spinboxes and set the checkbox state to checked if applicable."""
+        if isinstance(self.checkbox, QCheckBox):
+            self.checkbox.setChecked(True)
+        self.min_spinbox.setValue(values[0])
+        self.max_spinbox.setValue(values[1])
