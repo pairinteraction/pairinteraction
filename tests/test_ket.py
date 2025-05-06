@@ -1,9 +1,8 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import pytest
-
 import pairinteraction.real as pi
+import pytest
 from pairinteraction.units import ureg
 
 

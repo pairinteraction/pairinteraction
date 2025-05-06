@@ -2,9 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import numpy as np
-import pytest
-
 import pairinteraction.real as pi
+import pytest
 
 
 @pytest.fixture

@@ -4,7 +4,6 @@
 """Test diamagnetic interactions."""
 
 import numpy as np
-
 import pairinteraction.complex as pi
 
 

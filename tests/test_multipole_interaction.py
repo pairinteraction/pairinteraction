@@ -4,9 +4,8 @@
 """Test multipole interaction."""
 
 import numpy as np
-import pytest
-
 import pairinteraction.real as pi
+import pytest
 
 
 @pytest.mark.parametrize("species", ["Yb171_mqdt", "Rb"])

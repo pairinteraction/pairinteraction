@@ -7,9 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
-import pytest
-
 import pairinteraction.real as pi
+import pytest
 
 if TYPE_CHECKING:
     from pairinteraction.units import NDArray
