@@ -56,8 +56,13 @@ class ResultsTwoAtoms(Results):
 def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     """Calculate the energy plot for two atoms.
 
-    This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsTwoAtoms object.
+    This means, given a Parameters object, do the pairinteraction calculations and return an ResultsTwoAtoms object.
     """
+    return _calculate_two_atoms(parameters)
+
+
+def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
+    """Make the unwrapped function available for testing."""
     pi = pi_real if parameters.is_real else pi_complex
     n_atoms = 2
 

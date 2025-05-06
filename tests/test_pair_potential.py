@@ -4,11 +4,15 @@
 """Test the pair potential calculation."""
 
 from pathlib import Path
+from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 import pytest
 
 import pairinteraction.real as pi
+
+if TYPE_CHECKING:
+    from pairinteraction.units import NDArray
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
 reference_eigenenergies_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenenergies.txt"
@@ -56,11 +60,25 @@ def test_pair_potential(generate_reference: bool) -> None:
         np.savetxt(reference_overlaps_file, overlaps)
         pytest.skip("Reference data generated, skipping comparison test")
 
-    np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
-    np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_eigenenergies_file))
-    np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
+    compare_pair_potential_to_reference(eigenenergies, overlaps, eigenvectors, kets)
 
-    # Because of degeneracies, checking the eigenvectors against reference data is complicated.
-    # Thus, we only check their normalization and orthogonality.
-    cumulative_norm = (np.array(eigenvectors) * np.array(eigenvectors).conj()).sum(axis=1)
-    np.testing.assert_allclose(cumulative_norm, 19 * np.ones(5))
+
+def compare_pair_potential_to_reference(
+    eigenenergies: "NDArray",
+    overlaps: Optional["NDArray"] = None,
+    eigenvectors: Optional["NDArray"] = None,
+    kets: Optional[list[str]] = None,
+) -> None:
+    np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_eigenenergies_file))
+
+    if overlaps is not None:
+        np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
+
+    if kets is not None:
+        np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
+
+    if eigenvectors is not None:
+        # Because of degeneracies, checking the eigenvectors against reference data is complicated.
+        # Thus, we only check their normalization and orthogonality.
+        cumulative_norm = (np.array(eigenvectors) * np.array(eigenvectors).conj()).sum(axis=1)
+        np.testing.assert_allclose(cumulative_norm, 19 * np.ones(5))
