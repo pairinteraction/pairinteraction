@@ -25,20 +25,25 @@ logger = logging.getLogger(__name__)
 class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     """Parameters for the two atoms calculation."""
 
-    pair_basis_energy_delta: float = 0
+    pair_delta_energy: float = 999
+    pair_m_range: Optional[tuple[float, float]] = None
     order: int = 3
 
     @classmethod
     def from_page(cls, page: "TwoAtomsPage") -> "Self":
         obj = super().from_page(page)
-        obj.pair_basis_energy_delta = page.basis_config.delta_pair_energy.value()
+        obj.pair_delta_energy = page.basis_config.pair_delta_energy.value()
+        obj.pair_m_range = (
+            page.basis_config.pair_m_range.values() if page.basis_config.pair_m_range.isChecked() else None
+        )
         obj.order = page.system_config.order.value()
         return obj
 
     def to_replacement_dict(self) -> dict[str, str]:
         replacements = super().to_replacement_dict()
         replacements["$MULTIPOLE_ORDER"] = str(self.order)
-        replacements["$PAIR_ENERGY_DELTA"] = str(self.pair_basis_energy_delta)
+        replacements["$PAIR_DELTA_ENERGY"] = str(self.pair_delta_energy)
+        replacements["$PAIR_M_RANGE"] = str(self.pair_m_range)
         return replacements
 
 
@@ -77,11 +82,12 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
         pi.diagonalize(systems, **parameters.diagonalize_kwargs)
         logger.debug("Done diagonalizing SystemAtoms.")
         ket_pair_energy_0 = sum(systems[i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
-        delta_energy = parameters.pair_basis_energy_delta
+        delta_energy = parameters.pair_delta_energy
         basis_pair = pi.BasisPair(
             systems,
             energy=(ket_pair_energy_0 - delta_energy, ket_pair_energy_0 + delta_energy),
             energy_unit="GHz",
+            m=parameters.pair_m_range,
         )
         # not very elegant, but works (note that importantly this does not copy the basis_pair objects)
         basis_pair_list = parameters.steps * [basis_pair]
@@ -101,7 +107,7 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
         logger.debug("Diagonalizing SystemAtoms...")
         pi.diagonalize(systems_flattened, **parameters.diagonalize_kwargs)
         logger.debug("Done diagonalizing SystemAtoms.")
-        delta_energy = parameters.pair_basis_energy_delta
+        delta_energy = parameters.pair_delta_energy
         basis_pair_list = []
         for step in range(parameters.steps):
             ket_pair_energy = sum(
@@ -111,6 +117,7 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
                 systems_list[step],
                 energy=(ket_pair_energy - delta_energy, ket_pair_energy + delta_energy),
                 energy_unit="GHz",
+                m=parameters.pair_m_range,
             )
             basis_pair_list.append(basis_pair)
         ket_pair_energy_0 = sum(systems_list[-1][i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
