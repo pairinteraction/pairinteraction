@@ -5,7 +5,6 @@ import time
 from typing import TYPE_CHECKING
 
 import numpy as np
-
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, _calculate_one_atom
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, _calculate_two_atoms
 from pairinteraction_gui.main_window import MainWindow
@@ -14,10 +13,9 @@ from .test_pair_potential import compare_pair_potential_to_reference
 from .test_starkmap import compare_starkmap_to_reference
 
 if TYPE_CHECKING:
-    from pytestqt.qtbot import QtBot
-
     from pairinteraction_gui.page import OneAtomPage
     from pairinteraction_gui.page.two_atoms_page import TwoAtomsPage
+    from pytestqt.qtbot import QtBot
 
 
 def test_main_window_basic(qtbot: "QtBot") -> None:

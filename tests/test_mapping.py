@@ -4,9 +4,8 @@
 """Test the mapping between kets and states."""
 
 import numpy as np
-from scipy.optimize import linear_sum_assignment
-
 import pairinteraction.real as pi
+from scipy.optimize import linear_sum_assignment
 
 
 def test_mapping() -> None:

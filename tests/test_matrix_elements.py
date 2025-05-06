@@ -4,7 +4,6 @@
 """Test the calculation of matrix elements."""
 
 import numpy as np
-
 import pairinteraction.real as pi
 
 
