@@ -8,11 +8,11 @@ from pathlib import Path
 
 import duckdb
 import numpy as np
+import pairinteraction.real as pi
 import pytest
 from packaging.version import Version
 from sympy.physics.wigner import wigner_3j
 
-import pairinteraction.real as pi
 from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN, SUPPORTED_SPECIES
 
 expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])

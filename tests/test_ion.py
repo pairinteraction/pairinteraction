@@ -4,9 +4,8 @@
 """Test atom-ion interaction."""
 
 import numpy as np
-import pytest
-
 import pairinteraction.complex as pi
+import pytest
 
 
 def test_ion_z() -> None:

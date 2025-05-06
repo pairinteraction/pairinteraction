@@ -4,12 +4,11 @@
 import logging
 
 import numpy as np
-import pytest
-from scipy import sparse
-
 import pairinteraction.real as pi
+import pytest
 from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
+from scipy import sparse
 
 
 # ---------------------------------------------------------------------------------------
