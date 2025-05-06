@@ -33,8 +33,13 @@ class ResultsOneAtom(Results):
 def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     """Calculate the energy plot for one atom.
 
-    This means, given a Paramaters object, do the pairinteraction calculations and return an ResultsOneAtom object.
+    This means, given a Parameters object, do the pairinteraction calculations and return an ResultsOneAtom object.
     """
+    return _calculate_one_atom(parameters)
+
+
+def _calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
+    """Make the unwrapped function available for testing."""
     pi = pi_real if parameters.is_real else pi_complex
 
     ket = pi.KetAtom(parameters.get_species(), **parameters.get_quantum_numbers())
