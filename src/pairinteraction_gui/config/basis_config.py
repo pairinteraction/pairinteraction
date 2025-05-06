@@ -14,6 +14,7 @@ from pairinteraction import (
 )
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
+from pairinteraction_gui.qobjects.item import RangeItem
 from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
 from pairinteraction_gui.worker import Worker
@@ -144,7 +145,7 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.layout().addSpacing(15)
 
         self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
-        self.delta_pair_energy = QnItemDouble(
+        self.pair_delta_energy = QnItemDouble(
             self,
             "ΔEnergy",
             vdefault=5,
@@ -153,7 +154,14 @@ class BasisConfigTwoAtoms(BasisConfig):
             tooltip="Restriction for the pair energy difference to the state of interest",
             checkable=False,
         )
-        self.layout().addWidget(self.delta_pair_energy)
+        self.layout().addWidget(self.pair_delta_energy)
+        self.pair_m_range = RangeItem(
+            self,
+            "total m",
+            tooltip_label="pair total angular momentum m",
+            checked=False,
+        )
+        self.layout().addWidget(self.pair_m_range)
 
         self.basis_pair_label = QLabel()
         self.basis_pair_label.setStyleSheet(label_theme)
