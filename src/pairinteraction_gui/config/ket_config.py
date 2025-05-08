@@ -19,6 +19,7 @@ from pairinteraction_gui.qobjects import (
     WidgetForm,
     WidgetV,
 )
+from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_ket_atom
 from pairinteraction_gui.worker import Worker
 
@@ -48,24 +49,6 @@ class KetConfig(BaseConfig):
     """Section for configuring the ket of interest."""
 
     title = "State of Interest"
-
-    _label_style_sheet = """
-        background-color: #ffffff;
-        color: #000000;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin: 12px 24px 0px 24px;
-        border: 1px solid #aaaaaa;
-    """
-
-    _label_style_sheet_error = """
-        background-color: #fee2e2;
-        color: #991b1b;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin: 12px 24px 0px 24px;
-        border: 1px solid #aaaaaa;
-    """
 
     def setupWidget(self) -> None:
         self.species_combo: list[QComboBox] = []
@@ -105,7 +88,7 @@ class KetConfig(BaseConfig):
 
         # Add a label to display the current ket
         ket_label = QLabel()
-        ket_label.setStyleSheet(self._label_style_sheet)
+        ket_label.setStyleSheet(label_theme)
         ket_label.setWordWrap(True)
         self.layout().addWidget(ket_label)
 
@@ -157,7 +140,7 @@ class KetConfig(BaseConfig):
         try:
             ket = self.get_ket_atom(atom)
             self.ket_label[atom].setText(str(ket))
-            self.ket_label[atom].setStyleSheet(self._label_style_sheet)
+            self.ket_label[atom].setStyleSheet(label_theme)
         except Exception as err:
             if isinstance(err, NoStateFoundError):
                 self.ket_label[atom].setText("No ket found. Please select different quantum numbers.")
@@ -165,7 +148,7 @@ class KetConfig(BaseConfig):
                 self.ket_label[atom].setText("Database required but not downloaded. Please select a different species.")
             else:
                 self.ket_label[atom].setText(str(err))
-            self.ket_label[atom].setStyleSheet(self._label_style_sheet_error)
+            self.ket_label[atom].setStyleSheet(label_error_theme)
 
 
 class KetConfigOneAtom(KetConfig):
@@ -198,7 +181,7 @@ class KetConfigLifetimes(KetConfig):
 
         # Add a label to display the lifetime
         self.lifetime_label = QLabel()
-        self.lifetime_label.setStyleSheet(self._label_style_sheet)
+        self.lifetime_label.setStyleSheet(label_theme)
         self.lifetime_label.setWordWrap(True)
         self.layout().addWidget(self.lifetime_label)
 
@@ -219,11 +202,11 @@ class KetConfigLifetimes(KetConfig):
 
         def update_result(lifetime: float) -> None:
             self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} μs")
-            self.lifetime_label.setStyleSheet(self._label_style_sheet)
+            self.lifetime_label.setStyleSheet(label_theme)
 
         def update_error(err: Exception) -> None:
             self.lifetime_label.setText("Ket not found.")
-            self.lifetime_label.setStyleSheet(self._label_style_sheet_error)
+            self.lifetime_label.setStyleSheet(label_error_theme)
             self.page.plotwidget.clear()
 
         self.worker_label = Worker(get_lifetime)
