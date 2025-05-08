@@ -7,6 +7,7 @@ from typing import Any
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
     BasisConfigOneAtom,
+    CalculationConfig,
     KetConfigOneAtom,
     SystemConfigOneAtom,
 )
@@ -28,6 +29,7 @@ class OneAtomPage(CalculationPage):
         self.ket_config = KetConfigOneAtom(self)
         self.basis_config = BasisConfigOneAtom(self)
         self.system_config = SystemConfigOneAtom(self)
+        self.calculation_config = CalculationConfig(self)
 
     def calculate(self) -> tuple[ParametersOneAtom, ResultsOneAtom]:
         parameters = ParametersOneAtom.from_page(self)

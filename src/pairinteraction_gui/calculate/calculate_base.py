@@ -85,13 +85,13 @@ class Parameters(ABC, Generic[PageType]):
         ranges = page.system_config.get_ranges_dict()
 
         diagonalize_kwargs = {}
-        if page.fast_mode.isChecked():
+        if page.calculation_config.fast_mode.isChecked():
             diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
             diagonalize_kwargs["float_type"] = "float32"
 
         diagonalize_relative_energy_range = None
-        if page.energy_range.isChecked():
-            diagonalize_relative_energy_range = page.energy_range.values()
+        if page.calculation_config.energy_range.isChecked():
+            diagonalize_relative_energy_range = page.calculation_config.energy_range.values()
 
         return cls(
             species,
@@ -100,7 +100,7 @@ class Parameters(ABC, Generic[PageType]):
             ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
-            page.number_state_labels.value(default=0),
+            page.calculation_config.number_state_labels.value(default=0),
         )
 
     @property

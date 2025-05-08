@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
 )
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import IntSpinBox, WidgetForm
 from pairinteraction_gui.qobjects.item import QnItemInt, RangeItem
 
 if TYPE_CHECKING:
@@ -52,18 +51,9 @@ class SystemConfig(BaseConfig):
         self.layout().addWidget(self.By)
         self.layout().addWidget(self.Bz)
 
-    def setupSteps(self) -> None:
-        steps_label = QLabel("<b>Calculation steps</b>")
-        self.layout().addWidget(steps_label)
-
-        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
-        self.steps_spinbox = IntSpinBox(vmin=1, vmax=10000, vdefault=100, tooltip="Number of steps for the calculation")
-        steps_widget.layout().addRow("Number of steps", self.steps_spinbox)
-        self.layout().addWidget(steps_widget)
-
     def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:
         """Return the electric and magnetic field ranges."""
-        steps = self.steps_spinbox.value()
+        steps = self.page.calculation_config.steps.value()
         all_ranges = self._get_all_ranges()
         ranges_min_max: dict[str, tuple[float, float]] = {
             item.label.text(): item.values() for item in all_ranges if item.isChecked()
@@ -84,7 +74,6 @@ class SystemConfigOneAtom(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
-        self.setupSteps()
 
 
 class SystemConfigTwoAtoms(SystemConfig):
@@ -96,7 +85,6 @@ class SystemConfigTwoAtoms(SystemConfig):
         self.setupDistance()
         self.setupAngle()
         self.setupOrder()
-        self.setupSteps()
 
     def setupDistance(self) -> None:
         label = QLabel("<b>Distance</b>")
@@ -113,9 +101,7 @@ class SystemConfigTwoAtoms(SystemConfig):
         self.layout().addWidget(self.angle)
 
     def setupOrder(self) -> None:
-        steps_label = QLabel("<b>Multipole expansion order</b>")
-        self.layout().addWidget(steps_label)
-
+        self.layout().addWidget(QLabel("<b>Multipole expansion order</b>"))
         self.order = QnItemInt(
             self,
             "Multipole order",

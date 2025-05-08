@@ -3,6 +3,7 @@
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.config.basis_config import BasisConfig, BasisConfigOneAtom, BasisConfigTwoAtoms
+from pairinteraction_gui.config.calculation_config import CalculationConfig
 from pairinteraction_gui.config.ket_config import KetConfig, KetConfigLifetimes, KetConfigOneAtom, KetConfigTwoAtoms
 from pairinteraction_gui.config.system_config import SystemConfig, SystemConfigOneAtom, SystemConfigTwoAtoms
 
@@ -14,6 +15,7 @@ __all__ = [
     "BasisConfig",
     "BasisConfigOneAtom",
     "BasisConfigTwoAtoms",
+    "CalculationConfig",
     "KetConfig",
     "KetConfigLifetimes",
     "KetConfigOneAtom",

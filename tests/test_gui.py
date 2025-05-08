@@ -26,14 +26,14 @@ def test_main_window_basic(qtbot: "QtBot") -> None:
 
     one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
     qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
-    qn_item.spinbox.setValue(60)
+    qn_item.setValue(60)
 
     ket_label = one_atom_page.ket_config.ket_label[0].text()
     assert all(x in ket_label for x in ["Rb", "60", "S", "1/2"])
     assert qn_item.label.text() == "n"
     assert qn_item.value() == 60
 
-    qn_item.spinbox.setValue(61)
+    qn_item.setValue(61)
     ket_label = one_atom_page.ket_config.ket_label[0].text()
     assert qn_item.value() == 61
     assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])
@@ -60,19 +60,20 @@ def test_calculate_one_atom(qtbot: "QtBot") -> None:
     basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
     basis_qn.items["n"].setValue(2)
     basis_qn.items["l"].setValue(2)
-    basis_qn.items["m"].checkbox.setChecked(False)
+    basis_qn.items["m"].setChecked(False)
 
+    calculation_config = one_atom_page.calculation_config
+    calculation_config.steps.setValue(11)
     system_config = one_atom_page.system_config
-    system_config.steps_spinbox.setValue(11)
     system_config.Ez.spinboxes[1].setValue(10)
 
-    one_atom_page.fast_mode.checkbox.setChecked(False)
+    one_atom_page.calculation_config.fast_mode.setChecked(False)
     parameters = ParametersOneAtom.from_page(one_atom_page)
     results = _calculate_one_atom(parameters)
     energies = np.array(results.energies) + ket.get_energy("GHz")
     compare_starkmap_to_reference(energies, np.array(results.ket_overlaps))
 
-    one_atom_page.fast_mode.checkbox.setChecked(True)
+    one_atom_page.calculation_config.fast_mode.setChecked(True)
     parameters = ParametersOneAtom.from_page(one_atom_page)
     results = _calculate_one_atom(parameters)
     energies = np.array(results.energies) + ket.get_energy("GHz")
@@ -96,25 +97,26 @@ def test_calculate_two_atoms(qtbot: "QtBot") -> None:
         basis_qn = basis_qn_stacked.currentWidget()
         basis_qn.items["n"].setValue(2)
         basis_qn.items["l"].setValue(2)
-        basis_qn.items["m"].checkbox.setChecked(False)
+        basis_qn.items["m"].setChecked(False)
 
     two_atoms_page.basis_config.pair_delta_energy.setValue(3)
-    two_atoms_page.basis_config.pair_m_range.setValues([1, 1])
+    two_atoms_page.basis_config.pair_m_range.setValues(1, 1)
 
+    calculation_config = two_atoms_page.calculation_config
+    calculation_config.steps.setValue(5)
     system_config = two_atoms_page.system_config
-    system_config.steps_spinbox.setValue(5)
-    system_config.distance.setValues([1, 5])
+    system_config.distance.setValues(1, 5)
 
     # since no fields are applied the energy offset is simply given by the energies of the kets
     ket_pair_energy_0 = sum(two_atoms_page.ket_config.get_ket_atom(i).get_energy("GHz") for i in range(2))
 
-    two_atoms_page.fast_mode.checkbox.setChecked(False)
+    two_atoms_page.calculation_config.fast_mode.setChecked(False)
     parameters = ParametersTwoAtoms.from_page(two_atoms_page)
     results = _calculate_two_atoms(parameters)
     energies = np.array(results.energies) + ket_pair_energy_0
     compare_pair_potential_to_reference(energies, np.array(results.ket_overlaps))
 
-    two_atoms_page.fast_mode.checkbox.setChecked(True)
+    two_atoms_page.calculation_config.fast_mode.setChecked(True)
     parameters = ParametersTwoAtoms.from_page(two_atoms_page)
     results = _calculate_two_atoms(parameters)
     energies = np.array(results.energies) + ket_pair_energy_0
