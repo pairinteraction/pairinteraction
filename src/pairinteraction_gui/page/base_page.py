@@ -74,6 +74,8 @@ class CalculationPage(SimulationPage):
     """Base class for all pages with a calculation button."""
 
     plotwidget: PlotEnergies
+    _calculation_finished = False
+    _plot_finished = False
 
     def setupWidget(self) -> None:
         super().setupWidget()
@@ -125,6 +127,8 @@ class CalculationPage(SimulationPage):
         self.loading_label.hide()
 
     def calculate_clicked(self) -> None:
+        self._calculation_finished = False
+        self._plot_finished = False
         self.before_calculate()
 
         def update_plot(
@@ -132,10 +136,12 @@ class CalculationPage(SimulationPage):
         ) -> None:
             worker_plot = Worker(self.update_plot, *parameters_and_results)
             worker_plot.start()
+            worker_plot.signals.finished.connect(lambda _sucess: setattr(self, "_plot_finished", True))
 
         worker = Worker(self.calculate)
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
+        worker.signals.finished.connect(lambda _sucess: setattr(self, "_calculation_finished", True))
         worker.start()
 
     def before_calculate(self) -> None:
@@ -179,6 +185,7 @@ class CalculationPage(SimulationPage):
         self.plotwidget.add_cursor(x_values, energies, results.state_labels)
 
         self.plotwidget.canvas.draw()
+        self._plot_finished = False
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""

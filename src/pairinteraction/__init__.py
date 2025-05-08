@@ -162,7 +162,9 @@ def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str]
 
 
 if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
-    _setup_test_mode()
+    download_missing = bool(int(os.getenv("PAIRINTERACTION_TEST_DOWNLOAD_MISSING", "0")))
+    database_dir = os.getenv("PAIRINTERACTION_TEST_DATABASE_DIR", None)
+    _setup_test_mode(download_missing, database_dir)
 
 
 # ---------------------------------------------------------------------------------------

@@ -1,11 +1,10 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import time
 from typing import TYPE_CHECKING
 
 import numpy as np
-from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, _calculate_one_atom
+import pytest
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, _calculate_two_atoms
 from pairinteraction_gui.main_window import MainWindow
 
@@ -18,13 +17,35 @@ if TYPE_CHECKING:
     from pytestqt.qtbot import QtBot
 
 
-def test_main_window_basic(qtbot: "QtBot") -> None:
-    """Test basic main window functionality."""
+@pytest.fixture
+def window_starkmap(qtbot: "QtBot") -> MainWindow:
     window = MainWindow()
     window.show()
     qtbot.addWidget(window)
 
     one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
+    one_atom_page.ket_config.species_combo[0].setCurrentText("Rb")
+    ket_qn = one_atom_page.ket_config.stacked_qn[0].currentWidget()
+    ket_qn.items["n"].setValue(60)
+    ket_qn.items["l"].setValue(0)
+    ket_qn.items["m"].setValue(0.5)
+
+    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
+    basis_qn.items["n"].setValue(2)
+    basis_qn.items["l"].setValue(2)
+    basis_qn.items["m"].setChecked(False)
+
+    calculation_config = one_atom_page.calculation_config
+    calculation_config.steps.setValue(11)
+    system_config = one_atom_page.system_config
+    system_config.Ez.spinboxes[1].setValue(10)
+
+    return window
+
+
+def test_main_window_basic(qtbot: "QtBot", window_starkmap: "MainWindow") -> None:
+    """Test basic main window functionality."""
+    one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
     qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
     qn_item.setValue(60)
 
@@ -38,44 +59,29 @@ def test_main_window_basic(qtbot: "QtBot") -> None:
     assert qn_item.value() == 61
     assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])
 
+    # make the basis smaller for faster test
+    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
+    basis_qn.items["n"].setValue(1)
+    basis_qn.items["l"].setValue(1)
+    basis_qn.items["m"].setValue(0)
+
     one_atom_page.calculate_and_abort.getNamedWidget("Calculate").click()
-    time.sleep(0.5)
-    one_atom_page.calculate_and_abort.getNamedWidget("Abort").click()
+    qtbot.waitUntil(lambda: one_atom_page._calculation_finished, timeout=20_000)  # ci macOS-13 is very slow
+    qtbot.waitUntil(lambda: one_atom_page._plot_finished, timeout=5_000)
+    window_starkmap.close()
 
 
-def test_calculate_one_atom(qtbot: "QtBot") -> None:
-    window = MainWindow()
-    window.show()
-    qtbot.addWidget(window)
-
-    one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
-    one_atom_page.ket_config.species_combo[0].setCurrentText("Rb")
-    ket_qn = one_atom_page.ket_config.stacked_qn[0].currentWidget()
-    ket_qn.items["n"].setValue(60)
-    ket_qn.items["l"].setValue(0)
-    ket_qn.items["m"].setValue(0.5)
-
+def test_calculate_one_atom(window_starkmap: "MainWindow") -> None:
+    one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
     ket = one_atom_page.ket_config.get_ket_atom(0)
 
-    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
-    basis_qn.items["n"].setValue(2)
-    basis_qn.items["l"].setValue(2)
-    basis_qn.items["m"].setChecked(False)
-
-    calculation_config = one_atom_page.calculation_config
-    calculation_config.steps.setValue(11)
-    system_config = one_atom_page.system_config
-    system_config.Ez.spinboxes[1].setValue(10)
-
     one_atom_page.calculation_config.fast_mode.setChecked(False)
-    parameters = ParametersOneAtom.from_page(one_atom_page)
-    results = _calculate_one_atom(parameters)
+    _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
     compare_starkmap_to_reference(energies, np.array(results.ket_overlaps))
 
     one_atom_page.calculation_config.fast_mode.setChecked(True)
-    parameters = ParametersOneAtom.from_page(one_atom_page)
-    results = _calculate_one_atom(parameters)
+    _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
     compare_starkmap_to_reference(energies)  # with fast mode, the overlaps are different, so we don't compare them
 
