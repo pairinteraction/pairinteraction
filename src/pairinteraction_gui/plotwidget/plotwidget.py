@@ -10,11 +10,13 @@ import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 from matplotlib.colors import Normalize
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QHBoxLayout
 
 from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
-from pairinteraction_gui.qobjects import WidgetH, WidgetV
+from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
+from pairinteraction_gui.qobjects import WidgetV
+from pairinteraction_gui.theme import plot_widget_theme
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -37,20 +39,17 @@ class PlotWidget(WidgetV):
         self.page = parent
         super().__init__(parent)
 
+        self.setStyleSheet(plot_widget_theme)
+
     def setupWidget(self) -> None:
         self.canvas = MatplotlibCanvas(self)
+        self.navigation_toolbar = CustomNavigationToolbar(self.canvas, self)
 
-    def postSetupWidget(self) -> None:
-        top_row = WidgetH(self)
-        top_row.layout().addStretch(1)
-        reset_zoom_button = QPushButton("Reset Zoom", self)
-        reset_zoom_button.setToolTip(
-            "Reset the plot view to its original state. You can zoom in/out using the mousewheel."
-        )
-        reset_zoom_button.clicked.connect(self.canvas.reset_zoom)
-        top_row.layout().addWidget(reset_zoom_button)
+        top_layout = QHBoxLayout()
+        top_layout.addStretch(1)
+        top_layout.addWidget(self.navigation_toolbar)
+        self.layout().addLayout(top_layout)
 
-        self.layout().addWidget(top_row)
         self.layout().addWidget(self.canvas, stretch=1)
 
     def clear(self) -> None:
@@ -108,12 +107,9 @@ class PlotEnergies(PlotWidget):
                 cmap=alphamagma,
             )
 
-        ylim = ax.get_ylim()
-        if abs(ylim[1] - ylim[0]) < 1e-2:
-            ax.set_ylim(ylim[0] - 1e-2, ylim[1] + 1e-2)
-
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
+
         self.canvas.fig.tight_layout()
 
     def add_cursor(
