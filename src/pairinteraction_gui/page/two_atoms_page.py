@@ -31,6 +31,7 @@ class TwoAtomsPage(CalculationPage):
         self.system_config = SystemConfigTwoAtoms(self)
         self.calculation_config = CalculationConfig(self)
 
+        # Set some better defaults for the two atoms page
         self.calculation_config.number_state_labels.setValue(5)
         self.calculation_config.number_state_labels.setChecked(False)
         self.calculation_config.energy_range.setValues(-0.5, 0.5)
