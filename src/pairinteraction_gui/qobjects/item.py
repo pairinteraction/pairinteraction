@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from collections.abc import Sequence
 from typing import Callable, Optional, Union
 
 from PySide6.QtWidgets import (
@@ -44,6 +43,10 @@ class Item(WidgetH):
     def isChecked(self) -> bool:
         """Return the state of the checkbox."""
         return self.checkbox.isChecked()
+
+    def setChecked(self, checked: bool) -> None:
+        """Set the state of the checkbox."""
+        self.checkbox.setChecked(checked)
 
     def connectAll(self, func: Callable[[], None]) -> None:
         """Connect the function to the spinbox.valueChanged signal."""
@@ -119,6 +122,14 @@ class _QnItem(WidgetH):
         if isinstance(self.checkbox, QSpacerItem):
             return True
         return self.checkbox.isChecked()
+
+    def setChecked(self, checked: bool) -> None:
+        """Set the state of the checkbox."""
+        if isinstance(self.checkbox, QSpacerItem):
+            if checked:
+                return
+            raise ValueError("Cannot uncheck a non-checkable item.")
+        self.checkbox.setChecked(checked)
 
     def value(self, default: Optional[float] = None) -> float:
         """Return the value of the spinbox."""
@@ -229,6 +240,14 @@ class RangeItem(WidgetH):
             return True
         return self.checkbox.isChecked()
 
+    def setChecked(self, checked: bool) -> None:
+        """Set the state of the checkbox."""
+        if isinstance(self.checkbox, QSpacerItem):
+            if checked:
+                return
+            raise ValueError("Cannot uncheck a non-checkable item.")
+        self.checkbox.setChecked(checked)
+
     def values(self, default: Optional[tuple[float, float]] = None) -> tuple[float, float]:
         """Return the values of the min and max spinboxes."""
         if not self.isChecked():
@@ -237,9 +256,9 @@ class RangeItem(WidgetH):
             return default
         return (self.min_spinbox.value(), self.max_spinbox.value())
 
-    def setValues(self, values: Sequence[float]) -> None:
+    def setValues(self, vmin: float, vmax: float) -> None:
         """Set the values of the min and max spinboxes and set the checkbox state to checked if applicable."""
         if isinstance(self.checkbox, QCheckBox):
             self.checkbox.setChecked(True)
-        self.min_spinbox.setValue(values[0])
-        self.max_spinbox.setValue(values[1])
+        self.min_spinbox.setValue(vmin)
+        self.max_spinbox.setValue(vmax)

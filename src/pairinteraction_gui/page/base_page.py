@@ -24,10 +24,7 @@ from pairinteraction_gui.app import Application
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
-from pairinteraction_gui.qobjects import WidgetV
-from pairinteraction_gui.qobjects.events import show_status_tip
-from pairinteraction_gui.qobjects.item import Item, QnItemInt, RangeItem
-from pairinteraction_gui.qobjects.named_stacked_widget import NamedStackedWidget
+from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
 from pairinteraction_gui.worker import Worker
 
 logger = logging.getLogger(__name__)
@@ -81,20 +78,12 @@ class CalculationPage(SimulationPage):
     def setupWidget(self) -> None:
         super().setupWidget()
 
+        # Plot Panel
         self.plotwidget = PlotEnergies(self)
         self.layout().addWidget(self.plotwidget)
 
-        # Setup loading animation
-        self.loading_label = QLabel(self)
-        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
-        self.loading_movie = QMovie(str(gif_path))
-        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
-        self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.loading_label.hide()
-
         # Control panel below the plot
-        control_layout = QHBoxLayout()
+        bottom_layout = QHBoxLayout()
 
         # Calculate/Abort stacked buttons
         self.calculate_and_abort = NamedStackedWidget[QPushButton](self)
@@ -110,7 +99,7 @@ class CalculationPage(SimulationPage):
         self.calculate_and_abort.addNamedWidget(abort_button, "Abort")
 
         self.calculate_and_abort.setFixedHeight(50)
-        control_layout.addWidget(self.calculate_and_abort, stretch=2)
+        bottom_layout.addWidget(self.calculate_and_abort, stretch=2)
 
         # Create export button with menu
         export_button = QPushButton("Export")
@@ -122,32 +111,18 @@ class CalculationPage(SimulationPage):
         export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
         export_button.setMenu(export_menu)
         export_button.setFixedHeight(50)
-        control_layout.addWidget(export_button, stretch=1)
+        bottom_layout.addWidget(export_button, stretch=1)
 
-        self.layout().addLayout(control_layout)
+        self.layout().addLayout(bottom_layout)
 
-        self.energy_range = RangeItem(
-            self,
-            "Calculate the energies from",
-            vdefaults=(-0.5, 0.5),
-            unit="GHz",
-            checked=False,
-            tooltip_label="energy",
-        )
-        self.layout().addWidget(self.energy_range)
-
-        self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
-        self.layout().addWidget(self.fast_mode)
-
-        self.number_state_labels = QnItemInt(
-            self,
-            "Calculate and annotate",
-            unit="state labels",
-            vdefault=10,
-            tooltip="Number of steps, for which the overlap is calculated and the corresponding state labels"
-            " can be shown by clicking on the info circles.",
-        )
-        self.layout().addWidget(self.number_state_labels)
+        # Setup loading animation
+        self.loading_label = QLabel(self)
+        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
+        self.loading_movie = QMovie(str(gif_path))
+        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
+        self.loading_label.setMovie(self.loading_movie)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.loading_label.hide()
 
     def calculate_clicked(self) -> None:
         self.before_calculate()
