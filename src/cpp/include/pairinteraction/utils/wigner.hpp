@@ -53,8 +53,10 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
     assert(2 * m_initial == std::floor(2 * m_initial) && m_initial >= -f && m_initial <= f);
     assert(2 * m_final == std::floor(2 * m_final) && m_final >= -f && m_final <= f);
 
-    auto precision =
-        10 * std::numeric_limits<typename traits::NumTraits<Scalar>::real_t>::epsilon();
+    auto scale = std::max(std::abs(m_initial), std::abs(m_final)) *
+        std::max(std::abs(alpha), std::abs(gamma));
+    auto numerical_precision =
+        100 * scale * std::numeric_limits<typename traits::NumTraits<Scalar>::real_t>::epsilon();
 
     if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
         return Scalar(std::cos(-m_initial * alpha), std::sin(-m_initial * alpha)) *
@@ -62,13 +64,15 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
                    f, m_initial, m_final, 0, beta, 0) *
             Scalar(std::cos(-m_final * gamma), std::sin(-m_final * gamma));
     } else {
-        if (std::abs(std::remainder(m_initial * alpha,
-                                    PI<typename traits::NumTraits<Scalar>::real_t>)) > precision) {
+        if (std::abs(
+                std::remainder(m_initial * alpha, PI<typename traits::NumTraits<Scalar>::real_t>)) >
+            numerical_precision) {
             throw std::invalid_argument(
                 "The scalar type must be complex if m_initial*alpha is not a multiple of pi");
         }
-        if (std::abs(std::remainder(m_final * gamma,
-                                    PI<typename traits::NumTraits<Scalar>::real_t>)) > precision) {
+        if (std::abs(
+                std::remainder(m_final * gamma, PI<typename traits::NumTraits<Scalar>::real_t>)) >
+            numerical_precision) {
             throw std::invalid_argument(
                 "The scalar type must be complex if m_final*gamma is not a multiple of pi");
         }
