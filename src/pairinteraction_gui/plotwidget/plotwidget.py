@@ -78,11 +78,11 @@ class PlotEnergies(PlotWidget):
         ax.clear()
 
         try:
-            ax.plot(x_list, np.array(energies_list), c="0.9", lw=0.25, zorder=-10)
+            ax.plot(x_list, np.array(energies_list), c="0.75", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
                 for x_value, es in zip(x_list, energies_list):
-                    ax.plot([x_value] * len(es), es, c="0.9", ls="None", marker=".", zorder=-10)
+                    ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
             else:
                 raise err
 
@@ -127,7 +127,7 @@ class PlotEnergies(PlotWidget):
         for idx, labels in state_labels.items():
             x = x_value[idx]
             for energy, label in zip(energies[idx], labels):
-                artist = ax.plot(x, energy, "o", c="0.9", ms=5, zorder=-20, fillstyle="none", label=label)
+                artist = ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
                 artists.extend(artist)
 
         self.mpl_cursor = mplcursors.cursor(
