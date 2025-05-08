@@ -33,7 +33,7 @@ class CalculationConfig(BaseConfig):
         self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
         self.layout().addWidget(self.fast_mode)
 
-        self.layout().addWidget(QLabel("<b>State Annotations</b>"))
+        self.layout().addWidget(QLabel("<b>State Annotations</b> (click on the diamond shaped markers)"))
         self.number_state_labels = QnItemInt(
             self,
             "Annotate",
