@@ -62,15 +62,39 @@ class Worker(QThread):
         Application.all_threads.discard(self)
 
 
+_GLOBAL_MP_FUNC_ID = 1
+
+
+def _run_global_mp_func_from_name(name: str, *args: Any, **kwargs: Any) -> None:
+    """CURSED PYTHON MAGIC!
+
+    Workaround to make the run_in_other_process decorator work on windows and macOS,
+    where multiprocessing by default uses spawn.
+
+    FIXME
+    If you find a more elegant, and less hacky way to make this work, please fix this!
+
+    """  # noqa: D400
+    globals()[name](*args, **kwargs)
+
+
 def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
+    def mp_func(queue: "SimpleQueue[R]", *args: "P.args", **kwargs: "P.kwargs") -> None:
+        result = func(*args, **kwargs)
+        queue.put(result)
+
+    global _GLOBAL_MP_FUNC_ID
+    mp_func_name = "_mp_" + func.__name__ + "_" + str(_GLOBAL_MP_FUNC_ID)
+    logger.debug("Registering function %s as %s", func.__name__, mp_func_name)
+    globals()[mp_func_name] = mp_func  # CURSED PYTHON MAGIC!
+    _GLOBAL_MP_FUNC_ID += 1
+
     @wraps(func)
     def wrapper_func(*args: "P.args", **kwargs: "P.kwargs") -> "R":
-        def mp_func(queue: "SimpleQueue[R]", *args: "P.args", **kwargs: "P.kwargs") -> None:
-            result = func(*args, **kwargs)
-            queue.put(result)
-
         queue: SimpleQueue[R] = SimpleQueue()
-        process = Process(target=mp_func, args=(queue, *args), kwargs=kwargs, daemon=True)
+        process = Process(
+            target=_run_global_mp_func_from_name, args=(mp_func_name, queue, *args), kwargs=kwargs, daemon=True
+        )
         Application.all_processes.add(process)
         process.start()
         logger.debug("Starting process %s", process.pid)
