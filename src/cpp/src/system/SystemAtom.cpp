@@ -26,8 +26,7 @@ template <typename Scalar>
 SystemAtom<Scalar> &SystemAtom<Scalar>::set_electric_field(const std::array<real_t, 3> &field) {
     this->hamiltonian_requires_construction = true;
 
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    if (!traits::NumTraits<Scalar>::is_complex_v && std::abs(field[1]) > numerical_precision) {
+    if (!traits::NumTraits<Scalar>::is_complex_v && field[1] != 0) {
         throw std::invalid_argument(
             "The field must not have a y-component if the scalar type is real.");
     }
@@ -41,8 +40,7 @@ template <typename Scalar>
 SystemAtom<Scalar> &SystemAtom<Scalar>::set_magnetic_field(const std::array<real_t, 3> &field) {
     this->hamiltonian_requires_construction = true;
 
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    if (!traits::NumTraits<Scalar>::is_complex_v && std::abs(field[1]) > numerical_precision) {
+    if (!traits::NumTraits<Scalar>::is_complex_v && field[1] != 0) {
         throw std::invalid_argument(
             "The field must not have a y-component if the scalar type is real.");
     }
@@ -64,8 +62,7 @@ SystemAtom<Scalar> &
 SystemAtom<Scalar>::set_ion_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
 
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    if (!traits::NumTraits<Scalar>::is_complex_v && std::abs(vector[1]) > numerical_precision) {
+    if (!traits::NumTraits<Scalar>::is_complex_v && vector[1] != 0) {
         throw std::invalid_argument(
             "The distance vector must not have a y-component if the scalar type is real.");
     }
@@ -96,14 +93,21 @@ template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
 
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);
     this->hamiltonian_is_diagonal = true;
     bool sort_by_quantum_number_f = true;
     bool sort_by_quantum_number_m = true;
     bool sort_by_parity = true;
+
+    // Estimate the numerical precision so that we can decide which terms to keep
+    Eigen::VectorX<real_t> diag = this->hamiltonian->get_matrix().diagonal().real();
+    real_t scale = (diag - diag.mean() * Eigen::VectorX<real_t>::Ones(diag.size())).norm();
+    real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
+
+    real_t typical_magnetic_dipole = 1e2;     // ~n^1
+    real_t typical_electric_dipole = 1e4;     // ~n^2
+    real_t typical_electric_quadrupole = 1e8; // ~n^4
 
     // Add the interaction with the field of an ion (see
     // https://en.wikipedia.org/wiki/Multipole_expansion#Spherical_form for details)
@@ -122,7 +126,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
         vector_dipole_order = vector_dipole_order.conjugate() / std::pow(distance, 2);
 
         for (int q = -1; q <= 1; ++q) {
-            if (std::abs(vector_dipole_order[q + 1]) > numerical_precision) {
+            if (std::abs(vector_dipole_order[q + 1]) * typical_electric_dipole >
+                numerical_precision) {
                 *this->hamiltonian -= ion_charge * vector_dipole_order[q + 1] *
                     OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
                 this->hamiltonian_is_diagonal = false;
@@ -144,7 +149,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
         vector_quadrupole_order = 3 * vector_quadrupole_order.conjugate() / std::pow(distance, 3);
 
         for (int q = -2; q <= 2; ++q) {
-            if (std::abs(vector_quadrupole_order[q + 2]) > numerical_precision) {
+            if (std::abs(vector_quadrupole_order[q + 2]) * typical_electric_quadrupole >
+                numerical_precision) {
                 *this->hamiltonian -= ion_charge * vector_quadrupole_order[q + 2] *
                     OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, q);
                 this->hamiltonian_is_diagonal = false;
@@ -171,7 +177,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // with the electric dipole operator: d_{1,q} = - e r sqrt{4 pi / 3} Y_{1,q}(\theta, \phi)
     // where electric_field_spherical=[E_{-}^*, E_{0}, E_{+}^*]
     for (int q = -1; q <= 1; ++q) {
-        if (std::abs(electric_field_spherical[q + 1]) > numerical_precision) {
+        if (std::abs(electric_field_spherical[q + 1]) * typical_electric_dipole >
+            numerical_precision) {
             *this->hamiltonian -= electric_field_spherical[q + 1] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
             this->hamiltonian_is_diagonal = false;
@@ -186,7 +193,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // with the magnetic dipole operator: \vec{\mu} = - \mu_B / \hbar (g_l \vec{l} + g_s \vec{s})
     // where magnetic_field_spherical=[B_{-}^*, B_{0}, B_{+}^*]
     for (int q = -1; q <= 1; ++q) {
-        if (std::abs(magnetic_field_spherical[q + 1]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[q + 1]) * typical_magnetic_dipole >
+            numerical_precision) {
             *this->hamiltonian -= magnetic_field_spherical[q + 1] *
                 OperatorAtom<Scalar>(basis, OperatorType::MAGNETIC_DIPOLE, q);
             this->hamiltonian_is_diagonal = false;
@@ -203,7 +211,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // and the electric quadrupole operator: d_{2,q} = e^2 r^2 sqrt{4 pi / 5} Y_{2,q}(\theta, \phi)
     // where magnetic_field_spherical=[B_{-}^*, B_{0}, B_{+}^*]
     if (diamagnetism_enabled) {
-        if (std::abs(magnetic_field_spherical[1]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[1]) * typical_electric_quadrupole >
+            numerical_precision) {
             *this->hamiltonian += static_cast<real_t>(1 / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
@@ -213,8 +222,10 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
         }
-        if (std::abs(magnetic_field_spherical[0]) > numerical_precision &&
-            std::abs(magnetic_field_spherical[2]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[0]) * typical_electric_quadrupole >
+                numerical_precision &&
+            std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
+                numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(2 / 12.) * magnetic_field_spherical[0] *
                 magnetic_field_spherical[2] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
@@ -224,8 +235,10 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
         }
-        if (std::abs(magnetic_field_spherical[1]) > numerical_precision &&
-            std::abs(magnetic_field_spherical[2]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[1]) * typical_electric_quadrupole >
+                numerical_precision &&
+            std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
+                numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
                 magnetic_field_spherical[1] * magnetic_field_spherical[2] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 1);
@@ -233,8 +246,10 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
         }
-        if (std::abs(magnetic_field_spherical[1]) > numerical_precision &&
-            std::abs(magnetic_field_spherical[0]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[1]) * typical_electric_quadrupole >
+                numerical_precision &&
+            std::abs(magnetic_field_spherical[0]) * typical_electric_quadrupole >
+                numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
                 magnetic_field_spherical[1] * magnetic_field_spherical[0] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -1);
@@ -242,7 +257,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
         }
-        if (std::abs(magnetic_field_spherical[2]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
+            numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[2], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 2);
@@ -250,7 +266,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
         }
-        if (std::abs(magnetic_field_spherical[0]) > numerical_precision) {
+        if (std::abs(magnetic_field_spherical[0]) * typical_electric_quadrupole >
+            numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[0], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -2);

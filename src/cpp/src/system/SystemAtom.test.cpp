@@ -12,6 +12,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 
 #include <Eigen/Eigenvalues>
@@ -21,6 +22,8 @@
 namespace pairinteraction {
 
 constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
+constexpr double UM_IN_ATOMIC_UNITS = 1 / 5.29177210544e-5;
+constexpr double HARTREE_IN_GHZ = 6579683.920501762;
 
 DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
@@ -316,6 +319,47 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenenergies are within energy re
         auto eigenenergies_pairinteraction = system.get_eigenenergies();
 
         DOCTEST_CHECK(eigenenergies_pairinteraction.size() == 0);
+    }
+}
+
+DOCTEST_TEST_CASE("atom ion interaction") {
+    auto &database = Database::get_global_instance();
+    DiagonalizerEigen<double> diagonalizer;
+
+    auto ket = KetAtomCreator()
+                   .set_species("Rb")
+                   .set_quantum_number_n(60)
+                   .set_quantum_number_l(1)
+                   .set_quantum_number_j(0.5)
+                   .set_quantum_number_m(0.5)
+                   .create(database);
+    double energy = ket->get_energy();
+    double min_energy = energy - 50 / HARTREE_IN_GHZ;
+    double max_energy = energy + 50 / HARTREE_IN_GHZ;
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(58, 62)
+                     .restrict_quantum_number_l(0, 3)
+                     .restrict_quantum_number_m(0.5, 0.5)
+                     .create(database);
+
+    auto system3 = SystemAtom<double>(basis);
+    system3.set_ion_interaction_order(3);
+    system3.set_ion_distance_vector({0, 0, 10 * UM_IN_ATOMIC_UNITS});
+    system3.diagonalize(diagonalizer, min_energy, max_energy, 1e-6);
+    auto energies3 = system3.get_eigenenergies();
+
+    auto system2 = SystemAtom<double>(basis);
+    system2.set_ion_interaction_order(2);
+    system2.set_ion_distance_vector({0, 0, 10 * UM_IN_ATOMIC_UNITS});
+    system2.diagonalize(diagonalizer, min_energy, max_energy, 1e-6);
+    auto energies2 = system2.get_eigenenergies();
+
+    // Ensure that the quadrupole order has a significant effect
+    size_t num_energies = std::min(energies2.size(), energies3.size());
+    for (size_t i = 0; i < num_energies; ++i) {
+        DOCTEST_CHECK(std::abs(energies3[i] - energies2[i]) * HARTREE_IN_GHZ > 1e-6);
     }
 }
 

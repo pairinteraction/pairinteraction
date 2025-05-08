@@ -64,8 +64,9 @@ int GreenTensor<Scalar>::OmegaDependentEntry::col() const noexcept {
 template <typename Scalar>
 void GreenTensor<Scalar>::set_entries(
     int kappa1, int kappa2, const Eigen::MatrixX<Scalar> &tensor_in_cartesian_coordinates) {
-    const real_t numerical_precision =
-        5 * std::numeric_limits<real_t>::epsilon() * tensor_in_cartesian_coordinates.norm();
+
+    const real_t scale = tensor_in_cartesian_coordinates.norm();
+    const real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
 
     Eigen::SparseMatrix<complex_t> tensor =
         (spherical::get_transformator<complex_t>(kappa1) * tensor_in_cartesian_coordinates *
@@ -104,8 +105,9 @@ void GreenTensor<Scalar>::set_entries(
     // Temporary storage wih key = (row, col) and value = vector of one double per omega
     std::map<std::pair<int, int>, std::pair<Eigen::RowVectorXd, Eigen::RowVectorXd>> temp_map;
     for (int idx = 0; idx < num_knots; ++idx) {
-        const real_t numerical_precision = 5 * std::numeric_limits<real_t>::epsilon() *
-            tensors_in_cartesian_coordinates[idx].norm();
+
+        const real_t scale = tensors_in_cartesian_coordinates[idx].norm();
+        const real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
 
         Eigen::SparseMatrix<complex_t> tensor =
             (spherical::get_transformator<complex_t>(kappa1) *

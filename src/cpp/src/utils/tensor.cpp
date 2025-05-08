@@ -21,9 +21,6 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis_i
                          const std::shared_ptr<const BasisPair<Scalar>> &basis_final,
                          const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                          const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
     oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 
     // Loop over the rows of the first matrix in parallel (outer index == row)
@@ -84,9 +81,7 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis_i
 
                             // Store the entry
                             Scalar value = value1 * value2;
-                            if (std::abs(value) > numerical_precision) {
-                                triplets.emplace_back(row, col, value);
-                            }
+                            triplets.emplace_back(row, col, value);
                         }
                     }
                 }

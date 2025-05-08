@@ -216,9 +216,7 @@ template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
 
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    if (!traits::NumTraits<Scalar>::is_complex_v &&
-        std::abs(distance_vector[1]) > numerical_precision) {
+    if (!traits::NumTraits<Scalar>::is_complex_v && distance_vector[1] != 0) {
         throw std::invalid_argument(
             "The distance vector must not have a y-component if the scalar type is real.");
     }
