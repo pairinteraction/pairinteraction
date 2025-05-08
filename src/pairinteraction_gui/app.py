@@ -72,7 +72,8 @@ class Application(QApplication):
     @staticmethod
     def terminate_all_processes() -> None:
         """Terminate all processes started by the application."""
-        for process in Application.all_processes:
+        all_processes = list(Application.all_processes)  # Copy to avoid error if the set is modified during the loop
+        for process in all_processes:
             if process.is_alive():
                 logger.debug("Terminating process %s.", process.pid)
                 process.terminate()
@@ -84,7 +85,8 @@ class Application(QApplication):
     @staticmethod
     def terminate_all_threads() -> None:
         """Terminate all threads started by the application."""
-        for thread in Application.all_threads:
+        all_threads = list(Application.all_threads)  # Copy to avoid error if the set is modified during the loop
+        for thread in all_threads:
             if thread.isRunning():
                 logger.debug("Terminating thread %s.", thread)
                 thread.terminate()
