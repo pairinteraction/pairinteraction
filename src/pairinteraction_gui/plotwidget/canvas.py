@@ -21,12 +21,6 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
 
         self.setup_zoom()
 
-    def reset_zoom(self) -> None:
-        """Reset the view to show all data."""
-        self.ax.set_xlim(self._saved_lim[0])
-        self.ax.set_ylim(self._saved_lim[1])
-        self.draw()
-
     def setup_zoom(self) -> None:
         """Set up mouse wheel zoom functionality."""
         # Wheel event accumulation variables
@@ -77,9 +71,3 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
 
         # Redraw the canvas
         self.draw()
-
-    def draw(self, save_zoom: bool = False) -> None:
-        """Draw the canvas."""
-        super().draw()
-        if save_zoom:
-            self._saved_lim = (self.ax.get_xlim(), self.ax.get_ylim())

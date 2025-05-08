@@ -39,7 +39,7 @@ class OneAtomPage(CalculationPage):
     def update_plot(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
         super().update_plot(parameters, results)
         self.add_short_labels(results)
-        self.plotwidget.canvas.draw(True)
+        self.plotwidget.canvas.draw()
 
     def add_short_labels(
         self,

@@ -178,7 +178,7 @@ class CalculationPage(SimulationPage):
 
         self.plotwidget.add_cursor(x_values, energies, results.state_labels)
 
-        self.plotwidget.canvas.draw(True)
+        self.plotwidget.canvas.draw()
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""
