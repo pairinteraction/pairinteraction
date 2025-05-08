@@ -1,10 +1,10 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import time
 from typing import TYPE_CHECKING
 
 import numpy as np
+import pytest
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, _calculate_one_atom
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, _calculate_two_atoms
 from pairinteraction_gui.main_window import MainWindow
@@ -18,32 +18,8 @@ if TYPE_CHECKING:
     from pytestqt.qtbot import QtBot
 
 
-def test_main_window_basic(qtbot: "QtBot") -> None:
-    """Test basic main window functionality."""
-    window = MainWindow()
-    window.show()
-    qtbot.addWidget(window)
-
-    one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
-    qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
-    qn_item.setValue(60)
-
-    ket_label = one_atom_page.ket_config.ket_label[0].text()
-    assert all(x in ket_label for x in ["Rb", "60", "S", "1/2"])
-    assert qn_item.label.text() == "n"
-    assert qn_item.value() == 60
-
-    qn_item.setValue(61)
-    ket_label = one_atom_page.ket_config.ket_label[0].text()
-    assert qn_item.value() == 61
-    assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])
-
-    one_atom_page.calculate_and_abort.getNamedWidget("Calculate").click()
-    time.sleep(0.5)
-    one_atom_page.calculate_and_abort.getNamedWidget("Abort").click()
-
-
-def test_calculate_one_atom(qtbot: "QtBot") -> None:
+@pytest.fixture
+def window_starkmap(qtbot: "QtBot") -> MainWindow:
     window = MainWindow()
     window.show()
     qtbot.addWidget(window)
@@ -74,8 +50,45 @@ def test_calculate_one_atom(qtbot: "QtBot") -> None:
     compare_starkmap_to_reference(energies, np.array(results.ket_overlaps))
 
     one_atom_page.calculation_config.fast_mode.setChecked(True)
-    parameters = ParametersOneAtom.from_page(one_atom_page)
-    results = _calculate_one_atom(parameters)
+
+    return window
+
+
+def test_main_window_basic(qtbot: "QtBot", window_starkmap: "MainWindow") -> None:
+    """Test basic main window functionality."""
+    one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
+    qn_item.setValue(60)
+
+    ket_label = one_atom_page.ket_config.ket_label[0].text()
+    assert all(x in ket_label for x in ["Rb", "60", "S", "1/2"])
+    assert qn_item.label.text() == "n"
+    assert qn_item.value() == 60
+
+    qn_item.setValue(61)
+    ket_label = one_atom_page.ket_config.ket_label[0].text()
+    assert qn_item.value() == 61
+    assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])
+
+    # make the basis smaller for faster test
+    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
+    basis_qn.items["n"].setValue(1)
+    basis_qn.items["l"].setValue(1)
+
+    one_atom_page.calculate_and_abort.getNamedWidget("Calculate").click()
+    qtbot.waitUntil(lambda: one_atom_page._calculation_finished, timeout=5_000)
+    print("Calculation finished")
+    qtbot.waitUntil(lambda: one_atom_page._plot_finished, timeout=5_000)
+    print("Plot finished")
+    window_starkmap.close()
+    print("Window closed")
+
+
+def test_calculate_one_atom(window_starkmap: "MainWindow") -> None:
+    one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    parameters, results = one_atom_page.calculate()
+
+    ket = one_atom_page.ket_config.get_ket_atom(0)
     energies = np.array(results.energies) + ket.get_energy("GHz")
     compare_starkmap_to_reference(energies)  # with fast mode, the overlaps are different, so we don't compare them
 
