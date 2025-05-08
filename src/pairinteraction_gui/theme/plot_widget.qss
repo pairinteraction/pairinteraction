@@ -1,7 +1,17 @@
 /* SPDX-FileCopyrightText: 2025 Pairinteraction Developers */
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 
+/* These options set the background color of the navigation toolbar icons */
 QToolBar {
-    /* This sets the background color of the navigation toolbar icons */
     background-color: #ffffff;
+    color: #ffffff;
+}
+QToolButton {
+    background-color: #ffffff;
+}
+QToolButton:hover {
+    background-color: #909090;
+}
+QToolButton:checked {
+    background-color: #007bff;
 }
