@@ -62,12 +62,14 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
         if x_min <= x_data <= x_max:
             x_min_new = x_data - (x_data - x_min) * scale_factor
             x_max_new = x_data + (x_max - x_data) * scale_factor
-            self.ax.set_xlim(x_min_new, x_max_new)
+            self.ax.set_xbound(x_min_new, x_max_new)
+            self.ax.set_autoscalex_on(False)
 
         if y_min <= y_data <= y_max:
             y_min_new = y_data - (y_data - y_min) * scale_factor
             y_max_new = y_data + (y_max - y_data) * scale_factor
-            self.ax.set_ylim(y_min_new, y_max_new)
+            self.ax.set_ybound(y_min_new, y_max_new)
+            self.ax.set_autoscaley_on(False)
 
         # Redraw the canvas
         self.draw()

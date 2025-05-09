@@ -107,10 +107,6 @@ class PlotEnergies(PlotWidget):
                 cmap=alphamagma,
             )
 
-        ylim = ax.get_ylim()
-        if abs(ylim[1] - ylim[0]) < 1e-2:
-            ax.set_ylim(ylim[0] - 1e-2, ylim[1] + 1e-2)
-
         ax.set_xlabel(xlabel)
         ax.set_ylabel("Energy [GHz]")
 
