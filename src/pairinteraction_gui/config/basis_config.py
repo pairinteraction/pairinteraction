@@ -73,7 +73,7 @@ class BasisConfig(BaseConfig):
                 self.basis_label[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
             elif isinstance(err, DatabaseMissingError):
                 self.basis_label[atom].setText(
-                    "Database required but not downloaded. Please select a different species."
+                    "Database required but not downloaded. Please select a different state of interest."
                 )
             else:
                 self.basis_label[atom].setText(str(err))
