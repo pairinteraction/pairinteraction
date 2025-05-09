@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 
+import pairinteraction.real as pi
+from pairinteraction_gui.app import Application
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import (
     NamedStackedWidget,
@@ -16,11 +18,10 @@ from pairinteraction_gui.qobjects import (
     WidgetV,
 )
 from pairinteraction_gui.theme import label_error_theme, label_theme
-from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_ket_atom
+from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_custom_error
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
-    import pairinteraction.real as pi
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
     from pairinteraction_gui.qobjects.item import _QnItem
 
@@ -123,7 +124,14 @@ class KetConfig(BaseConfig):
         """Return the ket of interest of the ... atom."""
         species = self.get_species(atom)
         qns = self.get_quantum_numbers(atom)
-        return get_ket_atom(species, **qns)  # type: ignore [no-any-return] # problem decorator catch_download_missing
+
+        try:
+            return pi.KetAtom(species, **qns)  # type: ignore [arg-type]
+        except Exception as err:
+            err = get_custom_error(err)
+            if isinstance(err, DatabaseMissingError):
+                Application.signals.ask_download_database.emit(err.species)
+            raise err
 
     def on_species_changed(self, species: str, atom: int) -> None:
         """Handle species selection change."""
