@@ -79,6 +79,7 @@ find_package(
   Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
   OPTIONAL_COMPONENTS Development.SABIModule)
+find_package(TBB REQUIRED)
 
 # Try to find MKL
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread

@@ -15,6 +15,8 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
     from typing import Callable
     from warnings import warn
 
+    from pairinteraction._info import Info
+
     # ---------------------------------------------------------------------------------------
     # Helper functions
     # ---------------------------------------------------------------------------------------
@@ -119,16 +121,14 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
                 candidate = mkl_lib_dir / f"{lib}.2.dll"
                 load_candidate(candidate, partial(kernel32.LoadLibraryExW, None, 8))
 
+        else:
+            warn(f"Cannot load MKL libraries on unsupported system {system}.", RuntimeWarning, stacklevel=2)
+
     system = platform.system()
     if system == "Windows":
         fix_ssl()
+    if Info.with_mkl:
         load_mkl(system)
-    elif system == "Linux":
-        load_mkl(system)
-    elif system == "Darwin":
-        pass
-    else:
-        warn(f"Cannot load MKL libraries on unknown system {system}.", RuntimeWarning, stacklevel=2)
 
 
 _setup_dynamic_libaries()

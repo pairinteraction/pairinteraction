@@ -6,23 +6,32 @@
 namespace pairinteraction {
 
 struct Info {
+    Info() = delete;
+
+    // Whether it compiled with MKL
+#if defined(WITH_MKL)
+    static constexpr bool with_mkl = true;
+#else
+    static constexpr bool with_mkl = false;
+#endif
+
     // Eigen diagonalizer is always available
-    bool has_eigen = true;
+    static constexpr bool has_eigen = true;
 
     // LAPACKE diagonalizers are available if compiled with either MKL or LAPACKE
 #if defined(WITH_MKL) || defined(WITH_LAPACKE)
-    bool has_lapacke_evd = true;
-    bool has_lapacke_evr = true;
+    static constexpr bool has_lapacke_evd = true;
+    static constexpr bool has_lapacke_evr = true;
 #else
-    bool has_lapacke_evd = false;
-    bool has_lapacke_evr = false;
+    static constexpr bool has_lapacke_evd = false;
+    static constexpr bool has_lapacke_evr = false;
 #endif
 
     // FEAST diagonalizer is only available if compiled with MKL
 #if defined(WITH_MKL)
-    bool has_feast = true;
+    static constexpr bool has_feast = true;
 #else
-    bool has_feast = false;
+    static constexpr bool has_feast = false;
 #endif
 };
 

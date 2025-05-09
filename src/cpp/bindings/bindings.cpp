@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "./Info.py.hpp"
 #include "./LoggerBridge.hpp"
 #include "./basis/Basis.py.hpp"
 #include "./database/Database.py.hpp"
@@ -28,7 +27,7 @@ namespace nb = nanobind;
 NB_MODULE(_backend, m) // NOLINT
 {
     // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types
-    nanobind::set_leak_warnings(false);
+    nb::set_leak_warnings(false);
 
     // wrap the get_pending_logs method of the logger bridge instance
     static LoggerBridge bridge;
@@ -73,7 +72,4 @@ NB_MODULE(_backend, m) // NOLINT
 
     // version
     bind_version(m);
-
-    // info
-    bind_info(m);
 }
