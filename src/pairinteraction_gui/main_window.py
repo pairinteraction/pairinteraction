@@ -23,6 +23,7 @@ from pairinteraction_gui.page import (
     OneAtomPage,
     TwoAtomsPage,
 )
+from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.theme import main_theme
 from pairinteraction_gui.utils import download_databases_mp
@@ -172,7 +173,6 @@ class MainWindow(QMainWindow):
 
         download = msg_box.exec() == QMessageBox.StandardButton.Yes
         if download:
-            Database._global_database = None
             self.statusbar.showMessage("Downloading database table ...", timeout=0)
 
             worker = MultiThreadWorker(lambda: download_databases_mp([species]))
@@ -180,7 +180,15 @@ class MainWindow(QMainWindow):
 
             msg = "Successfully downloaded database table for " + species
             worker.signals.result.connect(lambda _result: self.statusbar.showMessage(msg, timeout=0))
+            worker.signals.result.connect(lambda _result: setattr(Database, "_global_database", None))
             worker.signals.result.connect(lambda _result: MultiProcessWorker.terminate_all(create_new_pool=True))
+            page = self.stacked_pages.currentWidget()
+            if isinstance(page, SimulationPage):
+                ket_config = page.ket_config
+                for i in range(ket_config.n_atoms):
+                    worker.signals.result.connect(
+                        lambda _, atom=i: ket_config.signal_species_changed.emit(ket_config.get_species(atom), atom)
+                    )
             worker.start()
 
         return download

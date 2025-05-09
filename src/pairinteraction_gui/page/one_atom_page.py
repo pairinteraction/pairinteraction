@@ -31,6 +31,9 @@ class OneAtomPage(CalculationPage):
         self.system_config = SystemConfigOneAtom(self)
         self.calculation_config = CalculationConfig(self)
 
+        self.ket_config.signal_species_changed.connect(self.basis_config.on_species_changed)
+        self.ket_config.signal_species_changed.connect(self.plotwidget.clear)
+
     def calculate(self) -> tuple[ParametersOneAtom, ResultsOneAtom]:
         parameters = ParametersOneAtom.from_page(self)
         results = calculate_one_atom(parameters)
