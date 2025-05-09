@@ -3,6 +3,10 @@
 
 include(FindPackageHandleStandardArgs)
 
+if(MKL_THREADING STREQUAL "tbb_thread")
+  find_package(TBB REQUIRED)
+endif()
+
 find_package(
   Python3
   COMPONENTS Interpreter
@@ -15,9 +19,7 @@ from importlib.metadata import files, PackageNotFoundError
 try:
     mkl_config_path = next(p for p in files('mkl-devel') if 'MKLConfig.cmake' in p.name).locate().resolve()
     mkl_library_path = next(p for p in files('mkl') if 'mkl_core' in p.stem).locate().resolve()
-    tbb_config_path = next(p for p in files('tbb-devel') if 'TBBConfig.cmake' in p.name).locate().resolve()
-    tbb_library_path = next(p for p in files('tbb') if 'tbb' in p.stem).locate().resolve()
-    print(mkl_library_path.parent.parent, mkl_config_path, tbb_library_path.parent.parent, tbb_config_path, sep='|')
+    print(mkl_library_path.parent.parent, mkl_config_path, sep='|')
 except PackageNotFoundError:
     sys.exit(1)"
     RESULT_VARIABLE ONEAPI_RESULT
@@ -30,20 +32,13 @@ except PackageNotFoundError:
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 MKL_ROOT)
     list(GET ONEAPI_PATHS_LIST 1 MKL_DIR)
-    list(GET ONEAPI_PATHS_LIST 2 TBB_ROOT)
-    list(GET ONEAPI_PATHS_LIST 3 TBB_DIR)
     message(STATUS "MKL root determined to be: ${MKL_ROOT}")
     message(STATUS "MKL package config directory determined to be: ${MKL_DIR}")
-    message(STATUS "TBB root determined to be: ${TBB_ROOT}")
-    message(STATUS "TBB package config directory determined to be: ${TBB_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${MKL_DIR}")
-    list(APPEND CMAKE_PREFIX_PATH "${TBB_DIR}")
   endif()
 else()
   message(STATUS "Python3 interpreter not found; skip discovering Intel oneAPI libraries.")
 endif()
-
-find_package(TBB REQUIRED CONFIG)
 
 find_package(MKL QUIET CONFIG)
 if(MKL_CONSIDERED_CONFIGS)
