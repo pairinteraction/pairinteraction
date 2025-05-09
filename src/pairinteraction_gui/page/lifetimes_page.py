@@ -24,6 +24,8 @@ class LifetimesPage(SimulationPage):
     title = "Lifetimes"
     tooltip = "Calculate the lifetimes and transition rates for a specified ket."
 
+    ket_config: KetConfigLifetimes
+
     def setupWidget(self) -> None:
         self.plotwidget = PlotWidget(self)
         self.layout().addWidget(self.plotwidget)

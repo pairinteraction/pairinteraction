@@ -3,7 +3,6 @@
 
 from typing import TYPE_CHECKING, Any, Literal, Union
 
-from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QLabel,
 )
@@ -16,7 +15,7 @@ from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.qobjects.item import RangeItem
 from pairinteraction_gui.theme import label_error_theme, label_theme
-from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
+from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
@@ -113,17 +112,14 @@ class BasisConfig(BaseConfig):
         stacked_basis = self.stacked_basis[atom].currentWidget()
         return {key: item.value() for key, item in stacked_basis.items.items() if item.isChecked()}
 
-    def showEvent(self, event: QShowEvent) -> None:
-        """Update the basis label when the widget is shown."""
-        super().showEvent(event)
-        ket_of_interest = self.page.ket_config
-        for atom in range(len(ket_of_interest.species_combo)):
-            species_type = ket_of_interest.get_species_type(atom)
-            if "mqdt" in species_type:
-                self.stacked_basis[atom].setCurrentNamedWidget("mqdt")
-            else:
-                self.stacked_basis[atom].setCurrentNamedWidget("sqdt")
-            self.update_basis_label(atom)
+    def on_species_changed(self, atom: int, species: str) -> None:
+        """Handle species selection change."""
+        species_type = get_species_type(species)
+        if "mqdt" in species_type:
+            self.stacked_basis[atom].setCurrentNamedWidget("mqdt")
+        else:
+            self.stacked_basis[atom].setCurrentNamedWidget("sqdt")
+        self.update_basis_label(atom)
 
 
 class BasisConfigOneAtom(BasisConfig):

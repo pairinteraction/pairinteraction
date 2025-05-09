@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-import re
-from typing import TYPE_CHECKING, Any, Literal, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
+from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 
 import pairinteraction.real as pi
@@ -18,34 +18,26 @@ from pairinteraction_gui.qobjects import (
     WidgetV,
 )
 from pairinteraction_gui.theme import label_error_theme, label_theme
-from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_custom_error
+from pairinteraction_gui.utils import (
+    AVAILABLE_SPECIES,
+    DatabaseMissingError,
+    NoStateFoundError,
+    get_custom_error,
+    get_species_type,
+)
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
     from pairinteraction_gui.qobjects.item import _QnItem
 
-AVAILABLE_SPECIES = [
-    "Rb",
-    "Li",
-    "Na",
-    "K",
-    "Cs",
-    "Sr88_singlet",
-    "Sr88_triplet",
-    "Sr87_mqdt",
-    "Sr88_mqdt",
-    "Yb171_mqdt",
-    "Yb173_mqdt",
-    "Yb174_mqdt",
-]
-SpeciesTypes = Literal["sqdt_duplet", "sqdt_singlet", "sqdt_triplet", "mqdt_halfint", "mqdt_int"]
-
 
 class KetConfig(BaseConfig):
     """Section for configuring the ket of interest."""
 
     title = "State of Interest"
+
+    signal_species_changed = Signal(int, str)
 
     def setupWidget(self) -> None:
         self.species_combo: list[QComboBox] = []
@@ -67,7 +59,10 @@ class KetConfig(BaseConfig):
         species_combo.addItems(AVAILABLE_SPECIES)  # TODO get available species from pairinteraction
         species_combo.setToolTip("Select the atomic species")
         species_widget.layout().addRow("Species", species_combo)
-        species_combo.currentTextChanged.connect(lambda species, atom=atom: self.on_species_changed(species, atom))
+        species_combo.currentTextChanged.connect(
+            lambda species, atom=atom: self.signal_species_changed.emit(atom, species)
+        )
+        self.signal_species_changed.connect(self.on_species_changed)
         self.layout().addWidget(species_widget)
 
         # Create stacked widget for different species configurations
@@ -99,28 +94,12 @@ class KetConfig(BaseConfig):
         """Return the selected species of the ... atom."""
         return self.species_combo[atom].currentText()
 
-    def get_species_type(self, atom: int) -> SpeciesTypes:
-        """Return the species type based on the species name of the ... atom."""
-        species = self.get_species(atom)
-        if "mqdt" in species:
-            match = re.search(r"\d+", species)
-            if match:
-                if int(match.group()) % 2 == 0:
-                    return "mqdt_int"
-                return "mqdt_halfint"
-            raise ValueError(f"Invalid species name: {species}")
-        if "singlet" in species:
-            return "sqdt_singlet"
-        if "triplet" in species:
-            return "sqdt_triplet"
-        return "sqdt_duplet"
-
     def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn[atom].currentWidget()
         return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}
 
-    def get_ket_atom(self, atom: int) -> "pi.KetAtom":
+    def get_ket_atom(self, atom: int, *, ask_download: bool = False) -> "pi.KetAtom":
         """Return the ket of interest of the ... atom."""
         species = self.get_species(atom)
         qns = self.get_quantum_numbers(atom)
@@ -129,20 +108,20 @@ class KetConfig(BaseConfig):
             return pi.KetAtom(species, **qns)  # type: ignore [arg-type]
         except Exception as err:
             err = get_custom_error(err)
-            if isinstance(err, DatabaseMissingError):
+            if ask_download and isinstance(err, DatabaseMissingError):
                 Application.signals.ask_download_database.emit(err.species)
             raise err
 
-    def on_species_changed(self, species: str, atom: int) -> None:
+    def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
-        species_type = self.get_species_type(atom)
+        species_type = get_species_type(species)
         self.stacked_qn[atom].setCurrentNamedWidget(species_type)
         self.on_qnitem_changed(atom)
 
     def on_qnitem_changed(self, atom: int) -> None:
         """Update the ket label with current values."""
         try:
-            ket = self.get_ket_atom(atom)
+            ket = self.get_ket_atom(atom, ask_download=True)
             self.ket_label[atom].setText(str(ket))
             self.ket_label[atom].setStyleSheet(label_theme)
         except Exception as err:
@@ -200,7 +179,7 @@ class KetConfigLifetimes(KetConfig):
             self.worker_label.wait()
 
         def get_lifetime() -> float:
-            ket = self.get_ket_atom(0)
+            ket = self.get_ket_atom(0, ask_download=True)
             temperature = self.get_temperature()
             return ket.get_lifetime(temperature, temperature_unit="K", unit="mus")
 

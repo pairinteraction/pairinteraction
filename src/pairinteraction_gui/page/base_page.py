@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
+from pairinteraction_gui.config.ket_config import KetConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
@@ -45,6 +46,8 @@ class BasePage(WidgetV):
 
 class SimulationPage(BasePage):
     """Base class for all simulation pages in this application."""
+
+    ket_config: KetConfig
 
     plotwidget: PlotWidget
 

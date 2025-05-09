@@ -37,6 +37,9 @@ class TwoAtomsPage(CalculationPage):
         self.calculation_config.energy_range.setValues(-0.5, 0.5)
         self.calculation_config.energy_range.setChecked(False)
 
+        self.ket_config.signal_species_changed.connect(self.basis_config.on_species_changed)
+        self.ket_config.signal_species_changed.connect(self.plotwidget.clear)
+
     def before_calculate(self) -> None:
         self.basis_config.clear_basis_pair_label()
         return super().before_calculate()
