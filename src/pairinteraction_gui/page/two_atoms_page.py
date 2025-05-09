@@ -7,6 +7,7 @@ from typing import Any
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, ResultsTwoAtoms, calculate_two_atoms
 from pairinteraction_gui.config import (
     BasisConfigTwoAtoms,
+    CalculationConfig,
     KetConfigTwoAtoms,
     SystemConfigTwoAtoms,
 )
@@ -28,6 +29,13 @@ class TwoAtomsPage(CalculationPage):
         self.ket_config = KetConfigTwoAtoms(self)
         self.basis_config = BasisConfigTwoAtoms(self)
         self.system_config = SystemConfigTwoAtoms(self)
+        self.calculation_config = CalculationConfig(self)
+
+        # Set some better defaults for the two atoms page
+        self.calculation_config.number_state_labels.setValue(5)
+        self.calculation_config.number_state_labels.setChecked(False)
+        self.calculation_config.energy_range.setValues(-0.5, 0.5)
+        self.calculation_config.energy_range.setChecked(False)
 
     def before_calculate(self) -> None:
         self.basis_config.clear_basis_pair_label()

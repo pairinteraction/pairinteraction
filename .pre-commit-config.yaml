@@ -60,4 +60,4 @@ repos:
     rev: v5.0.2
     hooks:
       - id: reuse-lint-file
-        exclude: '^(?!CMakeLists\.txt$|.*\.(cmake|toml|py|cpp|hpp)$)'
+        exclude: '^(?!CMakeLists\.txt$|.*\.(cmake|toml|py|cpp|hpp|qss)$)'

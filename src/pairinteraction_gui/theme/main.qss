@@ -1,0 +1,75 @@
+/* SPDX-FileCopyrightText: 2025 Pairinteraction Developers */
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
+
+QMainWindow {
+    background-color: #ffffff;
+}
+
+QStatusBar {
+    background-color: #272727;
+    color: #ffffff;
+}
+
+/* Set style for toolbar */
+QToolBar {
+    background-color: #272727;
+    border: none;
+}
+QToolButton {
+    background-color: #272727;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+    spacing: 15px;
+    padding: 10px;
+    margin: 5px;
+}
+QToolButton:hover {
+    background-color: #6e6e6e;
+}
+QToolButton:checked {
+    background-color: #007bff;
+}
+
+/* Set style for dockwidget/toolbox */
+QDockWidget QToolBox QWidget  {
+    background-color: #ffffff;
+    color: #000000;
+}
+QDockWidget QToolBox {
+    background-color: #ffffff;  /* should be same as QDockWidget QToolBox QWidget: background-color */
+    border: 1px solid #000000;
+    border-top-style: none;
+    border-bottom-style: none;
+}
+QDockWidget QToolBox::tab {
+    background-color: #272727;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    color: #ffffff;
+    font-weight: bold;
+}
+QDockWidget QToolBox::tab:hover {
+    background-color: #6e6e6e;
+}
+QDockWidget QToolBox::tab:selected {
+    background-color: #007bff;
+}
+
+/* Set style for calc and export buttons */
+QPushButton {
+    background-color: #dcdcdc;
+    color: #000000;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+QPushButton:hover, QPushButton:pressed {
+    background-color: #909090;
+}
+
+/* Set style for export menu */
+QMenu::item:selected {
+    background-color: #909090;
+}

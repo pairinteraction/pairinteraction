@@ -4,7 +4,6 @@
 """Test the conversion from BaseUnits (=atomic units) used in the backend and the units input and output to the user."""
 
 import numpy as np
-
 import pairinteraction.real as pi
 from pairinteraction.units import BaseUnits, QuantityScalar, ureg
 

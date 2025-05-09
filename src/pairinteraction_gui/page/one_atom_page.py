@@ -7,6 +7,7 @@ from typing import Any
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
     BasisConfigOneAtom,
+    CalculationConfig,
     KetConfigOneAtom,
     SystemConfigOneAtom,
 )
@@ -28,6 +29,7 @@ class OneAtomPage(CalculationPage):
         self.ket_config = KetConfigOneAtom(self)
         self.basis_config = BasisConfigOneAtom(self)
         self.system_config = SystemConfigOneAtom(self)
+        self.calculation_config = CalculationConfig(self)
 
     def calculate(self) -> tuple[ParametersOneAtom, ResultsOneAtom]:
         parameters = ParametersOneAtom.from_page(self)
@@ -36,7 +38,6 @@ class OneAtomPage(CalculationPage):
 
     def update_plot(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
         super().update_plot(parameters, results)
-
         self.add_short_labels(results)
         self.plotwidget.canvas.draw()
 
@@ -44,12 +45,15 @@ class OneAtomPage(CalculationPage):
         self,
         results: ResultsOneAtom,
     ) -> None:
+        if 0 not in results.state_labels:
+            return
+
         ax = self.plotwidget.canvas.ax
         x_lim = ax.get_xlim()
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(results.state_labels_0, results.energies[0]):
+        for ket_label, energy in zip(results.state_labels[0], results.energies[0]):
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")

@@ -21,16 +21,6 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
 
         self.setup_zoom()
 
-    def reset_view(self) -> None:
-        """Reset the view to show all data."""
-        # for just scatter plots this does not work
-        # self.ax.relim()
-        # self.ax.autoscale(enable=True, axis='both')
-        # so we do it manually for now
-        self.ax.set_xlim(self._xlim_orig)
-        self.ax.set_ylim(self._ylim_orig)
-        self.draw(False)
-
     def setup_zoom(self) -> None:
         """Set up mouse wheel zoom functionality."""
         # Wheel event accumulation variables
@@ -72,19 +62,14 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
         if x_min <= x_data <= x_max:
             x_min_new = x_data - (x_data - x_min) * scale_factor
             x_max_new = x_data + (x_max - x_data) * scale_factor
-            self.ax.set_xlim(x_min_new, x_max_new)
+            self.ax.set_xbound(x_min_new, x_max_new)
+            self.ax.set_autoscalex_on(False)
 
         if y_min <= y_data <= y_max:
             y_min_new = y_data - (y_data - y_min) * scale_factor
             y_max_new = y_data + (y_max - y_data) * scale_factor
-            self.ax.set_ylim(y_min_new, y_max_new)
+            self.ax.set_ybound(y_min_new, y_max_new)
+            self.ax.set_autoscaley_on(False)
 
         # Redraw the canvas
-        self.draw(False)
-
-    def draw(self, new_data: bool = True) -> None:
-        """Draw the canvas."""
-        super().draw()
-        if new_data:
-            self._xlim_orig = self.ax.get_xlim()
-            self._ylim_orig = self.ax.get_ylim()
+        self.draw()
