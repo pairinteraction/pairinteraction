@@ -5,11 +5,13 @@ import logging
 import os
 from functools import wraps
 from multiprocessing.pool import Pool
+from pathlib import Path
 from threading import Thread
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, TypeVar
 
-from PySide6.QtCore import QObject, QThread, Signal
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QObject, QSize, Qt, QThread, Signal
+from PySide6.QtGui import QMovie
+from PySide6.QtWidgets import QApplication, QLabel, QWidget
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
@@ -23,6 +25,7 @@ logger = logging.getLogger(__name__)
 class WorkerSignals(QObject):
     """Signals to be used by the Worker class."""
 
+    started = Signal()
     finished = Signal(bool)
     error = Signal(Exception)
     result = Signal(object)
@@ -52,10 +55,34 @@ class MultiThreadWorker(QThread):
         self.signals = WorkerSignals()
         self.finished.connect(self.finish_up)
 
+    def enable_busy_indicator(self, widget: "QWidget") -> None:
+        """Run a loading gif while the worker is running."""
+        self.busy_label = QLabel(widget)
+        gif_path = Path(__file__).parent / "images" / "loading.gif"
+        self.busy_movie = QMovie(str(gif_path))
+        self.busy_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
+        self.busy_label.setMovie(self.busy_movie)
+        self.busy_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.busy_label.setGeometry((widget.width() - 100) // 2, (widget.height() - 100) // 2, 100, 100)
+
+        self.signals.started.connect(self._start_gif)
+        self.signals.finished.connect(self._stop_gif)
+
+    def _start_gif(self) -> None:
+        self.busy_label.show()
+        self.busy_movie.start()
+
+    def _stop_gif(self, _success: bool = True) -> None:
+        if hasattr(self, "busy_movie"):
+            self.busy_movie.stop()
+        if hasattr(self, "busy_label"):
+            self.busy_label.hide()
+
     def run(self) -> None:
         """Initialise the runner function with passed args, kwargs."""
         logger.debug("Run on thread %s", self)
         success = False
+        self.signals.started.emit()
         try:
             result = self.fn(*self.args, **self.kwargs)
             success = True
@@ -81,6 +108,7 @@ class MultiThreadWorker(QThread):
             if thread.isRunning():
                 logger.debug("Terminating thread %s.", thread)
                 thread.terminate()
+                thread.signals.finished.emit(False)
                 thread.wait()
 
         cls.all_threads.clear()
