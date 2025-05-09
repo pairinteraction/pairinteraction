@@ -55,7 +55,7 @@ The graphical user interface (GUI) of pairinteraction can be started by executin
 
     pairinteraction gui
 
-from the command line. Tutorials for the graphical user interface will be added in the future.
+from the command line. Below we show a few examples of how one can use the GUI.
 
-.. image:: examples_gui/preview.png
-    :alt: GUI Preview
+.. raw:: html
+    :file: examples_gui/slideshow.html
