@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 
+from pairinteraction.cli import download_databases
+from pairinteraction_gui.worker import run_in_other_process
+
+
 class DatabaseMissingError(Exception):
     def __init__(self, err: RuntimeError) -> None:
         super().__init__(str(err))
@@ -21,3 +25,9 @@ def get_custom_error(err: Exception) -> Exception:
     if isinstance(err, ValueError) and ("No state found" in str(err) or "quantum number m must be" in str(err)):
         return NoStateFoundError(err)
     return err
+
+
+@run_in_other_process
+def download_databases_mp(species: list[str]) -> None:
+    """Download the databases in a separate process."""
+    download_databases(species)

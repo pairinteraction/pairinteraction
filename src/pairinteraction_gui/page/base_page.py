@@ -8,12 +8,10 @@ from typing import Any, Optional
 
 import nbformat
 from nbconvert import PythonExporter
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QHideEvent, QMovie, QShowEvent
+from PySide6.QtGui import QHideEvent, QShowEvent
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
-    QLabel,
     QMenu,
     QPushButton,
     QStyle,
@@ -116,15 +114,6 @@ class CalculationPage(SimulationPage):
 
         self.layout().addLayout(bottom_layout)
 
-        # Setup loading animation
-        self.loading_label = QLabel(self)
-        gif_path = Path(__file__).parent.parent / "images" / "loading.gif"
-        self.loading_movie = QMovie(str(gif_path))
-        self.loading_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
-        self.loading_label.setMovie(self.loading_movie)
-        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.loading_label.hide()
-
     def calculate_clicked(self) -> None:
         self._calculation_finished = False
         self._plot_finished = False
@@ -138,6 +127,7 @@ class CalculationPage(SimulationPage):
             worker_plot.signals.finished.connect(lambda _sucess: setattr(self, "_plot_finished", True))
 
         worker = MultiThreadWorker(self.calculate)
+        worker.enable_busy_indicator(self)
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
         worker.signals.finished.connect(lambda _sucess: setattr(self, "_calculation_finished", True))
@@ -148,19 +138,10 @@ class CalculationPage(SimulationPage):
         self.calculate_and_abort.setCurrentNamedWidget("Abort")
         self.plotwidget.clear()
 
-        # run loading gif
-        self.loading_label.setGeometry((self.width() - 100) // 2, (self.height() - 100) // 2, 100, 100)
-        self.loading_label.show()
-        self.loading_movie.start()
-
         self._start_time = time.perf_counter()
 
     def after_calculate(self, success: bool) -> None:
         time_needed = time.perf_counter() - self._start_time
-
-        # stop loading gif
-        self.loading_movie.stop()
-        self.loading_label.hide()
 
         if success:
             show_status_tip(self, f"Calculation finished after {time_needed:.2f} seconds.", logger=logger)

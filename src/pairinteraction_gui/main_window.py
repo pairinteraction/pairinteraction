@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pairinteraction._wrapped import Database
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
     LifetimesPage,
@@ -24,7 +25,8 @@ from pairinteraction_gui.page import (
 )
 from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.theme import main_theme
-from pairinteraction_gui.worker import MultiProcessWorker
+from pairinteraction_gui.utils import download_databases_mp
+from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import BasePage
@@ -170,9 +172,15 @@ class MainWindow(QMainWindow):
 
         download = msg_box.exec() == QMessageBox.StandardButton.Yes
         if download:
-            from pairinteraction._wrapped import Database
-            from pairinteraction.cli import download_databases
-
             Database._global_database = None
-            download_databases([species])
+            self.statusbar.showMessage("Downloading database table ...", timeout=0)
+
+            worker = MultiThreadWorker(lambda: download_databases_mp([species]))
+            worker.enable_busy_indicator(self.stacked_pages.currentWidget())
+
+            msg = "Successfully downloaded database table for " + species
+            worker.signals.result.connect(lambda _result: self.statusbar.showMessage(msg, timeout=0))
+            worker.signals.result.connect(lambda _result: MultiProcessWorker.terminate_all(create_new_pool=True))
+            worker.start()
+
         return download
