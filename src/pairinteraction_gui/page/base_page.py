@@ -24,9 +24,7 @@ from pairinteraction_gui.app import Application
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
-from pairinteraction_gui.qobjects import WidgetV
-from pairinteraction_gui.qobjects.events import show_status_tip
-from pairinteraction_gui.qobjects.named_stacked_widget import NamedStackedWidget
+from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
 from pairinteraction_gui.worker import Worker
 
 logger = logging.getLogger(__name__)
@@ -53,41 +51,6 @@ class SimulationPage(BasePage):
 
     plotwidget: PlotWidget
 
-    _button_style = """
-        QPushButton {
-            padding: 8px 16px;
-            background-color: #343a40;
-            color: #ffffff;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        QPushButton:hover {
-            background-color: #495057;
-        }
-        QPushButton:pressed {
-            background-color: #000000;
-        }
-    """
-
-    _button_menu_style = """
-        QMenu {
-            background-color: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 4px;
-            padding: 4px;
-        }
-        QMenu::item {
-            padding: 6px 24px;
-            color: #000000;
-            font-size: 14px;
-        }
-        QMenu::item:selected {
-            background-color: #ffffff;
-        }
-    """
-
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
@@ -111,12 +74,48 @@ class CalculationPage(SimulationPage):
     """Base class for all pages with a calculation button."""
 
     plotwidget: PlotEnergies
+    _calculation_finished = False
+    _plot_finished = False
 
     def setupWidget(self) -> None:
         super().setupWidget()
 
+        # Plot Panel
         self.plotwidget = PlotEnergies(self)
         self.layout().addWidget(self.plotwidget)
+
+        # Control panel below the plot
+        bottom_layout = QHBoxLayout()
+
+        # Calculate/Abort stacked buttons
+        self.calculate_and_abort = NamedStackedWidget[QPushButton](self)
+
+        calculate_button = QPushButton("Calculate")
+        calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
+        calculate_button.clicked.connect(self.calculate_clicked)
+        self.calculate_and_abort.addNamedWidget(calculate_button, "Calculate")
+
+        abort_button = QPushButton("Abort")
+        abort_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop))
+        abort_button.clicked.connect(self.abort_clicked)
+        self.calculate_and_abort.addNamedWidget(abort_button, "Abort")
+
+        self.calculate_and_abort.setFixedHeight(50)
+        bottom_layout.addWidget(self.calculate_and_abort, stretch=2)
+
+        # Create export button with menu
+        export_button = QPushButton("Export")
+        export_button.setObjectName("Export")
+        export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
+        export_menu = QMenu(self)
+        export_menu.addAction("Export as PNG", self.export_png)
+        export_menu.addAction("Export as Python script", self.export_python)
+        export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
+        export_button.setMenu(export_menu)
+        export_button.setFixedHeight(50)
+        bottom_layout.addWidget(export_button, stretch=1)
+
+        self.layout().addLayout(bottom_layout)
 
         # Setup loading animation
         self.loading_label = QLabel(self)
@@ -127,44 +126,9 @@ class CalculationPage(SimulationPage):
         self.loading_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.loading_label.hide()
 
-        # Control panel below the plot
-        control_layout = QHBoxLayout()
-
-        # Calculate/Abort stacked buttons
-        self.calculate_and_abort = NamedStackedWidget[QPushButton](self)
-
-        calculate_button = QPushButton("Calculate")
-        calculate_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserReload))
-        calculate_button.clicked.connect(self.calculate_clicked)
-        calculate_button.setStyleSheet(self._button_style)
-        self.calculate_and_abort.addNamedWidget(calculate_button, "Calculate")
-
-        abort_button = QPushButton("Abort")
-        abort_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_BrowserStop))
-        abort_button.clicked.connect(self.abort_clicked)
-        abort_button.setStyleSheet(self._button_style)
-        self.calculate_and_abort.addNamedWidget(abort_button, "Abort")
-
-        self.calculate_and_abort.setFixedHeight(50)
-        control_layout.addWidget(self.calculate_and_abort, stretch=2)
-
-        # Create export button with menu
-        export_button = QPushButton("Export")
-        export_button.setObjectName("Export")
-        export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
-        export_button.setStyleSheet(self._button_style)
-        export_menu = QMenu(self)
-        export_menu.setStyleSheet(self._button_menu_style)
-        export_menu.addAction("Export as PNG", self.export_png)
-        export_menu.addAction("Export as Python script", self.export_python)
-        export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
-        export_button.setMenu(export_menu)
-        export_button.setFixedHeight(50)
-        control_layout.addWidget(export_button, stretch=1)
-
-        self.layout().addLayout(control_layout)
-
     def calculate_clicked(self) -> None:
+        self._calculation_finished = False
+        self._plot_finished = False
         self.before_calculate()
 
         def update_plot(
@@ -172,10 +136,12 @@ class CalculationPage(SimulationPage):
         ) -> None:
             worker_plot = Worker(self.update_plot, *parameters_and_results)
             worker_plot.start()
+            worker_plot.signals.finished.connect(lambda _sucess: setattr(self, "_plot_finished", True))
 
         worker = Worker(self.calculate)
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
+        worker.signals.finished.connect(lambda _sucess: setattr(self, "_calculation_finished", True))
         worker.start()
 
     def before_calculate(self) -> None:
@@ -216,10 +182,10 @@ class CalculationPage(SimulationPage):
 
         self.plotwidget.plot(x_values, energies, overlaps, x_label)
 
-        ind = 0 if parameters.n_atoms == 1 else -1
-        self.plotwidget.add_cursor(x_values[ind], energies[ind], results.state_labels_0)
+        self.plotwidget.add_cursor(x_values, energies, results.state_labels)
 
         self.plotwidget.canvas.draw()
+        self._plot_finished = False
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""

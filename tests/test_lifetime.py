@@ -4,11 +4,10 @@
 """Test calculating lifetimes."""
 
 import numpy as np
-import pytest
-from scipy.optimize import curve_fit
-
 import pairinteraction.real as pi
+import pytest
 from pairinteraction import ureg
+from scipy.optimize import curve_fit
 
 
 def test_lifetime() -> None:

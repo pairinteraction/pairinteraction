@@ -145,7 +145,7 @@ test-extras = ["tests"]
 test-requires = ["check-wheel-contents>=0.6"]
 test-command = [
   "cd {project}",
-  "pytest",
+  "pytest --verbose -s",  # -s for more output
   "check-wheel-contents {wheel}",
 ]
 

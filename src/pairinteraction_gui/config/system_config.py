@@ -9,8 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import IntSpinBox, WidgetForm
-from pairinteraction_gui.qobjects.item import RangeItem
+from pairinteraction_gui.qobjects.item import QnItemInt, RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
@@ -28,16 +27,13 @@ class SystemConfig(BaseConfig):
     title = "System"
     page: Union["OneAtomPage", "TwoAtomsPage"]
 
-    def postSetupWidget(self) -> None:
-        self.layout().addStretch()
-
     def setupEField(self) -> None:
         efield_label = QLabel("<b>Electric field</b>")
         self.layout().addWidget(efield_label)
 
-        self.Ex = RangeItem(self, "Ex", (-999, 999), unit="V/cm", tooltip_label="electric field in x-direction")
-        self.Ey = RangeItem(self, "Ey", (-999, 999), unit="V/cm", tooltip_label="electric field in y-direction")
-        self.Ez = RangeItem(self, "Ez", (-999, 999), unit="V/cm", tooltip_label="electric field in z-direction")
+        self.Ex = RangeItem(self, "Ex", unit="V/cm", tooltip_label="electric field in x-direction")
+        self.Ey = RangeItem(self, "Ey", unit="V/cm", tooltip_label="electric field in y-direction")
+        self.Ez = RangeItem(self, "Ez", unit="V/cm", tooltip_label="electric field in z-direction")
 
         self.layout().addWidget(self.Ex)
         self.layout().addWidget(self.Ey)
@@ -47,26 +43,17 @@ class SystemConfig(BaseConfig):
         bfield_label = QLabel("<b>Magnetic field</b>")
         self.layout().addWidget(bfield_label)
 
-        self.Bx = RangeItem(self, "Bx", (-999, 999), unit="Gauss", tooltip_label="magnetic field in x-direction")
-        self.By = RangeItem(self, "By", (-999, 999), unit="Gauss", tooltip_label="magnetic field in y-direction")
-        self.Bz = RangeItem(self, "Bz", (-999, 999), unit="Gauss", tooltip_label="magnetic field in z-direction")
+        self.Bx = RangeItem(self, "Bx", unit="Gauss", tooltip_label="magnetic field in x-direction")
+        self.By = RangeItem(self, "By", unit="Gauss", tooltip_label="magnetic field in y-direction")
+        self.Bz = RangeItem(self, "Bz", unit="Gauss", tooltip_label="magnetic field in z-direction")
 
         self.layout().addWidget(self.Bx)
         self.layout().addWidget(self.By)
         self.layout().addWidget(self.Bz)
 
-    def setupSteps(self) -> None:
-        steps_label = QLabel("<b>Calculation steps</b>")
-        self.layout().addWidget(steps_label)
-
-        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
-        self.steps_spinbox = IntSpinBox(vmin=1, vmax=10000, vdefault=100, tooltip="Number of steps for the calculation")
-        steps_widget.layout().addRow("Number of steps", self.steps_spinbox)
-        self.layout().addWidget(steps_widget)
-
     def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:
         """Return the electric and magnetic field ranges."""
-        steps = self.steps_spinbox.value()
+        steps = self.page.calculation_config.steps.value()
         all_ranges = self._get_all_ranges()
         ranges_min_max: dict[str, tuple[float, float]] = {
             item.label.text(): item.values() for item in all_ranges if item.isChecked()
@@ -87,7 +74,6 @@ class SystemConfigOneAtom(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
-        self.setupSteps()
 
 
 class SystemConfigTwoAtoms(SystemConfig):
@@ -99,30 +85,33 @@ class SystemConfigTwoAtoms(SystemConfig):
         self.setupDistance()
         self.setupAngle()
         self.setupOrder()
-        self.setupSteps()
 
     def setupDistance(self) -> None:
         label = QLabel("<b>Distance</b>")
         self.layout().addWidget(label)
 
-        self.distance = RangeItem(self, "Distance", (0, 999), (3, 8), unit="<span>&mu;m</span>")
+        self.distance = RangeItem(self, "Distance", vdefaults=(3, 8), vrange=(0, 999), unit="<span>&mu;m</span>")
         self.layout().addWidget(self.distance)
 
     def setupAngle(self) -> None:
         label = QLabel("<b>Angle</b> (0° = z-axis, 90° = x-axis)")
         self.layout().addWidget(label)
 
-        self.angle = RangeItem(self, "Angle", (0, 360), (0, 0), unit="degree")
+        self.angle = RangeItem(self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree")
         self.layout().addWidget(self.angle)
 
     def setupOrder(self) -> None:
-        steps_label = QLabel("<b>Multipole expansion order</b>")
-        self.layout().addWidget(steps_label)
-
-        steps_widget = WidgetForm(margin=(0, 0, 0, 0))
-        self.order = IntSpinBox(self, vmin=3, vmax=5, vdefault=3, tooltip="Select the order of the multipole expansion")
-        steps_widget.layout().addRow("Multipole order", self.order)
-        self.layout().addWidget(steps_widget)
+        self.layout().addWidget(QLabel("<b>Multipole expansion order</b>"))
+        self.order = QnItemInt(
+            self,
+            "Multipole order",
+            vmin=3,
+            vmax=5,
+            vdefault=3,
+            tooltip="Select the order of the multipole expansion",
+            checkable=False,
+        )
+        self.layout().addWidget(self.order)
 
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
