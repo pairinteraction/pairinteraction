@@ -218,12 +218,3 @@ class RestrictionsMQDT(RestrictionsBase):
         self.items["m"] = QnItemInt(
             self, "Δm", vdefault=5, tooltip="Restriction for the Magnetic quantum number m", checked=False
         )
-
-        # TODO this is not yet implemented
-        # self.items["l_ryd"] = QnItemDouble(
-        #     self,
-        #     "Δl_ryd",
-        #     vdefault=3,
-        #     tooltip="Restriction for the Orbital angular momentum l_ryd of the Rydberg electron",
-        #     checked=False,
-        # )
