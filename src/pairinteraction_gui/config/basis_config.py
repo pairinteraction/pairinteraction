@@ -152,12 +152,11 @@ class BasisConfigTwoAtoms(BasisConfig):
             vmin=0,
             unit="GHz",
             tooltip="Restriction for the pair energy difference to the state of interest",
-            checkable=False,
         )
         self.layout().addWidget(self.pair_delta_energy)
         self.pair_m_range = RangeItem(
             self,
-            "total m",
+            "Total m",
             tooltip_label="pair total angular momentum m",
             checked=False,
         )

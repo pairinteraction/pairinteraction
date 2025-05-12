@@ -126,6 +126,11 @@ class BasisPair(BasisBase[KetPairType, StateType]):
         if energy is not None:
             min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "energy").to_base_unit()
             max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "energy").to_base_unit()
+            # in atomic units all energies should be on the order of -0.5 * Z^2 to 0
+            # so choosing some very large values for the limits should be fine
+            # (we cant use np.inf here, since this is passed to cpp code)
+            min_energy_au = np.clip(min_energy_au, -1e10, 1e10)  # FIXME
+            max_energy_au = np.clip(max_energy_au, -1e10, 1e10)  # FIXME
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 
