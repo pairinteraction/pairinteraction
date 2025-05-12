@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -184,7 +184,7 @@ class RestrictionsBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    items: dict[str, "_QnItem"]
+    items: dict[str, "_QnItem[Any]"]
 
     def postSetupWidget(self) -> None:
         for _key, item in self.items.items():

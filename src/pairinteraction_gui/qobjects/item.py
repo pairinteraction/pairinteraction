@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import Callable, Optional, Union
+import typing as t
+from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar, Union
 
+import numpy as np
 from PySide6.QtWidgets import (
     QCheckBox,
     QLabel,
@@ -12,6 +14,24 @@ from PySide6.QtWidgets import (
 
 from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox, HalfIntSpinBox, IntSpinBox
 from pairinteraction_gui.qobjects.widget import WidgetH
+
+if TYPE_CHECKING:
+    P = TypeVar("P")
+
+ValueType = TypeVar("ValueType", int, float, complex)
+
+
+@t.runtime_checkable
+class NotSet(t.Protocol):
+    """Singleton for a not set value and type at the same time.
+
+    See Also:
+    https://stackoverflow.com/questions/77571796/how-to-create-singleton-object-which-could-be-used-both-as-type-and-value-simi
+
+    """
+
+    @staticmethod
+    def __not_set() -> None: ...
 
 
 class Item(WidgetH):
@@ -53,7 +73,7 @@ class Item(WidgetH):
         self.checkbox.stateChanged.connect(lambda state: func())
 
 
-class _QnItem(WidgetH):
+class _QnItem(WidgetH, Generic[ValueType]):
     """Widget for displaying a range with min and max spinboxes."""
 
     margin = (20, 0, 20, 0)
@@ -64,10 +84,10 @@ class _QnItem(WidgetH):
         self,
         parent: QWidget,
         label: str,
-        vmin: float = 0,
-        vmax: float = 999,
-        vdefault: float = 0,
-        vstep: Optional[float] = None,
+        vmin: ValueType = 0,
+        vmax: ValueType = 999,
+        vdefault: ValueType = 0,
+        vstep: Optional[ValueType] = None,
         unit: str = "",
         tooltip: Optional[str] = None,
         checkable: bool = True,
@@ -131,33 +151,33 @@ class _QnItem(WidgetH):
             raise ValueError("Cannot uncheck a non-checkable item.")
         self.checkbox.setChecked(checked)
 
-    def value(self, default: Optional[float] = None) -> float:
+    def value(
+        self,
+        default: Union["P", NotSet] = NotSet,
+    ) -> Union[ValueType, "P"]:
         """Return the value of the spinbox."""
         if not self.isChecked():
-            if default is None:
+            if isinstance(default, NotSet):
                 raise ValueError("Checkbox is not checked and no default value is provided.")
             return default
-        return self.spinbox.value()
+        return self.spinbox.value()  # type: ignore [return-value]
 
-    def setValue(self, value: float) -> None:
+    def setValue(self, value: ValueType) -> None:
         """Set the value of the spinbox and set the checkbox state to checked if applicable."""
         if isinstance(self.checkbox, QCheckBox):
             self.checkbox.setChecked(True)
         self.spinbox.setValue(value)  # type: ignore [arg-type]
 
 
-class QnItemInt(_QnItem):
+class QnItemInt(_QnItem[int]):
     _spinbox_class = IntSpinBox
 
-    def value(self, default: Optional[int] = None) -> int:  # type: ignore [override]
-        return super().value(default)  # type: ignore [return-value]
 
-
-class QnItemHalfInt(_QnItem):
+class QnItemHalfInt(_QnItem[float]):
     _spinbox_class = HalfIntSpinBox
 
 
-class QnItemDouble(_QnItem):
+class QnItemDouble(_QnItem[float]):
     _spinbox_class = DoubleSpinBox
 
 
@@ -172,7 +192,7 @@ class RangeItem(WidgetH):
         parent: QWidget,
         label: str,
         vdefaults: tuple[float, float] = (0, 0),
-        vrange: tuple[float, float] = (-999, 999),
+        vrange: tuple[float, float] = (-np.inf, np.inf),
         unit: str = "",
         tooltip_label: Optional[str] = None,
         checkable: bool = True,
@@ -248,10 +268,10 @@ class RangeItem(WidgetH):
             raise ValueError("Cannot uncheck a non-checkable item.")
         self.checkbox.setChecked(checked)
 
-    def values(self, default: Optional[tuple[float, float]] = None) -> tuple[float, float]:
+    def values(self, default: Union[tuple[float, float], "P", NotSet] = NotSet) -> Union[tuple[float, float], "P"]:
         """Return the values of the min and max spinboxes."""
         if not self.isChecked():
-            if default is None:
+            if isinstance(default, NotSet):
                 raise ValueError("Checkbox is not checked and no default value is provided.")
             return default
         return (self.min_spinbox.value(), self.max_spinbox.value())

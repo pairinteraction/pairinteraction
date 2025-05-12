@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import re
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from PySide6.QtWidgets import (
     QComboBox,
@@ -246,7 +246,7 @@ class QnBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    items: dict[str, "_QnItem"]
+    items: dict[str, "_QnItem[Any]"]
 
     def postSetupWidget(self) -> None:
         for _key, item in self.items.items():
@@ -263,15 +263,17 @@ class QnSQDT(QnBase):
 
     def setupWidget(self) -> None:
         self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=80, tooltip="Principal quantum number n")
-        self.items["l"] = QnItemInt(self, "l", tooltip="Orbital angular momentum l")
+        self.items["l"] = QnItemInt(self, "l", vmin=0, tooltip="Orbital angular momentum l")
 
         s = self.s
         if s % 1 == 0:
             self.items["j"] = QnItemInt(self, "j", vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
-            self.items["m"] = QnItemInt(self, "m", vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
+            self.items["m"] = QnItemInt(self, "m", vmin=-999, vmax=999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
             self.items["j"] = QnItemHalfInt(self, "j", vmin=s, vdefault=s, tooltip="Total angular momentum j")
-            self.items["m"] = QnItemHalfInt(self, "m", vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
+            self.items["m"] = QnItemHalfInt(
+                self, "m", vmin=-999.5, vmax=999.5, vdefault=0.5, tooltip="Magnetic quantum number m"
+            )
 
 
 class QnMQDT(QnBase):
@@ -287,15 +289,22 @@ class QnMQDT(QnBase):
             self, "nu", vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
         )
         self.items["s"] = QnItemDouble(self, "s", vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
-        self.items["j"] = QnItemDouble(self, "j", vstep=1, tooltip="Total angular momentum j")
+        self.items["j"] = QnItemDouble(self, "j", vmin=0, vstep=1, tooltip="Total angular momentum j")
 
         if self.m_is_int:
             self.items["f"] = QnItemInt(self, "f", vmin=0, vdefault=0, tooltip="Total angular momentum f")
-            self.items["m"] = QnItemInt(self, "m", vmin=-999, vdefault=0, tooltip="Magnetic quantum number m")
+            self.items["m"] = QnItemInt(self, "m", vmin=-999, vmax=999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
             self.items["f"] = QnItemHalfInt(self, "f", vmin=0.5, vdefault=0.5, tooltip="Total angular momentum f")
-            self.items["m"] = QnItemHalfInt(self, "m", vmin=-999, vdefault=0.5, tooltip="Magnetic quantum number m")
+            self.items["m"] = QnItemHalfInt(
+                self, "m", vmin=-999.5, vmax=999.5, vdefault=0.5, tooltip="Magnetic quantum number m"
+            )
 
         self.items["l_ryd"] = QnItemDouble(
-            self, "l_ryd", vstep=1, tooltip="Orbital angular momentum l_ryd of the Rydberg electron", checked=False
+            self,
+            "l_ryd",
+            vmin=0,
+            vstep=1,
+            tooltip="Orbital angular momentum l_ryd of the Rydberg electron",
+            checked=False,
         )
