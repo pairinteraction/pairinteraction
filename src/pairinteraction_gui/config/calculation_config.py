@@ -23,7 +23,7 @@ class CalculationConfig(BaseConfig):
             "Number of steps",
             unit="",
             vmin=1,
-            vmax=999,
+            vmax=9999,
             vdefault=100,
             tooltip="Number of steps for the calculation",
         )

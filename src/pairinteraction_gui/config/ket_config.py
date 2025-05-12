@@ -82,7 +82,7 @@ class KetConfig(BaseConfig):
         stacked_qn.addNamedWidget(QnMQDT(m_is_int=False), "mqdt_halfint")
 
         for _, widget in stacked_qn.items():
-            for _, item in widget.items.items():
+            for item in widget.items.values():
                 item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_qn)
 
@@ -249,7 +249,7 @@ class QnBase(WidgetV):
     items: dict[str, "_QnItem[Any]"]
 
     def postSetupWidget(self) -> None:
-        for _key, item in self.items.items():
+        for item in self.items.values():
             self.layout().addWidget(item)
 
 

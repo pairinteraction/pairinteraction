@@ -52,9 +52,13 @@ class HalfIntSpinBox(QDoubleSpinBox):
         """Initialize the double spin box."""
         super().__init__(parent)
 
+        vstep = vstep if vstep is not None else 1
+        assert vdefault % 1 == 0.5, "Default value must be a half integer."  # NOSONAR
+        assert vstep % 1 == 0, "Step value must be an integer."
+
         self.setRange(vmin, vmax)
         self.setValue(vdefault)
-        self.setSingleStep(vstep if vstep is not None else 1)
+        self.setSingleStep(vstep)
         self.setDecimals(1)
 
         if suffix:
@@ -85,10 +89,8 @@ class DoubleSpinBox(QDoubleSpinBox):
         """Initialize the double spin box."""
         super().__init__(parent)
 
-        if vstep is None:
-            vstep = 10**-decimals
         self.setDecimals(decimals)
-        self.setSingleStep(vstep)
+        self.setSingleStep(vstep if vstep is not None else 10**-decimals)
         self.setRange(vmin, vmax)
         self.setValue(vdefault)
 
