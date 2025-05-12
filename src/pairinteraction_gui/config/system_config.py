@@ -90,7 +90,7 @@ class SystemConfigTwoAtoms(SystemConfig):
         label = QLabel("<b>Distance</b>")
         self.layout().addWidget(label)
 
-        self.distance = RangeItem(self, "Distance", vdefaults=(3, 8), vrange=(0, 999), unit="<span>&mu;m</span>")
+        self.distance = RangeItem(self, "Distance", vdefaults=(3, 8), vrange=(0, np.inf), unit="<span>&mu;m</span>")
         self.layout().addWidget(self.distance)
 
     def setupAngle(self) -> None:
