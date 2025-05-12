@@ -4,6 +4,7 @@
 import logging
 from typing import TYPE_CHECKING, Optional, Union
 
+import numpy as np
 from attr import dataclass
 
 from pairinteraction import (
@@ -25,14 +26,14 @@ logger = logging.getLogger(__name__)
 class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     """Parameters for the two atoms calculation."""
 
-    pair_delta_energy: float = 999
+    pair_delta_energy: float = np.inf
     pair_m_range: Optional[tuple[float, float]] = None
     order: int = 3
 
     @classmethod
     def from_page(cls, page: "TwoAtomsPage") -> "Self":
         obj = super().from_page(page)
-        obj.pair_delta_energy = page.basis_config.pair_delta_energy.value()
+        obj.pair_delta_energy = page.basis_config.pair_delta_energy.value(np.inf)
         obj.pair_m_range = (
             page.basis_config.pair_m_range.values() if page.basis_config.pair_m_range.isChecked() else None
         )
@@ -42,7 +43,9 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     def to_replacement_dict(self) -> dict[str, str]:
         replacements = super().to_replacement_dict()
         replacements["$MULTIPOLE_ORDER"] = str(self.order)
-        replacements["$PAIR_DELTA_ENERGY"] = str(self.pair_delta_energy)
+        replacements["$PAIR_DELTA_ENERGY"] = (
+            "np.inf" if np.isinf(self.pair_delta_energy) else str(self.pair_delta_energy)
+        )
         replacements["$PAIR_M_RANGE"] = str(self.pair_m_range)
         return replacements
 
