@@ -206,8 +206,12 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
     }
 
+    if (user_defined_green_tensor) {
+        throw std::invalid_argument(
+            "Cannot set interaction order if a user-defined green tensor is set.");
+    }
+
     interaction_order = value;
-    user_defined_green_tensor = nullptr;
 
     return *this;
 }
@@ -221,8 +225,12 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
+    if (user_defined_green_tensor) {
+        throw std::invalid_argument(
+            "Cannot set distance vector if a user-defined green tensor is set.");
+    }
+
     distance_vector = vector;
-    user_defined_green_tensor = nullptr;
 
     return *this;
 }
@@ -231,6 +239,11 @@ template <typename Scalar>
 SystemPair<Scalar> &
 SystemPair<Scalar>::set_green_tensor(std::shared_ptr<const GreenTensor<Scalar>> &green_tensor) {
     this->hamiltonian_requires_construction = true;
+
+    if (std::isfinite(distance_vector[0]) && std::isfinite(distance_vector[1]) &&
+        std::isfinite(distance_vector[2])) {
+        throw std::invalid_argument("Cannot set green tensor if a finite distance vector is set.");
+    }
 
     user_defined_green_tensor = green_tensor;
 

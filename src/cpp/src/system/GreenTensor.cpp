@@ -97,6 +97,11 @@ void GreenTensor<Scalar>::set_entries(
         throw std::invalid_argument("The number of tensors and omegas must match.");
     }
 
+    if (tensors_in_cartesian_coordinates.size() < 4) {
+        throw std::invalid_argument(
+            "At least 4 tensors are required for the applied cubic spline interpolation.");
+    }
+
     auto num_knots = static_cast<int>(omegas.size());
     Eigen::Map<const Eigen::RowVectorXd> knots(omegas.data(), num_knots);
 
