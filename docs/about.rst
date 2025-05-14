@@ -5,14 +5,14 @@ What are Rydberg atoms?
 -----------------------
 
 Rydberg atoms are atoms with one electron excited to a very high energy level. These atoms have exaggerated properties,
-such as a large size, comparatively long lifetimes, and strong interactions with other Rydberg atoms, ions, and
-electromagnetic fields. The properties of the Rydberg atoms can be well-controlled, and the atoms can be trapped
-individually in so-called optical tweezers that can be arranged in arbitrary structures. This makes Rydberg atoms a
-versatile tool for studying quantum phenomena in fundamental research and for applications in quantum technologies. For
-example, their strong sensitivity towards electric and magnetic fields are used for quantum sensors. The strong
-interaction between Rydberg atoms are applied for quantum simulators and to build quantum gates for quantum computing.
-While quantum computing platforms based on Rydberg atoms are still a rather young technology, they already achieve
-fidelities on par with other leading quantum computing platforms, and offer the potential for scalable architectures.
+such as a large size, long lifetimes, and strong interactions with other Rydberg atoms, ions, and electric fields. The
+properties of the Rydberg atoms can be well-controlled, and the atoms can be trapped individually in so-called optical
+tweezers that can be arranged in arbitrary structures. This makes Rydberg atoms a versatile tool for studying quantum
+phenomena in fundamental research and for applications in quantum technologies. For example, their strong sensitivity
+towards fields are used for quantum sensors. The strong interaction between Rydberg atoms are applied for quantum
+simulators and to build quantum gates for quantum computing. While quantum computing platforms based on Rydberg atoms
+are still a rather young technology, they already achieve fidelities on par with other leading quantum computing
+platforms, and offer the potential for scalable architectures.
 
 For what is the pairinteraction software?
 -----------------------------------------
@@ -22,9 +22,8 @@ the needs of the desired application. The pairinteraction software package provi
 interface to calculate the interaction potentials between Rydberg atoms as well as single-atom properties such as
 lifetimes, energies, and energy shifts by electric and magnetic fields. To achieve accurate results, state-of-the-art
 approaches are used (such as multi-channel quantum defect theory for atoms with two valence electrons and Green tensor
-approaches for calculating interactions). Having the backend written in C++ allows for fast calculations, while the
-Python interface provides a user-friendly way to access the functionality. The software is used by researchers around
-the world to answer questions such as:
+approaches for calculating interactions). The software is used by researchers around the world to answer questions such
+as:
 
 - How do interactions between Rydberg atoms or with electromagnetic fields depend on ...
 
@@ -37,10 +36,10 @@ the world to answer questions such as:
 - Is the lifetime of the chosen Rydberg state large enough for the desired application?
 - Is there a simple, effective Hamiltonian that can describe my system of Rydberg atoms?
 
-The software makes use of high-performance libraries such as Intel's MKL library and the DuckDB database engine. This
-enables calculations which have been previously rather tedious/impossible like the accurate calculation of interactions
-between divalent atoms with complex level structures or pair potentials in presence of high electric and magnetic
-fields.
+The backend of the software is written in C++ and makes use of high-performance libraries such as Intel's MKL library
+and the DuckDB database engine. This enables calculations which have been previously rather tedious/impossible like the
+accurate calculation of interactions between divalent atoms with complex level structures or pair potentials in presence
+of high electric and magnetic fields.
 
 To get started with the software, visit the user guide of our documentation. It contains :ref:`tutorials <tutorials>`
 such as a quick start guide, jupyter notebooks with example applications, and an :ref:`API reference <api_reference>`.
