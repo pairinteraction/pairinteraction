@@ -24,6 +24,7 @@ from pairinteraction_gui.page import (
 )
 from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.theme import main_theme
+from pairinteraction_gui.worker import MultiProcessWorker
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import BasePage
@@ -52,6 +53,8 @@ class MainWindow(QMainWindow):
 
         self.init_keyboard_shortcuts()
         self.connect_signals()
+
+        MultiProcessWorker.create_pool()
 
     def connect_signals(self) -> None:
         """Connect signals to slots."""

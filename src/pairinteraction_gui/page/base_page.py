@@ -20,12 +20,11 @@ from PySide6.QtWidgets import (
     QToolBox,
 )
 
-from pairinteraction_gui.app import Application
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
 from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
-from pairinteraction_gui.worker import Worker
+from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
 logger = logging.getLogger(__name__)
 
@@ -134,11 +133,11 @@ class CalculationPage(SimulationPage):
         def update_plot(
             parameters_and_results: tuple[Parameters[Any], Results],
         ) -> None:
-            worker_plot = Worker(self.update_plot, *parameters_and_results)
+            worker_plot = MultiThreadWorker(self.update_plot, *parameters_and_results)
             worker_plot.start()
             worker_plot.signals.finished.connect(lambda _sucess: setattr(self, "_plot_finished", True))
 
-        worker = Worker(self.calculate)
+        worker = MultiThreadWorker(self.calculate)
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
         worker.signals.finished.connect(lambda _sucess: setattr(self, "_calculation_finished", True))
@@ -264,7 +263,7 @@ class CalculationPage(SimulationPage):
     def abort_clicked(self) -> None:
         """Handle abort button click."""
         logger.debug("Aborting calculation.")
-        Application.terminate_all_processes()
-        Application.terminate_all_threads()
+        MultiProcessWorker.terminate_all(create_new_pool=True)
+        MultiThreadWorker.terminate_all()
         self.after_calculate(False)
         show_status_tip(self, "Calculation aborted.", logger=logger)
