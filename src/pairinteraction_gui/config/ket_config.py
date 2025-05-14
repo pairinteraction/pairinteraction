@@ -4,11 +4,7 @@
 import re
 from typing import TYPE_CHECKING, Any, Literal, Optional
 
-from PySide6.QtWidgets import (
-    QComboBox,
-    QLabel,
-    QWidget,
-)
+from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import (
@@ -21,7 +17,7 @@ from pairinteraction_gui.qobjects import (
 )
 from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_ket_atom
-from pairinteraction_gui.worker import Worker
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     import pairinteraction.real as pi
@@ -158,8 +154,8 @@ class KetConfigOneAtom(KetConfig):
 
 
 class KetConfigLifetimes(KetConfig):
-    worker_label: Optional[Worker] = None
-    worker_plot: Optional[Worker] = None
+    worker_label: Optional[MultiThreadWorker] = None
+    worker_plot: Optional[MultiThreadWorker] = None
 
     page: "LifetimesPage"
 
@@ -209,7 +205,7 @@ class KetConfigLifetimes(KetConfig):
             self.lifetime_label.setStyleSheet(label_error_theme)
             self.page.plotwidget.clear()
 
-        self.worker_label = Worker(get_lifetime)
+        self.worker_label = MultiThreadWorker(get_lifetime)
         self.worker_label.signals.result.connect(update_result)
         self.worker_label.signals.error.connect(update_error)
         self.worker_label.start()
@@ -218,7 +214,7 @@ class KetConfigLifetimes(KetConfig):
             self.worker_plot.quit()
             self.worker_plot.wait()
 
-        self.worker_plot = Worker(self.page.calculate)
+        self.worker_plot = MultiThreadWorker(self.page.calculate)
         self.worker_plot.signals.result.connect(self.page.update_plot)
         self.worker_plot.start()
 

@@ -17,7 +17,7 @@ from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnIte
 from pairinteraction_gui.qobjects.item import RangeItem
 from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError
-from pairinteraction_gui.worker import Worker
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
@@ -60,7 +60,7 @@ class BasisConfig(BaseConfig):
         self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
-        worker = Worker(self.get_basis, atom)
+        worker = MultiThreadWorker(self.get_basis, atom)
 
         def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
             self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")

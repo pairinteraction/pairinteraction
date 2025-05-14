@@ -4,12 +4,13 @@
 import logging
 import os
 import signal
-from multiprocessing import Process
 from types import FrameType
-from typing import ClassVar, Optional
+from typing import Optional
 
-from PySide6.QtCore import QObject, QSocketNotifier, QThread, QTimer, Signal
+from PySide6.QtCore import QObject, QSocketNotifier, QTimer, Signal
 from PySide6.QtWidgets import QApplication
+
+from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +30,6 @@ class Application(QApplication):
     """Add some global signals to the QApplication."""
 
     signals = MainSignals()
-    all_processes: ClassVar[set[Process]] = set()
-    all_threads: ClassVar[set[QThread]] = set()
 
     @classmethod
     def instance(cls) -> "Application":  # type: ignore  # overwrite type hints
@@ -64,37 +63,7 @@ class Application(QApplication):
     def quit() -> None:
         """Quit the application."""
         logger.debug("Calling Application.quit().")
-        Application.terminate_all_processes()
-        Application.terminate_all_threads()
+        MultiProcessWorker.terminate_all(create_new_pool=False)
+        MultiThreadWorker.terminate_all()
         QApplication.quit()
         logger.debug("Application.quit() done.")
-
-    @staticmethod
-    def terminate_all_processes() -> None:
-        """Terminate all processes started by the application."""
-        # Shallow copy to avoid error if the set is modified during the loop,
-        # e.g. if the process is finished and removes itself from the list
-        all_processes = list(Application.all_processes)
-        for process in all_processes:
-            if process.is_alive():
-                logger.debug("Terminating process %s.", process.pid)
-                process.terminate()
-                process.join(timeout=1)
-
-        Application.all_processes.clear()
-        logger.debug("All processes terminated.")
-
-    @staticmethod
-    def terminate_all_threads() -> None:
-        """Terminate all threads started by the application."""
-        # Shallow copy to avoid error if the set is modified during the loop,
-        # e.g. if the thread is finished and removes itself from the list
-        all_threads = list(Application.all_threads)
-        for thread in all_threads:
-            if thread.isRunning():
-                logger.debug("Terminating thread %s.", thread)
-                thread.terminate()
-                thread.wait()
-
-        Application.all_threads.clear()
-        logger.debug("All threads terminated.")
