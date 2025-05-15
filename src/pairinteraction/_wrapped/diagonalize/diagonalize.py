@@ -2,7 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+
+from typing_extensions import deprecated
 
 from pairinteraction import _backend, _wrapped
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
@@ -16,12 +18,43 @@ if TYPE_CHECKING:
     Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
 
 
+@overload
 def diagonalize(
     systems: Sequence["SystemBase[Any]"],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
     sort_by_energy: bool = True,
+    energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    *,
+    energy_unit: Optional[str] = None,
+    m0: Optional[int] = None,
+) -> None: ...
+
+
+@overload
+@deprecated("Use energy=... instead of energy_range=...")
+def diagonalize(
+    systems: Sequence["SystemBase[Any]"],
+    diagonalizer: Diagonalizer = "eigen",
+    float_type: FloatType = "float64",
+    rtol: float = 1e-6,
+    sort_by_energy: bool = True,
+    *,
+    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    energy_unit: Optional[str] = None,
+    m0: Optional[int] = None,
+) -> None: ...
+
+
+def diagonalize(
+    systems: Sequence["SystemBase[Any]"],
+    diagonalizer: Diagonalizer = "eigen",
+    float_type: FloatType = "float64",
+    rtol: float = 1e-6,
+    sort_by_energy: bool = True,
+    energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    *,
     energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
     energy_unit: Optional[str] = None,
     m0: Optional[int] = None,
@@ -49,10 +82,11 @@ def diagonalize(
         rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
             by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
         sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
-        energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
+        energy: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
             The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
             Defaults to (None, None), i.e. calculate all eigenenergies.
+        energy_range: Deprecated. Use energy instead.
         energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
 
