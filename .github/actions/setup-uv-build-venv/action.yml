@@ -4,9 +4,10 @@ runs:
   using: "composite"
   steps:
     - name: Install uv
-      uses: astral-sh/setup-uv@v5
+      uses: astral-sh/setup-uv@v6
       with:
-        version: "0.5.15"
+        version: "0.7"
+        python-version: 3.12
         enable-cache: true
         cache-dependency-glob: |
           ./.build_requirements.txt
@@ -14,5 +15,5 @@ runs:
     - name: Install Python build requirements into a virtual environment
       shell: bash
       run: |
-        uv venv .venv --python 3.9
+        uv venv .venv --python 3.12
         uv pip install -r .build_requirements.txt
