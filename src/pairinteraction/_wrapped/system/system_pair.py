@@ -8,6 +8,7 @@ import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis_pair import BasisPairComplex, BasisPairReal
+from pairinteraction._wrapped.system.green_tensor import GreenTensor
 from pairinteraction._wrapped.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
@@ -122,6 +123,24 @@ class SystemPair(SystemBase[BasisType]):
     def get_distance(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.from_base_unit(float(distance), "distance").to_pint_or_unit(unit)
+
+    def set_green_tensor(self, green_tensor: GreenTensor) -> "Self":
+        """Set the Green tensor for the system.
+
+        Args:
+            green_tensor: The Green tensor to set for the system.
+
+        """
+        if isinstance(self._cpp, _backend.SystemPairReal) and isinstance(green_tensor._cpp, _backend.GreenTensorReal):
+            self._cpp.set_green_tensor(green_tensor._cpp)
+        elif isinstance(self._cpp, _backend.SystemPairComplex) and isinstance(
+            green_tensor._cpp, _backend.GreenTensorComplex
+        ):
+            self._cpp.set_green_tensor(green_tensor._cpp)
+        else:
+            raise TypeError(f"Incompatible types: {type(self)=}; {type(green_tensor)=}")
+
+        return self
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
