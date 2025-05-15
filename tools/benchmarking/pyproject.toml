@@ -5,7 +5,7 @@
 name = "benchmarking"
 version = "0.2.0"
 description = "Tools for running benchmarks"
-requires-python = "==3.13.*"
+requires-python = "==3.12.*"
 dependencies = [
     "pairinteraction>=1.4.0",
     "pandas>=2.2.3",
