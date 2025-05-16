@@ -5,6 +5,7 @@ from collections.abc import Collection, Iterable
 from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
+import pint
 from pint import UnitRegistry
 from pint.facets.plain import PlainQuantity
 from scipy.sparse import csr_matrix
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     NDArray: TypeAlias = npt.NDArray[Any]
     PintFloat: TypeAlias = PlainQuantity[float]
     PintArray: TypeAlias = PlainQuantity[NDArray]
+    PintArrayLike: TypeAlias = Union["PintArray", Collection[Union[Literal[0], "PintFloat"]]]
     # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
     PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
     # and also for complex
@@ -76,6 +78,8 @@ Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
     "magnetic_field": "Gaussian",
     "energy": "spectroscopy",
+    "c3": "spectroscopy",
+    "c6": "spectroscopy",
 }
 
 ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
@@ -171,7 +175,13 @@ class QuantityAbstract(Generic[ValueType]):
     ) -> ValueType:
         """Return the value of the quantity in the given unit."""
         contexts = self.get_contexts(self.dimension)
-        return self._quantity.to(unit, *contexts).magnitude  # type: ignore [no-any-return] # also a problem with pint with sparse matrix
+        try:
+            return self._quantity.to(unit, *contexts).magnitude  # type: ignore [no-any-return] # also a problem with pint with sparse matrix
+        except pint.errors.DimensionalityError:
+            if "spectroscopy" in contexts:
+                q = self._quantity * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("joule", "spectroscopy")
+                return q.to(unit, *contexts).magnitude  # type: ignore [no-any-return]
+            raise
 
     def to_base_unit(self) -> ValueType:
         """Return the value of the quantity in the base unit."""

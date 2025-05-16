@@ -13,6 +13,7 @@ from pairinteraction._wrapped.ket.ket_atom import KetAtom
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
 
+KetAtomTuple = tuple["KetAtom", "KetAtom"]
 KetPairLike = Union["KetPairReal", "KetPairComplex", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
 
 
