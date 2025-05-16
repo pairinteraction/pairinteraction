@@ -1,0 +1,64 @@
+digraph "/__w/pairinteraction/pairinteraction/src/cpp/src/tools/run_unit_tests.cpp"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node1 [label="/__w/pairinteraction\l/pairinteraction/src\l/cpp/src/tools/run_unit\l_tests.cpp",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="pairinteraction/tools\l/run_unit_tests.hpp",height=0.2,width=0.4,color="black",URL="$run__unit__tests_8hpp.html",tooltip=" "];
+  Node2 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="filesystem",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="pairinteraction/database\l/Database.hpp",height=0.2,width=0.4,color="black",URL="$Database_8hpp.html",tooltip=" "];
+  Node4 -> Node5 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="pairinteraction/utils\l/eigen_assertion.hpp",height=0.2,width=0.4,color="black",URL="$eigen__assertion_8hpp.html",tooltip=" "];
+  Node5 -> Node6 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="cpptrace/cpptrace.hpp",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node7 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="pairinteraction/utils\l/traits.hpp",height=0.2,width=0.4,color="black",URL="$traits_8hpp.html",tooltip=" "];
+  Node7 -> Node8 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="pairinteraction/enums\l/FloatType.hpp",height=0.2,width=0.4,color="black",URL="$FloatType_8hpp.html",tooltip=" "];
+  Node7 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="complex",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node7 -> Node10 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node10 [label="functional",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node7 -> Node11 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="type_traits",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node12 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node12 [label="Eigen/SparseCore",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node9 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 -> Node13 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node13 [label="memory",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node14 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node14 [label="oneapi/tbb.h",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node15 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node15 [label="string",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node4 -> Node16 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node16 [label="vector",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node17 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node17 [label="pairinteraction/utils\l/paths.hpp",height=0.2,width=0.4,color="black",URL="$paths_8hpp.html",tooltip=" "];
+  Node17 -> Node18 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node18 [label="cstdlib",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node17 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node19 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node19 [label="pairinteraction/utils\l/streamed.hpp",height=0.2,width=0.4,color="black",URL="$streamed_8hpp.html",tooltip=" "];
+  Node19 -> Node20 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node20 [label="fmt/ostream.h",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node19 -> Node21 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node21 [label="utility",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node22 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node22 [label="pairinteraction/version.hpp",height=0.2,width=0.4,color="black",URL="$version_8hpp.html",tooltip=" "];
+  Node1 -> Node18 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node23 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node23 [label="doctest/doctest.h",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 -> Node24 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node24 [label="httplib.h",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node25 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node25 [label="mutex",height=0.2,width=0.4,color="grey75",tooltip=" "];
+  Node1 -> Node26 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node26 [label="spdlog/spdlog.h",height=0.2,width=0.4,color="grey75",tooltip=" "];
+}
