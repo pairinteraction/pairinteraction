@@ -47,6 +47,13 @@ class KetBase(ABC):
     def __str__(self) -> str:
         return self.get_label("ket")
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, KetBase):
+            return NotImplemented
+        if type(self._cpp) is not type(other._cpp):
+            return False
+        return self._cpp == other._cpp  # type: ignore [operator]
+
     def get_label(self, fmt: Literal["raw", "ket", "bra"]) -> str:
         """Label representing the ket.
 
