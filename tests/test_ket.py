@@ -37,3 +37,17 @@ def test_ket() -> None:
     assert ket.get_matrix_element(ket_odd, "electric_dipole", q=-1) != 0
     assert ket.get_matrix_element(ket_odd, "electric_dipole", q=0) == 0
     assert ket.get_matrix_element(ket_odd, "electric_dipole", q=+1) == 0
+
+
+def test_ket_equal() -> None:
+    ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket3 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=-0.5)
+    ket4 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    assert ket1 == ket2
+    assert ket1 != ket3
+    assert ket1 != ket4
+
+    ket1 = pi.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
+    ket2 = pi.KetAtom("Sr88_triplet", n=60, l=1, j=1, m=0)
+    assert ket1 != ket2
