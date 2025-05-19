@@ -3,21 +3,76 @@
 Installation
 ============
 
-Installing from the Python Package Index (PyPI)
------------------------------------------------
+The pairinteraction software runs on Linux, macOS 13 or later (Intel & Apple Silicon), and Windows. It is compatible
+with Python ≥ 3.9.
 
-For users who simply want to use the python interface or the graphical user interface, we recommend installing
-pairinteraction from the `Python Package Index`_ by calling
+Installing from PyPI
+--------------------
+
+For most users, we recommend installing pairinteraction from the `Python Package Index (PyPI)`_. You can install
+pairinteraction from the command line via the pip_ package manager:
 
 .. code-block:: bash
 
     pip install pairinteraction
 
-from the command line if you are using the pip_ package manager. Alternatively, you can run ``uv pip install
-pairinteraction``, if you are using the uv_ package manager. Note that pairinteraction v2 requires Python 3.9 or higher.
+.. tip::
 
-This gives you access to the pairinteraction Python library. Before starting to use the pairinteraction library, we
-recommend running the following commands in the terminal to ensure that the package is correctly installed:
+    We strongly advise performing the installation inside a virtual environment to avoid conflicts with other Python
+    packages. For an easy setup, even on systems where Python is not yet installed, we recommend using uv_. This
+    blazingly fast package manager is becoming increasingly popular as an alternative to pip_. You can run the following
+    commands to set up uv_ and install pairinteraction in a new virtual environment with a recent version of Python:
+
+    .. tabs::
+
+        .. tab:: macOS and Linux
+
+            .. code-block:: bash
+
+                # install the uv package manager
+                curl -LsSf https://astral.sh/uv/install.sh | sh
+
+                # create a new virtual environment in the current directory
+                uv venv --python 3.12
+
+                # activate the environment
+                source .venv/bin/activate
+
+                # install pairinteraction
+                uv pip install pairinteraction
+
+                # deactivate the environment when you are done using pairinteraction
+                deactivate
+
+        .. tab:: Windows
+
+            .. code-block:: bash
+
+                # install the uv package manager
+                powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+                # create a new virtual environment in the current directory
+                uv venv --python 3.12
+
+                # activate the environment
+                .venv\Scripts\activate
+
+                # install pairinteraction
+                uv pip install pairinteraction
+
+                # deactivate the environment when you are done using pairinteraction
+                deactivate
+
+.. _pip: https://pypi.org/project/pip/
+
+.. _python package index (pypi): https://pypi.org/project/pairinteraction
+
+.. _uv: https://docs.astral.sh/uv/
+
+Next Steps
+~~~~~~~~~~
+
+After the installation, we recommend to verify that everything is working:
 
 .. code-block:: bash
 
@@ -30,9 +85,10 @@ recommend running the following commands in the terminal to ensure that the pack
     # download the databases for the species you want to use (e.g. Rb and Yb174_mqdt)
     pairinteraction download Rb Yb174_mqdt
 
-For examples on how to use the pairinteraction package, visit the :ref:`tutorial-api` section of the documentation.
+**Using pairinteraction as a Python Library:** For usage examples of the Python library, visit the :ref:`tutorial-api`
+section of the documentation.
 
-In addition, a graphical user interface of pairinteraction is installed and can be started by executing
+**Using the Graphical User Interface (GUI):** The graphical user interface can be started by executing
 
 .. code-block:: bash
 
@@ -41,37 +97,46 @@ In addition, a graphical user interface of pairinteraction is installed and can 
 from the command line. This allows you to do some common and basic calculations without writing any code. For more
 information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.
 
-.. _pip: https://pypi.org/project/pip/
-
-.. _python package index: https://pypi.org/project/pairinteraction
-
-.. _uv: https://docs.astral.sh/uv/
+..
+    Installing from Flatpak (Linux only)
 
 ..
-    Binary Installers
+    ------------------------------------
 
 ..
-    -----------------
+    If you are on Linux and only interested in the graphical user interface, you can install
+    pairinteraction as a Flatpak_
 
 ..
-    Alternatively, if you are only interested in the graphical user interface,
-    you can download an installer for pairinteraction from :github:`GitHub Releases <releases>` (Windows, OS X)
-    or use the `Flatpak`_ package manager (GNU/Linux).
-    For the installation of the Flatpak package, you have to `install Flatpak`_ first and then
-    run ``flatpak install org.pairinteraction.Pairinteraction`` from the command line.
+    package. For the installation, you have to `install Flatpak`_ first and then run:
 
 ..
-    .. _Flatpak: https://flathub.org/apps/org.pairinteraction.Pairinteraction
+    .. code-block:: bash
 
 ..
-    .. _install Flatpak: https://flathub.org/setup
+    flatpak install flathub org.pairinteraction.Pairinteraction
 
-Advanced Installation
----------------------
+..
+    Afterwards, you can start the GUI with:
+
+..
+    .. code-block:: bash
+
+..
+    flatpak run org.pairinteraction.Pairinteraction
+
+..
+    .. _flatpak: https://flathub.org/apps/org.pairinteraction.Pairinteraction
+
+..
+    .. _install flatpak: https://flathub.org/setup
+
+Building from Source
+--------------------
 
 For developers and experienced users who want to adjust the source code to their own needs, or want :ref:`to contribute
-to the package <repository>` we recommend building the software from source. Some instructions on how to do this can be
-found in the :ref:`advanced`.
+to the package <getting_started_as_a_contributor>` we recommend building the software from source. Some instructions on
+how to do this can be found in the :ref:`advanced`.
 
 .. toctree::
     :hidden:

@@ -1,4 +1,4 @@
-# Makefile for Linux and MacOS
+# Makefile for Linux and macOS
 # Minimal makefile for Sphinx documentation
 #
 

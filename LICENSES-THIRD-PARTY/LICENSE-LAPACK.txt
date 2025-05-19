@@ -1,4 +1,4 @@
-Under MacOS, the binary builds of the pairinteraction software include netlib's
+Under macOS, the binary builds of the pairinteraction software include netlib's
 lapack library (under Windows and Linux, we use the oneAPI Math Kernel Library
 instead that we do not ship with the software but let the user install from
 pypi.org). The use of netlib's lapack library is subject to a modified BSD

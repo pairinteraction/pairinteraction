@@ -32,6 +32,7 @@ extensions = [
     "nbsphinx",
     "sphinx_autodoc_typehints",
     "myst_parser",
+    "sphinx_tabs.tabs",
 ]
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders

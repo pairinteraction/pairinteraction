@@ -28,7 +28,7 @@ To activate the virtual environment, you can run
 
 .. code-block:: bash
 
-    # For Linux and MacOS users
+    # For Linux and macOS users
     source .venv/bin/activate
 
     # For Windows users
