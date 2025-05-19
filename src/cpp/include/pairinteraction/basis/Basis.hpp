@@ -73,6 +73,7 @@ public:
     get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
+    void set_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values);
     Eigen::VectorX<scalar_t> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const Derived> other) const;

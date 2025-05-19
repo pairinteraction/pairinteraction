@@ -128,6 +128,32 @@ Basis<Derived>::get_coefficients() {
 }
 
 template <typename Derived>
+void Basis<Derived>::set_coefficients(
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) {
+    if (values.rows() != coefficients.matrix.rows()) {
+        throw std::invalid_argument("Incompatible number of rows.");
+    }
+    if (values.cols() != coefficients.matrix.cols()) {
+        throw std::invalid_argument("Incompatible number of columns.");
+    }
+
+    coefficients.matrix = values;
+
+    std::fill(ket_index_to_state_index.begin(), ket_index_to_state_index.end(),
+              std::numeric_limits<int>::max());
+    std::fill(state_index_to_ket_index.begin(), state_index_to_ket_index.end(),
+              std::numeric_limits<int>::max());
+    std::fill(state_index_to_quantum_number_f.begin(), state_index_to_quantum_number_f.end(),
+              std::numeric_limits<real_t>::max());
+    std::fill(state_index_to_quantum_number_m.begin(), state_index_to_quantum_number_m.end(),
+              std::numeric_limits<real_t>::max());
+    std::fill(state_index_to_parity.begin(), state_index_to_parity.end(), Parity::UNKNOWN);
+    _has_quantum_number_f = false;
+    _has_quantum_number_m = false;
+    _has_parity = false;
+}
+
+template <typename Derived>
 int Basis<Derived>::get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const {
     if (ket_to_ket_index.count(ket) == 0) {
         return -1;

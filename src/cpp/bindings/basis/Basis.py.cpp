@@ -39,6 +39,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_quantum_number_m", &Basis<T>::get_quantum_number_m)
         .def("get_parity", &Basis<T>::get_parity)
         .def("get_coefficients", nb::overload_cast<>(&Basis<T>::get_coefficients, nb::const_))
+        .def("set_coefficients", &Basis<T>::set_coefficients)
         .def("get_transformation", &Basis<T>::get_transformation)
         .def("get_rotator", &Basis<T>::get_rotator)
         .def("get_sorter", &Basis<T>::get_sorter)
