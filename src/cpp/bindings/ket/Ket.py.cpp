@@ -13,6 +13,7 @@
 
 #include <complex>
 #include <nanobind/nanobind.h>
+#include <nanobind/operators.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
@@ -57,7 +58,9 @@ static void declare_ket_atom(nb::module_ &m) {
         .def("is_j_total_momentum", &KetAtom::is_j_total_momentum)
         .def("is_calculated_with_mqdt", &KetAtom::is_calculated_with_mqdt)
         .def("get_underspecified_channel_contribution",
-             &KetAtom::get_underspecified_channel_contribution);
+             &KetAtom::get_underspecified_channel_contribution)
+        .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
+        .def("__hash__", [](const KetAtom &self) { return KetAtom::hash{}(self); });
 }
 
 static void declare_ket_atom_creator(nb::module_ &m) {
@@ -85,7 +88,9 @@ template <typename T>
 static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
     nb::class_<KetPair<T>, Ket> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_atomic_states", &KetPair<T>::get_atomic_states);
+    pyclass.def("get_atomic_states", &KetPair<T>::get_atomic_states)
+        .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
+        .def("__hash__", [](const KetPair<T> &self) { return typename KetPair<T>::hash{}(self); });
 }
 
 void bind_ket(nb::module_ &m) {
