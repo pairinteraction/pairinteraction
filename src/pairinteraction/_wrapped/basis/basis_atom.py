@@ -45,14 +45,17 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
-    def __init__(  # noqa: C901, PLR0912
+    def __init__(  # noqa: C901, PLR0912, PLR0915
         self,
         species: str,
         n: Optional[tuple[int, int]] = None,
         nu: Optional[tuple[float, float]] = None,
+        nui: Optional[tuple[float, float]] = None,
         l: Optional[tuple[float, float]] = None,
         s: Optional[tuple[float, float]] = None,
         j: Optional[tuple[float, float]] = None,
+        l_ryd: Optional[tuple[float, float]] = None,
+        j_ryd: Optional[tuple[float, float]] = None,
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
         energy: Union[tuple[float, float], tuple["PintFloat", "PintFloat"], None] = None,
@@ -67,9 +70,12 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
             species: The species of the atom.
             n: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             nu: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            nui: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             l: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             s: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             j: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            l_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            j_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             f: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             m: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             energy: tuple of (min, max) value for the energy. Default None, i.e. add all available states.
@@ -94,6 +100,9 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
         if nu is not None:
             creator.restrict_quantum_number_nu(*nu)
             self._qns["nu"] = nu
+        if nui is not None:
+            creator.restrict_quantum_number_nui(*nui)
+            self._qns["nui"] = nui
         if s is not None:
             creator.restrict_quantum_number_s(*s)
             self._qns["s"] = s
@@ -103,6 +112,12 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
         if j is not None:
             self._qns["j"] = j
             creator.restrict_quantum_number_j(*j)
+        if l_ryd is not None:
+            creator.restrict_quantum_number_l_ryd(*l_ryd)
+            self._qns["l_ryd"] = l_ryd
+        if j_ryd is not None:
+            self._qns["j_ryd"] = j_ryd
+            creator.restrict_quantum_number_j_ryd(*j_ryd)
         if f is not None:
             creator.restrict_quantum_number_f(*f)
             self._qns["f"] = f

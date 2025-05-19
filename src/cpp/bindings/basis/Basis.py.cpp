@@ -106,9 +106,12 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
         .def("restrict_parity", &BasisAtomCreator<T>::restrict_parity)
         .def("restrict_quantum_number_n", &BasisAtomCreator<T>::restrict_quantum_number_n)
         .def("restrict_quantum_number_nu", &BasisAtomCreator<T>::restrict_quantum_number_nu)
+        .def("restrict_quantum_number_nui", &BasisAtomCreator<T>::restrict_quantum_number_nui)
         .def("restrict_quantum_number_l", &BasisAtomCreator<T>::restrict_quantum_number_l)
         .def("restrict_quantum_number_s", &BasisAtomCreator<T>::restrict_quantum_number_s)
         .def("restrict_quantum_number_j", &BasisAtomCreator<T>::restrict_quantum_number_j)
+        .def("restrict_quantum_number_l_ryd", &BasisAtomCreator<T>::restrict_quantum_number_l_ryd)
+        .def("restrict_quantum_number_j_ryd", &BasisAtomCreator<T>::restrict_quantum_number_j_ryd)
         .def("append_ket", &BasisAtomCreator<T>::append_ket)
         .def("create", &BasisAtomCreator<T>::create);
 }
