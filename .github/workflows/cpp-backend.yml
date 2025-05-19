@@ -63,7 +63,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install MacOS dependencies
+    - name: Install macOS dependencies
       if: ${{ matrix.distro == 'macos' }}
       run: brew install --force-bottle spdlog eigen fmt lapack nlohmann-json tbb
 

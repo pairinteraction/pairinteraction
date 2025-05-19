@@ -36,8 +36,6 @@ Developing Features or Resolving Bugs
     :github:`perturbative calculation of dispersion coefficients and effective Hamiltonians
     <tree/master/src/pairinteraction/perturbative>`).
 
-.. _repository:
-
 Making Changes to the Repository
 --------------------------------
 

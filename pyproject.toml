@@ -68,6 +68,7 @@ dependencies = [
 docs = [
   "sphinx < 8.2", # FIXME
   "sphinx-rtd-theme >= 2.0",
+  "sphinx-tabs >= 3.4.7",
   "nbsphinx >= 0.9",
   "jupyter >= 1.1",
   "sphinx_autodoc_typehints >= 1.24",
@@ -169,8 +170,8 @@ environment.MACOSX_DEPLOYMENT_TARGET = "13.0"
 select = "*-win_*"
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
 inherit.environment = "append"
-environment.CXXFLAGS = "/Ox /arch:AVX2"
 inherit.test-command = "prepend"
+environment.CXXFLAGS = "/Ox /arch:AVX2"
 test-command = [
   "cd /d {project}",  # /d is required for windows to change the drive, the second cd then does effectively nothing
 ]
