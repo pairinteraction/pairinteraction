@@ -97,39 +97,27 @@ section of the documentation.
 from the command line. This allows you to do some common and basic calculations without writing any code. For more
 information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.
 
-..
-    Installing from Flatpak (Linux only)
+Installing from Flathub (Linux only)
+------------------------------------
 
-..
-    ------------------------------------
+If you are on Linux and only interested in the graphical user interface, you can install pairinteraction as a Flatpak_
+package. For the installation, you have to first install Flatpak (follow the `setup guide`_ for your Linux distribution)
+and then run:
 
-..
-    If you are on Linux and only interested in the graphical user interface, you can install
-    pairinteraction as a Flatpak_
+.. code-block:: bash
 
-..
-    package. For the installation, you have to `install Flatpak`_ first and then run:
-
-..
-    .. code-block:: bash
-
-..
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak install flathub org.pairinteraction.Pairinteraction
 
-..
-    Afterwards, you can start the GUI with:
+Afterwards, you can start the GUI with:
 
-..
-    .. code-block:: bash
+.. code-block:: bash
 
-..
     flatpak run org.pairinteraction.Pairinteraction
 
-..
-    .. _flatpak: https://flathub.org/apps/org.pairinteraction.Pairinteraction
+.. _flatpak: https://flathub.org/apps/org.pairinteraction.Pairinteraction
 
-..
-    .. _install flatpak: https://flathub.org/setup
+.. _setup guide: https://flathub.org/setup
 
 Building from Source
 --------------------
