@@ -13,15 +13,16 @@ from pairinteraction._wrapped.ket.ket_atom import KetAtom
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
 
-KetPairLike = Union["KetPairReal", "KetPairComplex", tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+KetAtomTuple = Union[tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
+KetPairLike = Union["KetPairReal", "KetPairComplex", KetAtomTuple]
 
 
 def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:
-    return isinstance(obj, KetPair) or (len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj))
+    return isinstance(obj, KetPair) or is_ket_atom_tuple(obj)
 
 
-def is_ket_atom_tuple(obj: Any) -> TypeGuard[tuple["KetAtom", "KetAtom"]]:
-    return len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj)
+def is_ket_atom_tuple(obj: Any) -> TypeGuard[KetAtomTuple]:
+    return hasattr(obj, "__len__") and len(obj) == 2 and all(isinstance(x, KetAtom) for x in obj)
 
 
 class KetPair(KetBase):
