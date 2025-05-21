@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+import pairinteraction
 from pairinteraction._wrapped import Database
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
@@ -44,7 +45,7 @@ class MainWindow(QMainWindow):
         """Initialize the main window."""
         super().__init__()
 
-        self.setWindowTitle("PairInteraction")
+        self.setWindowTitle(f"PairInteraction v{pairinteraction.__version__}")
         self.resize(1200, 800)
         self.setStyleSheet(main_theme)
 

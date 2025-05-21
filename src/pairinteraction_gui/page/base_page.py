@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QToolBox,
 )
 
+import pairinteraction
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.config.ket_config import KetConfig
@@ -41,7 +42,7 @@ class BasePage(WidgetV):
     def showEvent(self, event: QShowEvent) -> None:
         """Show event."""
         super().showEvent(event)
-        self.window().setWindowTitle("Pairinteraction - " + self.title)
+        self.window().setWindowTitle(f"PairInteraction v{pairinteraction.__version__} - " + self.title)
 
 
 class SimulationPage(BasePage):
