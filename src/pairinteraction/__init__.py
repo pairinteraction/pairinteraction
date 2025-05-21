@@ -54,13 +54,15 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
         else:
             return
 
-        vcpkg_dirs = [
-            Path.cwd() / "vcpkg_installed/x64-windows/bin",
-            Path.cwd().parent / "vcpkg_installed/x64-windows/bin",
-            Path.cwd().parent.parent / "vcpkg_installed/x64-windows/bin",
+        possible_dirs = [
+            Path.cwd(),
+            *Path.cwd().parents[:3],  # look in cwd.parents
+            *Path(__file__).resolve().parents[2:4],  # and __file__.parents (for editable installs)
         ]
-        if directory := next((d for d in vcpkg_dirs if d.is_dir()), None):
-            os.add_dll_directory(str(directory))  # type: ignore [attr-defined]
+        possible_paths = [d / "vcpkg_installed" / "x64-windows" / "bin" for d in possible_dirs]
+        for path in possible_paths:
+            if path.is_dir():
+                os.add_dll_directory(str(path))  # type: ignore [attr-defined]
 
     def load_mkl(system: str) -> None:
         import ctypes
@@ -142,19 +144,17 @@ def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str]
 
     from pairinteraction._wrapped import Database
 
-    pairinteraction_dir = Path(__file__).parent
-    cwd = Path.cwd()
-
     if database_dir is None:
         possible_dirs = [
-            pairinteraction_dir.parent.parent / "data" / "database",  # if local editable install
-            cwd / "data" / "database",  # normal pytest mode
-            cwd.parent / "data" / "database",  # for pytest jupyter notebooks
-            cwd.parent.parent / "data" / "database",  # for pytest jupyter notebooks
-            cwd.parent.parent.parent / "data" / "database",  # for pytest jupyter notebooks
+            Path.cwd(),
+            *Path.cwd().parents[:3],  # look in cwd.parents
+            *Path(__file__).resolve().parents[2:3],  # and __file__.parents[2] (for editable installs)
+            # (slice [2:3] to avoid index errors)
         ]
+        possible_paths = [d / "data" / "database" for d in possible_dirs]
+
         try:
-            database_dir = next(str(d) for d in possible_dirs if any(d.rglob("wigner.parquet")))
+            database_dir = next(str(path) for path in possible_paths if any(path.rglob("wigner.parquet")))
         except StopIteration:
             raise FileNotFoundError("Could not find database directory") from None
 
