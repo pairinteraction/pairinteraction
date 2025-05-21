@@ -9,7 +9,7 @@ from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis import BasisBase
-from pairinteraction._wrapped.basis.basis_atom import BasisAtom, BasisAtomComplex, BasisAtomReal
+from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
 from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction._wrapped.ket.ket_pair import (
     KetPair,
@@ -47,15 +47,15 @@ UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_
 
 
 def is_basis_pair_like(obj: Any) -> TypeGuard[BasisPairLike]:
-    return isinstance(obj, BasisPair) or (len(obj) == 2 and all(isinstance(x, BasisAtom) for x in obj))
+    return isinstance(obj, BasisPair) or is_basis_atom_real_tuple(obj) or is_basis_atom_complex_tuple(obj)
 
 
 def is_basis_atom_real_tuple(obj: Any) -> TypeGuard[tuple["BasisAtomReal", "BasisAtomReal"]]:
-    return len(obj) == 2 and all(isinstance(x, BasisAtomReal) for x in obj)
+    return hasattr(obj, "__len__") and len(obj) == 2 and all(isinstance(x, BasisAtomReal) for x in obj)
 
 
 def is_basis_atom_complex_tuple(obj: Any) -> TypeGuard[tuple["BasisAtomComplex", "BasisAtomComplex"]]:
-    return len(obj) == 2 and all(isinstance(x, BasisAtomComplex) for x in obj)
+    return hasattr(obj, "__len__") and len(obj) == 2 and all(isinstance(x, BasisAtomComplex) for x in obj)
 
 
 class BasisPair(BasisBase[KetPairType, StateType]):
@@ -270,7 +270,6 @@ class BasisPair(BasisBase[KetPairType, StateType]):
             raise TypeError(f"Unknown type: {type(other)=}")
 
         return matrix_elements.to_pint_or_unit(unit)
-
 
 class BasisPairReal(BasisPair[KetPairReal, StatePairReal]):
     _cpp: _backend.BasisPairReal
