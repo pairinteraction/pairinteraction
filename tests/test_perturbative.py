@@ -29,22 +29,23 @@ def _check_sparse_matrices_equal(matrix_a: sparse.csr_matrix, matrix_b: sparse.c
     """
     matrix_a.sort_indices()
     matrix_b.sort_indices()
-    if (
+    if not (
         matrix_a.format == "csr"
         and matrix_b.format == "csr"
         and len(matrix_a.indices) == len(matrix_b.indices)
         and len(matrix_a.indptr) == len(matrix_b.indptr)
         and len(matrix_a.data) == len(matrix_b.data)
     ):
-        return (
-            np.all(matrix_a.indices == matrix_b.indices)
-            and np.all(matrix_a.indptr == matrix_b.indptr)
-            and np.allclose(matrix_a.data, matrix_b.data, rtol=0, atol=1e-14)
-        )
-    return False
+        return False
+
+    return bool(
+        np.all(matrix_a.indices == matrix_b.indices)
+        and np.all(matrix_a.indptr == matrix_b.indptr)
+        and np.allclose(matrix_a.data, matrix_b.data, rtol=0, atol=1e-14)
+    )
 
 
-def _create_system_pair_sample():
+def _create_system_pair_sample() -> pi.SystemPair:
     basis = pi.BasisAtom(
         species="Rb",
         n=(59, 63),
@@ -68,22 +69,25 @@ def _create_system_pair_sample():
 # ---------------------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------------------
-def test_perturbative_calculation(caplog):
+def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     """Test of mathematic functionality."""
-    H = sparse.csr_matrix([[0, 1, 1, 0, 2], [1, 1, 0, 1, 3], [1, 0, 10, 1, 0], [0, 1, 1, 11, 1], [2, 3, 0, 1, 12]])
+    hamiltonian = sparse.csr_matrix(
+        [[0, 1, 1, 0, 2], [1, 1, 0, 1, 3], [1, 0, 10, 1, 0], [0, 1, 1, 11, 1], [2, 3, 0, 1, 12]]
+    )
     model_space_indices = [0, 1]
 
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=0)
-
+    # Order 0
+    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=0)
     assert np.any(hamiltonian_eff == np.array([[0, 0], [0, 1]]))
-    assert _check_sparse_matrices_equal(eig_perturb, sparse.eye(2, 5, k=0, format="csr"))
+    assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.eye(2, 5, k=0)))
 
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=1)
-
+    # Order 1
+    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=1)
     assert np.any(hamiltonian_eff == np.array([[0, 1], [1, 1]]))
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]]))
 
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=2)
+    # Order 2
+    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=2)
     a_00 = 0 + 1 * 1 / (0 - 10) + 2 * 2 / (0 - 12)
     a_01 = 1 + 2 * 3 / (0 - 12)
     a_10 = 1 + 3 * 2 / (1 - 12)
@@ -101,10 +105,11 @@ def test_perturbative_calculation(caplog):
         + 1 / (1 - 11) * sparse.eye(1, 5, k=3, format="csr")
         + 3 / (1 - 12) * sparse.eye(1, 5, k=4, format="csr")
     )
-    assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
+    assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
+    # Order 3
     with caplog.at_level(logging.ERROR):
-        hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(H, model_space_indices, order=3)
+        hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=3)
     a_00 -= 2 * 3 * 1 / ((0 - 12) * (1 - 12))
     a_01 += (
         1 * 1 * 1 / ((1 - 10) * (1 - 11))
@@ -119,7 +124,7 @@ def test_perturbative_calculation(caplog):
         - 3 * 3 * 1 / ((0 - 12) * (1 - 12))
     )
     a_11 += 1 * 1 * 3 / ((1 - 11) * (1 - 12)) + 3 * 1 * 1 / ((1 - 11) * (1 - 12)) - 3 * 2 * 1 / ((1 - 12) * (0 - 12))
-    hamiltonian_new = sparse.csr_matrix([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
+    hamiltonian_new = np.array([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
     assert np.any(hamiltonian_eff == hamiltonian_new)
 
     v0 += (
@@ -138,10 +143,10 @@ def test_perturbative_calculation(caplog):
         + 2 * 1 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=4, format="csr")
         + 3 * 2 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=0, format="csr")
     )
-    assert _check_sparse_matrices_equal(eig_perturb, sparse.vstack([v0, v1]))
+    assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
 
-def test_c3_coefficient():
+def test_c3_coefficient() -> None:
     """Test whether dispersion coefficients are correctly calculated."""
     system_pair = _create_system_pair_sample()
 
@@ -155,7 +160,7 @@ def test_c3_coefficient():
     assert np.isclose(-0.5 * c3, 3.1515)
 
 
-def test_c6_coefficient():
+def test_c6_coefficient() -> None:
     """Test whether the c6 coefficient is correct."""
     system_pair = _create_system_pair_sample()
     ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
@@ -165,7 +170,7 @@ def test_c6_coefficient():
     assert np.isclose(c6, 167.92)
 
 
-def test_resonance_detection(caplog):
+def test_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
     """Test whether resonance is correctly detected."""
     system_pair = _create_system_pair_sample()
     ket_tuple_list = [

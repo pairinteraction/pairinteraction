@@ -23,7 +23,7 @@ def window_starkmap(qtbot: "QtBot") -> MainWindow:
     window.show()
     qtbot.addWidget(window)
 
-    one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")
+    one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
     one_atom_page.ket_config.species_combo[0].setCurrentText("Rb")
     ket_qn = one_atom_page.ket_config.stacked_qn[0].currentWidget()
     ket_qn.items["n"].setValue(60)
@@ -91,7 +91,7 @@ def test_calculate_two_atoms(qtbot: "QtBot") -> None:
     window.show()
     qtbot.addWidget(window)
 
-    two_atoms_page: TwoAtomsPage = window.stacked_pages.getNamedWidget("TwoAtomsPage")
+    two_atoms_page: TwoAtomsPage = window.stacked_pages.getNamedWidget("TwoAtomsPage")  # type: ignore [assignment]
     two_atoms_page.ket_config.species_combo[0].setCurrentText("Rb")
     for ket_qn_stacked in two_atoms_page.ket_config.stacked_qn:
         ket_qn = ket_qn_stacked.currentWidget()

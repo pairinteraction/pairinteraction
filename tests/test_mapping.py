@@ -3,9 +3,14 @@
 
 """Test the mapping between kets and states."""
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pairinteraction.real as pi
 from scipy.optimize import linear_sum_assignment
+
+if TYPE_CHECKING:
+    from pairinteraction.units import NDArray
 
 
 def test_mapping() -> None:
@@ -23,6 +28,8 @@ def test_mapping() -> None:
 
     # Calculate the mapping from the coefficient matrix using scipy
     coefficient_matrix = np.square(np.abs(eigenbasis.get_coefficients().todense()))
+    rows: NDArray
+    cols: NDArray
     rows, cols = linear_sum_assignment(-coefficient_matrix)
 
     sorter = np.argsort(rows)

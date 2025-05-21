@@ -27,7 +27,7 @@ def pytest_addoption(parser: "Parser") -> None:
 
 @pytest.fixture(scope="session")
 def generate_reference(pytestconfig: "Config") -> bool:
-    return pytestconfig.getoption("--generate-reference")
+    return pytestconfig.getoption("--generate-reference")  # type: ignore [no-any-return]
 
 
 @pytest.fixture(scope="session")

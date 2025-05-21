@@ -82,10 +82,10 @@ def test_get_matrix_element(basis: pi.BasisAtom) -> None:
 def test_error_handling(state: pi.StateAtom) -> None:
     """Test error cases."""
     with pytest.raises(TypeError):
-        state.get_amplitude("not a ket")  # type: ignore [call-overload]
+        state.get_amplitude("not a ket")  # type: ignore [arg-type]
 
     with pytest.raises(TypeError):
-        state.get_overlap("not a ket")  # type: ignore [call-overload]
+        state.get_overlap("not a ket")  # type: ignore [arg-type]
 
     with pytest.raises(TypeError):
         state.get_matrix_element("not a ket", "energy", 0)  # type: ignore [call-overload]

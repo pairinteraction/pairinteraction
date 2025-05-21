@@ -254,7 +254,6 @@ flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["ANN", "N", "PLR", "S", "D1"]
 "src/pairinteraction_gui/**" = ["ERA", "PLW", "TRY", "PGH", "ARG", "N802", "PERF102", "D1"]
 
 [tool.ruff.lint.isort]
@@ -264,8 +263,7 @@ force-wrap-aliases = true
 
 [tool.mypy]
 exclude = [
-    "^tests/.*$",
-    "build/.*$",
+    "build.*/",
 ]
 strict = true
 disallow_untyped_decorators = false
@@ -277,6 +275,15 @@ warn_return_any = false  # fails for pre-commit, eneabled in the ci
 [[tool.mypy.overrides]]
 module = "mplcursors"
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "pytestqt.qtbot"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sympy.physics.wigner"
+ignore_missing_imports = true
+
 
 [tool.coverage.report]
 exclude_also = [

@@ -3,11 +3,16 @@
 
 """Test calculating lifetimes."""
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pairinteraction.real as pi
 import pytest
 from pairinteraction import ureg
 from scipy.optimize import curve_fit
+
+if TYPE_CHECKING:
+    from pairinteraction.units import NDArray
 
 
 def test_lifetime() -> None:
@@ -39,7 +44,7 @@ def test_lifetime() -> None:
 def test_lifetime_scaling() -> None:
     """Test the scaling of the lifetime with the principal quantum number."""
 
-    def fit_function(x, a, b):
+    def fit_function(x: "NDArray", a: float, b: float) -> "NDArray":
         return a * x + b
 
     n_list = list(range(60, 70, 1))
@@ -48,7 +53,7 @@ def test_lifetime_scaling() -> None:
     kets = [pi.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
     nu = [ket.nu for ket in kets]
     lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
-    popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
+    popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))  # type: ignore [arg-type]
     assert np.isclose(popt[0], 3, atol=0.02)
 
     # Circular states
@@ -63,7 +68,7 @@ def test_lifetime_scaling() -> None:
     else:
         nu = [ket.nu for ket in kets]
         lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
-        popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
+        popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))  # type: ignore [arg-type]
         assert np.isclose(popt[0], 5, atol=0.02)
 
 

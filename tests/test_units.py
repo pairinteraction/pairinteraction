@@ -18,18 +18,18 @@ def test_magnetic() -> None:
     assert np.isclose(mu.magnitude, -1 / 2 * lande_factor)
 
     # check magnetic field conversion is correct
-    B_z = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
-    B_z_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
-    assert np.isclose(B_z.to_base_unit(), B_z_pint.to_base_units().magnitude)
+    magnetic_field = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
+    magnetic_field_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
+    assert np.isclose(magnetic_field.to_base_unit(), magnetic_field_pint.to_base_units().magnitude)
 
-    # such that mu * B_z is of dimension energy
-    zeeman_energy = -mu * B_z_pint
+    # such that mu * magnetic_field is of dimension energy
+    zeeman_energy = -mu * magnetic_field_pint
     assert zeeman_energy.dimensionality == BaseUnits["energy"].dimensionality
 
     # check against constructed Hamiltonian
     basis = pi.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])
     system = pi.SystemAtom(basis)
-    system.set_diamagnetism_enabled(False).set_magnetic_field([0, 0, B_z_pint])
+    system.set_diamagnetism_enabled(False).set_magnetic_field([0, 0, magnetic_field_pint])
     zeeman_energy_from_hamiltonian = system.get_hamiltonian("MHz")[0, 0] - ket.get_energy("MHz")
     assert np.isclose(zeeman_energy_from_hamiltonian, zeeman_energy.to("MHz", "spectroscopy").magnitude)
 
@@ -61,7 +61,7 @@ def test_electric_dipole() -> None:
 
     ket_ab_idx = np.argmax(basis_pair.get_overlaps([ket_a, ket_b]))
     ket_cc_idx = np.argmax(basis_pair.get_overlaps([ket_c, ket_c]))
-    H = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
+    hamiltonian = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
 
-    assert np.isclose(-2 * c3.magnitude, H[ket_ab_idx, ket_cc_idx])
+    assert np.isclose(-2 * c3.magnitude, hamiltonian[ket_ab_idx, ket_cc_idx])
     assert np.isclose(-2 * c3.magnitude, 5.73507543166919)

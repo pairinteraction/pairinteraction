@@ -5,6 +5,7 @@
 
 from collections.abc import Generator
 from pathlib import Path
+from typing import Union
 
 import duckdb
 import numpy as np
@@ -15,13 +16,14 @@ from sympy.physics.wigner import wigner_3j
 
 from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN, SUPPORTED_SPECIES
 
-expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])
 
-
-def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: str) -> int:
-    return connection.execute(
-        f"SELECT id FROM '{table}' WHERE n = {n} AND f = {f} ORDER BY (exp_s - {s})^2+(exp_l - {l})^2 LIMIT 1"
-    ).fetchone()[0]
+def fetch_id(
+    n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: Union[str, Path]
+) -> int:
+    result = connection.execute(
+        f"SELECT id FROM '{table}' WHERE n = {n} AND f = {f} ORDER BY (exp_s - {s})^2+(exp_l - {l})^2 LIMIT 1"  # noqa: S608
+    ).fetchone()
+    return result[0] if result else -1
 
 
 def fetch_wigner_element(
@@ -32,20 +34,20 @@ def fetch_wigner_element(
     kappa: int,
     q: int,
     connection: duckdb.DuckDBPyConnection,
-    table: str,
+    table: Union[str, Path],
 ) -> float:
     result = connection.execute(
-        f"SELECT val FROM '{table}' WHERE f_initial = {f_initial} AND f_final = {f_final} AND "
+        f"SELECT val FROM '{table}' WHERE f_initial = {f_initial} AND f_final = {f_final} AND "  # noqa: S608
         f"m_initial = {m_initial} AND m_final = {m_final} AND kappa = {kappa} AND q = {q}"
     ).fetchone()
     return result[0] if result else 0
 
 
 def fetch_reduced_matrix_element(
-    id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: str
+    id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: Union[str, Path]
 ) -> float:
     result = connection.execute(
-        f"SELECT val FROM '{table}' WHERE id_initial = {id_initial} AND id_final = {id_final}"
+        f"SELECT val FROM '{table}' WHERE id_initial = {id_initial} AND id_final = {id_final}"  # noqa: S608
     ).fetchone()
     return result[0] if result else 0
 
@@ -57,7 +59,7 @@ def connection() -> Generator[duckdb.DuckDBPyConnection]:
 
 
 @pytest.mark.parametrize("swap_states", [False, True])
-def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> None:
+def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> None:  # noqa: PLR0915
     """Test receiving matrix elements from the databases."""
     database = pi.Database.get_global_database()
     bfield_in_gauss = 1500
@@ -86,13 +88,14 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
         .set_magnetic_field([0, 0, bfield_in_gauss], unit="G")
         .set_diamagnetism_enabled(True)
         .get_hamiltonian(unit="GHz")
-    )
+    ).toarray()
     operator -= np.diag(np.sort([ket_initial.get_energy(unit="GHz"), ket_final.get_energy(unit="GHz")]))
+    expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])
     assert np.allclose(operator, expected_operator)
 
     # Get the latest parquet files from the database directory
-    parquet_files = {}
-    parquet_versions = {}
+    parquet_files: dict[str, Path] = {}
+    parquet_versions: dict[str, Version] = {}
     for path in list(Path(database.database_dir).rglob("*.parquet")):
         species, version_str = path.parent.name.rsplit("_v", 1)
         table = path.stem
@@ -124,8 +127,10 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),
     )
 
-    mu = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_mu"])
-    matrix_element = -wigner_element * mu * bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS * HARTREE_IN_GHZ
+    me_mu = fetch_reduced_matrix_element(
+        id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_mu"]
+    )
+    matrix_element = -wigner_element * me_mu * bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS * HARTREE_IN_GHZ
     assert np.isclose(matrix_element, operator[0, 1])
 
     # Obtain a matrix element of the diamagnetic operator (for the chosen kets, it is non-zero iff initial == final)
@@ -145,8 +150,10 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),
     )
 
-    q0 = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_q0"])
-    matrix_element = 1 / 12 * wigner_element * q0 * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ
+    me_q0 = fetch_reduced_matrix_element(
+        id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_q0"]
+    )
+    matrix_element = 1 / 12 * wigner_element * me_q0 * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ
 
     kappa, q = 2, 0
     wigner_element = fetch_wigner_element(
@@ -157,8 +164,8 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),
     )
 
-    q = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_q"])
-    matrix_element -= 1 / 12 * wigner_element * q * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ
+    me_q = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_q"])
+    matrix_element -= 1 / 12 * wigner_element * me_q * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ
     assert np.isclose(matrix_element, operator[0, 0] if swap_states else operator[1, 1])
 
 
@@ -176,8 +183,6 @@ def test_obtaining_kets(species: str) -> None:
 
     # Obtain a ket from the database
     ket = pi.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)
-
-    print(f"|{ket}>")
 
     # Check the result
     assert ket.species == species
