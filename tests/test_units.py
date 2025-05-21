@@ -45,10 +45,10 @@ def test_electric_dipole() -> None:
 
     kappa = ureg.Quantity(1 / (4 * np.pi), "1 / epsilon_0")
     c3 = kappa * dipole_a_c * dipole_b_c
-
-    GHz = ureg.Quantity(1, "GHz")
-    c3 = c3 * GHz / GHz.to("J", "spectroscopy")
+    c3 = c3 * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("hartree", "spectroscopy")
     c3 = c3.to("GHz micrometer^3")
+
+    assert c3.magnitude == QuantityScalar.from_pint(kappa * dipole_a_c * dipole_b_c, "c3").to_unit("GHz micrometer^3")
 
     distance = ureg.Quantity(10, "micrometer")
     basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
