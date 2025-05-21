@@ -90,7 +90,7 @@ def test_omega_dependent_green_tensor() -> None:
         * 1
         / (distance * UM_IN_ATOMIC_UNITS) ** 3,
         [1 / HARTREE_IN_GHZ, 2 / HARTREE_IN_GHZ, 3 / HARTREE_IN_GHZ, 4 / HARTREE_IN_GHZ],
-    )
+    )  # type: ignore [call-overload]
 
     # Check the interpolation
     entries = gt.get_entries(1, 1)
@@ -102,8 +102,8 @@ def test_omega_dependent_green_tensor() -> None:
     omegas = [2, 3]  # the interpolation near the edges of the range is bad, so we only check the middle
     references = [2, 3]
     for omega, reference in zip(omegas, references):
-        val00 = entries[0].val(omega / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3
+        val00 = entries[0].val(omega / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3  # type: ignore [call-arg]
         assert abs(val00 - reference) / reference < 0.02
 
-    val00 = entries[0].val(2.5 / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3
+    val00 = entries[0].val(2.5 / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3  # type: ignore [call-arg]
     assert abs(val00 - 2.5) / 2.5 < 0.02

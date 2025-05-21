@@ -1,6 +1,8 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from typing import Literal
+
 import pairinteraction.real as pi
 import pytest
 from pairinteraction.units import ureg
@@ -27,7 +29,8 @@ def test_ket() -> None:
     assert pytest.approx(ket_odd.m) == -0.5  # NOSONAR
     assert ket_odd.parity == "odd"
 
-    for fmt in ["raw", "ket", "bra"]:
+    formats: list[Literal["raw", "ket", "bra"]] = ["raw", "ket", "bra"]
+    for fmt in formats:
         label = ket_odd.get_label(fmt)
         assert all(str(qn) in label for qn in ["Rb", 60, "P", "3/2", "-1/2"])
 
