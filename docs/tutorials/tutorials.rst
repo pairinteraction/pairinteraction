@@ -31,7 +31,14 @@ lifetimes to calculations of pair potentials.
     examples_python/stark_map
     examples_python/pair_potentials
     examples_python/lifetimes
+
+**Examples Demonstrating Perturbative Calculations**
+
+.. nbgallery::
+
     examples_python/perturbative_c3_c6
+    examples_python/perturbative_effective_hamiltonian
+    examples_python/perturbative_mqdt
 
 **Examples From Publications**
 

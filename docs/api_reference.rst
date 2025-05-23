@@ -59,3 +59,6 @@ All the available classes, methods and functions are documented below:
        perturbative.get_c3_from_system
        perturbative.get_c6_from_system
        perturbative.get_effective_hamiltonian_from_system
+       perturbative.get_c3
+       perturbative.get_c6
+       perturbative.get_effective_hamiltonian
