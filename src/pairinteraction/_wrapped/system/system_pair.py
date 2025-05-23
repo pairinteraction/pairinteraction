@@ -124,7 +124,7 @@ class SystemPair(SystemBase[BasisType]):
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
     def set_green_tensor(self, green_tensor: GreenTensor) -> "Self":
-        """Set the Green tensor for the system.
+        """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
