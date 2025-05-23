@@ -57,12 +57,14 @@ public:
 
     using Entry = std::variant<ConstantEntry, OmegaDependentEntry>;
 
-    void set_entries(int kappa1, int kappa2,
-                     const Eigen::MatrixX<Scalar> &tensor_in_cartesian_coordinates);
-    void set_entries(int kappa1, int kappa2,
-                     const std::vector<Eigen::MatrixX<Scalar>> &tensors_in_cartesian_coordinates,
-                     const std::vector<double> &omegas);
-    const std::vector<Entry> &get_entries(int kappa1, int kappa2) const;
+    void
+    create_entries_from_cartesian(int kappa1, int kappa2,
+                                  const Eigen::MatrixX<Scalar> &tensor_in_cartesian_coordinates);
+    void create_entries_from_cartesian(
+        int kappa1, int kappa2,
+        const std::vector<Eigen::MatrixX<Scalar>> &tensors_in_cartesian_coordinates,
+        const std::vector<double> &omegas);
+    const std::vector<Entry> &get_spherical_entries(int kappa1, int kappa2) const;
 
 private:
     std::map<std::pair<int, int>, std::vector<Entry>> entries_map;
