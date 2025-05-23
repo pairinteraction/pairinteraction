@@ -5,15 +5,13 @@
 
 import numpy as np
 import pairinteraction.real as pi
+import pytest
 from pairinteraction._wrapped import GreenTensorReal
 
-from tests.constants import HARTREE_IN_GHZ, UM_IN_ATOMIC_UNITS
 
-
-def test_static_green_tensor() -> None:
+@pytest.mark.parametrize("distance_mum", [1, 2, 11])
+def test_static_green_tensor(distance_mum: float) -> None:
     """Test calculating a pair potential using a user-defined static green tensor."""
-    distance = 2  # um
-
     # Create a single-atom system
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     system = pi.SystemAtom(basis)
@@ -27,24 +25,19 @@ def test_static_green_tensor() -> None:
 
     # Create a system using a user-defined green tensor for dipole-dipole interaction
     gt = GreenTensorReal()
-    gt.set_entries(
-        1,
-        1,
-        np.array(
-            [
-                [1, 0, 0],
-                [0, 1, 0],
-                [0, 0, -2],
-            ]
-        )
-        * 1
-        / (distance * UM_IN_ATOMIC_UNITS) ** 3,
-    )
+    tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
+    tensor_unit = "hartree / (e^2 micrometer^3)"
+    gt.set_from_cartesian(1, 1, tensor, tensor_unit)
+
+    tensor_spherical = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_mum**3
+    np.testing.assert_allclose(gt.get_spherical(1, 1, unit=tensor_unit), tensor_spherical)
+    np.testing.assert_allclose(gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
+
     system_pairs = pi.SystemPair(basis_pair).set_green_tensor(gt)
 
     # Create a reference system using the build in dipole-dipole interaction
     system_pairs_reference = (
-        pi.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance, unit="micrometer")
+        pi.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance_mum, unit="micrometer")
     )
 
     # Check that the two systems are equivalent
@@ -53,57 +46,27 @@ def test_static_green_tensor() -> None:
     )
 
 
-def test_omega_dependent_green_tensor() -> None:
+@pytest.mark.parametrize("distance_mum", [1, 2, 11])
+def test_omega_dependent_green_tensor(distance_mum: float) -> None:
     """Test the interpolation for different values of omega."""
-    distance = 2  # um
-
-    # Define an omega-dependent green tensor,
+    # Define an simple linear omega-dependent green tensor
     # note that at least four entries are needed for the applied spline interpolation.
     gt = GreenTensorReal()
-    gt.set_entries(
-        1,
-        1,
-        np.array(
-            [
-                [
-                    [1, 0, 0],
-                    [0, 1, 0],
-                    [0, 0, -2],
-                ],
-                [
-                    [2, 0, 0],
-                    [0, 2, 0],
-                    [0, 0, -4],
-                ],
-                [
-                    [3, 0, 0],
-                    [0, 3, 0],
-                    [0, 0, -6],
-                ],
-                [
-                    [4, 0, 0],
-                    [0, 4, 0],
-                    [0, 0, -8],
-                ],
-            ]
-        )
-        * 1
-        / (distance * UM_IN_ATOMIC_UNITS) ** 3,
-        [1 / HARTREE_IN_GHZ, 2 / HARTREE_IN_GHZ, 3 / HARTREE_IN_GHZ, 4 / HARTREE_IN_GHZ],
-    )  # type: ignore [call-overload]
+    omegas = [1, 2, 3, 4]  # GHz
+    tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
+    tensor_unit = "hartree / (e^2 micrometer^3)"
+    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omega_unit="GHz")
 
     # Check the interpolation
-    entries = gt.get_entries(1, 1)
-    rows = [entry.row() for entry in entries]
-    cols = [entry.col() for entry in entries]
-    assert rows == [0, 1, 2]
-    assert cols == [0, 1, 2]
+    tensors_spherical = [np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / distance_mum**3 for i in range(1, 5)]
 
-    omegas = [2, 3]  # the interpolation near the edges of the range is bad, so we only check the middle
-    references = [2, 3]
-    for omega, reference in zip(omegas, references):
-        val00 = entries[0].val(omega / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3  # type: ignore [call-arg]
-        assert abs(val00 - reference) / reference < 0.02
+    for idx in range(1, len(omegas) - 1):  # the interpolation near the edges is bad, so we only check the middle
+        tensor = gt.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
+        np.testing.assert_allclose(
+            tensor,
+            tensors_spherical[idx],
+        )
 
-    val00 = entries[0].val(2.5 / HARTREE_IN_GHZ) * (distance * UM_IN_ATOMIC_UNITS) ** 3  # type: ignore [call-arg]
-    assert abs(val00 - 2.5) / 2.5 < 0.02
+    tensor = gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
+    reference_tensor = (tensors_spherical[1] + tensors_spherical[2]) / 2
+    np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)

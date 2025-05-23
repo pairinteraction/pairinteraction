@@ -29,6 +29,7 @@ Dimension = Literal[
     "electric_field",
     "magnetic_field",
     "distance",
+    "inverse_distance",
     "energy",
     "charge",
     "velocity",
@@ -42,6 +43,7 @@ Dimension = Literal[
     "magnetic_dipole",
     "c3",
     "c6",
+    "green_tensor_00",
     "arbitrary",
     "zero",
 ]
@@ -52,6 +54,7 @@ _CommonUnits: dict[Dimension, str] = {
     "electric_field": "V/cm",  # 1 V/cm = 1.9446903811524456e-10 bohr * m_e / au_current / au_time ** 3
     "magnetic_field": "T",  # 1 T = 4.254382157342044e-06 m_e / au_current / au_time ** 2
     "distance": "micrometer",  # 1 mum = 18897.26124622279 bohr
+    "inverse_distance": "1 / micrometer",
     "energy": "hartree",  # 1 hartree = 1 bohr ** 2 * m_e / au_time ** 2
     "charge": "e",  # 1 e = 1 au_current * au_time
     "velocity": "speed_of_light",  # 1 c = 137.03599908356244 bohr / au_time
@@ -65,6 +68,7 @@ _CommonUnits: dict[Dimension, str] = {
     "magnetic_dipole": "hbar e / m_e",  # 1 hbar e / m_e = 1 au_current * bohr ** 2
     "c3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
     "c6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
+    "green_tensor_00": "hartree / e^2",  # unit for green tensor with kappa1 = kappa2 = 0
     "arbitrary": "",  # 1 dimensionless
     "zero": "",  # 1 dimensionless
 }

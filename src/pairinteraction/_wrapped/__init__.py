@@ -32,15 +32,9 @@ from pairinteraction._wrapped.state.state_pair import (
     StatePairReal,
 )
 from pairinteraction._wrapped.system.green_tensor import (
-    ConstantEntry,
-    ConstantEntryComplex,
-    ConstantEntryReal,
     GreenTensor,
     GreenTensorComplex,
     GreenTensorReal,
-    OmegaDependentEntry,
-    OmegaDependentEntryComplex,
-    OmegaDependentEntryReal,
 )
 from pairinteraction._wrapped.system.system_atom import (
     SystemAtom,
@@ -60,9 +54,6 @@ __all__ = [
     "BasisPair",
     "BasisPairComplex",
     "BasisPairReal",
-    "ConstantEntry",
-    "ConstantEntryComplex",
-    "ConstantEntryReal",
     "Database",
     "Diagonalizer",
     "FloatType",
@@ -73,9 +64,6 @@ __all__ = [
     "KetPair",
     "KetPairComplex",
     "KetPairReal",
-    "OmegaDependentEntry",
-    "OmegaDependentEntryComplex",
-    "OmegaDependentEntryReal",
     "OperatorType",
     "Parity",
     "StateAtom",
