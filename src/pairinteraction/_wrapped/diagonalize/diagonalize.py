@@ -64,7 +64,7 @@ def diagonalize(
     energy_range_au: list[Optional[float]] = [None, None]
     for i, energy in enumerate(energy_range):
         if energy is not None:
-            energy_range_au[i] = QuantityScalar.from_pint_or_unit(energy, energy_unit, "energy").to_base_unit()
+            energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):

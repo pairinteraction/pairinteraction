@@ -66,9 +66,7 @@ class SystemAtom(SystemBase[BasisType]):
         electric_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        electric_field_au = [
-            QuantityScalar.from_pint_or_unit(v, unit, "electric_field").to_base_unit() for v in electric_field
-        ]
+        electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, "electric_field") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
         return self
 
@@ -77,9 +75,7 @@ class SystemAtom(SystemBase[BasisType]):
         magnetic_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        magnetic_field_au = [
-            QuantityScalar.from_pint_or_unit(v, unit, "magnetic_field").to_base_unit() for v in magnetic_field
-        ]
+        magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, "magnetic_field") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
@@ -98,12 +94,12 @@ class SystemAtom(SystemBase[BasisType]):
         distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "distance").to_base_unit() for v in distance]
+        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_ion_distance_vector(distance_au)
         return self
 
     def set_ion_charge(self: "Self", charge: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
-        charge_au = QuantityScalar.from_pint_or_unit(charge, unit, "charge").to_base_unit()
+        charge_au = QuantityScalar.convert_user_to_au(charge, unit, "charge")
         self._cpp.set_ion_charge(charge_au)
         return self
 

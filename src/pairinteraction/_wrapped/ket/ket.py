@@ -107,5 +107,4 @@ class KetBase(ABC):
 
         """
         energy_au = self._cpp.get_energy()
-        energy = QuantityScalar.from_base_unit(energy_au, "energy")
-        return energy.to_pint_or_unit(unit)
+        return QuantityScalar.convert_au_to_user(energy_au, "energy", unit)

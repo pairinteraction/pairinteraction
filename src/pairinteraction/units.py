@@ -68,10 +68,9 @@ _CommonUnits: dict[Dimension, str] = {
     "arbitrary": "",  # 1 dimensionless
     "zero": "",  # 1 dimensionless
 }
-BaseUnits: dict[Dimension, "PlainUnit"] = {
+AtomicUnits: dict[Dimension, "PlainUnit"] = {
     k: ureg.Quantity(1, unit).to_base_units().units for k, unit in _CommonUnits.items()
 }
-BaseQuantities: dict[Dimension, "PintFloat"] = {k: ureg.Quantity(1, unit) for k, unit in BaseUnits.items()}
 
 Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
@@ -96,11 +95,11 @@ class QuantityAbstract(Generic[ValueType]):
         raise NotImplementedError("This method must be implemented in the derived classes.")
 
     @classmethod
-    def get_base_unit(cls, dimension: DimensionLike) -> str:
+    def get_atomic_unit(cls, dimension: DimensionLike) -> str:
         if isinstance(dimension, str):
-            return str(BaseUnits[dimension])
+            return str(AtomicUnits[dimension])
         # dimension isinstance Iterable[Dimension]
-        return " * ".join(str(BaseUnits[d]) for d in dimension)
+        return " * ".join(str(AtomicUnits[d]) for d in dimension)
 
     @classmethod
     def get_contexts(cls, dimension: DimensionLike) -> list[Context]:
@@ -137,13 +136,13 @@ class QuantityAbstract(Generic[ValueType]):
         return cls(ureg.Quantity(value, unit), dimension)
 
     @classmethod
-    def from_base_unit(
+    def from_au(
         cls: "type[Self]",
         value: ValueType,
         dimension: DimensionLike,
     ) -> "Self":
-        """Initialize a Quantity from a value and a (list of) dimension(s), assume the value is given in base units."""
-        unit = cls.get_base_unit(dimension)
+        """Initialize a Quantity from a value in atomic units (a.u.) and a (list of) dimension(s)."""
+        unit = cls.get_atomic_unit(dimension)
         return cls(ureg.Quantity(value, unit), dimension)
 
     @classmethod
@@ -157,7 +156,7 @@ class QuantityAbstract(Generic[ValueType]):
             if isinstance(value, PlainQuantity):
                 return cls.from_pint(value, dimension)
             if value == 0:
-                return cls.from_base_unit(value, dimension)
+                return cls.from_au(value, dimension)
             raise ValueError("unit must be given if value is not a pint.Quantity")
         assert not isinstance(value, PlainQuantity)
         return cls.from_unit(value, unit, dimension)
@@ -165,8 +164,8 @@ class QuantityAbstract(Generic[ValueType]):
     def to_pint(self) -> PlainQuantity[ValueType]:  # type: ignore [type-var]
         """Return the pint.Quantity object."""
         contexts = self.get_contexts(self.dimension)
-        base_unit = self.get_base_unit(self.dimension)
-        return self._quantity.to(base_unit, *contexts)
+        atomic_unit = self.get_atomic_unit(self.dimension)
+        return self._quantity.to(atomic_unit, *contexts)
 
     def to_unit(
         self,
@@ -185,8 +184,8 @@ class QuantityAbstract(Generic[ValueType]):
                 return q.to(unit, *contexts).magnitude  # type: ignore [no-any-return]
             raise
 
-    def to_base_unit(self) -> ValueType:
-        """Return the value of the quantity in the base unit."""
+    def to_au(self) -> ValueType:
+        """Return the value of the quantity in atomic units (a.u.)."""
         value = self.to_pint().to_base_units()
         return value.magnitude
 
@@ -194,6 +193,24 @@ class QuantityAbstract(Generic[ValueType]):
         if unit is None:
             return self.to_pint()
         return self.to_unit(unit)
+
+    @classmethod
+    def convert_user_to_au(
+        cls,
+        value: Union[PlainQuantity[ValueType], ValueType],  # type: ignore [type-var]
+        unit: Optional[str],
+        dimension: DimensionLike,
+    ) -> ValueType:
+        return cls.from_pint_or_unit(value, unit, dimension).to_au()
+
+    @classmethod
+    def convert_au_to_user(
+        cls,
+        values_au: ValueType,
+        dimension: DimensionLike,
+        unit: Optional[str],
+    ) -> Union[ValueType, PlainQuantity[ValueType]]:  # type: ignore [type-var]
+        return cls.from_au(values_au, dimension).to_pint_or_unit(unit)
 
 
 class QuantityScalar(QuantityAbstract[float]):
