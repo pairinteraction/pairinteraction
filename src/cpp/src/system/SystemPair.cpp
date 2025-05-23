@@ -66,7 +66,8 @@ GreenTensor<Scalar> construct_green_tensor(
         Eigen::Matrix3<Scalar> entries =
             Eigen::Matrix3<real_t>::Identity() - 3 * unitvec * unitvec.transpose();
 
-        green_tensor.set_entries(1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
+        green_tensor.create_entries(1, 1,
+                                    (entries / std::pow(distance, 3)).template cast<Scalar>());
     }
 
     // Dyadic green function of dipole-quadrupole interaction
@@ -86,7 +87,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
+        green_tensor.create_entries(1, 2,
+                                    (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-dipole interaction
@@ -106,7 +108,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
+        green_tensor.create_entries(2, 1,
+                                    (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-quadrupole interaction
@@ -139,7 +142,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
+        green_tensor.create_entries(2, 2,
+                                    (entries / std::pow(distance, 5)).template cast<Scalar>());
     }
 
     return green_tensor;

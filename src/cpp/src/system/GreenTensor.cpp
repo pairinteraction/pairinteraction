@@ -62,7 +62,7 @@ int GreenTensor<Scalar>::OmegaDependentEntry::col() const noexcept {
 }
 
 template <typename Scalar>
-void GreenTensor<Scalar>::set_entries(
+void GreenTensor<Scalar>::create_entries(
     int kappa1, int kappa2, const Eigen::MatrixX<Scalar> &tensor_in_cartesian_coordinates) {
 
     const real_t scale = tensor_in_cartesian_coordinates.norm();
@@ -88,7 +88,7 @@ void GreenTensor<Scalar>::set_entries(
 }
 
 template <typename Scalar>
-void GreenTensor<Scalar>::set_entries(
+void GreenTensor<Scalar>::create_entries(
     int kappa1, int kappa2,
     const std::vector<Eigen::MatrixX<Scalar>> &tensors_in_cartesian_coordinates,
     const std::vector<double> &omegas) {
