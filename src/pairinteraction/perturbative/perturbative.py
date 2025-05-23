@@ -101,7 +101,7 @@ def get_effective_hamiltonian_from_system(
     if required_overlap > 0:
         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
 
-    h_eff = QuantityArray.from_base_unit(h_eff_au, "energy").to_pint_or_unit(unit)
+    h_eff = QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
     return h_eff, eigvec_perturb
 
 

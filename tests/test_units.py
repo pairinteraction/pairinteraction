@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test the conversion from BaseUnits (=atomic units) used in the backend and the units input and output to the user."""
+"""Test the conversion from AtomicUnits used in the backend and the units input and output to the user."""
 
 import numpy as np
 import pairinteraction.real as pi
-from pairinteraction.units import BaseUnits, QuantityScalar, ureg
+from pairinteraction.units import AtomicUnits, QuantityScalar, ureg
 
 
 def test_magnetic() -> None:
@@ -20,11 +20,11 @@ def test_magnetic() -> None:
     # check magnetic field conversion is correct
     magnetic_field = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
     magnetic_field_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
-    assert np.isclose(magnetic_field.to_base_unit(), magnetic_field_pint.to_base_units().magnitude)
+    assert np.isclose(magnetic_field.to_au(), magnetic_field_pint.to_base_units().magnitude)
 
     # such that mu * magnetic_field is of dimension energy
     zeeman_energy = -mu * magnetic_field_pint
-    assert zeeman_energy.dimensionality == BaseUnits["energy"].dimensionality
+    assert zeeman_energy.dimensionality == AtomicUnits["energy"].dimensionality
 
     # check against constructed Hamiltonian
     basis = pi.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])

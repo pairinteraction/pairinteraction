@@ -124,8 +124,8 @@ class BasisPair(BasisBase[KetPairType, StateType]):
         if product_of_parities is not None:
             creator.restrict_product_of_parities(get_cpp_parity(product_of_parities))
         if energy is not None:
-            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "energy").to_base_unit()
-            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "energy").to_base_unit()
+            min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
+            max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
             # in atomic units all energies should be on the order of -0.5 * Z^2 to 0
             # so choosing some very large values for the limits should be fine
             # (we cant use np.inf here, since this is passed to cpp code)
@@ -240,7 +240,6 @@ class BasisPair(BasisBase[KetPairType, StateType]):
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
 
         matrix_elements_au: Union[NDArray, csr_matrix]
-        matrix_elements: Union[QuantityArray, QuantitySparse]
         if is_ket_pair_like(other):
             if is_ket_atom_tuple(other):
                 ket_cpp = (other[0]._cpp, other[1]._cpp)
@@ -251,8 +250,8 @@ class BasisPair(BasisBase[KetPairType, StateType]):
                 matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs))
             else:
                 raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
-            matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operators)
-        elif is_basis_pair_like(other):
+            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
+        if is_basis_pair_like(other):
             if is_basis_atom_real_tuple(other) and isinstance(self._cpp, _backend.BasisPairReal):
                 basis_real_cpp = (other[0]._cpp, other[1]._cpp)
                 matrix_elements_au = self._cpp.get_matrix_elements(*basis_real_cpp, *operators_cpp, *qs)
@@ -265,11 +264,9 @@ class BasisPair(BasisBase[KetPairType, StateType]):
                 matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs)
             else:
                 raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
-            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operators)
-        else:
-            raise TypeError(f"Unknown type: {type(other)=}")
+            return QuantitySparse.convert_au_to_user(matrix_elements_au, operators, unit)
+        raise TypeError(f"Unknown type: {type(other)=}")
 
-        return matrix_elements.to_pint_or_unit(unit)
 
 class BasisPairReal(BasisPair[KetPairReal, StatePairReal]):
     _cpp: _backend.BasisPairReal
