@@ -9,16 +9,22 @@ import numpy as np
 from scipy import sparse
 from scipy.sparse import csr_matrix
 
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction import (
+    complex as pi_complex,
+    real as pi_real,
+)
+from pairinteraction.units import AtomicUnits, QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
-    from pairinteraction import (
-        complex as pi_complex,
-        real as pi_real,
+    from pairinteraction._wrapped.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
+    from pairinteraction._wrapped.ket.ket_pair import (  # noqa: F401  # required for sphinx for KetPairLike
+        KetAtomTuple,
+        KetPairComplex,
+        KetPairLike,
+        KetPairReal,
     )
-    from pairinteraction._wrapped.ket.ket_pair import KetPairLike
     from pairinteraction.units import NDArray, PintArray, PintFloat
 
     SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
@@ -418,3 +424,114 @@ def _check_for_resonances(
             "Error. Perturbative Calculation not possible due to resonances. "
             "Add more states to the model space or adapt your required overlap."
         )
+
+
+def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
+    ket_tuple_list: Collection["KetAtomTuple"],
+    electric_field: Optional["PintArray"] = None,
+    magnetic_field: Optional["PintArray"] = None,
+    distance_vector: Optional["PintArray"] = None,
+    multipole_order: int = 3,
+    with_diamagnetism: bool = False,
+    perturbation_order: int = 2,
+    number_of_considered_pair_kets: int = 2_000,
+) -> "SystemPair":
+    r"""Create a good estimate for a system in which to perform perturbative calculations.
+
+    This function takes a list of 2-tuples of ket states and creates a pair system holding a larger basis.
+    The parameters of the basis are adjusted by the electric and magnetic field vectors of the system, as well
+    as the distance and the multipole-order of the interaction. For higher-order perturbation theory, larger
+    systems can be considered. Diamagnetism can be considered as well.
+
+    Args:
+        ket_tuple_list: List of all pair states that span up the model space. The system is created such that
+            the effective Hamiltonian of the model system can be calculated accurately at a later stage.
+        electric_field: Electric field in the system.
+        magnetic_field: Magnetic field in the system.
+        distance_vector: Distance vector between the atoms.
+        multipole_order: Multipole-order of the interaction. Default is 3 (dipole-dipole).
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+        perturbation_order: Order of perturbative calculation the system shall be used for. Default is 2.
+        number_of_considered_pair_kets: Number of pair kets that are considered in the system. Default is 2000.
+
+    Returns:
+        Pair system that can be used for perturbative calculations.
+
+    """
+    electric_field = electric_field if electric_field is not None else ureg.Quantity([0, 0, 0], "V/cm")
+    magnetic_field = magnetic_field if magnetic_field is not None else ureg.Quantity([0, 0, 0], "G")
+
+    pi = pi_real if electric_field[1] == 0 and magnetic_field[1] == 0 else pi_complex  # type: ignore [index]
+    are_fields_along_z = all(x == 0 for x in [*magnetic_field[:2], *electric_field[:2]])  # type: ignore [index]
+
+    system_atoms: list[Union[pi_real.SystemAtom, pi_complex.SystemAtom]] = []
+
+    delta_n = 7
+    delta_l = perturbation_order * (multipole_order - 2)
+    for i in range(2):
+        kets = [ket_tuple[i] for ket_tuple in ket_tuple_list]
+        nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])
+        n_range = (int(np.min(nlfm[0])) - delta_n, int(np.max(nlfm[0])) + delta_n)
+        l_range = (np.min(nlfm[1]) - delta_l, np.max(nlfm[1]) + delta_l)
+        if any(ket.is_calculated_with_mqdt for ket in kets):
+            # for mqdt we increase delta_l by 1 to take into account the variance ...
+            l_range = (np.min(nlfm[1]) - delta_l - 1, np.max(nlfm[1]) + delta_l + 1)
+        m_range = None
+        if are_fields_along_z:
+            m_range = (np.min(nlfm[3]) - delta_l, np.max(nlfm[3]) + delta_l)
+        basis = pi.BasisAtom(kets[0].species, n=n_range, l=l_range, m=m_range)
+        system = pi.SystemAtom(basis)
+        system.set_diamagnetism_enabled(with_diamagnetism)
+        system.set_magnetic_field(magnetic_field)
+        system.set_electric_field(electric_field)
+        system_atoms.append(system)
+
+    pi.diagonalize(system_atoms)
+
+    pair_energies_au = [
+        sum(
+            system.get_corresponding_energy(ket).to_base_units().magnitude
+            for system, ket in zip(system_atoms, ket_tuple)
+        )
+        for ket_tuple in ket_tuple_list
+    ]
+
+    def get_basis_pair(delta_energy_au: float) -> Union[pi_real.BasisPair, pi_complex.BasisPair]:
+        return pi.BasisPair(  # type: ignore [no-any-return]
+            system_atoms,
+            energy=(min(pair_energies_au) - delta_energy_au, max(pair_energies_au) + delta_energy_au),
+            energy_unit=str(AtomicUnits["energy"]),
+        )
+
+    mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")
+    delta_energy_au = mhz_au
+    min_delta, max_delta = None, None
+
+    # make a bisect search to get a sensible basis size between:
+    # number_of_considered_pair_kets and 1.2 * number_of_considered_pair_kets
+    while delta_energy_au < 1:  # stop if delta_energy_au is 1 and the basis is still very small
+        basis_pair = get_basis_pair(delta_energy_au)
+        if basis_pair.number_of_kets < number_of_considered_pair_kets:
+            min_delta = delta_energy_au
+            if max_delta is None:
+                delta_energy_au *= 2
+            else:
+                delta_energy_au = (delta_energy_au + max_delta) / 2
+        elif basis_pair.number_of_kets > number_of_considered_pair_kets * 1.2:
+            max_delta = delta_energy_au
+            if min_delta is None:
+                delta_energy_au /= 2
+            else:
+                delta_energy_au = (delta_energy_au + min_delta) / 2
+        else:
+            break
+        if max_delta is not None and min_delta is not None and max_delta - min_delta < mhz_au:
+            break
+
+    logger.debug("The pair basis for the perturbative calculations consists of %d kets.", basis_pair.number_of_kets)
+
+    system_pair = pi.SystemPair(basis_pair)
+    if distance_vector is not None:
+        system_pair.set_distance_vector(distance_vector)
+    system_pair.set_interaction_order(multipole_order)
+    return system_pair  # type: ignore [no-any-return]
