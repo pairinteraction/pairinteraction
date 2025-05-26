@@ -35,12 +35,12 @@ class GreenTensor:
         self._cpp = self._cpp_type()
 
     @overload
-    def create_entries(
+    def set_from_cartesian(
         self, kappa1: int, kappa2: int, tensor: "NDArray", tensor_unit: Optional[str] = None
     ) -> None: ...
 
     @overload
-    def create_entries(
+    def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
@@ -51,7 +51,7 @@ class GreenTensor:
     ) -> None: ...
 
     @overload
-    def create_entries(
+    def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
@@ -61,7 +61,7 @@ class GreenTensor:
         omega_unit: Optional[str] = None,
     ) -> None: ...
 
-    def create_entries(
+    def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
@@ -87,12 +87,12 @@ class GreenTensor:
 
 
         """
-        dimension: list[Dimension] = self.get_unit_dimension(kappa1, kappa2)
+        dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
         if omegas is None:
             tensor_au = QuantityArray.convert_user_to_au(np.array(tensor), tensor_unit, dimension)
             if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
                 raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
-            self._cpp.create_entries(kappa1, kappa2, tensor_au)
+            self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensor_au)
             return
 
         tensors_au = [QuantityArray.convert_user_to_au(np.array(t), tensor_unit, dimension) for t in tensor]
@@ -102,10 +102,10 @@ class GreenTensor:
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
         omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omega_unit, "energy")
-        self._cpp.create_entries(kappa1, kappa2, tensors_au, omegas_au.tolist())
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
 
     @overload
-    def get(
+    def get_spherical(
         self,
         kappa1: int,
         kappa2: int,
@@ -115,11 +115,11 @@ class GreenTensor:
     ) -> "PintArray": ...
 
     @overload
-    def get(
+    def get_spherical(
         self, kappa1: int, kappa2: int, omega: Optional[float] = None, omega_unit: Optional[str] = None, *, unit: str
     ) -> "NDArray": ...
 
-    def get(
+    def get_spherical(
         self,
         kappa1: int,
         kappa2: int,
@@ -146,7 +146,7 @@ class GreenTensor:
             The Green tensor as a 2D array.
 
         """
-        entries_cpp = self._cpp.get_entries(kappa1, kappa2)
+        entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy") if omega is not None else None
 
         dim1 = 3 if kappa1 == 1 else 6
@@ -161,9 +161,9 @@ class GreenTensor:
                 val = entry_cpp.val(omega_au)
             tensor_au[entry_cpp.row(), entry_cpp.col()] = val
 
-        return QuantityArray.convert_au_to_user(tensor_au, self.get_unit_dimension(kappa1, kappa2), unit)
+        return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 
-    def get_unit_dimension(self, kappa1: int, kappa2: int) -> list["Dimension"]:
+    def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list["Dimension"]:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2 + 1)]]  # type: ignore [list-item]
 
 

@@ -27,11 +27,11 @@ def test_static_green_tensor(distance_mum: float) -> None:
     gt = GreenTensorReal()
     tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
     tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.create_entries(1, 1, tensor, tensor_unit)
+    gt.set_from_cartesian(1, 1, tensor, tensor_unit)
 
     tensor_spherical = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_mum**3
-    np.testing.assert_allclose(gt.get(1, 1, unit=tensor_unit), tensor_spherical)
-    np.testing.assert_allclose(gt.get(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
+    np.testing.assert_allclose(gt.get_spherical(1, 1, unit=tensor_unit), tensor_spherical)
+    np.testing.assert_allclose(gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
 
     system_pairs = pi.SystemPair(basis_pair).set_green_tensor(gt)
 
@@ -55,18 +55,18 @@ def test_omega_dependent_green_tensor(distance_mum: float) -> None:
     omegas = [1, 2, 3, 4]  # GHz
     tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
     tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.create_entries(1, 1, tensors, tensor_unit, omegas, omega_unit="GHz")
+    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omega_unit="GHz")
 
     # Check the interpolation
     tensors_spherical = [np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / distance_mum**3 for i in range(1, 5)]
 
     for idx in [1]:
-        tensor = gt.get(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
+        tensor = gt.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
         np.testing.assert_allclose(
             tensor,
             tensors_spherical[idx],
         )
 
-    tensor = gt.get(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
+    tensor = gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
     reference_tensor = (tensors_spherical[1] + tensors_spherical[2]) / 2
     np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
