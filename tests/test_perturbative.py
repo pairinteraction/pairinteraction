@@ -2,19 +2,24 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pairinteraction.real as pi
 import pytest
 from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
+from pairinteraction.units import ureg
 from scipy import sparse
+
+if TYPE_CHECKING:
+    from scipy.sparse import csr_matrix
 
 
 # ---------------------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------------------
-def _check_sparse_matrices_equal(matrix_a: sparse.csr_matrix, matrix_b: sparse.csr_matrix) -> bool:
+def _check_sparse_matrices_equal(matrix_a: "csr_matrix", matrix_b: "csr_matrix") -> bool:
     """Check for equality of sparse matrices efficiently.
 
     This functions compares two sparse matrices in compressed sparse row format on their equality.
@@ -146,8 +151,8 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
 
-def test_c3_coefficient() -> None:
-    """Test whether dispersion coefficients are correctly calculated."""
+def test_c3_with_system() -> None:
+    """Test whether the C3 coefficient with a given system is calculated correctly."""
     system_pair = _create_system_pair_sample()
 
     ket_tuple_list = [
@@ -160,14 +165,51 @@ def test_c3_coefficient() -> None:
     assert np.isclose(-0.5 * c3, 3.1515)
 
 
-def test_c6_coefficient() -> None:
-    """Test whether the c6 coefficient is correct."""
+def test_c3_create_system() -> None:
+    """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
+    ket_tuple_list = [
+        (pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)),
+        (pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5), pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)),
+    ]
+    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
+    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
+    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
+
+    system = perturbative.create_system_for_perturbative(
+        ket_tuple_list, electric_field, magnetic_field, distance_vector
+    )
+
+    c3 = perturbative.get_c3_from_system(
+        system_pair=system, ket_tuple_list=ket_tuple_list, unit="planck_constant * gigahertz * micrometer^3"
+    )
+    assert np.isclose(-0.5 * c3, 3.2188)
+
+
+def test_c6_with_system() -> None:
+    """Test whether the C6 coefficient with a given system is calculated correctly."""
     system_pair = _create_system_pair_sample()
     ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     c6 = perturbative.get_c6_from_system(
         ket_tuple=(ket_atom, ket_atom), system_pair=system_pair, unit="planck_constant * gigahertz * micrometer^6"
     )
     assert np.isclose(c6, 167.92)
+
+
+def test_c6_create_system() -> None:
+    """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
+    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
+    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
+    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
+    ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+
+    system = perturbative.create_system_for_perturbative(
+        [(ket_atom, ket_atom)], electric_field, magnetic_field, distance_vector
+    )
+
+    c6 = perturbative.get_c6_from_system(
+        ket_tuple=(ket_atom, ket_atom), system_pair=system, unit="planck_constant * gigahertz * micrometer^6"
+    )
+    assert np.isclose(c6, 169.189)
 
 
 def test_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
@@ -177,7 +219,6 @@ def test_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
         (pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom(species="Rb", n=61, l=1, j=0.5, m=0.5))
     ]
     with (
-        pytest.warns(RuntimeWarning, match="divide by zero encountered in divide"),
         pytest.raises(ValueError, match="Perturbative Calculation not possible due to resonances."),
         caplog.at_level(logging.CRITICAL),
     ):
