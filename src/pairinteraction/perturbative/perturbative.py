@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 from scipy import sparse
+from scipy.sparse import csr_matrix
 
 from pairinteraction.units import QuantityArray, QuantityScalar
 
@@ -17,12 +18,7 @@ if TYPE_CHECKING:
         complex as pi_complex,
         real as pi_real,
     )
-    from pairinteraction._wrapped.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
-    from pairinteraction._wrapped.ket.ket_pair import (
-        KetPairComplex,  # noqa: F401  # required for sphinx for KetPairLike
-        KetPairLike,
-        KetPairReal,  # noqa: F401  # required for sphinx for KetPairLike
-    )
+    from pairinteraction._wrapped.ket.ket_pair import KetPairLike
     from pairinteraction.units import NDArray, PintArray, PintFloat
 
     SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]
@@ -37,6 +33,7 @@ def get_effective_hamiltonian_from_system(
     order: int = 2,
     required_overlap: float = 0.9,
     *,
+    return_only_specified_order: bool = False,
     unit: None = None,
 ) -> tuple["PintArray", "csr_matrix"]: ...
 
@@ -47,6 +44,7 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    return_only_specified_order: bool = False,
     *,
     unit: str,
 ) -> tuple["NDArray", "csr_matrix"]: ...
@@ -57,6 +55,7 @@ def get_effective_hamiltonian_from_system(
     system_pair: "SystemPair",
     order: int = 2,
     required_overlap: float = 0.9,
+    return_only_specified_order: bool = False,
     unit: Optional[str] = None,
 ) -> tuple[Union["NDArray", "PintArray"], "csr_matrix"]:
     r"""Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.
@@ -76,6 +75,8 @@ def get_effective_hamiltonian_from_system(
         required_overlap: If set, the code checks for validity of a perturbative treatment.
             Error is thrown if the perturbed eigenstate has less overlap than this value with the
             unperturbed eigenstate.
+        return_only_specified_order: If True, the returned effective Hamiltonian will only contain the specified order.
+            Default is False, which returns the sum of all orders up to the specified order.
         unit: The unit to which to convert the result. Default None will return a pint quantity.
 
     Returns:
@@ -95,7 +96,7 @@ def get_effective_hamiltonian_from_system(
 
     model_inds = _get_model_inds(ket_tuple_list, system_pair)
     h_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
-    h_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(h_au, model_inds, order)
+    h_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(h_au, model_inds, order, return_only_specified_order)
     if not 0 <= required_overlap <= 1:
         raise ValueError("Required overlap has to be a positive real number between zero and one.")
     if required_overlap > 0:
@@ -207,14 +208,15 @@ def get_c6_from_system(
         system_pair.set_distance_vector(old_distance_vector)
         return c6
 
-    h_eff, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=2)
-    h_0, _ = get_effective_hamiltonian_from_system([ket_tuple], system_pair, order=0)
-    c6_pint = (h_eff[0, 0] - h_0[0, 0]) * r**6  # type: ignore [index] # PintArray does not know it can be indexed
+    h_eff, _ = get_effective_hamiltonian_from_system(
+        [ket_tuple], system_pair, order=2, return_only_specified_order=True
+    )
+    c6_pint = h_eff[0, 0] * r**6  # type: ignore [index] # PintArray does not know it can be indexed
     return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
 
 
 def _calculate_perturbative_hamiltonian(
-    hamiltonian: "csr_matrix", model_inds: list[int], order: int = 2
+    hamiltonian: "csr_matrix", model_inds: list[int], order: int = 2, return_only_specified_order: bool = False
 ) -> tuple["NDArray", "csr_matrix"]:
     r"""Calculate the perturbative Hamiltonian at a given order.
 
@@ -222,12 +224,16 @@ def _calculate_perturbative_hamiltonian(
     and list of indices spanning up the model space.
     It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the
     perturbed eigenstates due to interactions with the exterior space in the desired order of perturbation theory.
+    The output is either the full Hamiltonian up to the order of perturbation theory, or only the corrections at
+    a given order.
 
     Args:
         hamiltonian: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.
         model_inds: List of indices corresponding to the states that span up the model space.
         order: Order up to which the perturbation theory is expanded. Support up to third order.
             Default is second order.
+        return_only_specified_order: If True, the returned effective Hamiltonian will only contain the specified order.
+            Default is False, which returns the sum of all orders up to the specified order.
 
     Returns:
         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`
@@ -238,7 +244,9 @@ def _calculate_perturbative_hamiltonian(
     """
     m_inds = np.array(model_inds)
     o_inds = np.setdiff1d(np.arange(hamiltonian.shape[0]), m_inds)
-    h_eff, eigvec_perturb = _calculate_unsorted_perturbative_hamiltonian(hamiltonian, m_inds, o_inds, order)
+    h_eff, eigvec_perturb = _calculate_unsorted_perturbative_hamiltonian(
+        hamiltonian, m_inds, o_inds, order, return_only_specified_order
+    )
 
     # resort eigvec to original order
     all_inds = np.append(m_inds, o_inds)
@@ -251,8 +259,12 @@ def _calculate_perturbative_hamiltonian(
     return h_eff, eigvec_perturb
 
 
-def _calculate_unsorted_perturbative_hamiltonian(
-    hamiltonian: "csr_matrix", m_inds: "NDArray", o_inds: "NDArray", order: int
+def _calculate_unsorted_perturbative_hamiltonian(  # noqa: C901
+    hamiltonian: "csr_matrix",
+    m_inds: "NDArray",
+    o_inds: "NDArray",
+    order: int,
+    return_only_specified_order: bool = False,
 ) -> tuple["NDArray", "csr_matrix"]:
     # This function is outsourced from _calculate_perturbative_hamiltonian to allow for better type checking
     if order not in [0, 1, 2, 3]:
@@ -260,8 +272,10 @@ def _calculate_unsorted_perturbative_hamiltonian(
 
     h0 = hamiltonian.diagonal()
     h0_m = h0[m_inds]
+    h_eff = np.zeros_like(np.diag(h0_m))
 
-    h_eff = np.diag(h0_m)
+    if not return_only_specified_order or order == 0:
+        h_eff += np.diag(h0_m)
     eigvec_perturb = sparse.hstack(
         [sparse.eye(len(m_inds), len(m_inds), format="csr").tocsr(), sparse.csr_matrix((len(m_inds), len(o_inds)))]
     ).tocsr()
@@ -271,15 +285,18 @@ def _calculate_unsorted_perturbative_hamiltonian(
 
     v_offdiag = hamiltonian - sparse.diags(h0)
     v_mm = v_offdiag[np.ix_(m_inds, m_inds)]
-    h_eff += v_mm
+    if not return_only_specified_order or order == 1:
+        h_eff += v_mm
 
     if order < 2:
         return h_eff, eigvec_perturb
 
     h0_e = h0[o_inds]
     v_me = v_offdiag[np.ix_(m_inds, o_inds)]
-    delta_e_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
-    h_eff += v_me @ ((v_me.conj().T).multiply(delta_e_em))
+    with np.errstate(divide="ignore"):
+        delta_e_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
+    if not return_only_specified_order or order == 2:
+        h_eff += v_me @ ((v_me.conj().T).multiply(delta_e_em))
     addition_mm = sparse.csr_matrix((len(m_inds), len(m_inds)))
     addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_e_em)).T)
     eigvec_perturb = eigvec_perturb + sparse.hstack([addition_mm, addition_me])
@@ -296,11 +313,12 @@ def _calculate_unsorted_perturbative_hamiltonian(
             "At third order, the eigenstates are currently only valid when only one state is in the model space. "
             "Take care with interpreation of the perturbed eigenvectors."
         )
-    h_eff += v_me @ (
-        (v_ee @ ((v_me.conj().T).multiply(delta_e_em)) - ((v_me.conj().T).multiply(delta_e_em)) @ v_mm).multiply(
-            delta_e_em
+    if not return_only_specified_order or order == 3:
+        h_eff += v_me @ (
+            (v_ee @ ((v_me.conj().T).multiply(delta_e_em)) - ((v_me.conj().T).multiply(delta_e_em)) @ v_mm).multiply(
+                delta_e_em
+            )
         )
-    )
     addition_mm_diag = -0.5 * sparse.csr_matrix(
         sparse.diags((v_me @ ((v_me.conj().T).multiply(np.square(delta_e_em)))).diagonal())
     )
@@ -311,7 +329,10 @@ def _calculate_unsorted_perturbative_hamiltonian(
         [addition_mm_diag + addition_mm_offdiag, addition_me + addition_me_2]
     )
 
-    return h_eff, eigvec_perturb
+    if order < 4:
+        return h_eff, eigvec_perturb
+
+    raise ValueError("Perturbation theory is only implemented for orders [0, 1, 2, 3].")
 
 
 def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
