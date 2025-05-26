@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import warnings
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+
+from typing_extensions import deprecated
 
 from pairinteraction import _backend, _wrapped
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
@@ -16,15 +19,45 @@ if TYPE_CHECKING:
     Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
 
 
+@overload
 def diagonalize(
     systems: Sequence["SystemBase[Any]"],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
     sort_by_energy: bool = True,
-    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
     energy_unit: Optional[str] = None,
     m0: Optional[int] = None,
+) -> None: ...
+
+
+@overload
+@deprecated("Use energy=... instead of energy_range=...")
+def diagonalize(
+    systems: Sequence["SystemBase[Any]"],
+    diagonalizer: Diagonalizer = "eigen",
+    float_type: FloatType = "float64",
+    rtol: float = 1e-6,
+    sort_by_energy: bool = True,
+    *,
+    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]],
+    energy_unit: Optional[str] = None,
+    m0: Optional[int] = None,
+) -> None: ...
+
+
+def diagonalize(
+    systems: Sequence["SystemBase[Any]"],
+    diagonalizer: Diagonalizer = "eigen",
+    float_type: FloatType = "float64",
+    rtol: float = 1e-6,
+    sort_by_energy: bool = True,
+    energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    energy_unit: Optional[str] = None,
+    m0: Optional[int] = None,
+    *,
+    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
 ) -> None:
     """Diagonalize a list of systems in parallel using the C++ backend.
 
@@ -49,22 +82,33 @@ def diagonalize(
         rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
             by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
         sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
-        energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
+        energy: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
             The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
             Defaults to (None, None), i.e. calculate all eigenenergies.
         energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
+        energy_range: Deprecated. Use energy instead.
 
     """
+    if not all(e is None for e in energy_range):
+        if not all(e is None for e in energy):
+            raise ValueError("energy_range=... was replaced by energy=..., only use energy=...")
+        warnings.warn(
+            "The energy_range=... argument is deprecated, use energy=... instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        energy = energy_range
+
     cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
 
     energy_range_au: list[Optional[float]] = [None, None]
-    for i, energy in enumerate(energy_range):
-        if energy is not None:
-            energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
+    for i, e in enumerate(energy):
+        if e is not None:
+            energy_range_au[i] = QuantityScalar.convert_user_to_au(e, energy_unit, "energy")
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):
