@@ -418,3 +418,113 @@ def _check_for_resonances(
             "Error. Perturbative Calculation not possible due to resonances. "
             "Add more states to the model space or adapt your required overlap."
         )
+
+
+def _create_system(
+    ket_tuple_list: Collection["KetPairLike"],
+    magnetic_field: "PintArray",
+    electric_field: "PintArray",
+    distance_vector: "PintArray",
+    multipole_order: int = 3,
+    perturbative_order: int = 2,
+    with_diamagnetism: bool = False,
+) -> "SystemPair":
+    r"""Create a good estimate for a system in which to perform perturbation theory.
+
+    This function takes a list of 2-tuples of ket states and creates a pair system holding a larger basis.
+    The parameters of the basis are adjusted by the electric and magnetic field vectors of the system, as well
+    as the distance and the multipole-order of the interaction. For higher-order perturbation theory, larger
+    systems can be considered. Diamagnetism can be considered as well.
+
+    Args:
+        ket_tuple_list: List of all pair states that span up the model space. The system is created such that
+        the effective Hamiltonian of the model system can be calculated accurately at a later stage.
+        magnetic_field: magnetic field in the system.
+        electric_field: electric field in the system.
+        distance_vector: distance vector between the atoms.
+        multipole_order: multipole-order of the interaction. Default is 3 (dipole-dipole).
+        perturbative_order: order of perturbative calculation the system shall be used for. Default is 2.
+        with_diamagnetism: True if diamagnetic term should be considered. Default is False.
+
+    Returns:
+        Pair system that can be used for perturbative calculations.
+
+    Raises:
+    ValueError: If the perturbative order is not 1,2 or 3.
+
+    """
+    if perturbative_order not in [1, 2, 3]:
+        raise ValueError("System can only be created for perturbative order 1,2, and 3.")
+
+    pi = pi_real
+    if electric_field.magnitude[1] != 0 or magnetic_field.magnitude[1] != 0:
+        pi = pi_complex
+
+    basises = []
+    max_dipoles = []
+
+    # check whether problem is cylindrical symmetric
+    cylindrical_symmetric = (
+        magnetic_field[0].magnitude
+        == magnetic_field[1].magnitude
+        == electric_field[0].magnitude
+        == electric_field[1].magnitude
+        == 0
+    )
+    delta_n = 7
+    delta_l = perturbative_order * (multipole_order - 2)
+    for i in range(2):
+        kets = [ketpair[i] for ketpair in ket_tuple_list]
+        nljm = np.array([[ket.n, ket.l, ket.j, ket.m] for ket in kets])
+        n_range = (int(np.min(nljm[:, 0])) - delta_n, int(np.max(nljm[:, 0])) + delta_n)
+        l_range = (np.min(nljm[:, 1]) - delta_l, np.max(nljm[:, 1]) + delta_l)
+        j_range = None
+        m_range = None
+        if cylindrical_symmetric:
+            j_range = (np.min(nljm[:, 2]) - delta_l, np.max(nljm[:, 2]) + delta_l)
+            m_range = (np.min(nljm[:, 3]) - delta_l, np.max(nljm[:, 3]) + delta_l)
+        basis = pi.BasisAtom(kets[0].species, n=n_range, l=l_range, j=j_range, m=m_range)
+        max_dipole = max(
+            abs(basis.get_matrix_elements(ket, "ELECTRIC_DIPOLE", q=q)).max() for ket in kets for q in [+1, -1, 0]
+        )
+        basises.append(basis)
+        max_dipoles.append(max_dipole)
+    energs = np.array([np.sum([ket.get_energy().magnitude for ket in ketpair]) for ketpair in ket_tuple_list])
+    max_energ = QuantityScalar.from_base_unit(float(np.max(energs)), "ENERGY").to_pint_or_unit(None)
+    min_energ = QuantityScalar.from_base_unit(float(np.min(energs)), "ENERGY").to_pint_or_unit(None)
+
+    # calculate distance from vector given by user
+    distance_unit = distance_vector.units
+    vector = distance_vector.magnitude
+    distance = ureg.Quantity(np.linalg.norm(vector), distance_unit)
+
+    # estimate energy windows from population of other states due to interaction
+    int_energ_max = (max_dipoles[0] * max_dipoles[1] * ureg.coulomb_constant / distance**3).to(
+        "planck_constant * gigahertz"
+    )
+    population_admixture = 1e-4
+    delta_energ_small_distance = int_energ_max / np.sqrt(population_admixture)
+
+    # estimate energy window from difference between two adjacent s-states for the lowest n occuring
+    n_min = min(ket.n for ket in ket_tuple_list[np.argmax(energs)])
+    delta_energ_large_distance = abs(
+        pi.KetAtom(kets[0].species, n_min + 1, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+        - 2 * pi.KetAtom(kets[0].species, n=n_min, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+        + pi.KetAtom(kets[0].species, n=n_min - 1, l=0, j=kets[0].s, m=kets[0].s).get_energy()
+    )
+
+    # use highest energy taken into account
+    delta_e = max(delta_energ_small_distance, delta_energ_large_distance) * perturbative_order
+
+    systems = [pi.SystemAtom(basis=basis) for basis in basises]
+    for system in systems:
+        system.enable_diamagnetism(with_diamagnetism)
+        system.set_magnetic_field(magnetic_field)
+        system.set_electric_field(electric_field)
+    if not all(system.is_diagonal for system in systems):
+        pi.diagonalize(systems, diagonalizer="eigen", sort_by_energy=False)
+    basis_pair = pi.BasisPair(systems, energy=(min_energ - delta_e, max_energ + delta_e))
+    system_pair = pi.SystemPair(basis_pair)
+    system_pair.set_distance_vector(distance_vector)
+    system_pair.set_order(multipole_order)
+    return system_pair
