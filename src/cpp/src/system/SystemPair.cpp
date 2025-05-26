@@ -66,7 +66,8 @@ GreenTensor<Scalar> construct_green_tensor(
         Eigen::Matrix3<Scalar> entries =
             Eigen::Matrix3<real_t>::Identity() - 3 * unitvec * unitvec.transpose();
 
-        green_tensor.set_entries(1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
+        green_tensor.create_entries_from_cartesian(
+            1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
     }
 
     // Dyadic green function of dipole-quadrupole interaction
@@ -86,7 +87,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
+        green_tensor.create_entries_from_cartesian(
+            1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-dipole interaction
@@ -106,7 +108,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
+        green_tensor.create_entries_from_cartesian(
+            2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     // Dyadic green function of quadrupole-quadrupole interaction
@@ -139,7 +142,8 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.set_entries(2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
+        green_tensor.create_entries_from_cartesian(
+            2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
     }
 
     return green_tensor;
@@ -167,17 +171,21 @@ construct_operator_matrices(const GreenTensor<Scalar> &green_tensor,
     OperatorMatrices<Scalar> op;
 
     // Operator matrices for Rydberg-Rydberg interaction
-    if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(1, 2).empty()) {
+    if (!green_tensor.get_spherical_entries(1, 1).empty() ||
+        !green_tensor.get_spherical_entries(1, 2).empty()) {
         op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-    if (!green_tensor.get_entries(1, 1).empty() || !green_tensor.get_entries(2, 1).empty()) {
+    if (!green_tensor.get_spherical_entries(1, 1).empty() ||
+        !green_tensor.get_spherical_entries(2, 1).empty()) {
         op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
-    if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(2, 1).empty()) {
+    if (!green_tensor.get_spherical_entries(2, 2).empty() ||
+        !green_tensor.get_spherical_entries(2, 1).empty()) {
         op.q1 = get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, true);
         op.q1.push_back(get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, true)[0]);
     }
-    if (!green_tensor.get_entries(2, 2).empty() || !green_tensor.get_entries(1, 2).empty()) {
+    if (!green_tensor.get_spherical_entries(2, 2).empty() ||
+        !green_tensor.get_spherical_entries(1, 2).empty()) {
         op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
             get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
@@ -318,16 +326,16 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     };
 
     // Dipole-dipole interaction
-    add_interaction(green_tensor_ptr->get_entries(1, 1), op.d1, op.d2, 0);
+    add_interaction(green_tensor_ptr->get_spherical_entries(1, 1), op.d1, op.d2, 0);
 
     // Dipole-quadrupole interaction
-    add_interaction(green_tensor_ptr->get_entries(1, 2), op.d1, op.q2, -1);
+    add_interaction(green_tensor_ptr->get_spherical_entries(1, 2), op.d1, op.q2, -1);
 
     // Quadrupole-dipole interaction
-    add_interaction(green_tensor_ptr->get_entries(2, 1), op.q1, op.d2, +1);
+    add_interaction(green_tensor_ptr->get_spherical_entries(2, 1), op.q1, op.d2, +1);
 
     // Quadrupole-quadrupole interaction
-    add_interaction(green_tensor_ptr->get_entries(2, 2), op.q1, op.q2, 0);
+    add_interaction(green_tensor_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();

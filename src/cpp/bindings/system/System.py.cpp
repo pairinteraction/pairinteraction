@@ -102,12 +102,14 @@ static void declare_green_tensor(nb::module_ &m, std::string const &type_name) {
 
     nb::class_<GT>(m, gt_name.c_str())
         .def(nb::init<>())
-        .def("set_entries",
-             nb::overload_cast<int, int, const Eigen::MatrixX<T> &>(&GT::set_entries))
-        .def("set_entries",
+        .def("create_entries_from_cartesian",
+             nb::overload_cast<int, int, const Eigen::MatrixX<T> &>(
+                 &GT::create_entries_from_cartesian))
+        .def("create_entries_from_cartesian",
              nb::overload_cast<int, int, const std::vector<Eigen::MatrixX<T>> &,
-                               const std::vector<double> &>(&GT::set_entries))
-        .def("get_entries", nb::overload_cast<int, int>(&GT::get_entries, nb::const_));
+                               const std::vector<double> &>(&GT::create_entries_from_cartesian))
+        .def("get_spherical_entries",
+             nb::overload_cast<int, int>(&GT::get_spherical_entries, nb::const_));
 }
 
 void bind_system(nb::module_ &m) {

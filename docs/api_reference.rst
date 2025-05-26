@@ -41,6 +41,7 @@ All the available classes, methods and functions are documented below:
        KetPair
        BasisPair
        SystemPair
+       GreenTensor
 
 **Convenience Functions**
 
