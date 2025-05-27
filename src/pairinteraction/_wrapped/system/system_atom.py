@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
@@ -17,7 +16,12 @@ if TYPE_CHECKING:
 
     from pairinteraction._wrapped.basis.basis_atom import BasisAtom
     from pairinteraction._wrapped.ket.ket_atom import KetAtom
-    from pairinteraction.units import PintArray, PintFloat
+    from pairinteraction.units import (
+        ArrayLike,
+        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
+        PintArrayLike,
+        PintFloat,
+    )
 
 BasisType = TypeVar("BasisType", bound="BasisAtom[Any]", covariant=True)
 UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
@@ -63,18 +67,34 @@ class SystemAtom(SystemBase[BasisType]):
 
     def set_electric_field(
         self: "Self",
-        electric_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
+        electric_field: Union["PintArrayLike", "ArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
+        """Set the electric field for the system.
+
+        Args:
+            electric_field: The electric field to set for the system.
+            unit: The unit of the electric field, e.g. "V/cm".
+                Default None expects a `pint.Quantity`.
+
+        """
         electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, "electric_field") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
         return self
 
     def set_magnetic_field(
         self: "Self",
-        magnetic_field: Union["PintArray", Collection[Union[float, "PintFloat"]]],
+        magnetic_field: Union["PintArrayLike", "ArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
+        """Set the magnetic field for the system.
+
+        Args:
+            magnetic_field: The magnetic field to set for the system.
+            unit: The unit of the magnetic field, e.g. "gauss".
+                Default None expects a `pint.Quantity`.
+
+        """
         magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, "magnetic_field") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
@@ -91,7 +111,7 @@ class SystemAtom(SystemBase[BasisType]):
 
     def set_ion_distance_vector(
         self: "Self",
-        distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
+        distance: Union["PintArrayLike", "ArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]

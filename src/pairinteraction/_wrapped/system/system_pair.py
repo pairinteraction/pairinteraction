@@ -1,7 +1,6 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
@@ -16,7 +15,12 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction._wrapped.basis.basis_pair import BasisPair
-    from pairinteraction.units import PintArray, PintFloat
+    from pairinteraction.units import (
+        ArrayLike,
+        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
+        PintArrayLike,
+        PintFloat,
+    )
 
 BasisType = TypeVar("BasisType", bound="BasisPair[Any, Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
@@ -81,7 +85,8 @@ class SystemPair(SystemBase[BasisType]):
             angle_degree: The angle between the distance vector and the z-axis in degrees.
                 90 degrees corresponds to the x-axis.
                 Defaults to 0, which corresponds to the z-axis.
-            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
 
         """
         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
@@ -89,14 +94,15 @@ class SystemPair(SystemBase[BasisType]):
 
     def set_distance_vector(
         self: "Self",
-        distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
+        distance: Union["ArrayLike", "PintArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
         """Set the distance vector between the atoms.
 
         Args:
             distance: The distance vector to set between the atoms in the given unit.
-            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
 
         """
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
