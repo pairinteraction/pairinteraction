@@ -37,6 +37,7 @@ class EffectiveHamiltonian:
                 raise ValueError(f"All kets for atom={i} must have the same species")
 
         self.ket_tuples = ket_tuples
+        self.effective_dim = len(ket_tuples)
 
         self.perturbation_order = 2
         self._started_creating = False
@@ -313,3 +314,28 @@ class EffectiveHamiltonian:
             assert self._h_eff_dict is not None
         h_eff_au: NDArray = sum(h for h in self._h_eff_dict.values())  # type: ignore [assignment]
         return QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
+
+    def create_resonances_lists(self) -> None:
+        # FIXME: it is rather slow to build the full Hamiltonian
+        # optimize this at some point to only calculate the necessary rows
+        self.system_pair.get_hamiltonian()
+        hamiltonian_au = self.system_pair.get_hamiltonian("hartree")
+        energies_au = hamiltonian_au.diagonal()
+
+        ket_pairs = self.system_pair.basis.kets
+        gaps_au = np.array([energies_au - pair_energy.to_base_units().magnitude for pair_energy in self.pair_energies])
+
+        # set all elements in the model space to zero, to only get the couplings to the other space
+        hamiltonian_au[np.ix_(self.model_inds, self.model_inds)] = 0
+        couplings_au = np.array([hamiltonian_au.getrow(m_ind).toarray()[0] for m_ind in self.model_inds])
+
+        ev_contributions = np.abs(couplings_au / gaps_au)
+        ev_contributions_max = np.max(ev_contributions, axis=0)
+
+        inds = np.argsort(ev_contributions_max)[::-1]
+        inds = np.array([i for i in inds if ev_contributions_max[i] > 0])
+
+        self._all_ket_pairs = np.array(ket_pairs)[inds].tolist()
+        self._all_gaps_au = gaps_au[:, inds]
+        self._all_couplings_au = couplings_au[:, inds]
+        self._all_ev_contributions_max = ev_contributions_max[inds]
