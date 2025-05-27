@@ -16,8 +16,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
 
     NDArray: TypeAlias = npt.NDArray[Any]
+    ArrayLike: TypeAlias = Union[npt.NDArray[Any], Collection[float]]
     PintFloat: TypeAlias = PlainQuantity[float]
     PintArray: TypeAlias = PlainQuantity[NDArray]
+    PintArrayLike: TypeAlias = Union["PintArray", Collection[Union[float, "PintFloat"]]]
     # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
     PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
     # and also for complex
@@ -85,9 +87,10 @@ BaseContexts: dict[Dimension, Context] = {
 }
 
 ValueType = TypeVar("ValueType", bound=Union[float, "NDArray", "csr_matrix"])
+ValueTypeLike = TypeVar("ValueTypeLike", bound=Union[float, "ArrayLike", "csr_matrix"])
 
 
-class QuantityAbstract(Generic[ValueType]):
+class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
     def __init__(self, pint_qty: PlainQuantity[ValueType], dimension: DimensionLike) -> None:  # type: ignore [type-var]
         if not isinstance(pint_qty, ureg.Quantity):
             raise TypeError(f"pint_qty must be a ureg.Quantity, not {type(pint_qty)}")
@@ -130,7 +133,7 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def from_unit(
         cls: "type[Self]",
-        value: ValueType,
+        value: ValueTypeLike,
         unit: str,
         dimension: DimensionLike,
     ) -> "Self":
@@ -142,7 +145,7 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def from_au(
         cls: "type[Self]",
-        value: ValueType,
+        value: ValueTypeLike,
         dimension: DimensionLike,
     ) -> "Self":
         """Initialize a Quantity from a value in atomic units (a.u.) and a (list of) dimension(s)."""
@@ -152,7 +155,7 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def from_pint_or_unit(
         cls: "type[Self]",
-        value: Union[PlainQuantity[ValueType], ValueType],  # type: ignore [type-var]
+        value: Union[PlainQuantity[ValueType], ValueTypeLike],  # type: ignore [type-var]
         unit: Optional[str],
         dimension: DimensionLike,
     ) -> "Self":
@@ -201,7 +204,7 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def convert_user_to_au(
         cls,
-        value: Union[PlainQuantity[ValueType], ValueType],  # type: ignore [type-var]
+        value: Union[PlainQuantity[ValueType], ValueTypeLike],  # type: ignore [type-var]
         unit: Optional[str],
         dimension: DimensionLike,
     ) -> ValueType:
@@ -210,28 +213,28 @@ class QuantityAbstract(Generic[ValueType]):
     @classmethod
     def convert_au_to_user(
         cls,
-        values_au: ValueType,
+        values_au: ValueTypeLike,
         dimension: DimensionLike,
         unit: Optional[str],
     ) -> Union[ValueType, PlainQuantity[ValueType]]:  # type: ignore [type-var]
         return cls.from_au(values_au, dimension).to_pint_or_unit(unit)
 
 
-class QuantityScalar(QuantityAbstract[float]):
+class QuantityScalar(QuantityAbstract[float, float]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not np.isscalar(magnitude):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
 
-class QuantityArray(QuantityAbstract["NDArray"]):
+class QuantityArray(QuantityAbstract["ArrayLike", "NDArray"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not isinstance(magnitude, Collection):
             raise TypeError(f"value must be an np.ndarray (or a Collection), not {type(magnitude)}")
 
 
-class QuantitySparse(QuantityAbstract["csr_matrix"]):
+class QuantitySparse(QuantityAbstract["csr_matrix", "csr_matrix"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
         if not isinstance(magnitude, csr_matrix):
