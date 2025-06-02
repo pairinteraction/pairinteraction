@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import logging
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
@@ -15,6 +16,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction._wrapped.basis.basis_pair import BasisPair
+    from pairinteraction._wrapped.ket.ket_atom import (
+        KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
+    )
+    from pairinteraction._wrapped.ket.ket_pair import KetAtomTuple
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
@@ -25,6 +30,8 @@ if TYPE_CHECKING:
 BasisType = TypeVar("BasisType", bound="BasisPair[Any, Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
+
+logger = logging.getLogger(__name__)
 
 
 class SystemPair(SystemBase[BasisType]):
@@ -146,6 +153,23 @@ class SystemPair(SystemBase[BasisType]):
             raise TypeError(f"Incompatible types: {type(self)=}; {type(green_tensor)=}")
 
         return self
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: None = None) -> "PintFloat": ...
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: str) -> float: ...
+
+    def get_corresponding_energy(
+        self: "Self", ket_tuple: "KetAtomTuple", unit: Optional[str] = None
+    ) -> Union[float, "PintFloat"]:
+        overlaps = self.get_eigenbasis().get_overlaps(ket_tuple)
+        idx = np.argmax(overlaps)
+        if overlaps[idx] <= 0.5:
+            logger.warning(
+                "The provided ket states does not correspond to an eigenstate of the system in a unique way."
+            )
+        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
