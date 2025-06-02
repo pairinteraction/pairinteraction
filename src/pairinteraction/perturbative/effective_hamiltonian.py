@@ -3,7 +3,7 @@
 
 import logging
 from collections.abc import Sequence
-from functools import cached_property
+from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, Any, Optional, Union, overload
 
 import numpy as np
@@ -132,6 +132,7 @@ class EffectiveHamiltonian:
     def create_basis_atoms(self) -> None:
         self._started_creating = True
 
+        additional_kets = ()
         basis_atoms: list[BasisAtom[Any]] = []
         for i in range(2):
             kets = [ket_tuple[i] for ket_tuple in self.ket_tuples]
@@ -144,7 +145,9 @@ class EffectiveHamiltonian:
             m_range = None
             if self.are_fields_along_z:
                 m_range = (np.min(nlfm[3]) - self.delta_l, np.max(nlfm[3]) + self.delta_l)
-            basis = pi_real.BasisAtom(kets[0].species, n=n_range, l=l_range, m=m_range)
+            basis = get_cached_basis_atom(
+                kets[0].species, n=n_range, l=l_range, m=m_range, additional_kets=additional_kets
+            )
             basis_atoms.append(basis)
 
         self._basis_atoms = (basis_atoms[0], basis_atoms[1])
@@ -339,3 +342,14 @@ class EffectiveHamiltonian:
         self._all_gaps_au = gaps_au[:, inds]
         self._all_couplings_au = couplings_au[:, inds]
         self._all_ev_contributions_max = ev_contributions_max[inds]
+
+
+@lru_cache(maxsize=100)
+def get_cached_basis_atom(
+    species: str,
+    n: tuple[int, int],
+    l: tuple[int, int],
+    m: tuple[float, float],
+    additional_kets: tuple[pi_real.KetAtom],
+) -> pi_real.BasisAtom:
+    return pi_real.BasisAtom(species, n=n, l=l, m=m, additional_kets=list(additional_kets))
