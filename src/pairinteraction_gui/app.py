@@ -32,7 +32,7 @@ class Application(QApplication):
     signals = MainSignals()
 
     @classmethod
-    def instance(cls) -> "Application":  # type: ignore  # overwrite type hints
+    def instance(cls) -> "Application":
         """Return the current instance of the application."""
         return super().instance()  # type: ignore [return-value]
 

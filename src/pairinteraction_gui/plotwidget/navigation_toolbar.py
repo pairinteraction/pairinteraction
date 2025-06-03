@@ -20,7 +20,7 @@ class CustomNavigationToolbar(NavigationToolbar):
         ("Zoom", "Zoom to rectangle\nx/y fixes axis", "zoom_to_rect", "zoom"),
         ("Pan", "Left button pans, Right button zooms\nx/y fixes axis, CTRL fixes aspect", "move", "pan"),
         ("Home", "Reset original view", "home", "home"),
-    )
+    )  # type: ignore [assignment]
 
     def __init__(self, canvas: FigureCanvasQTAgg, parent: Optional[QWidget] = None) -> None:
         """Initialize the custom navigation toolbar."""

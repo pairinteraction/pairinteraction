@@ -53,7 +53,7 @@ def test_lifetime_scaling() -> None:
     kets = [pi.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
     nu = [ket.nu for ket in kets]
     lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
-    popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))  # type: ignore [arg-type]
+    popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
     assert np.isclose(popt[0], 3, atol=0.02)
 
     # Circular states
@@ -68,7 +68,7 @@ def test_lifetime_scaling() -> None:
     else:
         nu = [ket.nu for ket in kets]
         lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
-        popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))  # type: ignore [arg-type]
+        popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
         assert np.isclose(popt[0], 5, atol=0.02)
 
 
