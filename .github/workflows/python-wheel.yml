@@ -40,7 +40,7 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest # runs in container anyway
-        - os: windows-2019
+        - os: windows-2022
         - os: macos-13
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -132,10 +132,10 @@ jobs:
         include:
         - os: ubuntu-latest  # runs in container anyway
         - os: macos-13
-        - os: windows-2019
+        - os: windows-2022
     name: Test installing sdist on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     container:
       image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-ubuntu:docker') || null }}
     needs: [sdist]
