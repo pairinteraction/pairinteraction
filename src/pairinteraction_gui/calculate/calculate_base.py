@@ -54,7 +54,7 @@ PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
 class Parameters(ABC, Generic[PageType]):
     species: tuple[str, ...]
     quantum_numbers: tuple[dict[str, float], ...]
-    quantum_number_deltas: tuple[dict[str, float], ...]
+    quantum_number_restrictions: tuple[dict[str, tuple[float, float]], ...]
     ranges: dict[RangesKeys, list[float]]
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: Union[tuple[float, float], None]
@@ -68,7 +68,7 @@ class Parameters(ABC, Generic[PageType]):
 
         # Check if all tuples have the same length
         if not all(
-            len(tup) == self.n_atoms for tup in [self.species, self.quantum_numbers, self.quantum_number_deltas]
+            len(tup) == self.n_atoms for tup in [self.species, self.quantum_numbers, self.quantum_number_restrictions]
         ):
             raise ValueError("All tuples must have the same length as the number of atoms")
 
@@ -80,7 +80,9 @@ class Parameters(ABC, Generic[PageType]):
         species = tuple(page.ket_config.get_species(atom) for atom in range(n_atoms))
         quantum_numbers = tuple(page.ket_config.get_quantum_numbers(atom) for atom in range(n_atoms))
 
-        quantum_number_deltas = tuple(page.basis_config.get_quantum_number_deltas(atom) for atom in range(n_atoms))
+        quantum_number_restrictions = tuple(
+            page.basis_config.get_quantum_number_restrictions(atom) for atom in range(n_atoms)
+        )
 
         ranges = page.system_config.get_ranges_dict()
 
@@ -96,7 +98,7 @@ class Parameters(ABC, Generic[PageType]):
         return cls(
             species,
             quantum_numbers,
-            quantum_number_deltas,
+            quantum_number_restrictions,
             ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
@@ -141,20 +143,8 @@ class Parameters(ABC, Generic[PageType]):
         return _wrapped.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
 
     def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> dict[str, Any]:
-        """Return the quantum number restrictions for the given ket."""
-        atom = self._check_atom(atom)
-        qn_restrictions: dict[str, tuple[float, float]] = {}
-        for key, delta in self.quantum_number_deltas[atom].items():
-            if key in self.quantum_numbers[atom]:
-                qn = self.quantum_numbers[atom][key]
-            else:
-                ket = self.get_ket_atom(atom)
-                if hasattr(ket, key):
-                    qn = getattr(ket, key)
-                else:
-                    raise ValueError(f"Quantum number {key} not found in quantum_numbers or KetAtom.")
-            qn_restrictions[key] = (qn - delta, qn + delta)
-        return qn_restrictions
+        """Return the quantum numbers for the given ket."""
+        return self.quantum_number_restrictions[self._check_atom(atom)]
 
     def _check_atom(self, atom: Optional[int] = None) -> int:
         """Check if the atom is valid."""
