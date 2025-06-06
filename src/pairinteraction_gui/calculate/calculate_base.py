@@ -163,7 +163,7 @@ class Parameters(ABC, Generic[PageType]):
         if self.diagonalize_relative_energy_range is None:
             return {}
         kwargs: dict[str, Any] = {"energy_unit": "GHz"}
-        kwargs["energy_range"] = (
+        kwargs["energy"] = (
             energy_of_interest + self.diagonalize_relative_energy_range[0],
             energy_of_interest + self.diagonalize_relative_energy_range[1],
         )
@@ -218,7 +218,7 @@ class Parameters(ABC, Generic[PageType]):
         if self.diagonalize_relative_energy_range is not None:
             r_energy = self.diagonalize_relative_energy_range
             replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = (
-                f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_unit="GHz"'
+                f', energy=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_unit="GHz"'
             )
         else:
             replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = ""
