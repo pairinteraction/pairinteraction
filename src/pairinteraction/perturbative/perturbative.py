@@ -13,7 +13,7 @@ from pairinteraction import (
     complex as pi_complex,
     real as pi_real,
 )
-from pairinteraction.perturbative.perturbation_theory import _calculate_perturbative_hamiltonian
+from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.units import AtomicUnits, QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -103,11 +103,16 @@ def get_effective_hamiltonian_from_system(
 
     model_inds = _get_model_inds(ket_tuple_list, system_pair)
     h_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units
-    h_eff_au, eigvec_perturb = _calculate_perturbative_hamiltonian(h_au, model_inds, order, return_only_specified_order)
+    h_eff_dict_au, eigvec_perturb = calculate_perturbative_hamiltonian(h_au, model_inds, order)
     if not 0 <= required_overlap <= 1:
         raise ValueError("Required overlap has to be a positive real number between zero and one.")
     if required_overlap > 0:
         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)
+
+    if return_only_specified_order:
+        h_eff_au: NDArray = h_eff_dict_au[order]
+    else:
+        h_eff_au = sum(h_eff for h_eff in h_eff_dict_au.values())  # type: ignore [assignment]
 
     h_eff = QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
     return h_eff, eigvec_perturb
