@@ -3,6 +3,7 @@
 
 from typing import TYPE_CHECKING, Any, Literal, Union
 
+from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QLabel,
 )
@@ -120,6 +121,11 @@ class BasisConfig(BaseConfig):
         else:
             self.stacked_basis[atom].setCurrentNamedWidget("sqdt")
         self.update_basis_label(atom)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        super().showEvent(event)
+        for i in range(len(self.stacked_basis)):
+            self.update_basis_label(i)
 
 
 class BasisConfigOneAtom(BasisConfig):
