@@ -77,13 +77,13 @@ def test_calculate_one_atom(window_starkmap: "MainWindow") -> None:
     one_atom_page.calculation_config.fast_mode.setChecked(False)
     _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
-    compare_to_reference(REFERENCE_PATHS["stark_map"], energies, np.array(results.ket_overlaps))
+    compare_eigensystem_to_reference(REFERENCE_PATHS["stark_map"], energies, np.array(results.ket_overlaps))
 
     one_atom_page.calculation_config.fast_mode.setChecked(True)
     _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
     # with fast mode, the overlaps are different, so we don't compare them
-    compare_to_reference(REFERENCE_PATHS["stark_map"], energies)
+    compare_eigensystem_to_reference(REFERENCE_PATHS["stark_map"], energies)
 
 
 def test_calculate_two_atoms(qtbot: "QtBot") -> None:
@@ -128,3 +128,21 @@ def test_calculate_two_atoms(qtbot: "QtBot") -> None:
     energies = np.array(results.energies) + ket_pair_energy_0
     # with fast mode, the overlaps are different, so we don't compare them
     compare_eigensystem_to_reference(REFERENCE_PATHS["pair_potential"], energies)
+
+
+def test_export_python(window_starkmap: "MainWindow") -> None:
+    one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    one_atom_page.calculation_config.fast_mode.setChecked(False)
+    ket = one_atom_page.ket_config.get_ket_atom(0)
+
+    python_code = one_atom_page._create_python_code()
+    python_code = python_code.replace("plt.show()", "")  # HACK, otherwise it will block the test
+
+    # HACK, see also https://stackoverflow.com/questions/45132645/list-comprehension-in-exec-with-empty-locals-nameerror
+    locals_globals = {}
+    exec(python_code, locals_globals, locals_globals)  # noqa: S102
+    energies = locals_globals["energies_list"]
+    ket_overlaps = locals_globals["overlaps_list"]
+
+    energies = np.array(energies) + ket.get_energy("GHz")
+    compare_starkmap_to_reference(energies, np.array(ket_overlaps))
