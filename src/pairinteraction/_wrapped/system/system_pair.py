@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from collections.abc import Collection
+import logging
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
@@ -16,11 +16,14 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction._wrapped.basis.basis_pair import BasisPair
-    from pairinteraction.units import PintArray, PintFloat
+    from pairinteraction._wrapped.ket.ket_pair import KetAtomTuple
+    from pairinteraction.units import ArrayLike, PintArrayLike, PintFloat
 
 BasisType = TypeVar("BasisType", bound="BasisPair[Any, Any]", covariant=True)
 UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
 UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
+
+logger = logging.getLogger(__name__)
 
 
 class SystemPair(SystemBase[BasisType]):
@@ -81,7 +84,8 @@ class SystemPair(SystemBase[BasisType]):
             angle_degree: The angle between the distance vector and the z-axis in degrees.
                 90 degrees corresponds to the x-axis.
                 Defaults to 0, which corresponds to the z-axis.
-            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
 
         """
         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
@@ -89,14 +93,15 @@ class SystemPair(SystemBase[BasisType]):
 
     def set_distance_vector(
         self: "Self",
-        distance: Union["PintArray", Collection[Union[float, "PintFloat"]]],
+        distance: Union["ArrayLike", "PintArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
         """Set the distance vector between the atoms.
 
         Args:
             distance: The distance vector to set between the atoms in the given unit.
-            unit: The unit of the distance. Default None expects a `pint.Quantity`.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
 
         """
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
@@ -140,6 +145,23 @@ class SystemPair(SystemBase[BasisType]):
             raise TypeError(f"Incompatible types: {type(self)=}; {type(green_tensor)=}")
 
         return self
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: None = None) -> "PintFloat": ...
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: str) -> float: ...
+
+    def get_corresponding_energy(
+        self: "Self", ket_tuple: "KetAtomTuple", unit: Optional[str] = None
+    ) -> Union[float, "PintFloat"]:
+        overlaps = self.get_eigenbasis().get_overlaps(ket_tuple)
+        idx = np.argmax(overlaps)
+        if overlaps[idx] <= 0.5:
+            logger.warning(
+                "The provided ket states does not correspond to an eigenstate of the system in a unique way."
+            )
+        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):

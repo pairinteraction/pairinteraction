@@ -47,6 +47,9 @@ class KetBase(ABC):
     def __str__(self) -> str:
         return self.get_label("ket")
 
+    def __hash__(self) -> int:
+        return self._cpp.__hash__()
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, KetBase):
             return NotImplemented
