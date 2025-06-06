@@ -8,7 +8,7 @@ import numpy as np
 import pairinteraction.real as pi
 import pytest
 from pairinteraction import perturbative
-from pairinteraction.perturbative.perturbative import _calculate_perturbative_hamiltonian
+from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.units import ureg
 from scipy import sparse
 
@@ -82,23 +82,26 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     model_space_indices = [0, 1]
 
     # Order 0
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=0)
-    assert np.any(hamiltonian_eff == np.array([[0, 0], [0, 1]]))
+    h_eff_dict, eig_perturb = calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, perturbation_order=0)
+    h_eff = sum(h for h in h_eff_dict.values())
+    assert np.any(h_eff == np.array([[0, 0], [0, 1]]))
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.eye(2, 5, k=0)))
 
     # Order 1
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=1)
-    assert np.any(hamiltonian_eff == np.array([[0, 1], [1, 1]]))
+    h_eff_dict, eig_perturb = calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, perturbation_order=1)
+    h_eff = sum(h for h in h_eff_dict.values())
+    assert np.any(h_eff == np.array([[0, 1], [1, 1]]))
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix([[1, 0, 0, 0, 0], [0, 1, 0, 0, 0]]))
 
     # Order 2
-    hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=2)
+    h_eff_dict, eig_perturb = calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, perturbation_order=2)
+    h_eff = sum(h for h in h_eff_dict.values())
     a_00 = 0 + 1 * 1 / (0 - 10) + 2 * 2 / (0 - 12)
     a_01 = 1 + 2 * 3 / (0 - 12)
     a_10 = 1 + 3 * 2 / (1 - 12)
     a_11 = 1 + 1 * 1 / (1 - 11) + 3 * 3 / (1 - 12)
     hamiltonian_new = np.array([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
-    assert np.any(hamiltonian_eff == hamiltonian_new)
+    assert np.any(h_eff == hamiltonian_new)
 
     v0 = (
         sparse.eye(1, 5, k=0, format="csr")
@@ -114,7 +117,10 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
 
     # Order 3
     with caplog.at_level(logging.ERROR):
-        hamiltonian_eff, eig_perturb = _calculate_perturbative_hamiltonian(hamiltonian, model_space_indices, order=3)
+        h_eff_dict, eig_perturb = calculate_perturbative_hamiltonian(
+            hamiltonian, model_space_indices, perturbation_order=3
+        )
+    h_eff = sum(h for h in h_eff_dict.values())
     a_00 -= 2 * 3 * 1 / ((0 - 12) * (1 - 12))
     a_01 += (
         1 * 1 * 1 / ((1 - 10) * (1 - 11))
@@ -130,7 +136,7 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     )
     a_11 += 1 * 1 * 3 / ((1 - 11) * (1 - 12)) + 3 * 1 * 1 / ((1 - 11) * (1 - 12)) - 3 * 2 * 1 / ((1 - 12) * (0 - 12))
     hamiltonian_new = np.array([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
-    assert np.any(hamiltonian_eff == hamiltonian_new)
+    assert np.any(h_eff == hamiltonian_new)
 
     v0 += (
         -0.5 * (1 * 1 / (0 - 10) ** 2 + 2 * 2 / (0 - 12) ** 2) * sparse.eye(1, 5, k=0, format="csr")
@@ -222,6 +228,4 @@ def test_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
         pytest.raises(ValueError, match="Perturbative Calculation not possible due to resonances."),
         caplog.at_level(logging.CRITICAL),
     ):
-        perturbative.get_effective_hamiltonian_from_system(
-            ket_tuple_list=ket_tuple_list, system_pair=system_pair, order=2, required_overlap=0.8
-        )
+        perturbative.get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=2, required_overlap=0.8)
