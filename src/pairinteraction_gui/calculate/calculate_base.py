@@ -136,18 +136,24 @@ class Parameters(ABC, Generic[PageType]):
         """Return the quantum numbers for the given ket."""
         return self.quantum_numbers[self._check_atom(atom)]
 
+    def get_ket_atom(self, atom: Optional[int] = None) -> _wrapped.KetAtom:
+        """Return the ket atom for the given atom index."""
+        return _wrapped.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
+
     def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> dict[str, Any]:
         """Return the quantum number restrictions for the given ket."""
         atom = self._check_atom(atom)
         qn_restrictions: dict[str, tuple[float, float]] = {}
         for key, delta in self.quantum_number_deltas[atom].items():
             if key in self.quantum_numbers[atom]:
-                qn_restrictions[key] = (
-                    self.quantum_numbers[atom][key] - delta,
-                    self.quantum_numbers[atom][key] + delta,
-                )
+                qn = self.quantum_numbers[atom][key]
             else:
-                raise ValueError(f"Quantum number delta {key} not found in quantum numbers.")
+                ket = self.get_ket_atom(atom)
+                if hasattr(ket, key):
+                    qn = getattr(ket, key)
+                else:
+                    raise ValueError(f"Quantum number {key} not found in quantum_numbers or KetAtom.")
+            qn_restrictions[key] = (qn - delta, qn + delta)
         return qn_restrictions
 
     def _check_atom(self, atom: Optional[int] = None) -> int:
