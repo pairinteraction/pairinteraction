@@ -18,10 +18,10 @@ def main() -> int:
         int: Application exit code
 
     """
-    # Multithreading together with "fork" is not supported.
-    # Furthermore, "spawn" will become the default in Python 3.14 on all platforms,
+    # Multithreading together with "fork" is not supported, which is up to python 3.14 the default on linux
     # see also https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
-    # Thus, we already now set the start method to "spawn" for all platforms.
+    # and https://docs.python.org/3.14/whatsnew/3.14.html#whatsnew314-multiprocessing-start-method
+    # Thus, we set the start method to "spawn" for all platforms (anyway default on mac and windows)
     multiprocessing.set_start_method("spawn")
 
     app = Application(sys.argv)
