@@ -83,35 +83,38 @@ class BasisConfig(BaseConfig):
 
         worker.start()
 
-    def get_qn_restrictions(self, atom: int) -> dict[str, tuple[float, float]]:
+    def get_quantum_number_restrictions(self, atom: int) -> dict[str, tuple[float, float]]:
         """Return the quantum number restrictions to construct a BasisAtom."""
         ket = self.page.ket_config.get_ket_atom(atom)
-        basis_widget = self.stacked_basis[atom].currentWidget()
-        delta_qns: dict[str, float] = {
-            key: item.value() for key, item in basis_widget.items.items() if item.isChecked()
-        }
+        qns = self.page.ket_config.get_quantum_numbers(atom)
+        delta_qns = self.get_quantum_number_deltas(atom)
 
-        qns: dict[str, tuple[float, float]] = {}
-        for key, value in delta_qns.items():
-            qn: float = getattr(ket, key)
-            qns[key] = (qn - value, qn + value)
+        qn_restrictions: dict[str, tuple[float, float]] = {}
+        for key, delta in delta_qns.items():
+            if key in qns:
+                qn = qns[key]
+            elif hasattr(ket, key):
+                qn = getattr(ket, key)
+            else:
+                raise ValueError(f"Quantum number {key} not found in quantum_numbers or KetAtom.")
+            qn_restrictions[key] = (qn - delta, qn + delta)
 
-        return qns
+        return qn_restrictions
 
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
         """Return the basis of interest."""
         ket = self.page.ket_config.get_ket_atom(atom)
-        qn_restrictions = self.get_qn_restrictions(atom)
+        qn_restrictions = self.get_quantum_number_restrictions(atom)
         if dtype == "real":
             return pi_real.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
         return pi_complex.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
 
     def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum number deltas for the basis of interest."""
-        stacked_basis = self.stacked_basis[atom].currentWidget()
-        return {key: item.value() for key, item in stacked_basis.items.items() if item.isChecked()}
+        basis_widget = self.stacked_basis[atom].currentWidget()
+        return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
