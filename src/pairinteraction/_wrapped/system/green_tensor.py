@@ -10,6 +10,8 @@ from pairinteraction import _backend
 from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from pairinteraction.units import Dimension, NDArray, PintArray, PintFloat
 
     Quantity = TypeVar("Quantity", float, "PintFloat")
@@ -31,6 +33,7 @@ class GreenTensor:
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
         >>> tensor_unit = "hartree / (e^2 micrometer^3)"
         >>> gt.set_from_cartesian(1, 1, tensor, tensor_unit)
+        GreenTensorReal(...)
         >>> print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())
         [ 0.008 -0.016  0.008]
 
@@ -46,10 +49,16 @@ class GreenTensor:
         """
         self._cpp = self._cpp_type()
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}(...)"
+
+    def __str__(self) -> str:
+        return self.__repr__().replace("Real", "").replace("Complex", "")
+
     @overload
     def set_from_cartesian(
         self, kappa1: int, kappa2: int, tensor: "NDArray", tensor_unit: Optional[str] = None
-    ) -> None: ...
+    ) -> "Self": ...
 
     @overload
     def set_from_cartesian(
@@ -60,7 +69,7 @@ class GreenTensor:
         tensor_unit: Optional[str],
         omegas: Sequence[float],
         omegas_unit: Optional[str] = None,
-    ) -> None: ...
+    ) -> "Self": ...
 
     @overload
     def set_from_cartesian(
@@ -71,7 +80,7 @@ class GreenTensor:
         *,
         omegas: Sequence[float],
         omegas_unit: Optional[str] = None,
-    ) -> None: ...
+    ) -> "Self": ...
 
     def set_from_cartesian(
         self,
@@ -81,7 +90,7 @@ class GreenTensor:
         tensor_unit: Optional[str] = None,
         omegas: Optional[Sequence[float]] = None,
         omegas_unit: Optional[str] = None,
-    ) -> None:
+    ) -> "Self":
         """Set the entries of the Green tensor.
 
         Args:
@@ -105,7 +114,7 @@ class GreenTensor:
             if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
                 raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
             self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensor_au)
-            return
+            return self
 
         tensors_au = [QuantityArray.convert_user_to_au(np.array(t), tensor_unit, dimension) for t in tensor]
         if not all(t.ndim == 2 for t in tensors_au):
@@ -115,6 +124,7 @@ class GreenTensor:
 
         omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omegas_unit, "energy")
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
+        return self
 
     @overload
     def get_spherical(

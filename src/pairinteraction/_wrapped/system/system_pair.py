@@ -44,7 +44,6 @@ class SystemPair(SystemBase[BasisType]):
         >>> import pairinteraction.real as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
-        >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
         >>> system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit="G").diagonalize()
         >>> pair_energy = 2 * system.get_corresponding_energy(ket, unit="GHz")
         >>> pair_basis = pi.BasisPair(
@@ -55,7 +54,8 @@ class SystemPair(SystemBase[BasisType]):
         >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_interaction_order(3)
         >>> print(pair_system)
         SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
-        >>> pair_system = pair_system.diagonalize()
+        >>> pair_system.diagonalize()
+        SystemPairReal(BasisPairReal(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=True)
         >>> eigenenergies = pair_system.get_eigenenergies(unit="GHz")
         >>> print(f"{eigenenergies[0] - pair_energy:.5f}")
         -2.18394
