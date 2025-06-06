@@ -8,8 +8,7 @@ import pytest
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, _calculate_two_atoms
 from pairinteraction_gui.main_window import MainWindow
 
-from .test_pair_potential import compare_pair_potential_to_reference
-from .test_starkmap import compare_starkmap_to_reference
+from .compare_utils import REFERENCE_PATHS, compare_to_reference
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage
@@ -78,12 +77,13 @@ def test_calculate_one_atom(window_starkmap: "MainWindow") -> None:
     one_atom_page.calculation_config.fast_mode.setChecked(False)
     _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
-    compare_starkmap_to_reference(energies, np.array(results.ket_overlaps))
+    compare_to_reference(REFERENCE_PATHS["stark_map"], energies, np.array(results.ket_overlaps))
 
     one_atom_page.calculation_config.fast_mode.setChecked(True)
     _parameters, results = one_atom_page.calculate()
     energies = np.array(results.energies) + ket.get_energy("GHz")
-    compare_starkmap_to_reference(energies)  # with fast mode, the overlaps are different, so we don't compare them
+    # with fast mode, the overlaps are different, so we don't compare them
+    compare_to_reference(REFERENCE_PATHS["stark_map"], energies)
 
 
 def test_calculate_two_atoms(qtbot: "QtBot") -> None:
@@ -120,12 +120,11 @@ def test_calculate_two_atoms(qtbot: "QtBot") -> None:
     parameters = ParametersTwoAtoms.from_page(two_atoms_page)
     results = _calculate_two_atoms(parameters)
     energies = np.array(results.energies) + ket_pair_energy_0
-    compare_pair_potential_to_reference(energies, np.array(results.ket_overlaps))
+    compare_to_reference(REFERENCE_PATHS["pair_potential"], energies, np.array(results.ket_overlaps))
 
     two_atoms_page.calculation_config.fast_mode.setChecked(True)
     parameters = ParametersTwoAtoms.from_page(two_atoms_page)
     results = _calculate_two_atoms(parameters)
     energies = np.array(results.energies) + ket_pair_energy_0
-    compare_pair_potential_to_reference(
-        energies
-    )  # with fast mode, the overlaps are different, so we don't compare them
+    # with fast mode, the overlaps are different, so we don't compare them
+    compare_to_reference(REFERENCE_PATHS["pair_potential"], energies)
