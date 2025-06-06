@@ -56,8 +56,13 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
 
         possible_dirs = [
             Path.cwd(),
-            *Path.cwd().parents[:3],  # look in cwd.parents
-            *Path(__file__).resolve().parents[2:4],  # and __file__.parents (for editable installs)
+            # look in cwd.parents
+            Path.cwd().parent,
+            Path.cwd().parent.parent,
+            Path.cwd().parent.parent.parent,
+            # and __file__.parents[2] (for editable installs)
+            Path(__file__).resolve().parent.parent.parent,
+            Path(__file__).resolve().parent.parent.parent.parent,
         ]
         possible_paths = [d / "vcpkg_installed" / "x64-windows" / "bin" for d in possible_dirs]
         for path in possible_paths:
@@ -147,9 +152,12 @@ def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str]
     if database_dir is None:
         possible_dirs = [
             Path.cwd(),
-            *Path.cwd().parents[:3],  # look in cwd.parents
-            *Path(__file__).resolve().parents[2:3],  # and __file__.parents[2] (for editable installs)
-            # (slice [2:3] to avoid index errors)
+            # look in cwd.parents
+            Path.cwd().parent,
+            Path.cwd().parent.parent,
+            Path.cwd().parent.parent.parent,
+            # and __file__.parents[2] (for editable installs)
+            Path(__file__).resolve().parent.parent.parent,
         ]
         possible_paths = [d / "data" / "database" for d in possible_dirs]
 
