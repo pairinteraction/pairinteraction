@@ -1,16 +1,8 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from pairinteraction.perturbative.perturbative import (
-    create_system_for_perturbative,
-    get_c3_from_system,
-    get_c6_from_system,
-    get_effective_hamiltonian_from_system,
-)
+from pairinteraction.perturbative.c3 import C3
+from pairinteraction.perturbative.c6 import C6
+from pairinteraction.perturbative.effective_hamiltonian import EffectiveHamiltonian
 
-__all__ = [
-    "create_system_for_perturbative",
-    "get_c3_from_system",
-    "get_c6_from_system",
-    "get_effective_hamiltonian_from_system",
-]
+__all__ = ["C3", "C6", "EffectiveHamiltonian"]
