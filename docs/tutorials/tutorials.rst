@@ -39,7 +39,7 @@ We show how pairinteraction's Python API can be applied to solve complex problem
 
 .. nbgallery::
 
-    examples_python/perturbative_h_eff
+    examples_python/perturbative_eff_h
     examples_python/pair_potential_efield_sensitivity
     examples_python/atom_ion_interaction
     examples_python/mqdt
