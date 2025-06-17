@@ -228,6 +228,15 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
     ) -> Union[ValueType, PlainQuantity[ValueType]]:  # type: ignore [type-var]
         return cls.from_au(values_au, dimension).to_pint_or_unit(unit)
 
+    @classmethod
+    def convert_pint_to_user(
+        cls,
+        value_pint: PlainQuantity[ValueType],  # type: ignore [type-var]
+        dimension: DimensionLike,
+        unit: Optional[str],
+    ) -> Union[ValueType, PlainQuantity[ValueType]]:  # type: ignore [type-var]
+        return cls.from_pint(value_pint, dimension).to_pint_or_unit(unit)
+
 
 class QuantityScalar(QuantityAbstract[float, float]):
     def check_value_type(self) -> None:
