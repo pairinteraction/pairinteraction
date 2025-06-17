@@ -8,6 +8,7 @@ from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union, overload
 
 import numpy as np
+from scipy import sparse
 
 import pairinteraction.real as pi_real
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
@@ -449,6 +450,8 @@ class EffectiveHamiltonian:
         self._h_eff_dict_au = h_eff_dict_au
         self._eigvec_perturb = eigvec_perturb
 
+        self.check_for_resonances()
+
     # # # Other stuff # # #
     @cached_property
     def model_inds(self) -> list[int]:
@@ -463,6 +466,43 @@ class EffectiveHamiltonian:
                 raise ValueError(f"The pairstate {kets} cannot be identified uniquely (max overlap: {overlap[index]}).")
             model_inds.append(int(index))
         return model_inds
+
+    def check_for_resonances(self, required_overlap: float = 0.9) -> None:
+        r"""Check if states of the model space have strong resonances with states outside the model space."""
+        eigvec_perturb = self.get_perturbed_eigenvectors()
+        overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real  # elementwise multiplication
+
+        model_inds = self.model_inds
+        for i, m_ind in enumerate(model_inds):
+            inf_data_inds = np.isinf(overlaps[i, :].data)
+            if inf_data_inds.any():
+                indices = overlaps[i, :].indices[np.argwhere(inf_data_inds).flatten()]
+                logger.critical(
+                    "Detected 'inf' entries in the perturbative eigenvectors.\n"
+                    " This might happen, if you forgot to include a degenerate state in the model space.\n"
+                    " Consider adding the following states to the model space:"
+                )
+                for index in indices:
+                    logger.critical("  - %s has infinite admixture", self.system_pair.basis.kets[index])
+                continue
+
+            overlaps[i, :] /= sparse.linalg.norm(overlaps[i, :])
+            if overlaps[i, m_ind] >= required_overlap:
+                continue
+            logger.error(
+                "The ket %s has only %.3f overlap with its corresponding perturbed eigenvector.\n"
+                " Thus, the calculation might lead to unexpected or wrong results.\n"
+                " Consider adding the most perturbing states to the model space.\n"
+                " The most perturbing states are:",
+                self.system_pair.basis.kets[m_ind],
+                overlaps[i, m_ind],
+            )
+            print_above_admixture = (1 - required_overlap) * 0.05
+            indices = sparse.find(overlaps[i, :] >= print_above_admixture)[1]
+            for index in indices:
+                if index != m_ind:
+                    admixture = overlaps[i, index]
+                    logger.error("  - %s with overlap %.3e", self.system_pair.basis.kets[index], admixture)
 
 
 @lru_cache(maxsize=20)

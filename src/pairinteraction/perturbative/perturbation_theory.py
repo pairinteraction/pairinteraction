@@ -92,6 +92,11 @@ def _calculate_unsorted_perturbative_hamiltonian(
 
     addition_mm = sparse.csr_matrix((len(m_inds), len(m_inds)))
     addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_e_em)).T)
+    if np.isinf(addition_me.data).any():
+        logger.critical(
+            "Detected 'inf' entries in the perturbative eigenvectors. "
+            "This might happen, if you forgot to include a degenerate state in the model space. "
+        )
     eigvec_perturb = eigvec_perturb + sparse.hstack([addition_mm, addition_me])
 
     if perturbation_order == 2:
