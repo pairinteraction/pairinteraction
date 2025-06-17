@@ -211,6 +211,15 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
         return cls.from_pint_or_unit(value, unit, dimension).to_au()
 
     @classmethod
+    def convert_user_to_pint(
+        cls,
+        value: Union[PlainQuantity[ValueType], ValueTypeLike],  # type: ignore [type-var]
+        unit: Optional[str],
+        dimension: DimensionLike,
+    ) -> PlainQuantity[ValueType]:  # type: ignore [type-var]
+        return cls.from_pint_or_unit(value, unit, dimension).to_pint()
+
+    @classmethod
     def convert_au_to_user(
         cls,
         values_au: ValueTypeLike,

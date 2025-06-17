@@ -100,6 +100,13 @@ class SystemAtom(SystemBase[BasisType]):
         return self
 
     def set_diamagnetism_enabled(self: "Self", enable: bool = True) -> "Self":
+        """Enable or disable the diamagnetism for the system.
+
+        Args:
+            enable: Whether to enable diamagnetism. Default is True.
+                If set to False, the system will not consider diamagnetic effects.
+
+        """
         self._cpp.set_diamagnetism_enabled(enable)
         return self
 
