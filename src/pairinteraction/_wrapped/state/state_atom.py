@@ -46,7 +46,7 @@ class StateAtom(StateBase[BasisType, KetAtom]):
 
     @property
     def is_canonical(self) -> bool:
-        return np.count_nonzero(self.get_coefficients()) == 1
+        return np.count_nonzero(self.get_coefficients()) == 1  # type: ignore [no-any-return]
 
     def get_amplitude(self, other: Union["Self", KetAtom]) -> Union[float, complex]:
         """Calculate the amplitude of the state with respect to another state or ket.
