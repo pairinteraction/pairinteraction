@@ -37,7 +37,7 @@ def diagonalize(
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
         >>> systems = [pi.SystemAtom(basis).set_magnetic_field([0, 0, b], unit="gauss") for b in range(1, 4)]
         >>> print(systems[0])
-        SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=False)
+        SystemAtom(BasisAtom(n=(58, 63), l=(0, 3)), is_diagonal=False)
         >>> pi.diagonalize(systems)
         >>> print(systems[0])
         SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=True)
