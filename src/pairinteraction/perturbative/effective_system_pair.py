@@ -460,12 +460,22 @@ class EffectiveSystemPair:
         model_inds = []
         for kets in self.ket_tuples:
             overlap = self.basis_pair.get_overlaps(kets)
-            index = np.argmax(overlap)
-            if overlap[index] == 0:
+            inds = np.argsort(overlap)[::-1]
+            model_inds.append(int(inds[0]))
+
+            if overlap[inds[0]] > 0.6:
+                continue
+            if overlap[inds[0]] == 0:
                 raise ValueError(f"The pairstate {kets} is not part of the basis of the pair system.")
-            if overlap[index] < 0.5:
-                raise ValueError(f"The pairstate {kets} cannot be identified uniquely (max overlap: {overlap[index]}).")
-            model_inds.append(int(index))
+            logger.critical(
+                "The ket_pair %s only has an overlap of %.3f with its corresponding pair_state."
+                " The most perturbing states are:",
+                kets,
+                overlap[inds[0]],
+            )
+            for i in inds[1:5]:
+                logger.error("  - %s with overlap %.3e", self.system_pair.basis.kets[i], overlap[i])
+
         return model_inds
 
     def check_for_resonances(self, required_overlap: float = 0.9) -> None:
