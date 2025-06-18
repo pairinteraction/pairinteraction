@@ -5,11 +5,13 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
 import numpy as np
+from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
+from pairinteraction._wrapped.diagonalize.diagonalize import diagonalize
+from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer
 from pairinteraction._wrapped.enums import FloatType
-from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
+from pairinteraction.units import QuantityArray, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -74,15 +76,43 @@ class SystemBase(ABC, Generic[BasisType]):
     def _update_basis(self) -> None:
         self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())
 
+    @overload
     def diagonalize(
         self,
         diagonalizer: Diagonalizer = "eigen",
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
         sort_by_energy: bool = True,
-        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+        energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
         energy_unit: Optional[str] = None,
         m0: Optional[int] = None,
+    ) -> "Self": ...
+
+    @overload
+    @deprecated("Use energy=... instead of energy_range=...")
+    def diagonalize(
+        self,
+        diagonalizer: Diagonalizer = "eigen",
+        float_type: FloatType = "float64",
+        rtol: float = 1e-6,
+        sort_by_energy: bool = True,
+        *,
+        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]],
+        energy_unit: Optional[str] = None,
+        m0: Optional[int] = None,
+    ) -> "Self": ...
+
+    def diagonalize(
+        self,
+        diagonalizer: Diagonalizer = "eigen",
+        float_type: FloatType = "float64",
+        rtol: float = 1e-6,
+        sort_by_energy: bool = True,
+        energy: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+        energy_unit: Optional[str] = None,
+        m0: Optional[int] = None,
+        *,
+        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
     ) -> "Self":
         """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
 
@@ -95,30 +125,21 @@ class SystemBase(ABC, Generic[BasisType]):
             rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
                 by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
             sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
-            energy_range: A tuple specifying an energy range, in which the eigenenergies should be calculated.
+            energy: A tuple specifying an energy range, in which the eigenenergies should be calculated.
                 Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
                 The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
                 Defaults to (None, None), i.e. calculate all eigenenergies.
             energy_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
             m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
+            energy_range: Deprecated. Use energy instead.
 
         Returns:
             Self: The updated instance of the system.
 
         """
-        cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self, float_type, m0=m0)
-
-        energy_range_au: list[Optional[float]] = [None, None]
-        for i, energy in enumerate(energy_range):
-            if energy is not None:
-                energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
-        self._cpp.diagonalize(cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)  # type: ignore [arg-type]
-
-        if sort_by_energy:
-            sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
-            self._cpp.transform(sorter)
-
-        self._update_basis()
+        diagonalize(
+            [self], diagonalizer, float_type, rtol, sort_by_energy, energy, energy_unit, m0, energy_range=energy_range
+        )  # type: ignore [call-overload]
         return self
 
     @property
