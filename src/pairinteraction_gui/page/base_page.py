@@ -87,6 +87,7 @@ class CalculationPage(SimulationPage):
 
         # Control panel below the plot
         bottom_layout = QHBoxLayout()
+        bottom_layout.setObjectName("bottomLayout")
 
         # Calculate/Abort stacked buttons
         self.calculate_and_abort = NamedStackedWidget[QPushButton](self)
