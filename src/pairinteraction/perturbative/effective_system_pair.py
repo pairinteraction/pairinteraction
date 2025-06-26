@@ -45,6 +45,9 @@ class EffectiveSystemPair:
         self._perturbation_order = 2
 
         # BasisAtom and SystemAtom attributes
+        self._delta_n: Optional[int] = None
+        self._delta_l: Optional[int] = None
+        self._delta_m: Optional[int] = None
         self._electric_field: Optional[PintArray] = None
         self._magnetic_field: Optional[PintArray] = None
         self._diamagnetism_enabled: Optional[bool] = None
@@ -108,9 +111,32 @@ class EffectiveSystemPair:
         self._ensure_not_created("basis_atoms")
         self._basis_atoms = tuple(basis_atoms)
 
+    def set_delta_n(self: "Self", delta_n: int) -> "Self":
+        """Set the delta_n value for single-atom basis."""
+        self._ensure_not_created()
+        self._delta_n = delta_n
+        return self
+
+    def set_delta_l(self: "Self", delta_l: int) -> "Self":
+        """Set the delta_l value for single-atom basis."""
+        self._ensure_not_created()
+        self._delta_l = delta_l
+        return self
+
+    def set_delta_m(self: "Self", delta_m: int) -> "Self":
+        """Set the delta_m value for single-atom basis."""
+        self._ensure_not_created()
+        self._delta_m = delta_m
+        return self
+
     def _create_basis_atoms(self) -> None:
-        delta_n = 7
-        delta_l = self.perturbation_order * (self.interaction_order - 2)
+        delta_n = self._delta_n if self._delta_n is not None else 7
+        delta_l = self._delta_l
+        if delta_l is None:
+            delta_l = self.perturbation_order * (self.interaction_order - 2)
+        delta_m = self._delta_m
+        if delta_m is None and self._delta_l is None and self._are_fields_along_z:
+            delta_m = self.perturbation_order * (self.interaction_order - 2)
 
         basis_atoms: list[BasisAtom[Any]] = []
         for i in range(2):
@@ -118,12 +144,10 @@ class EffectiveSystemPair:
             nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])
             n_range = (int(np.min(nlfm[0])) - delta_n, int(np.max(nlfm[0])) + delta_n)
             l_range = (np.min(nlfm[1]) - delta_l, np.max(nlfm[1]) + delta_l)
-            if any(ket.is_calculated_with_mqdt for ket in kets):
-                # for mqdt we increase delta_l by 1 to take into account the variance ...
+            if any(ket.is_calculated_with_mqdt for ket in kets) and self._delta_l is None:
+                # for mqdt we increase the default delta_l by 1 to take into account the variance ...
                 l_range = (np.min(nlfm[1]) - delta_l - 1, np.max(nlfm[1]) + delta_l + 1)
-            m_range = None
-            if self._are_fields_along_z:
-                m_range = (np.min(nlfm[3]) - delta_l, np.max(nlfm[3]) + delta_l)
+            m_range = (np.min(nlfm[3]) - delta_m, np.max(nlfm[3]) + delta_m) if delta_m is not None else None
             basis = get_basis_atom_with_cache(kets[0].species, n_range, l_range, m_range)
             basis_atoms.append(basis)
 
@@ -391,6 +415,26 @@ class EffectiveSystemPair:
         self._ensure_not_created("system_pair")
         self._distance_vector = QuantityArray.convert_user_to_pint(distance, unit, "distance")
         return self
+
+    def set_angle(
+        self: "Self",
+        angle: float = 0,
+        unit: Literal["degree", "radian"] = "degree",
+    ) -> "Self":
+        """Set the angle between the atoms in degrees.
+
+        Args:
+            angle: The angle between the distance vector and the z-axis (by default in degrees).
+                90 degrees corresponds to the x-axis.
+                Defaults to 0, which corresponds to the z-axis.
+            unit: The unit of the angle, either "degree" or "radian", by default "degree".
+
+        """
+        assert unit in ("radian", "degree"), f"Unit {unit} is not supported for angle."
+        if unit == "radian":
+            angle = np.rad2deg(angle)
+        distance_mum: float = np.linalg.norm(self.distance_vector.to("micrometer").magnitude)  # type: ignore [assignment]
+        return self.set_distance(distance_mum, angle, "micrometer")
 
     def _create_system_pair(self) -> None:
         system_pair = pi_real.SystemPair(self.basis_pair)  # type: ignore [arg-type]
