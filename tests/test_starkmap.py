@@ -3,19 +3,11 @@
 
 """Test the Stark map calculation."""
 
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional
-
 import numpy as np
 import pairinteraction.real as pi
 import pytest
 
-if TYPE_CHECKING:
-    from pairinteraction.units import NDArray
-
-reference_kets_file = Path(__file__).parent.parent / "data/reference_stark_map/kets.txt"
-reference_eigenenergies_file = Path(__file__).parent.parent / "data/reference_stark_map/eigenenergies.txt"
-reference_overlaps_file = Path(__file__).parent.parent / "data/reference_stark_map/overlaps.txt"
+from .compare_utils import REFERENCE_PATHS, compare_to_reference
 
 
 def test_starkmap(generate_reference: bool) -> None:
@@ -40,34 +32,12 @@ def test_starkmap(generate_reference: bool) -> None:
     eigenenergies = np.array([system.get_eigenenergies(unit="GHz") for system in systems])
     eigenvectors = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in systems])
 
+    reference_path = REFERENCE_PATHS["stark_map"]
     if generate_reference:
-        reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
-        np.savetxt(reference_kets_file, kets, fmt="%s", delimiter="\t")
-        np.savetxt(reference_eigenenergies_file, eigenenergies)
-        np.savetxt(reference_overlaps_file, overlaps)
+        reference_path.mkdir(parents=True, exist_ok=True)
+        np.savetxt(reference_path / "kets.txt", kets, fmt="%s", delimiter="\t")
+        np.savetxt(reference_path / "eigenenergies.txt", eigenenergies)
+        np.savetxt(reference_path / "overlaps.txt", overlaps)
         pytest.skip("Reference data generated, skipping comparison test")
 
-    compare_starkmap_to_reference(eigenenergies, overlaps, eigenvectors, kets)
-
-
-def compare_starkmap_to_reference(
-    eigenenergies: "NDArray",
-    overlaps: Optional["NDArray"] = None,
-    eigenvectors: Optional["NDArray"] = None,
-    kets: Optional[list[str]] = None,
-) -> None:
-    np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_eigenenergies_file))
-
-    if overlaps is not None:
-        # Ensure that the overlaps sum up to one
-        np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(len(eigenenergies)))
-        np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
-
-    if kets is not None:
-        np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
-
-    if eigenvectors is not None:
-        # Because of degeneracies, checking the eigenvectors against reference data is complicated.
-        # Thus, we only check their normalization and orthogonality.
-        cumulative_norm = (np.array(eigenvectors) * np.array(eigenvectors).conj()).sum(axis=1)
-        np.testing.assert_allclose(cumulative_norm, 90 * np.ones(len(eigenenergies)))
+    compare_to_reference(reference_path, eigenenergies, overlaps, eigenvectors, kets)
