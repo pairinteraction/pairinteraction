@@ -111,7 +111,9 @@ class BasisPair(BasisBase[KetPairType, StateType]):
                 Default None, i.e. energy is provided as pint object.
 
         """
+        assert len(systems) == 2, "BasisPair requires exactly two SystemAtom objects."
         creator = self._cpp_creator()
+        self.system_atoms: tuple[SystemAtom[Any], SystemAtom[Any]] = tuple(systems)  # type: ignore [assignment]
         for system in systems:
             if isinstance(creator, _backend.BasisPairCreatorReal) and isinstance(system, SystemAtomReal):
                 creator.add(system._cpp)

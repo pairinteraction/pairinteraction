@@ -56,14 +56,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def __init__(self, basis: BasisType) -> None:
         self._cpp = self._cpp_type(basis._cpp)  # type: ignore [arg-type]
-        self._update_basis()
-
-    @classmethod
-    def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPSystem) -> "Self":
-        obj = cls.__new__(cls)
-        obj._cpp = cpp_obj
-        obj._update_basis()
-        return obj
+        self._basis = basis
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.basis!r}, is_diagonal={self.is_diagonal})"

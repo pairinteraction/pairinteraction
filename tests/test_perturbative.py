@@ -9,16 +9,12 @@ import pairinteraction.real as pi
 import pytest
 from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
-from pairinteraction.units import ureg
 from scipy import sparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
 
-# ---------------------------------------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------------------------------------
 def _check_sparse_matrices_equal(matrix_a: "csr_matrix", matrix_b: "csr_matrix") -> bool:
     """Check for equality of sparse matrices efficiently.
 
@@ -50,7 +46,8 @@ def _check_sparse_matrices_equal(matrix_a: "csr_matrix", matrix_b: "csr_matrix")
     )
 
 
-def _create_system_pair_sample() -> pi.SystemPair:
+@pytest.fixture
+def system_pair_sample() -> pi.SystemPair:
     basis = pi.BasisAtom(
         species="Rb",
         n=(59, 63),
@@ -71,9 +68,6 @@ def _create_system_pair_sample() -> pi.SystemPair:
     return system_pair
 
 
-# ---------------------------------------------------------------------------------------
-# Tests
-# ---------------------------------------------------------------------------------------
 def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     """Test of mathematic functionality."""
     hamiltonian = sparse.csr_matrix(
@@ -103,16 +97,8 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     hamiltonian_new = np.array([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
     assert np.any(h_eff == hamiltonian_new)
 
-    v0 = (
-        sparse.eye(1, 5, k=0, format="csr")
-        + 1 / (0 - 10) * sparse.eye(1, 5, k=2, format="csr")
-        + 2 / (0 - 12) * sparse.eye(1, 5, k=4, format="csr")
-    )
-    v1 = (
-        sparse.eye(1, 5, k=1, format="csr")
-        + 1 / (1 - 11) * sparse.eye(1, 5, k=3, format="csr")
-        + 3 / (1 - 12) * sparse.eye(1, 5, k=4, format="csr")
-    )
+    v0 = sparse.eye(1, 5, k=0) + 1 / (0 - 10) * sparse.eye(1, 5, k=2) + 2 / (0 - 12) * sparse.eye(1, 5, k=4)
+    v1 = sparse.eye(1, 5, k=1) + 1 / (1 - 11) * sparse.eye(1, 5, k=3) + 3 / (1 - 12) * sparse.eye(1, 5, k=4)
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
     # Order 3
@@ -138,94 +124,92 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     hamiltonian_new = np.array([[a_00, (a_01 + a_10) / 2], [(a_01 + a_10) / 2, a_11]])
     assert np.any(h_eff == hamiltonian_new)
 
-    v0 += (
-        -0.5 * (1 * 1 / (0 - 10) ** 2 + 2 * 2 / (0 - 12) ** 2) * sparse.eye(1, 5, k=0, format="csr")
-        + (1 * 1 / ((0 - 10) * (0 - 11)) + 2 * 1 / ((0 - 11) * (0 - 12))) * sparse.eye(1, 5, k=3, format="csr")
-        + 1 * 1 / ((0 - 11) * (0 - 1)) * sparse.eye(1, 5, k=3, format="csr")
-        + 3 * 1 / ((0 - 1) * (0 - 12)) * sparse.eye(1, 5, k=4, format="csr")
-        + 3 * 2 / ((0 - 1) * (0 - 12)) * sparse.eye(1, 5, k=1, format="csr")
+    v0 = v0 + (
+        -0.5 * (1 * 1 / (0 - 10) ** 2 + 2 * 2 / (0 - 12) ** 2) * sparse.eye(1, 5, k=0)
+        + (1 * 1 / ((0 - 10) * (0 - 11)) + 2 * 1 / ((0 - 11) * (0 - 12))) * sparse.eye(1, 5, k=3)
+        + 1 * 1 / ((0 - 11) * (0 - 1)) * sparse.eye(1, 5, k=3)
+        + 3 * 1 / ((0 - 1) * (0 - 12)) * sparse.eye(1, 5, k=4)
+        + 3 * 2 / ((0 - 1) * (0 - 12)) * sparse.eye(1, 5, k=1)
     )
-    v1 += (
-        -0.5 * (1 * 1 / (1 - 11) ** 2 + 3 * 3 / (1 - 12) ** 2) * sparse.eye(1, 5, k=1, format="csr")
-        + 1 * 1 / ((1 - 10) * (1 - 11)) * sparse.eye(1, 5, k=2, format="csr")
-        + 1 * 3 / ((1 - 11) * (1 - 12)) * sparse.eye(1, 5, k=3, format="csr")
-        + 1 * 1 / ((1 - 11) * (1 - 12)) * sparse.eye(1, 5, k=4, format="csr")
-        + 1 * 1 / ((1 - 0) * (1 - 10)) * sparse.eye(1, 5, k=2, format="csr")
-        + 2 * 1 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=4, format="csr")
-        + 3 * 2 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=0, format="csr")
+    v1 = v1 + (
+        -0.5 * (1 * 1 / (1 - 11) ** 2 + 3 * 3 / (1 - 12) ** 2) * sparse.eye(1, 5, k=1)
+        + 1 * 1 / ((1 - 10) * (1 - 11)) * sparse.eye(1, 5, k=2)
+        + 1 * 3 / ((1 - 11) * (1 - 12)) * sparse.eye(1, 5, k=3)
+        + 1 * 1 / ((1 - 11) * (1 - 12)) * sparse.eye(1, 5, k=4)
+        + 1 * 1 / ((1 - 0) * (1 - 10)) * sparse.eye(1, 5, k=2)
+        + 2 * 1 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=4)
+        + 3 * 2 / ((1 - 0) * (1 - 12)) * sparse.eye(1, 5, k=0)
     )
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
 
-def test_c3_with_system() -> None:
+def test_c3_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C3 coefficient with a given system is calculated correctly."""
-    system_pair = _create_system_pair_sample()
+    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    c3_obj = perturbative.C3(ket1, ket2)
+    c3_obj.system_pair = system_pair_sample
 
-    ket_tuple_list = [
-        (pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)),
-        (pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5), pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)),
-    ]
-    c3 = perturbative.get_c3_from_system(
-        system_pair=system_pair, ket_tuple_list=ket_tuple_list, unit="planck_constant * gigahertz * micrometer^3"
-    )
+    c3 = c3_obj.get(unit="planck_constant * gigahertz * micrometer^3")
     assert np.isclose(-0.5 * c3, 3.1515)
 
 
-def test_c3_create_system() -> None:
+def test_c3() -> None:
     """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
-    ket_tuple_list = [
-        (pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)),
-        (pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5), pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)),
-    ]
-    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
-    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
-    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
+    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    c3_obj = perturbative.C3(ket1, ket2)
 
-    system = perturbative.create_system_for_perturbative(
-        ket_tuple_list, electric_field, magnetic_field, distance_vector
-    )
+    c3_obj.set_electric_field([0, 0, 0], "volt/cm")
+    c3_obj.set_magnetic_field([0, 0, 10], "gauss")
 
-    c3 = perturbative.get_c3_from_system(
-        system_pair=system, ket_tuple_list=ket_tuple_list, unit="planck_constant * gigahertz * micrometer^3"
-    )
+    c3 = c3_obj.get(unit="planck_constant * gigahertz * micrometer^3")
     assert np.isclose(-0.5 * c3, 3.2188)
 
 
-def test_c6_with_system() -> None:
+def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C6 coefficient with a given system is calculated correctly."""
-    system_pair = _create_system_pair_sample()
-    ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
-    c6 = perturbative.get_c6_from_system(
-        ket_tuple=(ket_atom, ket_atom), system_pair=system_pair, unit="planck_constant * gigahertz * micrometer^6"
-    )
+    ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    c6_obj = perturbative.C6(ket, ket)
+    c6_obj.system_pair = system_pair_sample
+
+    c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
     assert np.isclose(c6, 167.92)
 
 
-def test_c6_create_system() -> None:
+def test_c6() -> None:
     """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
-    magnetic_field = ureg.Quantity([0, 0, 10], "gauss")
-    electric_field = ureg.Quantity([0, 0, 0], "volt/cm")
-    distance_vector = ureg.Quantity([0, 0, 500], "micrometer")
-    ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    c6_obj = perturbative.C6(ket, ket)
 
-    system = perturbative.create_system_for_perturbative(
-        [(ket_atom, ket_atom)], electric_field, magnetic_field, distance_vector
-    )
+    c6_obj.set_electric_field([0, 0, 0], "volt/cm")
+    c6_obj.set_magnetic_field([0, 0, 10], "gauss")
 
-    c6 = perturbative.get_c6_from_system(
-        ket_tuple=(ket_atom, ket_atom), system_pair=system, unit="planck_constant * gigahertz * micrometer^6"
-    )
+    c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
     assert np.isclose(c6, 169.189)
 
 
-def test_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
-    """Test whether resonance is correctly detected."""
-    system_pair = _create_system_pair_sample()
-    ket_tuple_list = [
-        (pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5), pi.KetAtom(species="Rb", n=61, l=1, j=0.5, m=0.5))
-    ]
-    with (
-        pytest.raises(ValueError, match="Perturbative Calculation not possible due to resonances."),
-        caplog.at_level(logging.CRITICAL),
-    ):
-        perturbative.get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=2, required_overlap=0.8)
+def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, caplog: pytest.LogCaptureFixture) -> None:
+    """Test whether resonance with infinite admixture is correctly detected."""
+    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    eff_h = perturbative.EffectiveSystemPair([(ket1, ket2)])
+    eff_h.system_pair = system_pair_sample
+    with caplog.at_level(logging.CRITICAL):
+        eff_h.get_effective_hamiltonian()
+    assert "infinite admixture" in caplog.text
+
+
+def test_near_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
+    """Test whether a near resonance is correctly detected."""
+    ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    eff_h = perturbative.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    eff_h.set_magnetic_field([0, 0, 245], "gauss")
+    eff_h.set_minimum_number_of_ket_pairs(100)
+    eff_h.set_distance(10, 35.1, "micrometer")
+    eff_h.get_effective_hamiltonian()
+
+    with caplog.at_level(logging.ERROR):
+        eff_h.check_for_resonances(0.99)
+    assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in caplog.text
