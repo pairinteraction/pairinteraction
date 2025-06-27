@@ -70,9 +70,11 @@ def _calculate_unsorted_perturbative_hamiltonian(
     eff_h_dict: dict[int, NDArray] = {}  # perturbation_order -> h_eff
 
     eff_h_dict[0] = np.diag(h0_m)
-    eff_eigvec = sparse.hstack(
-        [sparse.eye(len(m_inds), len(m_inds), format="csr").tocsr(), sparse.csr_matrix((len(m_inds), len(o_inds)))]
-    ).tocsr()
+    eff_eigvec = sparse.csr_matrix(
+        sparse.hstack(
+            [sparse.eye(len(m_inds), len(m_inds), format="csr"), sparse.csr_matrix((len(m_inds), len(o_inds)))]
+        )
+    )
 
     if perturbation_order == 0:
         return eff_h_dict, eff_eigvec
