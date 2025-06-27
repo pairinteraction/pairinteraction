@@ -551,6 +551,10 @@ class EffectiveSystemPair:
             assert self._eff_vecs is not None
         return self._eff_vecs
 
+    def get_effective_basis(self) -> "BasisPair[Any, Any]":
+        """Get the effective basis of the pair system."""
+        raise NotImplementedError("The get effective basis method is not implemented yet.")
+
     def _create_effective_hamiltonian(self) -> None:
         """Calculate the perturbative Hamiltonian up to the given perturbation order."""
         hamiltonian_au = self.system_pair.get_hamiltonian(unit="hartree")
