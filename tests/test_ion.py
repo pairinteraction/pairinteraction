@@ -14,19 +14,17 @@ def test_ion_z() -> None:
     ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     basis = pi.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2), m=(ket.m, ket.m))
 
-    # Create systems for different distances to the ion
-    distance = 3
+    # Create systems with ion along z-axis
     system_z = (
         pi.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
-        .set_ion_distance_vector([0, 0, distance], unit="um")
+        .set_ion_distance_vector([0, 0, 3], unit="um")
     )
 
     # Diagonalize the system
     system_z = system_z.diagonalize(diagonalizer="eigen", sort_by_energy=True)
 
-    # Ensure that values are correct for the system where the ion is closest to the atom
     eigenenergies = system_z.get_eigenenergies(unit="GHz")
     overlaps = system_z.basis.get_overlaps(ket)
     idx = np.argmax(overlaps)
@@ -40,19 +38,17 @@ def test_ion_x() -> None:
     ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     basis = pi.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2))
 
-    # Create systems for different distances to the ion
-    distance = 3
+    # Create systems with ion along x-axis
     system_x = (
         pi.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
-        .set_ion_distance_vector([distance, 0, 0], unit="um")
+        .set_ion_distance_vector([3, 0, 0], unit="um")
     )
 
     # Diagonalize the system
     system_x = system_x.diagonalize(diagonalizer="eigen", sort_by_energy=True)
 
-    # Ensure that values are correct for the system where the ion is closest to the atom
     eigenenergies = system_x.get_eigenenergies(unit="GHz")
     overlaps = system_x.basis.get_overlaps(ket)
     idx = np.argmax(overlaps)
