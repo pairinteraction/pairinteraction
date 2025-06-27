@@ -558,11 +558,11 @@ class EffectiveSystemPair:
     def _create_effective_hamiltonian(self) -> None:
         """Calculate the perturbative Hamiltonian up to the given perturbation order."""
         hamiltonian_au = self.system_pair.get_hamiltonian(unit="hartree")
-        eff_h_dict_au, eigvec_perturb = calculate_perturbative_hamiltonian(
+        eff_h_dict_au, eff_vecs = calculate_perturbative_hamiltonian(
             hamiltonian_au, self.model_inds, self.perturbation_order
         )
         self._eff_h_dict_au = eff_h_dict_au
-        self._eff_vecs = eigvec_perturb
+        self._eff_vecs = eff_vecs
 
         self.check_for_resonances()
 
@@ -597,9 +597,9 @@ class EffectiveSystemPair:
         if self._eff_vecs is None:
             self._create_effective_hamiltonian()
             assert self._eff_vecs is not None
-        eigvec_perturb = self._eff_vecs
+        eff_vecs = self._eff_vecs
 
-        overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real  # elementwise multiplication
+        overlaps = (eff_vecs.multiply(eff_vecs.conj())).real  # elementwise multiplication
 
         model_inds = self.model_inds
         for i, m_ind in enumerate(model_inds):
