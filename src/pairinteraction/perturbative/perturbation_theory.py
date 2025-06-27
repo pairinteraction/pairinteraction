@@ -107,7 +107,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     delta_e_mm = 1 / diff
     v_ee = v_offdiag[np.ix_(o_inds, o_inds)]
     if len(m_inds) > 1:
-        logger.warning(
+        logger.debug(
             "At third order, the effective basisvectors are currently only valid, "
             "when only one state is in the model space. "
             "Take care with interpretation of the effective basisvectors."

@@ -544,6 +544,8 @@ class EffectiveSystemPair:
 
     def get_effective_basisvectors(self) -> "csr_matrix":
         """Get the eigenvectors of the perturbative Hamiltonian."""
+        if len(self.model_inds) > 1 and self.perturbation_order > 2:
+            logger.warning("For more than one state and perturbation_order > 2 the effective basis might be wrong.")
         if self._eff_vecs is None:
             self._create_effective_hamiltonian()
             assert self._eff_vecs is not None
@@ -587,7 +589,12 @@ class EffectiveSystemPair:
 
     def check_for_resonances(self, required_overlap: float = 0.9) -> None:
         r"""Check if states of the model space have strong resonances with states outside the model space."""
-        eigvec_perturb = self.get_effective_basisvectors()
+        # Get the effective eigenvectors without potential warning
+        if self._eff_vecs is None:
+            self._create_effective_hamiltonian()
+            assert self._eff_vecs is not None
+        eigvec_perturb = self._eff_vecs
+
         overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real  # elementwise multiplication
 
         model_inds = self.model_inds
