@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 import numpy as np
 from scipy import sparse
 from scipy.sparse import csr_matrix
+from typing_extensions import deprecated
 
 from pairinteraction import (
     complex as pi_complex,
@@ -57,6 +58,7 @@ def get_effective_hamiltonian_from_system(
 ) -> tuple["NDArray", "csr_matrix"]: ...
 
 
+@deprecated("Use EffectiveSystemPair(ket_tuples).get_effective_hamiltonian() instead.")
 def get_effective_hamiltonian_from_system(
     ket_tuple_list: Collection["KetPairLike"],
     system_pair: "SystemPair",
@@ -128,6 +130,7 @@ def get_c3_from_system(
 def get_c3_from_system(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: str) -> float: ...
 
 
+@deprecated("Use C3(ket1, ket2).get() instead.")
 def get_c3_from_system(
     ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: Optional[str] = None
 ) -> Union[float, "PintFloat"]:
@@ -178,6 +181,7 @@ def get_c6_from_system(ket_tuple: "KetPairLike", system_pair: "SystemPair", *, u
 def get_c6_from_system(ket_tuple: "KetPairLike", system_pair: "SystemPair", unit: str) -> float: ...
 
 
+@deprecated("Use C6(ket1, ket2).get() instead.")
 def get_c6_from_system(
     ket_tuple: "KetPairLike", system_pair: "SystemPair", unit: Optional[str] = None
 ) -> Union[float, "PintFloat"]:
@@ -312,6 +316,7 @@ def _check_for_resonances(
         )
 
 
+@deprecated("Use EffectiveSystemPair(ket_tuples) instead to create a system for perturbative calculations.")
 def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
     ket_tuple_list: Collection["KetAtomTuple"],
     electric_field: Optional["PintArray"] = None,
