@@ -74,8 +74,17 @@ class SystemPair(SystemBase[BasisType]):
         """
         super().__init__(basis)
         self._distance_vector_au = [0, 0, np.inf]
+        self._interaction_order = 3
 
     def set_interaction_order(self: "Self", order: int) -> "Self":
+        """Set the interaction order of the pair system.
+
+        Args:
+            order: The interaction order to set for the pair system.
+                The order must be 3, 4, or 5.
+
+        """
+        self._interaction_order = order
         self._cpp.set_interaction_order(order)
         return self
 
