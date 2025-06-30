@@ -12,11 +12,30 @@ if TYPE_CHECKING:
 
 
 class C3(EffectiveSystemPair):
+    """Class for calculating the C3 coefficient between two states.
+
+    Given two `KetAtom` objects ket1 and ket2,
+    this class computes the C3 coefficient between ``|ket1, ket2>`` and ``|ket2, ket1>``.
+    This class also allows to set magnetic and electric fields similar to the `SystemAtom` class,
+    as well as the angle between the two atoms like in the `SystemPair` class.
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> from pairinteraction.perturbative import C3
+        >>> ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+        >>> ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+        >>> c3_obj = C3(ket1, ket2)
+        >>> c3 = c3_obj.get(unit="planck_constant * MHz * micrometer^3")
+        >>> print(f"{c3:.2f}")
+        -93.29
+
+    """
+
     def __init__(self, ket1: "KetAtom", ket2: "KetAtom") -> None:
         super().__init__([(ket1, ket2), (ket2, ket1)])
         self.set_perturbation_order(1)
 
-        # Set some default distance. The exact value does not matter for the C3 value,
+        # Set some default distance. The exact value does not matter for the C3 value
         self.set_distance(100, unit="micrometer")
 
     @overload

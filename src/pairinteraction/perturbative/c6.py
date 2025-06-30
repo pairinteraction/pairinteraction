@@ -12,6 +12,30 @@ if TYPE_CHECKING:
 
 
 class C6(EffectiveSystemPair):
+    """Class for calculating the C6 coefficient for a two atom state ``|ket1, ket2>``.
+
+    Given two `KetAtom` objects ket1 and ket2,
+    this class computes the C6 coefficient for the pair state ``|ket1, ket2>``.
+    This class also allows to set magnetic and electric fields similar to the `SystemAtom` class,
+    as well as the angle between the two atoms like in the `SystemPair` class.
+
+    Note, that ket1 and ket2 must be either the same state or states of different species.
+    If you want to calculate the C6 coefficient for two different states of the same species,
+    we recommend using the `EffectiveSystemPair` class with the ket_tuples subspace [(ket1, ket2), (ket2, ket1)].
+
+
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> from pairinteraction.perturbative import C6
+        >>> ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+        >>> c6_obj = C6(ket, ket)
+        >>> c6 = c6_obj.get(unit="planck_constant * GHz * micrometer^6")
+        >>> print(f"{c6:.1f}")
+        138.9
+
+    """
+
     def __init__(self, ket1: "KetAtom", ket2: "KetAtom") -> None:
         if ket1.species == ket2.species and ket1 != ket2:
             raise ValueError(

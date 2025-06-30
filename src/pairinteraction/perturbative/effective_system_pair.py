@@ -39,6 +39,39 @@ BasisSystemLiteral = Literal["basis_atoms", "system_atoms", "basis_pair", "syste
 
 
 class EffectiveSystemPair:
+    """Class for creating an effective SystemPair object and calculating the effective Hamiltonian.
+
+    Given a subspace spanned by tuples of `KetAtom` objects (ket_tuples),
+    this class automatically generates appropriate `BasisAtom`, `SystemAtom` objects as well as a `BasisPair` and
+    `SystemPair` object to calculate the effective Hamiltonian in the subspace via perturbation theory.
+
+    This class also allows to set magnetic and electric fields similar to the `SystemAtom` class,
+    as well as the angle and distance between the two atoms like in the `SystemPair` class.
+
+    Examples:
+        >>> import pairinteraction.real as pi
+        >>> from pairinteraction.perturbative import EffectiveSystemPair
+        >>> ket_atoms = {
+        ...     "+": pi.KetAtom("Rb", n=59, l=0, j=0.5, m=0.5),
+        ...     "0": pi.KetAtom("Rb", n=58, l=1, j=1.5, m=1.5),
+        ...     "-": pi.KetAtom("Rb", n=58, l=0, j=0.5, m=0.5),
+        ... }
+        >>> ket_tuples = [
+        ...     (ket_atoms["+"], ket_atoms["-"]),
+        ...     (ket_atoms["0"], ket_atoms["0"]),
+        ...     (ket_atoms["-"], ket_atoms["+"]),
+        ... ]
+        >>> eff_system = EffectiveSystemPair(ket_tuples)
+        >>> eff_system = eff_system.set_distance(10, angle_degree=45, unit="micrometer")
+        >>> eff_h = eff_system.get_effective_hamiltonian(unit="MHz")
+        >>> eff_h -= np.eye(3) * eff_system.get_pair_energies("MHz")[1]
+        >>> print(np.round(eff_h, 0), "MHz")
+        [[291.   3.   0.]
+         [  3.   0.   3.]
+         [  0.   3. 291.]] MHz
+
+    """
+
     def __init__(self, ket_tuples: Sequence["KetAtomTuple"]) -> None:
         if not all(len(ket_tuple) == 2 for ket_tuple in ket_tuples):
             raise ValueError("All ket tuples must contain exactly two kets")
