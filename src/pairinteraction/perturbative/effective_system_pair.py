@@ -307,10 +307,28 @@ class EffectiveSystemPair:
 
         self._system_atoms = tuple(system_atoms)
 
-    @property
-    def pair_energies(self) -> list["PintFloat"]:
-        return [
-            sum(system.get_corresponding_energy(ket) for system, ket in zip(self.system_atoms, ket_tuple, strict=True))  # type: ignore [misc]
+    @overload
+    def get_pair_energies(self, unit: None = None) -> list["PintFloat"]: ...
+
+    @overload
+    def get_pair_energies(self, unit: str) -> list[float]: ...
+
+    def get_pair_energies(self, unit: Optional[str] = None) -> Union[list[float], list["PintFloat"]]:
+        """Get the pair energies of the ket tuples for infinite distance (i.e. no interaction).
+
+        Args:
+            unit: The unit to which to convert the energies to.
+                Default None will return a list of `pint.Quantity`.
+
+        Returns:
+            The energies as list of float if a unit was given, otherwise as list of `pint.Quantity`.
+
+        """
+        return [  # type: ignore [return-value]
+            sum(
+                system.get_corresponding_energy(ket, unit=unit)
+                for system, ket in zip(self.system_atoms, ket_tuple, strict=True)
+            )
             for ket_tuple in self.ket_tuples
         ]
 
@@ -365,7 +383,7 @@ class EffectiveSystemPair:
         if min_number_of_kets is None:
             min_number_of_kets = min(2_000, max_number_of_kets)
 
-        pair_energies_au = [energy.to_base_units().magnitude for energy in self.pair_energies]
+        pair_energies_au = self.get_pair_energies(unit="hartree")
         min_energy_au = min(pair_energies_au)
         max_energy_au = max(pair_energies_au)
 
