@@ -60,6 +60,7 @@ def load_parquet_and_csv_files(path_source: Path) -> dict[str, TableFile]:
 
 def delete_old_parquet_and_csv_files(path_target: Path, parquet_and_csv_files: dict[str, TableFile]) -> None:
     """Delete old parquet files from the target directory."""
+    # Delete files in the target directory that have a newer version in the source directory
     for path in list(path_target.rglob("*.parquet")) + list(path_target.rglob("*.csv")):
         species, version_str = path.parent.name.rsplit("_v", 1)
         version = Version(version_str)
@@ -74,6 +75,12 @@ def delete_old_parquet_and_csv_files(path_target: Path, parquet_and_csv_files: d
                     f"Version of the table '{key}' in target directory is higher than in source directory."
                 )
 
+    # Delete empty directories in the target directory
+    for dirpath in sorted(path_target.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+        if dirpath.is_dir() and not any(dirpath.iterdir()):
+            dirpath.rmdir()
+            logger.info("Deleted empty directory: %s", dirpath)
+
 
 def write_parquet_files(
     connection: duckdb.DuckDBPyConnection,
@@ -86,6 +93,11 @@ def write_parquet_files(
         parquet_file.path = (
             path_target / "tables" / f"{parquet_file.species}_v{parquet_file.version}" / f"{parquet_file.table}.parquet"
         )
+
+        # Ensure the parent directory exists
+        parquet_file.path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Write the parquet file using DuckDB's COPY command
         copy_cmd = (
             f"COPY {parquet_file.species}_{parquet_file.table} TO '{parquet_file.path}' "
             f"(FORMAT PARQUET, {', '.join(f'{k} {v}' for k, v in options.items())})"

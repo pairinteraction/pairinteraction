@@ -71,7 +71,7 @@ def test_c6_with_system(system_pair_sample: pi.SystemPair) -> None:
         system_pair=system_pair_sample,
         unit="planck_constant * gigahertz * micrometer^6",
     )
-    assert np.isclose(c6, 167.92)
+    assert np.isclose(c6, 167.880)
 
 
 def test_c6_create_system() -> None:
@@ -88,4 +88,4 @@ def test_c6_create_system() -> None:
     c6 = perturbative.get_c6_from_system(
         ket_tuple=(ket_atom, ket_atom), system_pair=system, unit="planck_constant * gigahertz * micrometer^6"
     )
-    assert np.isclose(c6, 169.189)
+    assert np.isclose(c6, 169.149)

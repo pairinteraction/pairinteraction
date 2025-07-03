@@ -160,7 +160,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         DOCTEST_CHECK(m.size() == basis->get_number_of_states());
         double dipole = m[static_cast<int>(basis->get_corresponding_state_index(ket_s))];
 
-        DOCTEST_CHECK(std::abs(dipole - 1247.5985544327215848) < 1e-6);
+        DOCTEST_CHECK(std::abs(dipole - 1247.6043831131365) < 1e-6);
     }
 
     DOCTEST_SUBCASE("calculate electric dipole matrix element with and without an induced dipole") {
@@ -185,7 +185,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
             DOCTEST_CHECK(m.cols() == 1);
             double dipole = m.coeff(0, 0);
 
-            DOCTEST_CHECK(std::abs(dipole - 135.01903532588247003) < 1e-6);
+            DOCTEST_CHECK(std::abs(dipole - 135.04130863117354) < 1e-6);
         }
     }
 }

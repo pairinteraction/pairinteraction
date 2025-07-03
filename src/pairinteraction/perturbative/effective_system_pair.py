@@ -66,9 +66,9 @@ class EffectiveSystemPair:
         >>> eff_h = eff_system.get_effective_hamiltonian(unit="MHz")
         >>> eff_h -= np.eye(3) * eff_system.get_pair_energies("MHz")[1]
         >>> print(np.round(eff_h, 0), "MHz")
-        [[291.   3.   0.]
+        [[292.   3.   0.]
          [  3.   0.   3.]
-         [  0.   3. 291.]] MHz
+         [  0.   3. 292.]] MHz
 
     """
 

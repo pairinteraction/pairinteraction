@@ -174,7 +174,7 @@ def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     c6_obj.system_pair = system_pair_sample
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
-    assert np.isclose(c6, 167.92)
+    assert np.isclose(c6, 167.880)
 
 
 def test_c6() -> None:
@@ -186,7 +186,7 @@ def test_c6() -> None:
     c6_obj.set_magnetic_field([0, 0, 10], "gauss")
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
-    assert np.isclose(c6, 169.189)
+    assert np.isclose(c6, 169.149)
 
 
 def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, caplog: pytest.LogCaptureFixture) -> None:

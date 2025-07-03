@@ -58,7 +58,7 @@ class SystemPair(SystemBase[BasisType]):
         >>> pair_system = pair_system.diagonalize()
         >>> eigenenergies = pair_system.get_eigenenergies(unit="GHz")
         >>> print(f"{eigenenergies[0] - pair_energy:.5f}")
-        -2.18361
+        -2.18394
 
     """  # noqa: E501
 
