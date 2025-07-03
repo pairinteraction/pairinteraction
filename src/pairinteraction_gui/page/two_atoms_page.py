@@ -44,7 +44,7 @@ class TwoAtomsPage(CalculationPage):
 
         # Create a fit button with menu
         fit_button = QPushButton("Fit")
-        fit_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_ToolBarHorizontalExtensionButton))
+        fit_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogResetButton))
         fit_menu = QMenu(self)
         fit_menu.addAction("Fit c3", lambda: self.plotwidget.fit("c3"))
         fit_menu.addAction("Fit c6", lambda: self.plotwidget.fit("c6"))
