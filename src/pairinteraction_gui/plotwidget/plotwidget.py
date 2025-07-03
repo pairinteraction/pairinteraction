@@ -238,7 +238,7 @@ class PlotEnergies(PlotWidget):
             for curve in self.fit_curve:
                 curve.remove()
 
-        self.fit_data_highlight = self.canvas.ax.scatter(self.x_list, energies, c="green", s=15)
+        self.fit_data_highlight = self.canvas.ax.scatter(self.x_list, energies, c="green", s=5)
 
         try:
             fit_params = curve_fit(fit_func, self.x_list, energies)[0]
@@ -250,7 +250,7 @@ class PlotEnergies(PlotWidget):
                 fit_func(self.x_list, *fit_params),
                 c="green",
                 linestyle="dashed",
-                lw=1,
+                lw=2,
                 label=fitlabel.format(*fit_params),
             )
             self.canvas.ax.legend()
