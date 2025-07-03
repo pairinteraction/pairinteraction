@@ -4,12 +4,7 @@
 import logging
 from typing import Any
 
-from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QMenu,
-    QPushButton,
-    QStyle
-)
+from PySide6.QtWidgets import QHBoxLayout, QMenu, QPushButton, QStyle
 
 from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, ResultsTwoAtoms, calculate_two_atoms
 from pairinteraction_gui.config import (
@@ -56,7 +51,7 @@ class TwoAtomsPage(CalculationPage):
         fit_menu.addAction("Fit c3+c6", lambda: self.plotwidget.fit("c3+c6"))
         fit_button.setMenu(fit_menu)
         fit_button.setFixedHeight(50)
-        self.layout().findChild(QHBoxLayout, name="bottomLayout").insertWidget(1, fit_button, stretch=1)
+        self.findChild(QHBoxLayout, name="bottomLayout").insertWidget(1, fit_button, stretch=1)
 
     def before_calculate(self) -> None:
         self.basis_config.clear_basis_pair_label()

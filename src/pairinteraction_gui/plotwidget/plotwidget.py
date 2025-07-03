@@ -3,7 +3,7 @@
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -60,11 +60,12 @@ class PlotWidget(WidgetV):
 
 class PlotEnergies(PlotWidget):
     """Plotwidget for plotting energy levels."""
-    x_list: Sequence[float]
+
+    x_list: "NDArray[Any]"
     energies_list: Sequence["NDArray[Any]"]
     overlaps_list: Sequence["NDArray[Any]"]
     fit_idx: int = 0
-    fit_type: str = None
+    fit_type: str = ""
     fit_data_highlight: mpl.collections.PathCollection
     fit_curve: Sequence[mpl.lines.Line2D]
 
@@ -82,7 +83,6 @@ class PlotEnergies(PlotWidget):
         overlaps_list: Sequence["NDArray[Any]"],
         xlabel: str,
     ) -> None:
-
         # store data to allow fitting later on
         self.x_list = np.array(x_list)
         self.energies_list = energies_list
@@ -159,22 +159,27 @@ class PlotEnergies(PlotWidget):
             label = sel.artist.get_label()
             sel.annotation.set_text(label.replace(" + ", "\n + "))
 
-    def fit(self, fit_type: str = "c6") -> None:
-        """
-        Fits a potential curve and displays the fit values. Possible fit types:
-            c6: E = E0 + C6 * r^6
-            c3: E = E0 + C3 * r^3
-            c3+c6: E = E0 + C3 * r^3 + C6 * r^6
+    def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, C901
+        """Fits a potential curve and displays the fit values.
+
+        Args:
+            fit_type: Type of fit to perform. Options are:
+              c6: E = E0 + C6 * r^6
+              c3: E = E0 + C3 * r^3
+              c3+c6: E = E0 + C3 * r^3 + C6 * r^6
+
         Iterative calls will iterate through the potential curves
+
         """
+        fit_func: Callable[..., NDArray[Any]]
         if fit_type == "c6":
-            def fit_func(x, E0, C6): return E0 + C6 / x**6
+            fit_func = lambda x, e0, c6: e0 + c6 / x**6  # noqa: E731
             fitlabel = "E0 = {0:.3f} GHz\nC6 = {1:.3f} GHz*µm^6"
         elif fit_type == "c3":
-            def fit_func(x, E0, C3): return E0 + C3 / x**3
+            fit_func = lambda x, e0, c3: e0 + c3 / x**3  # noqa: E731
             fitlabel = "E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3"
         elif fit_type == "c3+c6":
-            def fit_func(x, E0, C3, C6): return E0 + C3 / x**3 + C6 / x**6
+            fit_func = lambda x, e0, c3, c6: e0 + c3 / x**3 + c6 / x**6  # noqa: E731
             fitlabel = "E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3\nC6 = {2:.3f} GHz*µm^6"
         else:
             raise ValueError(f"Unknown fit type: {fit_type}")
@@ -209,9 +214,8 @@ class PlotEnergies(PlotWidget):
                 last_overlap = overlap
             else:
                 # we search until we find an overlap that is less than a factor 2 different
-                possible_options = np.argwhere(np.logical_and(
-                    overlaps > 0.5 * last_overlap,
-                    overlaps < 2 * last_overlap)
+                possible_options = np.argwhere(
+                    np.logical_and(overlaps > 0.5 * last_overlap, overlaps < 2 * last_overlap)
                 ).flatten()
                 if len(possible_options) == 0:
                     # there is no state in that range - our best bet is to keep the current index
@@ -242,9 +246,12 @@ class PlotEnergies(PlotWidget):
             logger.warning("Curve fit failed.")
         else:
             self.fit_curve = self.canvas.ax.plot(
-                self.x_list, fit_func(self.x_list, *fit_params),
-                c="green", linestyle='dashed', lw=1,
-                label=fitlabel.format(*fit_params)
+                self.x_list,
+                fit_func(self.x_list, *fit_params),
+                c="green",
+                linestyle="dashed",
+                lw=1,
+                label=fitlabel.format(*fit_params),
             )
             self.canvas.ax.legend()
 
@@ -255,9 +262,7 @@ class PlotEnergies(PlotWidget):
         self.reset_fit()
 
     def reset_fit(self) -> None:
-        """
-        clear fit output and reset fit index
-        """
+        """Clear fit output and reset fit index."""
         # restart at first potential curve
         self.fit_idx = 0
         # and also remove any previous highlighting/fit display
