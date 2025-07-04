@@ -31,6 +31,7 @@ def system_pair_sample() -> pi.SystemPair:
     return system_pair
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_c3_with_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C3 coefficient with a given system is calculated correctly."""
     ket_tuple_list = [
@@ -43,6 +44,7 @@ def test_c3_with_system(system_pair_sample: pi.SystemPair) -> None:
     assert np.isclose(-0.5 * c3, 3.1515)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_c3_create_system() -> None:
     """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
     ket_tuple_list = [
@@ -63,6 +65,7 @@ def test_c3_create_system() -> None:
     assert np.isclose(-0.5 * c3, 3.2188)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_c6_with_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C6 coefficient with a given system is calculated correctly."""
     ket_atom = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
@@ -74,6 +77,7 @@ def test_c6_with_system(system_pair_sample: pi.SystemPair) -> None:
     assert np.isclose(c6, 167.880)
 
 
+@pytest.mark.filterwarnings("ignore::DeprecationWarning")
 def test_c6_create_system() -> None:
     """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
     magnetic_field = ureg.Quantity([0, 0, 10], "gauss")

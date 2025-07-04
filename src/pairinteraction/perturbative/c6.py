@@ -47,10 +47,6 @@ class C6(EffectiveSystemPair):
         super().__init__([(ket1, ket2)])
         self.set_perturbation_order(2)
 
-        # Set some default distance. The exact value does not matter for the C6 value,
-        # but too small distances result in warnings about the basisvec admixtures)
-        self.set_distance(100, unit="micrometer")
-
     @overload
     def get(self, unit: None = None) -> "PintFloat": ...
 
@@ -65,6 +61,11 @@ class C6(EffectiveSystemPair):
                 If None, returns a pint object.
 
         """
+        if self._distance_vector is None and not self._is_created("system_pair"):
+            # Set some default distance. The exact value does not matter for the C6 value,
+            # but too small distances result in warnings about the basisvec admixtures)
+            self.set_distance(100, unit="micrometer")
+
         h_eff_pint = self.get_effective_hamiltonian(return_order=2)
         distance = self.system_pair.get_distance()
         c6_pint = h_eff_pint[0, 0] * distance**6  # type: ignore [index]  # pint does not know it can be indexed
