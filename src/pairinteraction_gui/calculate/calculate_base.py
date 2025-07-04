@@ -218,7 +218,7 @@ class Parameters(ABC, Generic[PageType]):
         if self.diagonalize_relative_energy_range is not None:
             r_energy = self.diagonalize_relative_energy_range
             replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = (
-                f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_unit="GHz"'
+                f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_range_unit="GHz"'
             )
         else:
             replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = ""
