@@ -34,7 +34,7 @@ def test_energy_range() -> None:
         diagonalizer="eigen",
         sort_by_energy=True,
         energy_range=(pair_energy - 5, pair_energy + 5),
-        energy_unit="GHz",
+        energy_range_unit="GHz",
     )
     eigenenergies_restricted = [system.get_eigenenergies(unit="GHz") for system in system_pairs]
 

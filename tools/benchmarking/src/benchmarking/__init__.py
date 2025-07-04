@@ -91,7 +91,7 @@ def benchmark_pairinteraction(
             float_type=float_type,
             sort_by_energy=False,
             energy_range=(pair_energy - energy_range, pair_energy + energy_range),
-            energy_unit="GHz",
+            energy_range_unit="GHz",
         )
 
     logger.info("Number of states: %s", pair_systems[0].basis.number_of_states)
