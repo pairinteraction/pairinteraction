@@ -358,10 +358,7 @@ class EffectiveSystemPair:
 
         """
         return [  # type: ignore [return-value]
-            sum(
-                system.get_corresponding_energy(ket, unit=unit)
-                for system, ket in zip(self.system_atoms, ket_tuple, strict=True)
-            )
+            sum(system.get_corresponding_energy(ket, unit=unit) for system, ket in zip(self.system_atoms, ket_tuple))
             for ket_tuple in self.ket_tuples
         ]
 
