@@ -15,7 +15,7 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
-from pairinteraction.units import AtomicUnits, QuantityArray, QuantityScalar, ureg
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -391,7 +391,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
         return pi.BasisPair(  # type: ignore [no-any-return]
             system_atoms,
             energy=(min(pair_energies_au) - delta_energy_au, max(pair_energies_au) + delta_energy_au),
-            energy_unit=str(AtomicUnits["energy"]),
+            energy_unit="hartree",
         )
 
     mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")
