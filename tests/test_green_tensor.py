@@ -55,17 +55,14 @@ def test_omega_dependent_green_tensor(distance_mum: float) -> None:
     omegas = [1, 2, 3, 4]  # GHz
     tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
     tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omega_unit="GHz")
+    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omegas_unit="GHz")
 
     # Check the interpolation
     tensors_spherical = [np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / distance_mum**3 for i in range(1, 5)]
 
     for idx in range(1, len(omegas) - 1):  # the interpolation near the edges is bad, so we only check the middle
         tensor = gt.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
-        np.testing.assert_allclose(
-            tensor,
-            tensors_spherical[idx],
-        )
+        np.testing.assert_allclose(tensor, tensors_spherical[idx])
 
     tensor = gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
     reference_tensor = (tensors_spherical[1] + tensors_spherical[2]) / 2

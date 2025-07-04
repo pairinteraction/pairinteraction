@@ -59,7 +59,7 @@ class GreenTensor:
         tensor: Sequence["NDArray"],
         tensor_unit: Optional[str],
         omegas: Sequence[float],
-        omega_unit: Optional[str] = None,
+        omegas_unit: Optional[str] = None,
     ) -> None: ...
 
     @overload
@@ -70,7 +70,7 @@ class GreenTensor:
         tensor: Sequence["NDArray"],
         *,
         omegas: Sequence[float],
-        omega_unit: Optional[str] = None,
+        omegas_unit: Optional[str] = None,
     ) -> None: ...
 
     def set_from_cartesian(
@@ -80,7 +80,7 @@ class GreenTensor:
         tensor: Union["NDArray", Sequence["NDArray"]],
         tensor_unit: Optional[str] = None,
         omegas: Optional[Sequence[float]] = None,
-        omega_unit: Optional[str] = None,
+        omegas_unit: Optional[str] = None,
     ) -> None:
         """Set the entries of the Green tensor.
 
@@ -94,7 +94,7 @@ class GreenTensor:
                 Default None, which means that the tensor must be given as pint object.
             omegas: Only needed if a list of tensors is given.
                 The frequencies of the tensors.
-            omega_unit: The unit of the frequencies.
+            omegas_unit: The unit of the frequencies.
                 Default None, which means that the frequencies must be given as pint object.
 
 
@@ -113,7 +113,7 @@ class GreenTensor:
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors_au):
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
-        omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omega_unit, "energy")
+        omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omegas_unit, "energy")
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
 
     @overload
