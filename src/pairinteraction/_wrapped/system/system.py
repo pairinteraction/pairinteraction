@@ -140,7 +140,7 @@ class SystemBase(ABC, Generic[BasisType]):
             energy_range_unit,
             m0,
             energy_unit=energy_unit,
-        )  # type: ignore [call-overload]
+        )  # type: ignore [misc,call-overload]
         return self
 
     @property
