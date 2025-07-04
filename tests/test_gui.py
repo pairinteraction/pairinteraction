@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 import numpy as np
 import pytest
@@ -133,7 +133,7 @@ def _test_calculate_page(
     python_code = python_code.replace("plt.show()", "")  # HACK, otherwise it will block the test
 
     # HACK, see also https://stackoverflow.com/questions/45132645/list-comprehension-in-exec-with-empty-locals-nameerror
-    locals_globals = {}
+    locals_globals: dict[str, Any] = {}
     exec(python_code, locals_globals, locals_globals)  # noqa: S102
     energies = np.array(locals_globals["energies_list"]) + ket_energy_0
     compare_to_reference(REFERENCE_PATHS[reference_name], energies)
