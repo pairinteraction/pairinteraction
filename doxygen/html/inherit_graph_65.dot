@@ -1,0 +1,10 @@
+digraph "Graphical Class Hierarchy"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="SparseMatrix\< scalar\l_t, Eigen::RowMajor \>",height=0.2,width=0.4,color="black",URL="$classEigen_1_1SparseMatrix_3_01scalar__t_00_01Eigen_1_1RowMajor_01_4.html",tooltip=" "];
+}

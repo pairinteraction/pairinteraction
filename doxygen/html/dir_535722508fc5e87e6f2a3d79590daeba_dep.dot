@@ -1,0 +1,15 @@
+digraph "/__w/pairinteraction/pairinteraction/src/cpp/bindings/diagonalize"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  compound=true
+  subgraph clusterdir_cc81239b5792b7ba39ceb2ed4f5fa309 {
+    graph [ bgcolor="#edf0f7", pencolor="grey50", style="filled,dashed,", label="bindings", fontname="Helvetica", fontsize="10", URL="dir_cc81239b5792b7ba39ceb2ed4f5fa309.html"]
+  dir_535722508fc5e87e6f2a3d79590daeba [shape=box, label="diagonalize", style="filled,bold,", fillcolor="#edf0f7", color="grey25", URL="dir_535722508fc5e87e6f2a3d79590daeba.html"];
+  }
+  dir_e6fb451ec9c24a28c75d00abc51f4b3c [shape=box, label="include", style="dashed,", fillcolor="#edf0f7", color="red", URL="dir_e6fb451ec9c24a28c75d00abc51f4b3c.html"];
+  dir_535722508fc5e87e6f2a3d79590daeba->dir_e6fb451ec9c24a28c75d00abc51f4b3c [headlabel="8", labeldistance=1.5 headhref="dir_000008_000014.html"];
+}
