@@ -26,13 +26,13 @@ def base_window(qtbot: "QtBot") -> MainWindow:
 @pytest.fixture
 def window_starkmap(base_window: MainWindow) -> MainWindow:
     one_atom_page: OneAtomPage = base_window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
-    one_atom_page.ket_config.species_combo[0].setCurrentText("Rb")
-    ket_qn = one_atom_page.ket_config.stacked_qn[0].currentWidget()
+    one_atom_page.ket_config.species_combo_list[0].setCurrentText("Rb")
+    ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
     ket_qn.items["n"].setValue(60)
     ket_qn.items["l"].setValue(0)
     ket_qn.items["m"].setValue(0.5)
 
-    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
+    basis_qn = one_atom_page.basis_config.stacked_basis_list[0].currentWidget()
     basis_qn.items["n"].setValue(2)
     basis_qn.items["l"].setValue(2)
     basis_qn.items["m"].setChecked(False)
@@ -48,14 +48,14 @@ def window_starkmap(base_window: MainWindow) -> MainWindow:
 @pytest.fixture
 def window_pair_potential(base_window: MainWindow) -> MainWindow:
     two_atoms_page: TwoAtomsPage = base_window.stacked_pages.getNamedWidget("TwoAtomsPage")  # type: ignore [assignment]
-    two_atoms_page.ket_config.species_combo[0].setCurrentText("Rb")
-    for ket_qn_stacked in two_atoms_page.ket_config.stacked_qn:
+    two_atoms_page.ket_config.species_combo_list[0].setCurrentText("Rb")
+    for ket_qn_stacked in two_atoms_page.ket_config.stacked_qn_list:
         ket_qn = ket_qn_stacked.currentWidget()
         ket_qn.items["n"].setValue(60)
         ket_qn.items["l"].setValue(0)
         ket_qn.items["m"].setValue(0.5)
 
-    for basis_qn_stacked in two_atoms_page.basis_config.stacked_basis:
+    for basis_qn_stacked in two_atoms_page.basis_config.stacked_basis_list:
         basis_qn = basis_qn_stacked.currentWidget()
         basis_qn.items["n"].setValue(2)
         basis_qn.items["l"].setValue(2)
@@ -74,21 +74,21 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
 def test_main_window_basic(qtbot: "QtBot", window_starkmap: "MainWindow") -> None:
     """Test basic main window functionality."""
     one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
-    qn_item = one_atom_page.ket_config.stacked_qn[0].currentWidget().items["n"]
+    qn_item = one_atom_page.ket_config.stacked_qn_list[0].currentWidget().items["n"]
     qn_item.setValue(60)
 
-    ket_label = one_atom_page.ket_config.ket_label[0].text()
+    ket_label = one_atom_page.ket_config.ket_label_list[0].text()
     assert all(x in ket_label for x in ["Rb", "60", "S", "1/2"])
     assert qn_item.label.text() == "n"
     assert qn_item.value() == 60
 
     qn_item.setValue(61)
-    ket_label = one_atom_page.ket_config.ket_label[0].text()
+    ket_label = one_atom_page.ket_config.ket_label_list[0].text()
     assert qn_item.value() == 61
     assert all(x in ket_label for x in ["Rb", "61", "S", "1/2"])
 
     # make the basis smaller for faster test
-    basis_qn = one_atom_page.basis_config.stacked_basis[0].currentWidget()
+    basis_qn = one_atom_page.basis_config.stacked_basis_list[0].currentWidget()
     basis_qn.items["n"].setValue(1)
     basis_qn.items["l"].setValue(1)
     basis_qn.items["m"].setValue(0)
