@@ -40,18 +40,18 @@ class KetConfig(BaseConfig):
     signal_species_changed = Signal(int, str)
 
     def setupWidget(self) -> None:
-        self.species_combo: list[QComboBox] = []
-        self.stacked_qn: list[NamedStackedWidget[QnBase]] = []
-        self.ket_label: list[QLabel] = []
+        self.species_combo_list: list[QComboBox] = []
+        self.stacked_qn_list: list[NamedStackedWidget[QnBase]] = []
+        self.ket_label_list: list[QLabel] = []
 
     @property
     def n_atoms(self) -> int:
         """Return the number of atoms configured."""
-        return len(self.species_combo)
+        return len(self.species_combo_list)
 
     def setupOneKetAtom(self) -> None:
         """Set up the UI components for a single ket atom."""
-        atom = len(self.species_combo)
+        atom = len(self.species_combo_list)
 
         # Species selection
         species_widget = WidgetForm()
@@ -85,18 +85,18 @@ class KetConfig(BaseConfig):
         self.layout().addWidget(ket_label)
 
         # Store the widgets for later access
-        self.species_combo.append(species_combo)
-        self.stacked_qn.append(stacked_qn)
-        self.ket_label.append(ket_label)
+        self.species_combo_list.append(species_combo)
+        self.stacked_qn_list.append(stacked_qn)
+        self.ket_label_list.append(ket_label)
         self.on_qnitem_changed(atom)
 
     def get_species(self, atom: int = 0) -> str:
         """Return the selected species of the ... atom."""
-        return self.species_combo[atom].currentText()
+        return self.species_combo_list[atom].currentText()
 
     def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum numbers of the ... atom."""
-        qn_widget = self.stacked_qn[atom].currentWidget()
+        qn_widget = self.stacked_qn_list[atom].currentWidget()
         return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}
 
     def get_ket_atom(self, atom: int, *, ask_download: bool = False) -> "pi.KetAtom":
@@ -115,23 +115,25 @@ class KetConfig(BaseConfig):
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
         species_type = get_species_type(species)
-        self.stacked_qn[atom].setCurrentNamedWidget(species_type)
+        self.stacked_qn_list[atom].setCurrentNamedWidget(species_type)
         self.on_qnitem_changed(atom)
 
     def on_qnitem_changed(self, atom: int) -> None:
         """Update the ket label with current values."""
         try:
             ket = self.get_ket_atom(atom, ask_download=True)
-            self.ket_label[atom].setText(str(ket))
-            self.ket_label[atom].setStyleSheet(label_theme)
+            self.ket_label_list[atom].setText(str(ket))
+            self.ket_label_list[atom].setStyleSheet(label_theme)
         except Exception as err:
             if isinstance(err, NoStateFoundError):
-                self.ket_label[atom].setText("No ket found. Please select different quantum numbers.")
+                self.ket_label_list[atom].setText("No ket found. Please select different quantum numbers.")
             elif isinstance(err, DatabaseMissingError):
-                self.ket_label[atom].setText("Database required but not downloaded. Please select a different species.")
+                self.ket_label_list[atom].setText(
+                    "Database required but not downloaded. Please select a different species."
+                )
             else:
-                self.ket_label[atom].setText(str(err))
-            self.ket_label[atom].setStyleSheet(label_error_theme)
+                self.ket_label_list[atom].setText(str(err))
+            self.ket_label_list[atom].setStyleSheet(label_error_theme)
 
 
 class KetConfigOneAtom(KetConfig):

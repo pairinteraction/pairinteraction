@@ -31,12 +31,12 @@ class BasisConfig(BaseConfig):
     page: Union["OneAtomPage", "TwoAtomsPage"]
 
     def setupWidget(self) -> None:
-        self.stacked_basis: list[NamedStackedWidget[RestrictionsBase]] = []
-        self.basis_label: list[QLabel] = []
+        self.stacked_basis_list: list[NamedStackedWidget[RestrictionsBase]] = []
+        self.basis_label_list: list[QLabel] = []
 
     def setupOneBasisAtom(self) -> None:
         """Set up the UI components for a single basis atom."""
-        atom = len(self.stacked_basis)
+        atom = len(self.stacked_basis_list)
 
         # Create stacked widget for different species configurations
         stacked_basis = NamedStackedWidget[RestrictionsBase]()
@@ -55,29 +55,29 @@ class BasisConfig(BaseConfig):
         self.layout().addWidget(basis_label)
 
         # Store the widgets for later access
-        self.stacked_basis.append(stacked_basis)
-        self.basis_label.append(basis_label)
+        self.stacked_basis_list.append(stacked_basis)
+        self.basis_label_list.append(basis_label)
         self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
         worker = MultiThreadWorker(self.get_basis, atom)
 
         def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
-            self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
-            self.basis_label[atom].setStyleSheet(label_theme)
+            self.basis_label_list[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
+            self.basis_label_list[atom].setStyleSheet(label_theme)
 
         worker.signals.result.connect(update_result)
 
         def update_error(err: Exception) -> None:
             if isinstance(err, NoStateFoundError):
-                self.basis_label[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
+                self.basis_label_list[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
             elif isinstance(err, DatabaseMissingError):
-                self.basis_label[atom].setText(
+                self.basis_label_list[atom].setText(
                     "Database required but not downloaded. Please select a different state of interest."
                 )
             else:
-                self.basis_label[atom].setText(str(err))
-            self.basis_label[atom].setStyleSheet(label_error_theme)
+                self.basis_label_list[atom].setText(str(err))
+            self.basis_label_list[atom].setStyleSheet(label_error_theme)
 
         worker.signals.error.connect(update_error)
 
@@ -113,21 +113,21 @@ class BasisConfig(BaseConfig):
 
     def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
         """Return the quantum number deltas for the basis of interest."""
-        basis_widget = self.stacked_basis[atom].currentWidget()
+        basis_widget = self.stacked_basis_list[atom].currentWidget()
         return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
         species_type = get_species_type(species)
         if "mqdt" in species_type:
-            self.stacked_basis[atom].setCurrentNamedWidget("mqdt")
+            self.stacked_basis_list[atom].setCurrentNamedWidget("mqdt")
         else:
-            self.stacked_basis[atom].setCurrentNamedWidget("sqdt")
+            self.stacked_basis_list[atom].setCurrentNamedWidget("sqdt")
         self.update_basis_label(atom)
 
     def showEvent(self, event: QShowEvent) -> None:
         super().showEvent(event)
-        for i in range(len(self.stacked_basis)):
+        for i in range(len(self.stacked_basis_list)):
             self.update_basis_label(i)
 
 
