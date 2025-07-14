@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
                 ket_config = page.ket_config
                 for i in range(ket_config.n_atoms):
                     worker.signals.result.connect(
-                        lambda _, atom=i: ket_config.signal_species_changed.emit(ket_config.get_species(atom), atom)
+                        lambda _, atom=i: ket_config.signal_species_changed.emit(atom, ket_config.get_species(atom))
                     )
             worker.start()
 
