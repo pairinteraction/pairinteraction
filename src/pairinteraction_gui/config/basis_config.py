@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QLabel,
+    QWidget,
 )
 
 from pairinteraction import (
@@ -38,14 +39,7 @@ class BasisConfig(BaseConfig):
         """Set up the UI components for a single basis atom."""
         atom = len(self.stacked_basis_list)
 
-        # Create stacked widget for different species configurations
         stacked_basis = NamedStackedWidget[RestrictionsBase]()
-        stacked_basis.addNamedWidget(RestrictionsSQDT(), "sqdt")
-        stacked_basis.addNamedWidget(RestrictionsMQDT(), "mqdt")
-
-        for _, widget in stacked_basis.items():
-            for _, item in widget.items.items():
-                item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_basis)
 
         # Add a label to display the current basis
@@ -118,11 +112,13 @@ class BasisConfig(BaseConfig):
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
-        species_type = get_species_type(species)
-        if "mqdt" in species_type:
-            self.stacked_basis_list[atom].setCurrentNamedWidget("mqdt")
-        else:
-            self.stacked_basis_list[atom].setCurrentNamedWidget("sqdt")
+        if species not in self.stacked_basis_list[atom]._widgets:
+            restrictions_widget = RestrictionsBase.from_species(species, parent=self)
+            self.stacked_basis_list[atom].addNamedWidget(restrictions_widget, species)
+            for _, item in restrictions_widget.items.items():
+                item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
+
+        self.stacked_basis_list[atom].setCurrentNamedWidget(species)
         self.update_basis_label(atom)
 
     def showEvent(self, event: QShowEvent) -> None:
@@ -194,40 +190,88 @@ class RestrictionsBase(WidgetV):
         for _key, item in self.items.items():
             self.layout().addWidget(item)
 
+    @classmethod
+    def from_species(cls, species: str, parent: Optional[QWidget] = None) -> "RestrictionsBase":
+        """Create a quantum number restriction configuration from the species name."""
+        species_type = get_species_type(species)
+        if species_type == "sqdt_duplet":
+            return RestrictionsSQDT(parent, s_type="halfint", s=0.5)
+        if species_type == "sqdt_singlet":
+            return RestrictionsSQDT(parent, s_type="int", s=0)
+        if species_type == "sqdt_triplet":
+            return RestrictionsSQDT(parent, s_type="int", s=1)
+        if species_type == "mqdt_halfint":
+            return RestrictionsMQDT(parent, f_type="halfint", i=0.5)
+        if species_type == "mqdt_int":
+            return RestrictionsMQDT(parent, f_type="int", i=0)
+
+        raise ValueError(f"Unknown species type: {species_type}")
+
 
 class RestrictionsSQDT(RestrictionsBase):
-    """Configuration for alkali atoms using SQDT."""
+    """Configuration atoms using SQDT."""
+
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        s_type: Literal["int", "halfint"],
+        s: float,
+    ) -> None:
+        assert s_type in ("int", "halfint"), "s_type must be int or halfint"
+        self.s_type = s_type
+        self.s = s
+        self.items = {}
+        super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.items = {}
-        self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the Principal quantum number n")
-        self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the Orbital angular momentum l")
-        self.items["j"] = QnItemInt(self, "Δj", tooltip="Restriction for the Total angular momentum j", checked=False)
-        self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the Magnetic quantum number m", checked=False)
+        self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the principal quantum number n")
+        self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the orbital angular momentum l")
+        if self.s != 0:
+            self.items["j"] = QnItemInt(
+                self, "Δj", tooltip="Restriction for the total angular momentum j", checked=False
+            )
+        self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the magnetic quantum number m", checked=False)
 
 
 class RestrictionsMQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    def setupWidget(self) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        f_type: Literal["int", "halfint"],
+        i: float,
+    ) -> None:
+        assert f_type in ("int", "halfint"), "f_type must be int or halfint"
+        self.f_type = f_type
+        self.i = i
         self.items = {}
-        self.items["nu"] = QnItemDouble(
-            self, "Δnu", vdefault=4, tooltip="Restriction for the Effective principal quantum number nu"
-        )
-        self.items["s"] = QnItemDouble(self, "Δs", vdefault=0.5, tooltip="Restriction for the Spin s")
-        self.items["j"] = QnItemDouble(self, "Δj", vdefault=3, tooltip="Restriction for the Total angular momentum j")
+        super().__init__(parent)
 
-        self.items["f"] = QnItemInt(
-            self, "Δf", vdefault=5, tooltip="Restriction for the Total angular momentum f", checked=False
+    def setupWidget(self) -> None:
+        self.items["nu"] = QnItemDouble(
+            self, "Δnu", vdefault=4, tooltip="Restriction for the effective principal quantum number nu"
         )
+        self.items["s"] = QnItemDouble(self, "Δs", vdefault=0.5, tooltip="Restriction for the spin s")
+
+        if self.i == 0:
+            key = "j"
+            description = "Restriction for the  total angular momentum j (j=f for I=0)"
+        else:
+            key = "f"
+            description = "Restriction for the  total angular momentum f"
+        self.items[key] = QnItemDouble(self, "Δ" + key, vdefault=3, tooltip=description)
+
         self.items["m"] = QnItemInt(
-            self, "Δm", vdefault=5, tooltip="Restriction for the Magnetic quantum number m", checked=False
+            self, "Δm", vdefault=5, tooltip="Restriction for the magnetic quantum number m", checked=False
         )
 
         self.items["l_ryd"] = QnItemDouble(
             self,
             "Δl_ryd",
             vdefault=3,
-            tooltip="Restriction for the Orbital angular momentum l_ryd of the Rydberg electron",
+            tooltip="Restriction for the orbital angular momentum l_ryd of the Rydberg electron",
             checked=False,
         )

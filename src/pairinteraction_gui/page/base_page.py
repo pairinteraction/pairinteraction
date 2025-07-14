@@ -60,6 +60,9 @@ class SimulationPage(BasePage):
             if isinstance(attr, BaseConfig):
                 self.toolbox.addItem(attr, attr.title)
 
+        for i, species_combo in enumerate(self.ket_config.species_combo_list):
+            self.ket_config.signal_species_changed.emit(i, species_combo.currentText())
+
     def showEvent(self, event: QShowEvent) -> None:
         super().showEvent(event)
         self.window().dockwidget.setWidget(self.toolbox)

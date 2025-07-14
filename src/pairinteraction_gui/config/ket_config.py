@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
@@ -30,6 +30,8 @@ from pairinteraction_gui.worker import MultiThreadWorker
 if TYPE_CHECKING:
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
     from pairinteraction_gui.qobjects.item import _QnItem
+
+CORE_SPIN_DICT = {"Sr87": 9 / 2, "Sr88": 0, "Yb171": 1 / 2, "Yb173": 5 / 2, "Yb174": 0}
 
 
 class KetConfig(BaseConfig):
@@ -65,17 +67,7 @@ class KetConfig(BaseConfig):
         self.signal_species_changed.connect(self.on_species_changed)
         self.layout().addWidget(species_widget)
 
-        # Create stacked widget for different species configurations
         stacked_qn = NamedStackedWidget[QnBase]()
-        stacked_qn.addNamedWidget(QnSQDT(s=0.5), "sqdt_duplet")
-        stacked_qn.addNamedWidget(QnSQDT(s=0), "sqdt_singlet")
-        stacked_qn.addNamedWidget(QnSQDT(s=1), "sqdt_triplet")
-        stacked_qn.addNamedWidget(QnMQDT(m_is_int=True), "mqdt_int")
-        stacked_qn.addNamedWidget(QnMQDT(m_is_int=False), "mqdt_halfint")
-
-        for _, widget in stacked_qn.items():
-            for item in widget.items.values():
-                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_qn)
 
         # Add a label to display the current ket
@@ -114,8 +106,13 @@ class KetConfig(BaseConfig):
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
-        species_type = get_species_type(species)
-        self.stacked_qn_list[atom].setCurrentNamedWidget(species_type)
+        if species not in self.stacked_qn_list[atom]._widgets:
+            qn_widget = QnBase.from_species(species, parent=self)
+            self.stacked_qn_list[atom].addNamedWidget(qn_widget, species)
+            for item in qn_widget.items.values():
+                item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
+
+        self.stacked_qn_list[atom].setCurrentNamedWidget(species)
         self.on_qnitem_changed(atom)
 
     def on_qnitem_changed(self, atom: int) -> None:
@@ -237,11 +234,40 @@ class QnBase(WidgetV):
         for item in self.items.values():
             self.layout().addWidget(item)
 
+    @classmethod
+    def from_species(cls, species: str, parent: Optional[QWidget] = None) -> "QnBase":
+        """Create a quantum number configuration from the species name."""
+        species_type = get_species_type(species)
+        if species_type == "sqdt_duplet":
+            return QnSQDT(parent, s_type="halfint", s=0.5)
+        if species_type == "sqdt_singlet":
+            return QnSQDT(parent, s_type="int", s=0)
+        if species_type == "sqdt_triplet":
+            return QnSQDT(parent, s_type="int", s=1)
+
+        element = species.split("_")[0]
+        if species_type == "mqdt_halfint":
+            i = CORE_SPIN_DICT.get(element, 0.5)
+            return QnMQDT(parent, f_type="halfint", i=i)
+        if species_type == "mqdt_int":
+            i = CORE_SPIN_DICT.get(element, 0)
+            return QnMQDT(parent, f_type="int", i=i)
+
+        raise ValueError(f"Unknown species type: {species_type}")
+
 
 class QnSQDT(QnBase):
     """Configuration for atoms using SQDT."""
 
-    def __init__(self, parent: Optional[QWidget] = None, s: float = 0.5) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        s_type: Literal["int", "halfint"],
+        s: float,
+    ) -> None:
+        assert s_type in ("int", "halfint"), "s_type must be int or halfint"
+        self.s_type = s_type
         self.s = s
         self.items = {}
         super().__init__(parent)
@@ -251,8 +277,9 @@ class QnSQDT(QnBase):
         self.items["l"] = QnItemInt(self, "l", vmin=0, tooltip="Orbital angular momentum l")
 
         s = self.s
-        if s % 1 == 0:
-            self.items["j"] = QnItemInt(self, "j", vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
+        if self.s_type == "int":
+            if s != 0:
+                self.items["j"] = QnItemInt(self, "j", vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
             self.items["m"] = QnItemInt(self, "m", vmin=-999, vmax=999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
             self.items["j"] = QnItemHalfInt(self, "j", vmin=s, vdefault=s, tooltip="Total angular momentum j")
@@ -264,8 +291,16 @@ class QnSQDT(QnBase):
 class QnMQDT(QnBase):
     """Configuration for earth alkali atoms using MQDT."""
 
-    def __init__(self, parent: Optional[QWidget] = None, m_is_int: bool = False) -> None:
-        self.m_is_int = m_is_int
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        f_type: Literal["int", "halfint"],
+        i: float,
+    ) -> None:
+        assert f_type in ("int", "halfint"), "f_type must be int or halfint"
+        self.f_type = f_type
+        self.i = i
         self.items = {}
         super().__init__(parent)
 
@@ -274,13 +309,18 @@ class QnMQDT(QnBase):
             self, "nu", vmin=1, vdefault=80, vstep=1, tooltip="Effective principal quantum number nu"
         )
         self.items["s"] = QnItemDouble(self, "s", vmin=0, vmax=1, vstep=0.1, tooltip="Spin s")
-        self.items["j"] = QnItemDouble(self, "j", vmin=0, vstep=1, tooltip="Total angular momentum j")
 
-        if self.m_is_int:
-            self.items["f"] = QnItemInt(self, "f", vmin=0, vdefault=0, tooltip="Total angular momentum f")
+        if self.i == 0:
+            key = "j"
+            description = "Total angular momentum j (j=f for I=0)"
+        else:
+            key = "f"
+            description = "Total angular momentum f"
+        if self.f_type == "int":
+            self.items[key] = QnItemInt(self, key, vmin=0, vdefault=int(self.i), tooltip=description)
             self.items["m"] = QnItemInt(self, "m", vmin=-999, vmax=999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
-            self.items["f"] = QnItemHalfInt(self, "f", vmin=0.5, vdefault=0.5, tooltip="Total angular momentum f")
+            self.items[key] = QnItemHalfInt(self, key, vmin=0.5, vdefault=self.i, tooltip=description)
             self.items["m"] = QnItemHalfInt(
                 self, "m", vmin=-999.5, vmax=999.5, vdefault=0.5, tooltip="Magnetic quantum number m"
             )
