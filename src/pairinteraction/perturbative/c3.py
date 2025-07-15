@@ -35,6 +35,9 @@ class C3(EffectiveSystemPair):
         super().__init__([(ket1, ket2), (ket2, ket1)])
         self.set_perturbation_order(1)
 
+        # Set some default distance. The exact value does not matter for the C3 value
+        self.set_distance(100, unit="micrometer")
+
     @overload
     def get(self, unit: None = None) -> "PintFloat": ...
 
@@ -49,10 +52,6 @@ class C3(EffectiveSystemPair):
                 If None, returns a pint object.
 
         """
-        if self._distance_vector is None and not self._is_created("system_pair"):
-            # Set some default distance. The exact value does not matter for the C3 value
-            self.set_distance(100, unit="micrometer")
-
         h_eff_pint = self.get_effective_hamiltonian(return_order=1)
         distance = self.system_pair.get_distance()
         c3_pint = h_eff_pint[1, 0] * distance**3  # type: ignore [index]  # pint does not know it can be indexed
