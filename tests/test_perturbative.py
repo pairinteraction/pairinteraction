@@ -193,10 +193,10 @@ def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, caplog: py
     """Test whether resonance with infinite admixture is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    eff_h = perturbative.EffectiveSystemPair([(ket1, ket2)])
-    eff_h.system_pair = system_pair_sample
+    eff_system = perturbative.EffectiveSystemPair([(ket1, ket2)])
+    eff_system.system_pair = system_pair_sample
     with caplog.at_level(logging.CRITICAL):
-        eff_h.get_effective_hamiltonian()
+        eff_system.get_effective_hamiltonian()
     assert "infinite admixture" in caplog.text
 
 
@@ -204,12 +204,12 @@ def test_near_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
     """Test whether a near resonance is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    eff_h = perturbative.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
-    eff_h.set_magnetic_field([0, 0, 245], "gauss")
-    eff_h.set_minimum_number_of_ket_pairs(100)
-    eff_h.set_distance(10, 35.1, "micrometer")
-    eff_h.get_effective_hamiltonian()
+    eff_system = perturbative.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    eff_system.set_magnetic_field([0, 0, 245], "gauss")
+    eff_system.set_minimum_number_of_ket_pairs(100)
+    eff_system.set_distance(10, 35.1, "micrometer")
+    eff_system.get_effective_hamiltonian()
 
     with caplog.at_level(logging.ERROR):
-        eff_h.check_for_resonances(0.99)
+        eff_system.check_for_resonances(0.99)
     assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in caplog.text
