@@ -55,7 +55,7 @@ def get_cpp_diagonalizer(
         diagonalizer_class = _DiagonalizerDict[type_][diagonalizer]
     except KeyError:
         raise ValueError(
-            f"Unknown diagonalizer '{diagonalizer}', should be one of {list(_DiagonalizerDict.keys())}"
+            f"Unknown diagonalizer '{diagonalizer}', should be one of {list(_DiagonalizerDict[type_].keys())}"
         ) from None
 
     cpp_float_type = get_cpp_float_type(float_type)
