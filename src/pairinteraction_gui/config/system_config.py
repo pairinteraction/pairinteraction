@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (
 )
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects.item import QnItemInt, RangeItem
+from pairinteraction_gui.qobjects import Item, QnItemInt, RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
@@ -51,6 +51,11 @@ class SystemConfig(BaseConfig):
         self.layout().addWidget(self.By)
         self.layout().addWidget(self.Bz)
 
+    def setupDiamagnetism(self) -> None:
+        self.layout().addWidget(QLabel("<b>Diamagnetism</b>"))
+        self.diamagnetism = Item(self, "Enable diamagnetism", checked=True)
+        self.layout().addWidget(self.diamagnetism)
+
     def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:
         """Return the electric and magnetic field ranges."""
         steps = self.page.calculation_config.steps.value()
@@ -74,6 +79,7 @@ class SystemConfigOneAtom(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
+        self.setupDiamagnetism()
 
 
 class SystemConfigTwoAtoms(SystemConfig):
@@ -82,6 +88,7 @@ class SystemConfigTwoAtoms(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
+        self.setupDiamagnetism()
         self.setupDistance()
         self.setupAngle()
         self.setupOrder()

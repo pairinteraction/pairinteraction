@@ -50,6 +50,7 @@ def _calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
         pi.SystemAtom(basis)
         .set_electric_field(parameters.get_efield(step), unit="V/cm")
         .set_magnetic_field(parameters.get_bfield(step), unit="G")
+        .set_diamagnetism_enabled(parameters.diamagnetism_enabled)
         for step in range(parameters.steps)
     ]
 

@@ -57,6 +57,7 @@ class Parameters(ABC, Generic[PageType]):
     quantum_numbers: tuple["QuantumNumbers", ...]
     quantum_number_restrictions: tuple["QuantumNumberRestrictions", ...]
     ranges: dict[RangesKeys, list[float]]
+    diamagnetism_enabled: bool
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: Union[tuple[float, float], None]
     number_state_labels: int
@@ -86,6 +87,7 @@ class Parameters(ABC, Generic[PageType]):
         )
 
         ranges = page.system_config.get_ranges_dict()
+        diamagnetism_enabled = page.system_config.diamagnetism.isChecked()
 
         diagonalize_kwargs = {}
         if page.calculation_config.fast_mode.isChecked():
@@ -101,6 +103,7 @@ class Parameters(ABC, Generic[PageType]):
             quantum_numbers,
             quantum_number_restrictions,
             ranges,
+            diamagnetism_enabled,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
             page.calculation_config.number_state_labels.value(default=0),
@@ -194,6 +197,7 @@ class Parameters(ABC, Generic[PageType]):
             "$PI_DTYPE": "real" if self.is_real else "complex",
             "$X_VARIABLE_NAME": VariableNameFromRangeKey[max_key],
             "$X_LABEL": as_string(self.get_x_label(), raw_string=True),
+            "$DIAMAGNETISM_ENABLED": str(self.diamagnetism_enabled),
         }
 
         for atom in range(self.n_atoms):
