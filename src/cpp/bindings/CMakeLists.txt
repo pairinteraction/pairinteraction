@@ -47,7 +47,7 @@ nanobind_add_module(
   version.py.hpp
   version.py.cpp)
 
-target_link_libraries(backend PRIVATE pairinteraction $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>)
+target_link_libraries(backend PRIVATE pairinteraction)
 
 set_target_properties(
   backend
