@@ -60,6 +60,9 @@ class SimulationPage(BasePage):
             if isinstance(attr, BaseConfig):
                 self.toolbox.addItem(attr, attr.title)
 
+        for i, species_combo in enumerate(self.ket_config.species_combo_list):
+            self.ket_config.signal_species_changed.emit(i, species_combo.currentText())
+
     def showEvent(self, event: QShowEvent) -> None:
         super().showEvent(event)
         self.window().dockwidget.setWidget(self.toolbox)
@@ -185,31 +188,29 @@ class CalculationPage(SimulationPage):
             )
             logger.info("Plot saved as %s", filename)
 
+    def _create_python_code(self) -> str:
+        template_path = Path(__file__).parent.parent / "export_templates" / self._get_export_notebook_template_name()
+        with Path(template_path).open() as f:
+            notebook = nbformat.read(f, as_version=4)
+
+        exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
+        content, _ = exporter.from_notebook_node(notebook)
+
+        replacements = self._get_export_replacements()
+        for key, value in replacements.items():
+            content = content.replace(key, str(value))
+
+        return content
+
     def export_python(self) -> None:
         """Export the current calculation as a Python script."""
         logger.debug("Exporting results as Python script...")
-
         filename, _ = QFileDialog.getSaveFileName(self, "Save Python Script", "", "Python Files (*.py)")
-
         if filename:
             filename = filename.removesuffix(".py") + ".py"
-
-            template_path = (
-                Path(__file__).parent.parent / "export_templates" / self._get_export_notebook_template_name()
-            )
-            with Path(template_path).open() as f:
-                notebook = nbformat.read(f, as_version=4)
-
-            exporter = PythonExporter(exclude_output_prompt=True, exclude_input_prompt=True)
-            content, _ = exporter.from_notebook_node(notebook)
-
-            replacements = self._get_export_replacements()
-            for key, value in replacements.items():
-                content = content.replace(key, str(value))
-
+            content = self._create_python_code()
             with Path(filename).open("w") as f:
                 f.write(content)
-
             logger.info("Python script saved as %s", filename)
 
     def export_notebook(self) -> None:

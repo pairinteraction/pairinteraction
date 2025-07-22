@@ -3,6 +3,7 @@
 
 import logging
 from abc import ABC
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
 
 import numpy as np
@@ -19,11 +20,11 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.units import NDArray
+    from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
+    from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
-
-# FIXME: having all kwargs dictionaries being Any is a hacky solution, it would be nice to use TypedDict in the future
 
 UnitFromRangeKey: dict[RangesKeys, str] = {
     "Ex": "V/cm",
@@ -53,8 +54,8 @@ PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
 @dataclass
 class Parameters(ABC, Generic[PageType]):
     species: tuple[str, ...]
-    quantum_numbers: tuple[dict[str, float], ...]
-    quantum_number_deltas: tuple[dict[str, float], ...]
+    quantum_numbers: tuple["QuantumNumbers", ...]
+    quantum_number_restrictions: tuple["QuantumNumberRestrictions", ...]
     ranges: dict[RangesKeys, list[float]]
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: Union[tuple[float, float], None]
@@ -68,7 +69,7 @@ class Parameters(ABC, Generic[PageType]):
 
         # Check if all tuples have the same length
         if not all(
-            len(tup) == self.n_atoms for tup in [self.species, self.quantum_numbers, self.quantum_number_deltas]
+            len(tup) == self.n_atoms for tup in [self.species, self.quantum_numbers, self.quantum_number_restrictions]
         ):
             raise ValueError("All tuples must have the same length as the number of atoms")
 
@@ -80,7 +81,9 @@ class Parameters(ABC, Generic[PageType]):
         species = tuple(page.ket_config.get_species(atom) for atom in range(n_atoms))
         quantum_numbers = tuple(page.ket_config.get_quantum_numbers(atom) for atom in range(n_atoms))
 
-        quantum_number_deltas = tuple(page.basis_config.get_quantum_number_deltas(atom) for atom in range(n_atoms))
+        quantum_number_restrictions = tuple(
+            page.basis_config.get_quantum_number_restrictions(atom) for atom in range(n_atoms)
+        )
 
         ranges = page.system_config.get_ranges_dict()
 
@@ -96,7 +99,7 @@ class Parameters(ABC, Generic[PageType]):
         return cls(
             species,
             quantum_numbers,
-            quantum_number_deltas,
+            quantum_number_restrictions,
             ranges,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
@@ -132,23 +135,17 @@ class Parameters(ABC, Generic[PageType]):
         """Return the species for the given ket."""
         return self.species[self._check_atom(atom)]
 
-    def get_quantum_numbers(self, atom: Optional[int] = None) -> dict[str, Any]:
+    def get_quantum_numbers(self, atom: Optional[int] = None) -> "QuantumNumbers":
         """Return the quantum numbers for the given ket."""
         return self.quantum_numbers[self._check_atom(atom)]
 
-    def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> dict[str, Any]:
-        """Return the quantum number restrictions for the given ket."""
-        atom = self._check_atom(atom)
-        qn_restrictions: dict[str, tuple[float, float]] = {}
-        for key, delta in self.quantum_number_deltas[atom].items():
-            if key in self.quantum_numbers[atom]:
-                qn_restrictions[key] = (
-                    self.quantum_numbers[atom][key] - delta,
-                    self.quantum_numbers[atom][key] + delta,
-                )
-            else:
-                raise ValueError(f"Quantum number delta {key} not found in quantum numbers.")
-        return qn_restrictions
+    def get_ket_atom(self, atom: Optional[int] = None) -> _wrapped.KetAtom:
+        """Return the ket atom for the given atom index."""
+        return _wrapped.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
+
+    def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> "QuantumNumberRestrictions":
+        """Return the quantum number restrictions."""
+        return self.quantum_number_restrictions[self._check_atom(atom)]
 
     def _check_atom(self, atom: Optional[int] = None) -> int:
         """Check if the atom is valid."""
@@ -158,7 +155,7 @@ class Parameters(ABC, Generic[PageType]):
             return 0
         raise ValueError("Atom index is required for multiple atoms")
 
-    def get_diagonalize_energy_range(self, energy_of_interest: float) -> dict[str, Any]:
+    def get_diagonalize_energy_range_kwargs(self, energy_of_interest: float) -> dict[str, Any]:
         """Return the kwargs for the diagonalization energy range."""
         if self.diagonalize_relative_energy_range is None:
             return {}
@@ -261,7 +258,7 @@ def as_string(value: str, *, raw_string: bool = False) -> str:
     return string
 
 
-def dict_to_repl(d: dict[str, Any]) -> str:
+def dict_to_repl(d: Mapping[str, Any]) -> str:
     """Convert a dictionary to a string for replacement."""
     if not d:
         return ""

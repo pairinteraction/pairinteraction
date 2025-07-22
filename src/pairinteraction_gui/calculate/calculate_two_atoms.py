@@ -146,7 +146,7 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     pi.diagonalize(
         system_pair_list,
         **parameters.diagonalize_kwargs,
-        **parameters.get_diagonalize_energy_range(ket_pair_energy_0),
+        **parameters.get_diagonalize_energy_range_kwargs(ket_pair_energy_0),
     )
     logger.debug("Done diagonalizing SystemPairs.")
 

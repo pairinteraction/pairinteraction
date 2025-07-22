@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict, Union
 
+from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QLabel,
+    QWidget,
 )
 
 from pairinteraction import (
@@ -19,8 +21,20 @@ from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, g
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
+    from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
     from pairinteraction_gui.qobjects.item import _QnItem
+
+
+class QuantumNumberRestrictions(TypedDict, total=False):
+    n: tuple[int, int]
+    nu: tuple[float, float]
+    l: tuple[float, float]
+    s: tuple[float, float]
+    j: tuple[float, float]
+    l_ryd: tuple[float, float]
+    f: tuple[float, float]
+    m: tuple[float, float]
 
 
 class BasisConfig(BaseConfig):
@@ -30,21 +44,14 @@ class BasisConfig(BaseConfig):
     page: Union["OneAtomPage", "TwoAtomsPage"]
 
     def setupWidget(self) -> None:
-        self.stacked_basis: list[NamedStackedWidget[RestrictionsBase]] = []
-        self.basis_label: list[QLabel] = []
+        self.stacked_basis_list: list[NamedStackedWidget[RestrictionsBase]] = []
+        self.basis_label_list: list[QLabel] = []
 
     def setupOneBasisAtom(self) -> None:
         """Set up the UI components for a single basis atom."""
-        atom = len(self.stacked_basis)
+        atom = len(self.stacked_basis_list)
 
-        # Create stacked widget for different species configurations
         stacked_basis = NamedStackedWidget[RestrictionsBase]()
-        stacked_basis.addNamedWidget(RestrictionsSQDT(), "sqdt")
-        stacked_basis.addNamedWidget(RestrictionsMQDT(), "mqdt")
-
-        for _, widget in stacked_basis.items():
-            for _, item in widget.items.items():
-                item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
         self.layout().addWidget(stacked_basis)
 
         # Add a label to display the current basis
@@ -54,72 +61,82 @@ class BasisConfig(BaseConfig):
         self.layout().addWidget(basis_label)
 
         # Store the widgets for later access
-        self.stacked_basis.append(stacked_basis)
-        self.basis_label.append(basis_label)
+        self.stacked_basis_list.append(stacked_basis)
+        self.basis_label_list.append(basis_label)
         self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
         worker = MultiThreadWorker(self.get_basis, atom)
 
         def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
-            self.basis_label[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
-            self.basis_label[atom].setStyleSheet(label_theme)
+            self.basis_label_list[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
+            self.basis_label_list[atom].setStyleSheet(label_theme)
 
         worker.signals.result.connect(update_result)
 
         def update_error(err: Exception) -> None:
             if isinstance(err, NoStateFoundError):
-                self.basis_label[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
+                self.basis_label_list[atom].setText("Ket of interest wrong quantum numbers, first fix those.")
             elif isinstance(err, DatabaseMissingError):
-                self.basis_label[atom].setText(
+                self.basis_label_list[atom].setText(
                     "Database required but not downloaded. Please select a different state of interest."
                 )
             else:
-                self.basis_label[atom].setText(str(err))
-            self.basis_label[atom].setStyleSheet(label_error_theme)
+                self.basis_label_list[atom].setText(str(err))
+            self.basis_label_list[atom].setStyleSheet(label_error_theme)
 
         worker.signals.error.connect(update_error)
 
         worker.start()
 
-    def get_qn_restrictions(self, atom: int) -> dict[str, tuple[float, float]]:
+    def get_quantum_number_restrictions(self, atom: int) -> QuantumNumberRestrictions:
         """Return the quantum number restrictions to construct a BasisAtom."""
         ket = self.page.ket_config.get_ket_atom(atom)
-        basis_widget = self.stacked_basis[atom].currentWidget()
-        delta_qns: dict[str, float] = {
-            key: item.value() for key, item in basis_widget.items.items() if item.isChecked()
-        }
+        qns = self.page.ket_config.get_quantum_numbers(atom)
+        delta_qns = self.get_quantum_number_deltas(atom)
 
-        qns: dict[str, tuple[float, float]] = {}
-        for key, value in delta_qns.items():
-            qn: float = getattr(ket, key)
-            qns[key] = (qn - value, qn + value)
+        qn_restrictions: dict[str, tuple[float, float]] = {}
+        for key, delta in delta_qns.items():
+            if key in qns:
+                qn = qns[key]  # type: ignore [literal-required]
+            elif hasattr(ket, key):
+                qn = getattr(ket, key)
+            else:
+                raise ValueError(f"Quantum number {key} not found in quantum_numbers or KetAtom.")
+            qn_restrictions[key] = (qn - delta, qn + delta)
 
-        return qns
+        return qn_restrictions  # type: ignore [return-value]
 
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
     ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
         """Return the basis of interest."""
         ket = self.page.ket_config.get_ket_atom(atom)
-        qn_restrictions = self.get_qn_restrictions(atom)
+        qn_restrictions = self.get_quantum_number_restrictions(atom)
         if dtype == "real":
             return pi_real.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
         return pi_complex.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
 
-    def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
+    def get_quantum_number_deltas(self, atom: int = 0) -> "QuantumNumbers":
         """Return the quantum number deltas for the basis of interest."""
-        stacked_basis = self.stacked_basis[atom].currentWidget()
-        return {key: item.value() for key, item in stacked_basis.items.items() if item.isChecked()}
+        basis_widget = self.stacked_basis_list[atom].currentWidget()
+        return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}  # type: ignore [return-value]
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
-        species_type = get_species_type(species)
-        if "mqdt" in species_type:
-            self.stacked_basis[atom].setCurrentNamedWidget("mqdt")
-        else:
-            self.stacked_basis[atom].setCurrentNamedWidget("sqdt")
+        if species not in self.stacked_basis_list[atom]._widgets:
+            restrictions_widget = RestrictionsBase.from_species(species, parent=self)
+            self.stacked_basis_list[atom].addNamedWidget(restrictions_widget, species)
+            for _, item in restrictions_widget.items.items():
+                item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
+
+        self.stacked_basis_list[atom].setCurrentNamedWidget(species)
         self.update_basis_label(atom)
+
+    def showEvent(self, event: QShowEvent) -> None:
+        super().showEvent(event)
+        for i in range(len(self.stacked_basis_list)):
+            self.update_basis_label(i)
 
 
 class BasisConfigOneAtom(BasisConfig):
@@ -185,32 +202,88 @@ class RestrictionsBase(WidgetV):
         for _key, item in self.items.items():
             self.layout().addWidget(item)
 
+    @classmethod
+    def from_species(cls, species: str, parent: Optional[QWidget] = None) -> "RestrictionsBase":
+        """Create a quantum number restriction configuration from the species name."""
+        species_type = get_species_type(species)
+        if species_type == "sqdt_duplet":
+            return RestrictionsSQDT(parent, s_type="halfint", s=0.5)
+        if species_type == "sqdt_singlet":
+            return RestrictionsSQDT(parent, s_type="int", s=0)
+        if species_type == "sqdt_triplet":
+            return RestrictionsSQDT(parent, s_type="int", s=1)
+        if species_type == "mqdt_halfint":
+            return RestrictionsMQDT(parent, f_type="halfint", i=0.5)
+        if species_type == "mqdt_int":
+            return RestrictionsMQDT(parent, f_type="int", i=0)
+
+        raise ValueError(f"Unknown species type: {species_type}")
+
 
 class RestrictionsSQDT(RestrictionsBase):
-    """Configuration for alkali atoms using SQDT."""
+    """Configuration atoms using SQDT."""
+
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        s_type: Literal["int", "halfint"],
+        s: float,
+    ) -> None:
+        assert s_type in ("int", "halfint"), "s_type must be int or halfint"
+        self.s_type = s_type
+        self.s = s
+        self.items = {}
+        super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.items = {}
-        self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the Principal quantum number n")
-        self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the Orbital angular momentum l")
-        self.items["j"] = QnItemInt(self, "Δj", tooltip="Restriction for the Total angular momentum j", checked=False)
-        self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the Magnetic quantum number m", checked=False)
+        self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the principal quantum number n")
+        self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the orbital angular momentum l")
+        if self.s != 0:
+            self.items["j"] = QnItemInt(
+                self, "Δj", tooltip="Restriction for the total angular momentum j", checked=False
+            )
+        self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the magnetic quantum number m", checked=False)
 
 
 class RestrictionsMQDT(RestrictionsBase):
     """Configuration for alkali atoms using SQDT."""
 
-    def setupWidget(self) -> None:
+    def __init__(
+        self,
+        parent: Optional[QWidget] = None,
+        *,
+        f_type: Literal["int", "halfint"],
+        i: float,
+    ) -> None:
+        assert f_type in ("int", "halfint"), "f_type must be int or halfint"
+        self.f_type = f_type
+        self.i = i
         self.items = {}
-        self.items["nu"] = QnItemDouble(
-            self, "Δnu", vdefault=4, tooltip="Restriction for the Effective principal quantum number nu"
-        )
-        self.items["s"] = QnItemDouble(self, "Δs", vdefault=0.5, tooltip="Restriction for the Spin s")
-        self.items["j"] = QnItemDouble(self, "Δj", vdefault=3, tooltip="Restriction for the Total angular momentum j")
+        super().__init__(parent)
 
-        self.items["f"] = QnItemInt(
-            self, "Δf", vdefault=5, tooltip="Restriction for the Total angular momentum f", checked=False
+    def setupWidget(self) -> None:
+        self.items["nu"] = QnItemDouble(
+            self, "Δnu", vdefault=4, tooltip="Restriction for the effective principal quantum number nu"
         )
+        self.items["s"] = QnItemDouble(self, "Δs", vdefault=0.5, tooltip="Restriction for the spin s")
+
+        if self.i == 0:
+            key = "j"
+            description = "Restriction for the  total angular momentum j (j=f for I=0)"
+        else:
+            key = "f"
+            description = "Restriction for the  total angular momentum f"
+        self.items[key] = QnItemDouble(self, "Δ" + key, vdefault=3, tooltip=description)
+
         self.items["m"] = QnItemInt(
-            self, "Δm", vdefault=5, tooltip="Restriction for the Magnetic quantum number m", checked=False
+            self, "Δm", vdefault=5, tooltip="Restriction for the magnetic quantum number m", checked=False
+        )
+
+        self.items["l_ryd"] = QnItemDouble(
+            self,
+            "Δl_ryd",
+            vdefault=3,
+            tooltip="Restriction for the orbital angular momentum l_ryd of the Rydberg electron",
+            checked=False,
         )
