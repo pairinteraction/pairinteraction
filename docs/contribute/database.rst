@@ -23,6 +23,34 @@ database repositories:
 
 .. _ryd-numerov: https://github.com/pairinteraction/ryd-numerov
 
+You can also manually download the databases from database-sqdt_ and database-mqdt_. Simply download the zip file of the
+species you are interested in and extract it. Alternatively, you can create your own custom database (see
+https://github.com/pairinteraction/database-sqdt for an example on how to create a database for pairinteraction). Then
+move the extracted folder (e.g. ``Rb_v1.2``) to the cache directory of pairinteraction inside the
+``pairinteraction/database/tables/`` directory. On Linux, this is usually located at
+``~/.cache/pairinteraction/database/tables/``. For other platforms, you can find the directory by running:
+
+.. code-block:: bash
+
+    # print the cache directory of pairinteraction
+    python -c "from pairinteraction._backend import get_cache_directory; print(get_cache_directory())"
+
+Your final directory structure should look like this:
+
+.. code-block:: bash
+
+    ~/.cache/pairinteraction/database/tables/
+    ├── misc_v1.2
+    │   └── wigner.parquet
+    ├── Rb_v1.2
+    │   ├── states.parquet
+    │   ├── matrix_elements_d.parquet
+    │   ├── matrix_elements_...
+    ├── ...
+
+Note that in addition to the species specific databases, you also always need to download the ``misc`` folder, which
+contains a database with Wigner symbols.
+
 The databases store tables of states and matrix elements of a set of fundamental operators. We have chosen the set of
 operators such that it allows to efficiently construct more complex operators such as the operator for dipole-dipole
 interaction.
