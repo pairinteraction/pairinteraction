@@ -30,6 +30,7 @@ All the available classes, methods and functions are documented below:
     :toctree: _autosummary/
 
        KetAtom
+       StateAtom
        BasisAtom
        SystemAtom
 
@@ -39,6 +40,7 @@ All the available classes, methods and functions are documented below:
     :toctree: _autosummary/
 
        KetPair
+       StatePair
        BasisPair
        SystemPair
        GreenTensor

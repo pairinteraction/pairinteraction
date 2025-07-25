@@ -63,9 +63,9 @@ class StateAtom(StateBase[BasisType, KetAtom]):
         return self._basis.get_amplitudes(other)[0]  # type: ignore [no-any-return]
 
     def get_overlap(self, other: Union["Self", KetAtom]) -> Union[float, complex]:
-        """Calculate the overlap of the state with respect to another state or ket.
+        r"""Calculate the overlap of the state with respect to another state or ket.
 
-        This means the inner product |<self|other>|^2.
+        This means calculate :math:`|\langle \mathrm{self} | \mathrm{other} \rangle|^2`.
 
         Args:
             other: Either a state or a ket for which the overlap should be calculated.
