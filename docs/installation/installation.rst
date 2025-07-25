@@ -72,7 +72,7 @@ pairinteraction from the command line via the pip_ package manager:
 Next Steps
 ~~~~~~~~~~
 
-After the installation, we recommend to verify that everything is working:
+After the installation, we recommend verifying that everything is working:
 
 .. code-block:: bash
 
@@ -84,6 +84,9 @@ After the installation, we recommend to verify that everything is working:
 
     # download the databases for the species you want to use (e.g. Rb and Yb174_mqdt)
     pairinteraction download Rb Yb174_mqdt
+
+If the download command fails, you can also download the databases manually from github and place them in the cache
+directory. For more details on this, see the :ref:`database <database>` section of the documentation.
 
 **Using pairinteraction as a Python Library:** For usage examples of the Python library, visit the :ref:`tutorial-api`
 section of the documentation.
