@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union
 
 from pairinteraction import _backend
+from pairinteraction._wrapped.database.downloader import GitHubDownloader
 
 if TYPE_CHECKING:
     import os
@@ -78,3 +80,10 @@ class Database:
                 "The global database is automatically initialized when needed. "
                 "If you explicitly want to initialize the global database, do this at the beginning of your script."
             )
+
+    def download(self, species: str) -> Literal["succeeded", "skipped"]:
+        """Download the database for a specific species."""
+        user = "pairinteraction"
+        repo = "database-mqdt" if "mqdt" in species else "database-sqdt"
+        downloader = GitHubDownloader(f"{user}/{repo}")
+        return downloader.download_and_extract(species, Path(self.database_dir) / "tables")
