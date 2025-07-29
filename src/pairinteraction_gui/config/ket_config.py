@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
@@ -32,6 +32,17 @@ if TYPE_CHECKING:
     from pairinteraction_gui.qobjects.item import _QnItem
 
 CORE_SPIN_DICT = {"Sr87": 9 / 2, "Sr88": 0, "Yb171": 1 / 2, "Yb173": 5 / 2, "Yb174": 0}
+
+
+class QuantumNumbers(TypedDict, total=False):
+    n: int
+    nu: float
+    l: float
+    s: float
+    j: float
+    l_ryd: float
+    f: float
+    m: float
 
 
 class KetConfig(BaseConfig):
@@ -86,10 +97,10 @@ class KetConfig(BaseConfig):
         """Return the selected species of the ... atom."""
         return self.species_combo_list[atom].currentText()
 
-    def get_quantum_numbers(self, atom: int = 0) -> dict[str, float]:
+    def get_quantum_numbers(self, atom: int = 0) -> QuantumNumbers:
         """Return the quantum numbers of the ... atom."""
         qn_widget = self.stacked_qn_list[atom].currentWidget()
-        return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}
+        return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}  # type: ignore [return-value]
 
     def get_ket_atom(self, atom: int, *, ask_download: bool = False) -> "pi.KetAtom":
         """Return the ket of interest of the ... atom."""
@@ -97,7 +108,7 @@ class KetConfig(BaseConfig):
         qns = self.get_quantum_numbers(atom)
 
         try:
-            return pi.KetAtom(species, **qns)  # type: ignore [arg-type]
+            return pi.KetAtom(species, **qns)
         except Exception as err:
             err = get_custom_error(err)
             if ask_download and isinstance(err, DatabaseMissingError):

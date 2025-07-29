@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict, Union
 
 from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
@@ -21,8 +21,20 @@ from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, g
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
+    from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
     from pairinteraction_gui.qobjects.item import _QnItem
+
+
+class QuantumNumberRestrictions(TypedDict, total=False):
+    n: tuple[int, int]
+    nu: tuple[float, float]
+    l: tuple[float, float]
+    s: tuple[float, float]
+    j: tuple[float, float]
+    l_ryd: tuple[float, float]
+    f: tuple[float, float]
+    m: tuple[float, float]
 
 
 class BasisConfig(BaseConfig):
@@ -77,7 +89,7 @@ class BasisConfig(BaseConfig):
 
         worker.start()
 
-    def get_quantum_number_restrictions(self, atom: int) -> dict[str, tuple[float, float]]:
+    def get_quantum_number_restrictions(self, atom: int) -> QuantumNumberRestrictions:
         """Return the quantum number restrictions to construct a BasisAtom."""
         ket = self.page.ket_config.get_ket_atom(atom)
         qns = self.page.ket_config.get_quantum_numbers(atom)
@@ -86,14 +98,14 @@ class BasisConfig(BaseConfig):
         qn_restrictions: dict[str, tuple[float, float]] = {}
         for key, delta in delta_qns.items():
             if key in qns:
-                qn = qns[key]
+                qn = qns[key]  # type: ignore [literal-required]
             elif hasattr(ket, key):
                 qn = getattr(ket, key)
             else:
                 raise ValueError(f"Quantum number {key} not found in quantum_numbers or KetAtom.")
             qn_restrictions[key] = (qn - delta, qn + delta)
 
-        return qn_restrictions
+        return qn_restrictions  # type: ignore [return-value]
 
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
@@ -102,13 +114,13 @@ class BasisConfig(BaseConfig):
         ket = self.page.ket_config.get_ket_atom(atom)
         qn_restrictions = self.get_quantum_number_restrictions(atom)
         if dtype == "real":
-            return pi_real.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
-        return pi_complex.BasisAtom(ket.species, **qn_restrictions)  # type: ignore [arg-type]
+            return pi_real.BasisAtom(ket.species, **qn_restrictions)
+        return pi_complex.BasisAtom(ket.species, **qn_restrictions)
 
-    def get_quantum_number_deltas(self, atom: int = 0) -> dict[str, float]:
+    def get_quantum_number_deltas(self, atom: int = 0) -> "QuantumNumbers":
         """Return the quantum number deltas for the basis of interest."""
         basis_widget = self.stacked_basis_list[atom].currentWidget()
-        return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}
+        return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}  # type: ignore [return-value]
 
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""

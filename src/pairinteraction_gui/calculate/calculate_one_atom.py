@@ -57,7 +57,7 @@ def _calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     pi.diagonalize(
         system_list,
         **parameters.diagonalize_kwargs,
-        **parameters.get_diagonalize_energy_range(ket_energy),
+        **parameters.get_diagonalize_energy_range_kwargs(ket_energy),
     )
     logger.debug("Done diagonalizing SystemAtoms.")
     return ResultsOneAtom.from_calculate(parameters, system_list, ket, ket_energy)
