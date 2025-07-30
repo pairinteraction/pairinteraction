@@ -78,7 +78,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_remote();
 
         CHECK_THROWS_WITH_AS(manager.get_path("misc", "missing_table"),
-                             "Table misc_missing_table not found.", std::runtime_error);
+                             "Table misc/missing_table.parquet not found.", std::runtime_error);
     }
 
     SUBCASE("Check version parsing") {
