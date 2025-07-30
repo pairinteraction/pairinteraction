@@ -115,6 +115,11 @@ jobs:
     - name: Install the wheel  # Note, the tests dependencies are already automatically installed in setup-uv-all-deps
       run: uv pip install dist/pairinteraction*abi3*arm64.whl
 
+    - name: Download the necessary database files  # WORKAROUND while the automatic download is broken
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: uv run --no-project pairinteraction --log-level INFO download Rb Sr88_singlet Sr88_triplet Sr87_mqdt Sr88_mqdt Yb171_mqdt Yb173_mqdt Yb174_mqdt
+
     - name: Execute a test that downloads the database and runs checks
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
