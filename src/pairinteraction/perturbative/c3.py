@@ -4,7 +4,7 @@
 from typing import TYPE_CHECKING, Optional, Union, overload
 
 from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import UnitConverterScalar
 
 if TYPE_CHECKING:
     from pairinteraction._wrapped.ket.ket_atom import KetAtom
@@ -54,5 +54,5 @@ class C3(EffectiveSystemPair):
         """
         h_eff_pint = self.get_effective_hamiltonian(return_order=1)
         distance = self.system_pair.get_distance()
-        c3_pint = h_eff_pint[1, 0] * distance**3  # type: ignore [index]  # pint does not know it can be indexed
-        return QuantityScalar.convert_pint_to_user(c3_pint, "c3", unit)
+        c3_pint = h_eff_pint[1, 0] * distance**3
+        return UnitConverterScalar.pint_to_user(c3_pint, "c3", unit)

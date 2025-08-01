@@ -104,7 +104,7 @@ class StateAtom(StateBase[BasisType, KetAtom]):
             The matrix element between self and other.
 
         """
-        return self._basis.get_matrix_elements(other, operator, q, unit=unit)[0]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return self._basis.get_matrix_elements(other, operator, q, unit=unit)[0]  # type: ignore [no-any-return]
 
 
 class StateAtomReal(StateAtom["BasisAtomReal"]):
