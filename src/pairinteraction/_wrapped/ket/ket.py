@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, overload
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.enums import Parity, get_python_parity
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import UnitConverterScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -110,4 +110,4 @@ class KetBase(ABC):
 
         """
         energy_au = self._cpp.get_energy()
-        return QuantityScalar.convert_au_to_user(energy_au, "energy", unit)
+        return UnitConverterScalar.au_to_user(energy_au, "energy", unit)

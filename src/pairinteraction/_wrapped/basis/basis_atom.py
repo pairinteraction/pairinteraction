@@ -11,7 +11,7 @@ from pairinteraction._wrapped.database.database import Database
 from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction._wrapped.ket.ket_atom import KetAtom
 from pairinteraction._wrapped.state.state_atom import StateAtom, StateAtomComplex, StateAtomReal
-from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
+from pairinteraction.units import UnitConverterArray, UnitConverterScalar, UnitConverterSparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -127,8 +127,8 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
         if parity is not None:
             creator.restrict_parity(get_cpp_parity(parity))
         if energy is not None:
-            min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
-            max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
+            min_energy_au = UnitConverterScalar.user_to_au(energy[0], energy_unit, "energy")
+            max_energy_au = UnitConverterScalar.user_to_au(energy[1], energy_unit, "energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
             self._energy = energy
             self._energy_unit = energy_unit
@@ -222,7 +222,7 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
         matrix_elements_au: Union[NDArray, csr_matrix]
         if isinstance(other, KetAtom):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
-            return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
+            return UnitConverterArray.au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
             if isinstance(self, BasisAtomReal) and isinstance(other, StateAtomReal):
                 matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
@@ -230,7 +230,7 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
                 matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
             else:
                 raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
-            return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
+            return UnitConverterArray.au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
             if isinstance(self, BasisAtomReal) and isinstance(other, BasisAtomReal):
                 matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
@@ -238,7 +238,7 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
                 matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
             else:
                 raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
-            return QuantitySparse.convert_au_to_user(matrix_elements_au, operator, unit)
+            return UnitConverterSparse.au_to_user(matrix_elements_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 
 

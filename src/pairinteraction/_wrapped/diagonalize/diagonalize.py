@@ -10,7 +10,7 @@ from typing_extensions import deprecated
 from pairinteraction import _backend, _wrapped
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
 from pairinteraction._wrapped.enums import FloatType
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import UnitConverterScalar
 
 if TYPE_CHECKING:
     from pairinteraction._wrapped.system.system import SystemBase
@@ -108,7 +108,7 @@ def diagonalize(
     energy_range_au: list[Optional[float]] = [None, None]
     for i, energy in enumerate(energy_range):
         if energy is not None:
-            energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_range_unit, "energy")
+            energy_range_au[i] = UnitConverterScalar.user_to_au(energy, energy_range_unit, "energy")
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):

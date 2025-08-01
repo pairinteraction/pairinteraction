@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction.units import UnitConverterArray, UnitConverterScalar
 
 if TYPE_CHECKING:
     from pairinteraction.units import Dimension, NDArray, PintArray, PintFloat
@@ -101,19 +101,19 @@ class GreenTensor:
         """
         dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
         if omegas is None:
-            tensor_au = QuantityArray.convert_user_to_au(np.array(tensor), tensor_unit, dimension)
+            tensor_au = UnitConverterArray.user_to_au(np.array(tensor), tensor_unit, dimension)
             if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
                 raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
             self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensor_au)
             return
 
-        tensors_au = [QuantityArray.convert_user_to_au(np.array(t), tensor_unit, dimension) for t in tensor]
+        tensors_au = [UnitConverterArray.user_to_au(np.array(t), tensor_unit, dimension) for t in tensor]
         if not all(t.ndim == 2 for t in tensors_au):
             raise ValueError("The tensor must be a list of 2D arrays.")
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors_au):
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
-        omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omegas_unit, "energy")
+        omegas_au = UnitConverterArray.user_to_au(np.array(omegas), omegas_unit, "energy")
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
 
     @overload
@@ -159,7 +159,7 @@ class GreenTensor:
 
         """
         entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
-        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy") if omega is not None else None
+        omega_au = UnitConverterScalar.user_to_au(omega, omega_unit, "energy") if omega is not None else None
 
         dim1 = 3 if kappa1 == 1 else 6
         dim2 = 3 if kappa2 == 1 else 6
@@ -173,7 +173,7 @@ class GreenTensor:
                 val = entry_cpp.val(omega_au)
             tensor_au[entry_cpp.row(), entry_cpp.col()] = val
 
-        return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
+        return UnitConverterArray.au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 
     def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list["Dimension"]:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2 + 1)]]  # type: ignore [list-item]

@@ -10,7 +10,7 @@ from pairinteraction import _backend
 from pairinteraction._wrapped.database.database import Database
 from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_parity
 from pairinteraction._wrapped.ket.ket import KetBase
-from pairinteraction.units import QuantityArray, QuantityScalar, ureg
+from pairinteraction.units import UnitConverterArray, UnitConverterScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -107,7 +107,7 @@ class KetAtom(KetBase):
         creator = self._cpp_creator()
         creator.set_species(species)
         if energy is not None:
-            energy_au = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
+            energy_au = UnitConverterScalar.user_to_au(energy, energy_unit, "energy")
             creator.set_energy(energy_au)
         if f is not None:
             creator.set_quantum_number_f(f)
@@ -288,7 +288,7 @@ class KetAtom(KetBase):
 
         """
         relevant_kets, transition_rates_au = self._get_transition_rates("spontaneous")
-        transition_rates = QuantityArray.convert_au_to_user(transition_rates_au, "transition_rate", unit)
+        transition_rates = UnitConverterArray.au_to_user(transition_rates_au, "transition_rate", unit)
         return relevant_kets, transition_rates
 
     @overload
@@ -325,9 +325,9 @@ class KetAtom(KetBase):
             The relevant states and the transition rates.
 
         """
-        temperature_au = QuantityScalar.convert_user_to_au(temperature, temperature_unit, "temperature")
+        temperature_au = UnitConverterScalar.user_to_au(temperature, temperature_unit, "temperature")
         relevant_kets, transition_rates_au = self._get_transition_rates("black_body", temperature_au)
-        transition_rates = QuantityArray.convert_au_to_user(transition_rates_au, "transition_rate", unit)
+        transition_rates = UnitConverterArray.au_to_user(transition_rates_au, "transition_rate", unit)
         return relevant_kets, transition_rates
 
     @overload
@@ -377,7 +377,7 @@ class KetAtom(KetBase):
 
         lifetime_au = 1 / np.sum(transition_rates_au)
 
-        return QuantityScalar.convert_au_to_user(lifetime_au, "time", unit)
+        return UnitConverterScalar.au_to_user(lifetime_au, "time", unit)
 
     def _get_transition_rates(
         self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: Union[float, None] = None

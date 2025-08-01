@@ -16,7 +16,7 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction.units import UnitConverterArray, UnitConverterScalar
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -154,7 +154,7 @@ class EffectiveSystemPair:
         """Check if the effective system pair needs complex datatype."""
         if self._is_created("basis_atoms"):
             return isinstance(self.basis_atoms[0], pi_complex.BasisAtom)
-        return self.electric_field[1] != 0 or self.magnetic_field[1] != 0  # type: ignore [index, no-any-return]
+        return self.electric_field[1] != 0 or self.magnetic_field[1] != 0  # type: ignore [no-any-return]
 
     # # # Perturbation methods and attributes # # #
     @property
@@ -276,7 +276,7 @@ class EffectiveSystemPair:
 
         """
         self._delete_created()
-        self._electric_field = QuantityArray.convert_user_to_pint(electric_field, unit, "electric_field")
+        self._electric_field = UnitConverterArray.user_to_pint(electric_field, unit, "electric_field")
         return self
 
     @property
@@ -301,12 +301,12 @@ class EffectiveSystemPair:
 
         """
         self._delete_created()
-        self._magnetic_field = QuantityArray.convert_user_to_pint(magnetic_field, unit, "magnetic_field")
+        self._magnetic_field = UnitConverterArray.user_to_pint(magnetic_field, unit, "magnetic_field")
         return self
 
     @property
     def _are_fields_along_z(self) -> bool:
-        return all(x == 0 for x in [*self.magnetic_field[:2], *self.electric_field[:2]])  # type: ignore [index]
+        return all(x == 0 for x in [*self.magnetic_field[:2], *self.electric_field[:2]])
 
     @property
     def diamagnetism_enabled(self) -> bool:
@@ -417,7 +417,7 @@ class EffectiveSystemPair:
         min_energy_au = min(pair_energies_au)
         max_energy_au = max(pair_energies_au)
 
-        mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")
+        mhz_au = UnitConverterScalar.user_to_au(1, "MHz", "energy")
         delta_energy_au = 100 * mhz_au
         min_delta, max_delta = 0.1 * mhz_au, 1.0
 
@@ -523,7 +523,7 @@ class EffectiveSystemPair:
 
         """
         self._delete_created("system_pair")
-        self._distance_vector = QuantityArray.convert_user_to_pint(distance, unit, "distance")
+        self._distance_vector = UnitConverterArray.user_to_pint(distance, unit, "distance")
         return self
 
     def set_angle(
@@ -588,7 +588,7 @@ class EffectiveSystemPair:
                 f"The perturbation order {return_order} is not available in the effective Hamiltonian "
                 f"with the specified perturbation_order {self.perturbation_order}."
             )
-        return QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
+        return UnitConverterArray.au_to_user(h_eff_au, "energy", unit)
 
     def get_effective_basisvectors(self) -> "csr_matrix":
         """Get the eigenvectors of the perturbative Hamiltonian."""
