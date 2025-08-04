@@ -20,6 +20,14 @@ release = version  # The full version, including alpha/beta/rc tags, use via |re
 
 language = "en"
 
+# -- sphinx-polyversion -----------------------------------------------------
+if os.getenv("POLYVERSION_DATA"):
+    from sphinx_polyversion.api import load  # type: ignore [import-untyped]
+
+    # This adds html_context = {"revisions": [GitRef('main', ...), GitRef('v6.8.9', ...), ...], "current": ...}
+    html_context: dict[str, Any] = load()
+else:
+    html_context = {"current_version": pairinteraction.__version__}
 
 # -- General configuration ---------------------------------------------------
 extensions = [
@@ -35,7 +43,13 @@ extensions = [
     "sphinx_tabs.tabs",
 ]
 templates_path = ["_templates"]
-exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
+exclude_patterns = [
+    "_build",
+    "_build_polyversion",
+    "_doctrees",
+    "Thumbs.db",
+    ".DS_Store",
+]  # Ignore these source files and folders
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "markdown",
