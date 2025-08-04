@@ -4,10 +4,11 @@
 # ruff: noqa: INP001
 
 from pathlib import Path
+from typing import Union
 
 from sphinx_polyversion.api import apply_overrides
 from sphinx_polyversion.driver import DefaultDriver
-from sphinx_polyversion.git import Git, file_predicate
+from sphinx_polyversion.git import Git, GitRef, file_predicate, refs_by_type
 from sphinx_polyversion.pyvenv import Pip
 from sphinx_polyversion.sphinx import SphinxBuilder
 
@@ -38,6 +39,16 @@ root = Git.root(Path(__file__).parent)
 
 # Setup driver and run it
 src = Path(SOURCE_DIR)
+
+
+# Data passed to templates, important for the root index.html (see docs/templates/index.html)
+def root_data(driver: DefaultDriver) -> dict[str, Union[list[GitRef], GitRef, None]]:
+    revisions: list[GitRef] = driver.builds
+    branches, _tags = refs_by_type(revisions)
+    latest = next((b for b in branches if b.name == "master"), None)
+    return {"revisions": revisions, "latest": latest}
+
+
 DefaultDriver(
     root,
     OUTPUT_DIR,
@@ -51,4 +62,5 @@ DefaultDriver(
     env=Pip.factory(venv="../.venv", args=PIP_ARGS),
     template_dir=root / src / "templates",
     static_dir=root / src / "static",
+    root_data_factory=root_data,
 ).run(sequential=False)
