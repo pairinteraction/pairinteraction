@@ -3,45 +3,32 @@
 
 # ruff: noqa: INP001
 
+import shutil
+from functools import partial
 from pathlib import Path
 from typing import Any, Union
 
-from sphinx_polyversion.api import apply_overrides
+# mypy: disable-error-code="import-untyped"
 from sphinx_polyversion.driver import DefaultDriver
 from sphinx_polyversion.environment import Environment
-from sphinx_polyversion.git import Git, GitRef, refs_by_type
-from sphinx_polyversion.pyvenv import Pip
-from sphinx_polyversion.sphinx import SphinxBuilder
+from sphinx_polyversion.git import Git, GitRef, closest_tag, refs_by_type
+from sphinx_polyversion.json import JSONable
+from sphinx_polyversion.pyvenv import VirtualPythonEnvironment
+from sphinx_polyversion.sphinx import CommandBuilder, Placeholder, SphinxBuilder
 
 import pairinteraction
+
+OUTPUT_DIR = Path("_build_polyversion")
+shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
 #: Regex matching the branches to build docs for
 BRANCH_REGEX = r"master|docs-polyversion"  # FIXME docs-polyversion just for testing
 
 #: Regex matching the tags to build docs for
-TAG_REGEX = r"v2.*"
-# TAG_REGEX = r"v0.9.10"  # v0.9.10 has different docs structure
+TAG_REGEX = r"v0.9.10"
 
-#: Output dir relative to project root
-OUTPUT_DIR = "_build"
-
-#: Source directory
-SOURCE_DIR = "docs/"
-
-#: Arguments to pass to `pip install`
-PIP_ARGS = ["sphinx"]
-
-#: Arguments to pass to `sphinx-build`
-SPHINX_ARGS = ["-a", "-v"]
-SPHINX_ARGS += ["-W", "--keep-going"]
-
-# Load overrides read from commandline to global scope
-apply_overrides(globals())
 # Determine repository root directory
 root = Git.root(Path(__file__).parent)
-
-# Setup driver and run it
-src = Path(SOURCE_DIR)
 
 
 # Data passed to sphinx, important for the version selector
@@ -69,18 +56,57 @@ def root_data(driver: DefaultDriver) -> dict[str, Union[list[GitRef], GitRef, No
     return {"revisions": revisions, "latest": latest}
 
 
+class UpdatedCommandBuilder(CommandBuilder):  # type: ignore [misc]
+    pre_cmd: tuple[Any, ...]
+    cmd: tuple[Any, ...]
+    post_cmd: tuple[Any, ...]
+
+    async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:
+        source_dir = str(environment.path.absolute() / self.source)
+
+        def replace(v: Any) -> Any:
+            if isinstance(v, str) and "Placeholder" in v:
+                v = v.replace("Placeholder.OUTPUT_DIR", str(output_dir))
+                v = v.replace("Placeholder.SOURCE_DIR", str(source_dir))
+            return v
+
+        if self.pre_cmd:
+            self.pre_cmd = tuple(map(replace, self.pre_cmd))
+        if self.cmd:
+            self.cmd = tuple(map(replace, self.cmd))
+        if self.post_cmd:
+            self.post_cmd = tuple(map(replace, self.post_cmd))
+        await super().build(environment, output_dir, data)
+
+
+#: Mapping of revisions to changes in build parameters
+BUILDER = {
+    "v0.9.10": UpdatedCommandBuilder(
+        Path("doc/sphinx/"),
+        pre_cmd=["cp", "Placeholder.SOURCE_DIR/conf.py.in", "Placeholder.SOURCE_DIR/conf.py"],
+        cmd=["sphinx-build", "--color", "-a", "-v", "--keep-going", Placeholder.SOURCE_DIR, Placeholder.OUTPUT_DIR],
+    ),
+    "v2.0.0": SphinxBuilder(Path("docs/"), args=["-a", "-v", "-W", "--keep-going"]),
+}
+
+ENVIRONMENT = {
+    "v0.9.10": VirtualPythonEnvironment.factory(venv="../venv_pairinteraction_v0.9.10"),
+    "v2.0.0": VirtualPythonEnvironment.factory(venv="../.venv"),
+}
+
 DefaultDriver(
     root,
-    OUTPUT_DIR,
+    output_dir=OUTPUT_DIR,
     vcs=Git(
         branch_regex=BRANCH_REGEX,
         tag_regex=TAG_REGEX,
         buffer_size=1 * 10**9,  # 1 GB
     ),
-    builder=SphinxBuilder(src, args=SPHINX_ARGS),
-    env=Pip.factory(venv="../.venv", args=PIP_ARGS),
-    template_dir=root / src / "templates",
-    static_dir=root / src / "static",
+    builder=BUILDER,
+    env=ENVIRONMENT,
+    selector=partial(closest_tag, root),
+    template_dir=root / "docs" / "templates",
+    static_dir=root / "docs" / "static",
     root_data_factory=root_data,
     data_factory=data,
 ).run(sequential=False)
