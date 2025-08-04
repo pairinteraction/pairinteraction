@@ -17,7 +17,7 @@ env:
   CXXFLAGS: "-march=x86-64-v3"
 
 jobs:
-  build_sphinx:
+  build_latest_sphinx:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -31,11 +31,34 @@ jobs:
     - name: Build documentation
       working-directory: docs/
       run: uv run --no-project make html SPHINXOPTS="-W --keep-going"  # TODO also use -n in the future
+
+  build_sphinx_polyversion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      options: --user 1001  # workaround see https://github.com/actions/runner/issues/2033#issuecomment-1598547465
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Fetch branch master to local branch  # needed for sphinx-polyversion to recognize the branch
+      run: git fetch origin master:master
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install .[docs]
+    - name: Setup 2nd virtual environment for pairinteraction v0.9.10
+      run: |
+        uv venv venv_pairinteraction_v0.9.10 --python=python3.11
+        uv pip install --python venv_pairinteraction_v0.9.10/bin/python 'pairinteraction==0.9.10' sphinx nbsphinx 'sphinxcontrib-mermaid<1' sphinx_rtd_theme
+    - name: Build documentation
+      run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: pairinteraction-docs
-        path: docs/_build/html
+        path: docs/_build_polyversion/
 
   build_doxygen:
     runs-on: ubuntu-latest
@@ -137,7 +160,7 @@ jobs:
         path: docs/coverage
 
   deploy_docs:
-    needs: [build_sphinx, build_doxygen, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
+    needs: [build_latest_sphinx, build_sphinx_polyversion, build_doxygen, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
