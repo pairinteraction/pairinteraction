@@ -35,7 +35,7 @@ TAG_REGEX = r"v0.9.10"
 
 # Define factory method for data passed to sphinx, important for the version selector (see _templates/versions.html)
 def data(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict[str, Any]:
-    base_url = "https://www.pairinteraction.org/pairinteraction/sphinx/html/"
+    base_url = "https://www.pairinteraction.org/pairinteraction/"
     versions_dict = [
         [f"latest ({pairinteraction.__version__})", base_url],
         ["old pairinteraction (v0.9.10)", base_url + "v0.9.10/"],

@@ -27,7 +27,7 @@
 [coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
 [coverage-python-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/html/index.html
 [docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
-[docs-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/
+[docs-link]: https://www.pairinteraction.org/pairinteraction/
 
 **Note: This is a completely new version of the pairinteraction software that is not backward compatible to versions below v1.0.**
 
@@ -43,9 +43,9 @@ You can use the pairinteraction software as a Python library, see our [quick sta
 pairinteraction gui
 ```
 
-[about-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/about.html
-[installation-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/installation/installation.html
-[tutorial-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/examples_python/quick_start.html
+[about-link]: https://www.pairinteraction.org/pairinteraction/master/about.html
+[installation-link]: https://www.pairinteraction.org/pairinteraction/master/installation/installation.html
+[tutorial-link]: https://www.pairinteraction.org/pairinteraction/master/tutorials/examples_python/quick_start.html
 
 ## Highlights
 
@@ -152,14 +152,14 @@ these tutorials enable you to leverage pairinteraction for your projects.
 
 - [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
 
-[Installation]: https://www.pairinteraction.org/pairinteraction/sphinx/html/installation/installation.html
-[Tutorials]: https://www.pairinteraction.org/pairinteraction/sphinx/html/tutorials/tutorials.html
-[API Reference]: https://www.pairinteraction.org/pairinteraction/sphinx/html/api_reference.html
-[Publications]: https://www.pairinteraction.org/pairinteraction/sphinx/html/publications/publications.html
-[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
-[Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/architecture.html
-[Style Guide]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/style_guide.html
-[Database Format]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/database.html
+[Installation]: https://www.pairinteraction.org/pairinteraction/master/installation/installation.html
+[Tutorials]: https://www.pairinteraction.org/pairinteraction/master/tutorials/tutorials.html
+[API Reference]: https://www.pairinteraction.org/pairinteraction/master/api_reference.html
+[Publications]: https://www.pairinteraction.org/pairinteraction/master/publications/publications.html
+[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
+[Overview About pairinteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/master/contribute/architecture.html
+[Style Guide]: https://www.pairinteraction.org/pairinteraction/master/contribute/style_guide.html
+[Database Format]: https://www.pairinteraction.org/pairinteraction/master/contribute/database.html
 [MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
@@ -205,7 +205,7 @@ The development of the pairinteraction software has been supported by the [Insti
 [Nicolas Zuber]: https://github.com/tripiti
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
-[contributor-link]: https://www.pairinteraction.org/pairinteraction/sphinx/html/contribute/getting_started.html
+[contributor-link]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
 
 ## License
 
