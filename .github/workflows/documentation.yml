@@ -170,7 +170,7 @@ jobs:
       uses: actions/download-artifact@v5
       with:
         name: pairinteraction-docs
-        path: public/sphinx/html
+        path: public/
 
     - name: Download artifacts doxygen
       uses: actions/download-artifact@v5
