@@ -18,20 +18,22 @@ from sphinx_polyversion.sphinx import CommandBuilder, Placeholder, SphinxBuilder
 
 import pairinteraction
 
-OUTPUT_DIR = Path("_build_polyversion")
+# Determine repository root directory
+DOCS_DIR = Path(__file__).parent
+ROOT_DIR = Git.root(DOCS_DIR)
+
+
+# Define output directory, where the documentation will be built to
+OUTPUT_DIR = DOCS_DIR / "_build_polyversion"
 shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
-#: Regex matching the branches to build docs for
-BRANCH_REGEX = r"master|docs-polyversion"  # FIXME docs-polyversion just for testing
 
-#: Regex matching the tags to build docs for
+# Define all branches and tags to build documentation for (using regex expressions)
+BRANCH_REGEX = r"master"
 TAG_REGEX = r"v0.9.10"
 
-# Determine repository root directory
-root = Git.root(Path(__file__).parent)
 
-
-# Data passed to sphinx, important for the version selector
+# Define factory method for data passed to sphinx, important for the version selector (see _templates/versions.html)
 def data(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict[str, Any]:
     base_url = "https://www.pairinteraction.org/pairinteraction/sphinx/html/"
     versions_dict = [
@@ -48,7 +50,7 @@ def data(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict[str, An
     }
 
 
-# Data passed to templates, important for the root index.html (see docs/templates/index.html)
+# Define factory method for data passed to templates, important for the main index.html (see docs/templates/index.html)
 def root_data(driver: DefaultDriver) -> dict[str, Union[list[GitRef], GitRef, None]]:
     revisions: list[GitRef] = driver.builds
     branches, _tags = refs_by_type(revisions)
@@ -56,6 +58,7 @@ def root_data(driver: DefaultDriver) -> dict[str, Union[list[GitRef], GitRef, No
     return {"revisions": revisions, "latest": latest}
 
 
+# Define a custom documentation Builder (mainly allow for replacing placeholders in strings)
 class UpdatedCommandBuilder(CommandBuilder):  # type: ignore [misc]
     pre_cmd: tuple[Any, ...]
     cmd: tuple[Any, ...]
@@ -79,8 +82,10 @@ class UpdatedCommandBuilder(CommandBuilder):  # type: ignore [misc]
         await super().build(environment, output_dir, data)
 
 
-#: Mapping of revisions to changes in build parameters
-BUILDER = {
+# Mapping of versions/revisions to builders and environments, which is used for building the documentation
+# Versions/Revisions not listed here will use the entry, which revision is the closest ancestor of the wanted revision
+# IMPORTANT: The revisions must be put in in the correct order (starting with the oldest)
+BUILDER_MAPPING = {
     "v0.9.10": UpdatedCommandBuilder(
         Path("doc/sphinx/"),
         pre_cmd=["cp", "Placeholder.SOURCE_DIR/conf.py.in", "Placeholder.SOURCE_DIR/conf.py"],
@@ -89,24 +94,26 @@ BUILDER = {
     "v2.0.0": SphinxBuilder(Path("docs/"), args=["-a", "-v", "-W", "--keep-going"]),
 }
 
-ENVIRONMENT = {
-    "v0.9.10": VirtualPythonEnvironment.factory(venv="../venv_pairinteraction_v0.9.10"),
-    "v2.0.0": VirtualPythonEnvironment.factory(venv="../.venv"),
+ENVIRONMENT_MAPPING = {
+    "v0.9.10": VirtualPythonEnvironment.factory(venv=ROOT_DIR / "venv_pairinteraction_v0.9.10"),
+    "v2.0.0": VirtualPythonEnvironment.factory(venv=ROOT_DIR / ".venv"),
 }
 
+
+# Create the actual driver instance and run it to build all wanted documentations
 DefaultDriver(
-    root,
+    ROOT_DIR,
     output_dir=OUTPUT_DIR,
     vcs=Git(
         branch_regex=BRANCH_REGEX,
         tag_regex=TAG_REGEX,
         buffer_size=1 * 10**9,  # 1 GB
     ),
-    builder=BUILDER,
-    env=ENVIRONMENT,
-    selector=partial(closest_tag, root),
-    template_dir=root / "docs" / "templates",
-    static_dir=root / "docs" / "static",
+    builder=BUILDER_MAPPING,
+    env=ENVIRONMENT_MAPPING,
+    selector=partial(closest_tag, ROOT_DIR),
+    template_dir=DOCS_DIR / "templates",
+    static_dir=DOCS_DIR / "static",
     root_data_factory=root_data,
     data_factory=data,
-).run(sequential=False)
+).run(sequential=True)
