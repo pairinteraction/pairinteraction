@@ -43,7 +43,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Fetch branch master to local branch  # needed for sphinx-polyversion to recognize the branch
-      run: git fetch origin master:master
+      run: git fetch origin master:master || true  # ignore error if branch already exists
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
