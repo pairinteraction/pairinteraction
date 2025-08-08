@@ -1,0 +1,27 @@
+digraph "pairinteraction::paths::get_cache_directory"
+{
+ // INTERACTIVE_SVG=YES
+ // LATEX_PDF_SIZE
+  bgcolor="transparent";
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="RL";
+  Node1 [label="pairinteraction::paths\l::get_cache_directory",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black",tooltip=" "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="bind_paths",height=0.2,width=0.4,color="black",URL="$paths_8py_8cpp.html#a9e3b51e5d11f1dcff3784d0cb153de80",tooltip=" "];
+  Node2 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="NB_MODULE",height=0.2,width=0.4,color="black",URL="$bindings_8cpp.html#a121a6270e082fc3ed1be7ff2f695b95d",tooltip=" "];
+  Node1 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="LoggerBridge::LoggerBridge",height=0.2,width=0.4,color="black",URL="$classLoggerBridge.html#af92466c7fcadbd0b546a399dea4589a8",tooltip=" "];
+  Node1 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="pairinteraction::run\l_unit_tests",height=0.2,width=0.4,color="black",URL="$namespacepairinteraction.html#aafda15080b0bbc33b52f4ed57bc9239a",tooltip=" "];
+  Node5 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="bind_run_unit_tests",height=0.2,width=0.4,color="black",URL="$run__unit__tests_8py_8cpp.html#a233034d2564c8c23a59e65ce64fdf6b4",tooltip=" "];
+  Node6 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="main",height=0.2,width=0.4,color="black",URL="$unit__tests_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627",tooltip=" "];
+  Node1 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="pairinteraction::setup",height=0.2,width=0.4,color="black",URL="$namespacepairinteraction.html#a507ac4919d914f33a2bac4ee642c3e15",tooltip=" "];
+  Node8 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="main",height=0.2,width=0.4,color="black",URL="$test__dipole__operator_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627",tooltip=" "];
+}
