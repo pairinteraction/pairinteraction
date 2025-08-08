@@ -68,12 +68,7 @@ class GitHubDownloader:
             "Accept": "application/vnd.github+json",
             "X-GitHub-Api-Version": "2022-11-28",
         }
-
-        # Use the GitHub token if available; otherwise, if we have a conditional request,
-        # insert a dummy authorization header to avoid increasing rate limits
-        github_token = os.getenv("GITHUB_TOKEN")
-        if github_token:
-            headers["Authorization"] = f"Bearer {github_token}"
+        self._add_github_token_to_headers(headers)
 
         request = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(request, timeout=10) as response:
@@ -153,6 +148,8 @@ class GitHubDownloader:
         """
         url = f"{self.base_url}/releases/assets/{asset_id}"
         headers = {"Accept": "application/octet-stream"}
+        self._add_github_token_to_headers(headers)
+
         request = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(request, timeout=10) as response:
             total_size = int(response.headers.get("Content-Length", 0))
@@ -165,6 +162,12 @@ class GitHubDownloader:
                         break
                     size = f.write(chunk)
                     pbar.update(size)
+
+    def _add_github_token_to_headers(self, headers: dict[str, str]) -> None:
+        """Add GitHub token to headers if available."""
+        github_token = os.getenv("GITHUB_TOKEN")
+        if github_token:
+            headers["Authorization"] = f"Bearer {github_token}"
 
 
 def parse_version(version_str: str) -> tuple[int, int]:
