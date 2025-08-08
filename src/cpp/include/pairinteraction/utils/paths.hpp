@@ -6,13 +6,23 @@
 #include <cstdlib>
 #include <filesystem>
 
+#ifdef _WIN32
+#else
+#include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
 namespace pairinteraction::paths {
 
 inline std::filesystem::path get_home_directory() {
 #ifdef _WIN32
-    char const *hdrive = getenv("HOMEDRIVE");
-    char const *hpath = getenv("HOMEPATH");
-    if (hdrive != nullptr && hpath != nullptr) {
+    if (char const *userprofile = getenv("USERPROFILE"); userprofile != nullptr) {
+        std::filesystem::path path = userprofile;
+        return path;
+    }
+    if (char const *hdrive = getenv("HOMEDRIVE"), *hpath = getenv("HOMEPATH");
+        hdrive != nullptr && hpath != nullptr) {
         std::filesystem::path path = std::string(hdrive) + hpath;
         return path;
     }
@@ -20,6 +30,10 @@ inline std::filesystem::path get_home_directory() {
     const char *home = std::getenv("HOME");
     if (home != nullptr) {
         std::filesystem::path path = home;
+        return path;
+    }
+    if (struct passwd *pw = getpwuid(getuid()); pw != nullptr) {
+        std::filesystem::path path = pw->pw_dir;
         return path;
     }
 #endif
