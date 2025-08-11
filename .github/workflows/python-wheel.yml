@@ -107,7 +107,7 @@ jobs:
       uses: ./.github/actions/setup-uv-all-deps
 
     - name: Download the wheel
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: dist-wheel-macos-13
         path: dist
@@ -159,7 +159,7 @@ jobs:
       uses: ./.github/actions/setup-uv-all-deps
 
     - name: Download the sdist
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         name: dist-sdist
         path: dist
@@ -187,7 +187,7 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v5
       with:
         path: dist
         pattern: dist-*
