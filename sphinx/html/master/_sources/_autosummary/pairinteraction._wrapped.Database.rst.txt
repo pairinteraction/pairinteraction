@@ -1,0 +1,20 @@
+﻿Database
+========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~Database.__init__
+      ~Database.download
+      ~Database.get_global_database
+      ~Database.initialize_global_database
+
+
+
+
+
+.. autoclass:: pairinteraction._wrapped.Database
