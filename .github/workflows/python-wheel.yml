@@ -74,7 +74,7 @@ jobs:
 
     - uses: pypa/cibuildwheel@v3.1
       env:
-        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
+        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,11}*' || '' }}
 
     - name: Install macOS dependencies for arm64 cross-compilation
       if: ${{ matrix.os == 'macos-13' }}
