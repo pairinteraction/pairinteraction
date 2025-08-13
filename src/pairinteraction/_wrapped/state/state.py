@@ -64,15 +64,16 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         """
         coefficients = self.get_coefficients()
         sorted_inds = np.argsort(np.abs(coefficients))[::-1]
+        norm_squared = self.norm**2
         raw = ""
         overlap = 0
         for i, ind in enumerate(sorted_inds, 1):
             raw += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
             overlap += abs(coefficients[ind]) ** 2
-            if overlap > 0.9 or i >= max_kets:
+            if overlap > (0.95 * norm_squared) or i >= max_kets:
                 break
             raw += " + "
-        if overlap <= 1 - 100 * np.finfo(float).eps:
+        if overlap <= norm_squared - 100 * np.finfo(float).eps:
             raw += " + ... "
         return raw
 
@@ -85,6 +86,11 @@ class StateBase(ABC, Generic[BasisType, KetType]):
     def number_of_kets(self) -> int:
         """Return the number of kets in the basis."""
         return self._basis.number_of_kets
+
+    @property
+    def norm(self) -> np.floating:
+        """Return the norm of the state."""
+        return np.linalg.norm(self.get_coefficients())
 
     def get_coefficients(self) -> "NDArray":
         """Return the coefficients of the state as a 1d-array.
