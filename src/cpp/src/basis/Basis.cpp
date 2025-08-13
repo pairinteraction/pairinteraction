@@ -602,6 +602,12 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 }
 
 template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::copy() const {
+    // Create and return a copy of the current object
+    return std::make_shared<Derived>(derived());
+}
+
+template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());

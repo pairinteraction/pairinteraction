@@ -60,6 +60,11 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __str__(self) -> str:
         return self.__repr__().replace("Real", "").replace("Complex", "")
 
+    def copy(self: "Self") -> "Self":
+        """Return a copy of the basis object."""
+        cpp_copy = self._cpp.copy()
+        return type(self)._from_cpp_object(cpp_copy)
+
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
