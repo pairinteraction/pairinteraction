@@ -64,16 +64,8 @@ class GitHubDownloader:
         """Get information about the latest release."""
         url = f"{self.base_url}/releases/latest"
 
-        headers = {
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-        }
-
-        # Use the GitHub token if available; otherwise, if we have a conditional request,
-        # insert a dummy authorization header to avoid increasing rate limits
-        github_token = os.getenv("GITHUB_TOKEN")
-        if github_token:
-            headers["Authorization"] = f"Bearer {github_token}"
+        headers = {"Accept": "application/vnd.github+json"}
+        self._add_common_headers(headers)
 
         request = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(request, timeout=10) as response:
@@ -153,6 +145,8 @@ class GitHubDownloader:
         """
         url = f"{self.base_url}/releases/assets/{asset_id}"
         headers = {"Accept": "application/octet-stream"}
+        self._add_common_headers(headers)
+
         request = urllib.request.Request(url, headers=headers)
         with urllib.request.urlopen(request, timeout=10) as response:
             total_size = int(response.headers.get("Content-Length", 0))
@@ -165,6 +159,17 @@ class GitHubDownloader:
                         break
                     size = f.write(chunk)
                     pbar.update(size)
+
+    def _add_common_headers(self, headers: dict[str, str]) -> None:
+        """Add common headers to the request.
+
+        This includes the GitHub token if available, as well as the Api-Version.
+        """
+        headers["X-GitHub-Api-Version"] = "2022-11-28"
+
+        github_token = os.getenv("GITHUB_TOKEN")
+        if github_token:
+            headers["Authorization"] = f"Bearer {github_token}"
 
 
 def parse_version(version_str: str) -> tuple[int, int]:
