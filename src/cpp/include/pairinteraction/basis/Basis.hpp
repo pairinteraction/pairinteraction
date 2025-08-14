@@ -115,6 +115,7 @@ public:
     std::shared_ptr<const Derived>
     transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<const Derived> transformed(const Sorting &transformation) const;
+    std::shared_ptr<const Derived> copy() const;
 
 protected:
     Basis(ketvec_t &&kets);

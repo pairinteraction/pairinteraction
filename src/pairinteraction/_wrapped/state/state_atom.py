@@ -31,8 +31,107 @@ class StateAtom(StateBase[BasisType, KetAtom]):
         >>> state = basis.get_corresponding_state(ket)
         >>> print(state)
         StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
+        >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+        >>> state2 = pi.StateAtom(ket2, basis)
+        >>> print((2 * state2 - state).normalize())
+        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ + -0.45 |Rb:60,S_1/2,1/2⟩)
+
 
     """
+
+    def __init__(self, ket: KetAtom, basis: BasisType) -> None:
+        """Initialize a state object representing a ket in a given basis.
+
+        Args:
+            ket: The ket to represent in the state.
+            basis: The basis to which the state belongs.
+
+        """
+        new_basis: BasisType = basis.get_corresponding_state(ket)._basis
+        ket_idx = new_basis.kets.index(ket)
+        coeffs = new_basis._cpp.get_coefficients() * 0  # type: ignore [operator]
+        coeffs[ket_idx, 0] = 1.0
+        new_basis._cpp.set_coefficients(coeffs)
+        self._basis = new_basis
+
+    def _add(self, other: "Self", *, subtract: bool = False) -> "Self":
+        """Add or subtract two states."""
+        if not isinstance(other, type(self)):
+            raise TypeError(f"Cannot add {type(self)} and {type(other)}.")
+        if not all(ket_self == ket_other for ket_self, ket_other in zip(self.kets, other.kets)):
+            raise ValueError("Cannot add states with different kets as basis.")
+
+        coeffs = self._basis.get_coefficients() + (-1) ** subtract * other._basis.get_coefficients()
+        new_basis = self._basis.copy()
+        new_basis._cpp.set_coefficients(coeffs)
+        return type(self)._from_basis_object(new_basis)
+
+    def __add__(self, other: "Self") -> "Self":
+        """Add two states together.
+
+        Args:
+            other: The other state to add.
+
+        Returns:
+            A new state object representing the sum of the two states.
+
+        """
+        return self._add(other)
+
+    def __sub__(self, other: "Self") -> "Self":
+        """Subtract two states.
+
+        Args:
+            other: The other state to subtract.
+
+        Returns:
+            A new state object representing the difference of the two states.
+
+        """
+        return self._add(other, subtract=True)
+
+    def _mul(self, other: complex, *, divide: bool = False) -> "Self":
+        """Multiply or divide the state with a scalar."""
+        if not isinstance(other, (int, float, complex)):
+            raise TypeError(f"Cannot multiply {type(self)} with {type(other)}.")
+        factor = other if not divide else 1 / other
+        coeffs = self._basis.get_coefficients() * factor
+        new_basis = self._basis.copy()
+        new_basis._cpp.set_coefficients(coeffs)
+        return type(self)._from_basis_object(new_basis)
+
+    def __mul__(self, other: complex) -> "Self":
+        """Multiply the state with a scalar.
+
+        Args:
+            other: The scalar to multiply with.
+
+        Returns:
+            A new state object representing the product of the state and the scalar.
+
+        """
+        return self._mul(other)
+
+    def __truediv__(self, other: complex) -> "Self":
+        """Divide the state by a scalar.
+
+        Args:
+            other: The scalar to divide by.
+
+        Returns:
+            A new state object representing the quotient of the state and the scalar.
+
+        """
+        return self._mul(other, divide=True)
+
+    __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * state will use state.__rmul__
+
+    def normalize(self) -> "Self":
+        """Normalize the coefficients of the state."""
+        coeffs = self._basis.get_coefficients()
+        norm = np.linalg.norm(self.get_coefficients())
+        self._basis._cpp.set_coefficients(coeffs / norm)
+        return self
 
     @property
     def database(self) -> "Database":

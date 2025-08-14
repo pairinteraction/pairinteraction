@@ -139,18 +139,67 @@ void Basis<Derived>::set_coefficients(
 
     coefficients.matrix = values;
 
+    // Find the maximum value in each row and column to establish state-ket mapping
+    std::vector<real_t> max_in_row(coefficients.matrix.rows(), 0);
+    std::vector<real_t> max_in_col(coefficients.matrix.cols(), 0);
+    for (int row = 0; row < coefficients.matrix.outerSize(); ++row) {
+        for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                 coefficients.matrix, row);
+             it; ++it) {
+            real_t val = std::pow(std::abs(it.value()), 2);
+            max_in_row[row] = std::max(max_in_row[row], val);
+            max_in_col[it.col()] = std::max(max_in_col[it.col()], val);
+        }
+    }
+
+    // Map states to kets based on maximum overlap
     std::fill(ket_index_to_state_index.begin(), ket_index_to_state_index.end(),
               std::numeric_limits<int>::max());
     std::fill(state_index_to_ket_index.begin(), state_index_to_ket_index.end(),
               std::numeric_limits<int>::max());
-    std::fill(state_index_to_quantum_number_f.begin(), state_index_to_quantum_number_f.end(),
-              std::numeric_limits<real_t>::max());
-    std::fill(state_index_to_quantum_number_m.begin(), state_index_to_quantum_number_m.end(),
-              std::numeric_limits<real_t>::max());
-    std::fill(state_index_to_parity.begin(), state_index_to_parity.end(), Parity::UNKNOWN);
-    _has_quantum_number_f = false;
-    _has_quantum_number_m = false;
-    _has_parity = false;
+
+    for (int row = 0; row < coefficients.matrix.outerSize(); ++row) {
+        for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                 coefficients.matrix, row);
+             it; ++it) {
+            real_t val = std::pow(std::abs(it.value()), 2);
+            if (val == max_in_row[row] && val == max_in_col[it.col()]) {
+                ket_index_to_state_index[row] = it.col();
+                state_index_to_ket_index[it.col()] = row;
+            }
+        }
+    }
+
+    // Update quantum numbers and parity based on the new mapping
+    for (size_t i = 0; i < state_index_to_ket_index.size(); ++i) {
+        size_t ket_idx = state_index_to_ket_index[i];
+        if (ket_idx != std::numeric_limits<size_t>::max()) {
+            state_index_to_quantum_number_f[i] = kets[ket_idx]->get_quantum_number_f();
+            state_index_to_quantum_number_m[i] = kets[ket_idx]->get_quantum_number_m();
+            state_index_to_parity[i] = kets[ket_idx]->get_parity();
+        } else {
+            state_index_to_quantum_number_f[i] = std::numeric_limits<real_t>::max();
+            state_index_to_quantum_number_m[i] = std::numeric_limits<real_t>::max();
+            state_index_to_parity[i] = Parity::UNKNOWN;
+        }
+    }
+
+    // Update quantum number and parity flags
+    _has_quantum_number_f = true;
+    _has_quantum_number_m = true;
+    _has_parity = true;
+
+    for (size_t i = 0; i < state_index_to_ket_index.size(); ++i) {
+        if (state_index_to_quantum_number_f[i] == std::numeric_limits<real_t>::max()) {
+            _has_quantum_number_f = false;
+        }
+        if (state_index_to_quantum_number_m[i] == std::numeric_limits<real_t>::max()) {
+            _has_quantum_number_m = false;
+        }
+        if (state_index_to_parity[i] == Parity::UNKNOWN) {
+            _has_parity = false;
+        }
+    }
 }
 
 template <typename Derived>
@@ -599,6 +648,12 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
         last_parity = state_index_to_parity[i];
         last_ket = state_index_to_ket_index[i];
     }
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::copy() const {
+    // Create and return a copy of the current object
+    return std::make_shared<Derived>(derived());
 }
 
 template <typename Derived>

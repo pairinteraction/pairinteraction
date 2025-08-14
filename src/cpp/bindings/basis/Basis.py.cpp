@@ -51,6 +51,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
             "transformed",
             nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
         .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_))
+        .def("copy", &Basis<T>::copy)
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
                  &Basis<T>::get_amplitudes, nb::const_))
