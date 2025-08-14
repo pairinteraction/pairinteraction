@@ -31,6 +31,11 @@ class StateAtom(StateBase[BasisType, KetAtom]):
         >>> state = basis.get_corresponding_state(ket)
         >>> print(state)
         StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
+        >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+        >>> state2 = pi.StateAtom(ket2, basis)
+        >>> print((2 * state2 - state).normalize())
+        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ + -0.45 |Rb:60,S_1/2,1/2⟩)
+
 
     """
 
@@ -44,9 +49,9 @@ class StateAtom(StateBase[BasisType, KetAtom]):
         """
         new_basis: BasisType = basis.get_corresponding_state(ket)._basis
         ket_idx = new_basis.kets.index(ket)
-        coeff = new_basis._cpp.get_coefficients() * 0
-        coeff[ket_idx, 0] = 1.0
-        new_basis._cpp.set_coefficients(coeff)
+        coeffs = new_basis._cpp.get_coefficients() * 0  # type: ignore [operator]
+        coeffs[ket_idx, 0] = 1.0
+        new_basis._cpp.set_coefficients(coeffs)
         self._basis = new_basis
 
     def _add(self, other: "Self", *, subtract: bool = False) -> "Self":
