@@ -64,7 +64,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         """
         coefficients = self.get_coefficients()
         sorted_inds = np.argsort(np.abs(coefficients))[::-1]
-        norm_squared = np.linalg.norm(coefficients)**2
+        norm_squared = np.linalg.norm(coefficients) ** 2
         raw = ""
         overlap = 0
         for i, ind in enumerate(sorted_inds, 1):
