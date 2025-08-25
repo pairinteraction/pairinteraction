@@ -6,13 +6,23 @@ This directory contains a validation test for the spdlog logging fix implemented
 
 **Problem**: spdlog logs from C++ were not always appearing in Python logging. Specifically, when creating `Database` instances, log messages would not appear until another pairinteraction function was called.
 
-**Root Cause**: The `LoggerBridge` uses an async spdlog logger that buffers messages. The messages remained in the async buffer and weren't immediately sent to the `QueueSink` that forwards them to Python.
+**Root Cause**: The `LoggerBridge` uses an async spdlog logger that buffers messages. However, the main issue was that `_flush_pending_logs()` was not being called after `_backend.Database.__init__()` because the decorator system excluded methods starting with "__".
 
 ## Fix Applied
 
-1. **Added flush call**: In `LoggerBridge::get_pending_logs()`, added `logger->flush()` to ensure buffered async messages are processed before retrieving them from the queue.
+**Primary Fix**: Modified `decorate_module_with_flush_logs()` in `custom_logging.py` to also decorate `__init__` methods specifically:
 
-2. **Fixed logger assignment**: Corrected the logger member variable assignment in the constructor.
+```python
+# Before: Only decorated methods that don't start with "__"
+if callable(attr) and not attr_name.startswith("__"):
+
+# After: Include __init__ methods specifically  
+if callable(attr) and (not attr_name.startswith("__") or attr_name == "__init__"):
+```
+
+This ensures that when `_backend.Database.__init__` is called, `_flush_pending_logs()` automatically runs after completion, immediately forwarding any buffered C++ log messages to Python logging.
+
+**Secondary Fix**: Fixed logger member variable assignment in LoggerBridge constructor (was using local variable instead of member variable).
 
 ## Test Files
 
@@ -34,4 +44,4 @@ The test will:
 ## Expected Results
 
 - **Before fix**: Database logs would only appear after calling another pairinteraction function
-- **After fix**: Database logs appear immediately when the logging system is flushed
+- **After fix**: Database logs appear immediately after Database constructor completes due to automatic log flushing via the decorator
