@@ -79,6 +79,10 @@ LoggerBridge::LoggerBridge() {
 }
 
 LoggerBridge::~LoggerBridge() {
+    // Flush any remaining messages before shutdown
+    if (logger) {
+        logger->flush();
+    }
     spdlog::shutdown();
     logger.reset();
 }
