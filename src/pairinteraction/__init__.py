@@ -179,10 +179,11 @@ if os.getenv("PAIRINTERACTION_TEST_MODE", "0") == "1":
 # Decorate all functions in _backend with a decorator that flushes pending logs
 # ---------------------------------------------------------------------------------------
 def _setup_logging() -> None:
-    from pairinteraction import _backend
+    from pairinteraction import _backend, _wrapped
     from pairinteraction.custom_logging import decorate_module_with_flush_logs
 
     decorate_module_with_flush_logs(_backend)
+    decorate_module_with_flush_logs(_wrapped)
 
 
 _setup_logging()
