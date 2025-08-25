@@ -79,21 +79,11 @@ LoggerBridge::LoggerBridge() {
 }
 
 LoggerBridge::~LoggerBridge() {
-    // Flush any remaining messages before shutdown
-    if (logger) {
-        logger->flush();
-    }
     spdlog::shutdown();
     logger.reset();
 }
 
 std::vector<LoggerBridge::LogEntry> LoggerBridge::get_pending_logs() {
-    // Flush the logger to ensure any buffered async log messages are processed
-    // and sent to the QueueSink before we try to retrieve them
-    if (logger) {
-        logger->flush();
-    }
-    
     std::vector<LogEntry> entries;
     LogEntry entry;
     while (log_queue.try_pop(entry)) {

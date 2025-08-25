@@ -61,7 +61,8 @@ def decorate_module_with_flush_logs(module: object) -> None:
     for name, obj in vars(module).items():
         if inspect.isclass(obj):
             for attr_name, attr in vars(obj).items():
-                if callable(attr) and not attr_name.startswith("__"):
+                # Decorate regular methods and __init__ methods specifically
+                if callable(attr) and (not attr_name.startswith("__") or attr_name == "__init__"):
                     setattr(obj, attr_name, _flush_logs_after(attr))
         elif callable(obj) and not name.startswith("__"):
             setattr(module, name, _flush_logs_after(obj))
