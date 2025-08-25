@@ -72,12 +72,10 @@ std::string KetAtom::get_label() const {
         label += "_";
     }
 
-    double total_momentum =
-        this->is_j_total_momentum_ ? this->quantum_number_j_exp : this->quantum_number_f;
-    if (total_momentum == std::rint(total_momentum)) {
-        label += fmt::format("{:.0f}", total_momentum);
-    } else if (2 * total_momentum == std::rint(2 * total_momentum)) {
-        label += fmt::format("{:.0f}/2", 2 * total_momentum);
+    if (this->quantum_number_f == std::rint(this->quantum_number_f)) {
+        label += fmt::format("{:.0f}", this->quantum_number_f);
+    } else if (2 * this->quantum_number_f == std::rint(2 * this->quantum_number_f)) {
+        label += fmt::format("{:.0f}/2", 2 * this->quantum_number_f);
     } else {
         std::abort(); // can't happen because the total momentum is validated to be an integer
                       // or half-integer
