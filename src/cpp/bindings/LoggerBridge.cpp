@@ -71,9 +71,9 @@ LoggerBridge::LoggerBridge() {
     file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
 
     std::vector<spdlog::sink_ptr> sinks{queue_sink, file_sink};
-    auto logger = std::make_shared<spdlog::async_logger>("logger", sinks.begin(), sinks.end(),
-                                                         spdlog::thread_pool(),
-                                                         spdlog::async_overflow_policy::block);
+    logger = std::make_shared<spdlog::async_logger>("logger", sinks.begin(), sinks.end(),
+                                                    spdlog::thread_pool(),
+                                                    spdlog::async_overflow_policy::block);
     logger->set_level(spdlog::level::trace);
     spdlog::set_default_logger(logger);
 }
@@ -84,6 +84,12 @@ LoggerBridge::~LoggerBridge() {
 }
 
 std::vector<LoggerBridge::LogEntry> LoggerBridge::get_pending_logs() {
+    // Flush the logger to ensure any buffered async log messages are processed
+    // and sent to the QueueSink before we try to retrieve them
+    if (logger) {
+        logger->flush();
+    }
+    
     std::vector<LogEntry> entries;
     LogEntry entry;
     while (log_queue.try_pop(entry)) {
