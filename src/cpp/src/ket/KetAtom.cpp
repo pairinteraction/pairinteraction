@@ -40,6 +40,8 @@ Database &KetAtom::get_database() const { return database; }
 size_t KetAtom::get_id_in_database() const { return id_in_database; }
 
 std::string KetAtom::get_label() const {
+    constexpr double numerical_precision = 100 * std::numeric_limits<double>::epsilon();
+    
     size_t pos = species.find('_');
     std::string label = (pos != std::string::npos) ? species.substr(0, pos) : species;
     label[0] = static_cast<char>(std::toupper(label[0]));
@@ -63,30 +65,30 @@ std::string KetAtom::get_label() const {
         label += this->is_j_total_momentum_ ? "J=" : "F=";
     } else {
         label += fmt::format("{:d},", quantum_number_n);
-        if (quantum_number_l_exp == std::rint(quantum_number_l_exp) &&
-            quantum_number_l_exp < quantum_number_l_labels.size()) {
-            label += quantum_number_l_labels.at(static_cast<size_t>(quantum_number_l_exp));
+        if (std::abs(quantum_number_l_exp - std::rint(quantum_number_l_exp)) < numerical_precision &&
+            std::rint(quantum_number_l_exp) < quantum_number_l_labels.size()) {
+            label += quantum_number_l_labels.at(static_cast<size_t>(std::rint(quantum_number_l_exp)));
         } else {
-            label += fmt::format("{:.0f}", quantum_number_l_exp);
+            label += fmt::format("{:.0f}", std::rint(quantum_number_l_exp));
         }
         label += "_";
     }
 
     double total_momentum =
         this->is_j_total_momentum_ ? this->quantum_number_j_exp : this->quantum_number_f;
-    if (total_momentum == std::rint(total_momentum)) {
-        label += fmt::format("{:.0f}", total_momentum);
-    } else if (2 * total_momentum == std::rint(2 * total_momentum)) {
-        label += fmt::format("{:.0f}/2", 2 * total_momentum);
+    if (std::abs(total_momentum - std::rint(total_momentum)) < numerical_precision) {
+        label += fmt::format("{:.0f}", std::rint(total_momentum));
+    } else if (std::abs(2 * total_momentum - std::rint(2 * total_momentum)) < numerical_precision) {
+        label += fmt::format("{:.0f}/2", std::rint(2 * total_momentum));
     } else {
         std::abort(); // can't happen because the total momentum is validated to be an integer
                       // or half-integer
     }
 
-    if (this->quantum_number_m == std::rint(this->quantum_number_m)) {
-        label += fmt::format(",{:.0f}", this->quantum_number_m);
-    } else if (2 * this->quantum_number_m == std::rint(2 * this->quantum_number_m)) {
-        label += fmt::format(",{:.0f}/2", 2 * this->quantum_number_m);
+    if (std::abs(this->quantum_number_m - std::rint(this->quantum_number_m)) < numerical_precision) {
+        label += fmt::format(",{:.0f}", std::rint(this->quantum_number_m));
+    } else if (std::abs(2 * this->quantum_number_m - std::rint(2 * this->quantum_number_m)) < numerical_precision) {
+        label += fmt::format(",{:.0f}/2", std::rint(2 * this->quantum_number_m));
     } else {
         std::abort(); // can't happen because the quantum number m is validated to be an integer
                       // or half-integer

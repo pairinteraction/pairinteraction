@@ -153,29 +153,31 @@ Database::~Database() = default;
 
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
+    constexpr double numerical_precision = 100 * std::numeric_limits<double>::epsilon();
+    
     // Check that the specifications are valid
     if (!description.quantum_number_m.has_value()) {
         throw std::invalid_argument("The quantum number m must be specified.");
     }
     if (description.quantum_number_f.has_value() &&
-        2 * description.quantum_number_f.value() !=
-            std::rint(2 * description.quantum_number_f.value())) {
+        std::abs(2 * description.quantum_number_f.value() -
+            std::rint(2 * description.quantum_number_f.value())) > numerical_precision) {
         throw std::invalid_argument("The quantum number f must be an integer or half-integer.");
     }
     if (description.quantum_number_f.has_value() && description.quantum_number_f.value() < 0) {
         throw std::invalid_argument("The quantum number f must be positive.");
     }
     if (description.quantum_number_j.has_value() &&
-        2 * description.quantum_number_j.value() !=
-            std::rint(2 * description.quantum_number_j.value())) {
+        std::abs(2 * description.quantum_number_j.value() -
+            std::rint(2 * description.quantum_number_j.value())) > numerical_precision) {
         throw std::invalid_argument("The quantum number j must be an integer or half-integer.");
     }
     if (description.quantum_number_j.has_value() && description.quantum_number_j.value() < 0) {
         throw std::invalid_argument("The quantum number j must be positive.");
     }
     if (description.quantum_number_m.has_value() &&
-        2 * description.quantum_number_m.value() !=
-            std::rint(2 * description.quantum_number_m.value())) {
+        std::abs(2 * description.quantum_number_m.value() -
+            std::rint(2 * description.quantum_number_m.value())) > numerical_precision) {
         throw std::invalid_argument("The quantum number m must be an integer or half-integer.");
     }
 
@@ -438,8 +440,8 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         throw std::invalid_argument(
             "The absolute value of the quantum number m must be less than or equal to f.");
     }
-    if (result_quantum_number_f + result_quantum_number_m !=
-        std::rint(result_quantum_number_f + result_quantum_number_m)) {
+    if (std::abs(result_quantum_number_f + result_quantum_number_m -
+        std::rint(result_quantum_number_f + result_quantum_number_m)) > numerical_precision) {
         throw std::invalid_argument(
             "The quantum numbers f and m must be both either integers or half-integers.");
     }

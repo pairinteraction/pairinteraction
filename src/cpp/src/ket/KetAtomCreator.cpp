@@ -8,6 +8,7 @@
 #include "pairinteraction/enums/Parity.hpp"
 
 #include <cmath>
+#include <limits>
 
 namespace pairinteraction {
 KetAtomCreator::KetAtomCreator(std::string species, int n, double l, double j, double m)
@@ -25,7 +26,8 @@ KetAtomCreator &KetAtomCreator::set_energy(double value) {
 }
 
 KetAtomCreator &KetAtomCreator::set_quantum_number_f(double value) {
-    if (2 * value != std::rint(2 * value)) {
+    constexpr double numerical_precision = 100 * std::numeric_limits<double>::epsilon();
+    if (std::abs(2 * value - std::rint(2 * value)) > numerical_precision) {
         throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
     }
     quantum_number_f.emplace(value);
@@ -33,7 +35,8 @@ KetAtomCreator &KetAtomCreator::set_quantum_number_f(double value) {
 }
 
 KetAtomCreator &KetAtomCreator::set_quantum_number_m(double value) {
-    if (2 * value != std::rint(2 * value)) {
+    constexpr double numerical_precision = 100 * std::numeric_limits<double>::epsilon();
+    if (std::abs(2 * value - std::rint(2 * value)) > numerical_precision) {
         throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
     }
     quantum_number_m.emplace(value);

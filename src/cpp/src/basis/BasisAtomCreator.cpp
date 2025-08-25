@@ -8,6 +8,8 @@
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
+#include <limits>
+
 namespace pairinteraction {
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(const std::string &value) {
@@ -24,7 +26,9 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(real_t min,
                                                                               real_t max) {
-    if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+    if (std::abs(2 * min - std::rint(2 * min)) > numerical_precision || 
+        std::abs(2 * max - std::rint(2 * max)) > numerical_precision) {
         throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
     }
     range_quantum_number_f = {min, max};
@@ -34,7 +38,9 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(re
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(real_t min,
                                                                               real_t max) {
-    if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+    if (std::abs(2 * min - std::rint(2 * min)) > numerical_precision || 
+        std::abs(2 * max - std::rint(2 * max)) > numerical_precision) {
         throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
     }
     range_quantum_number_m = {min, max};
