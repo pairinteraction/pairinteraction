@@ -3,20 +3,10 @@
 
 #include "./Database.py.hpp"
 
-#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
 
-#include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/complex.h>
 #include <nanobind/stl/filesystem.h>
-#include <nanobind/stl/optional.h>
-#include <nanobind/stl/shared_ptr.h>
-#include <nanobind/stl/string.h>
-#include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
