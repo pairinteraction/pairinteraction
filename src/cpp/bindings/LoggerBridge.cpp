@@ -8,7 +8,6 @@
 #include <filesystem>
 #include <fmt/core.h>
 #include <memory>
-#include <spdlog/async.h>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
@@ -47,7 +46,8 @@ void LoggerBridge::QueueSink::sink_it_(const spdlog::details::log_msg &msg) {
         break;
     }
     entry.message = text;
-    parent->log_queue.push(std::move(entry));
+    std::lock_guard<std::mutex> lock(parent->log_queue_mtx);
+    parent->log_queue.push_back(std::move(entry));
 }
 
 void LoggerBridge::QueueSink::flush_() {}
@@ -61,8 +61,6 @@ LoggerBridge::LoggerBridge() {
     }
     std::filesystem::path logfile = logdir / "cpp.log";
 
-    spdlog::init_thread_pool(8192, 1);
-
     auto queue_sink = std::make_shared<QueueSink>(this);
     queue_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%s:%#] %v");
 
@@ -71,9 +69,7 @@ LoggerBridge::LoggerBridge() {
     file_sink->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
 
     std::vector<spdlog::sink_ptr> sinks{queue_sink, file_sink};
-    auto logger = std::make_shared<spdlog::async_logger>("logger", sinks.begin(), sinks.end(),
-                                                         spdlog::thread_pool(),
-                                                         spdlog::async_overflow_policy::block);
+    logger = std::make_shared<spdlog::logger>("logger", sinks.begin(), sinks.end());
     logger->set_level(spdlog::level::trace);
     spdlog::set_default_logger(logger);
 }
@@ -84,10 +80,12 @@ LoggerBridge::~LoggerBridge() {
 }
 
 std::vector<LoggerBridge::LogEntry> LoggerBridge::get_pending_logs() {
-    std::vector<LogEntry> entries;
-    LogEntry entry;
-    while (log_queue.try_pop(entry)) {
-        entries.push_back(std::move(entry));
+    std::deque<LogEntry> log_queue_local;
+    {
+        std::lock_guard<std::mutex> lock(log_queue_mtx);
+        log_queue_local.swap(log_queue);
     }
-    return entries;
+
+    return {std::make_move_iterator(log_queue_local.begin()),
+            std::make_move_iterator(log_queue_local.end())};
 }

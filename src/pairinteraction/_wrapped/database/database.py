@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union
 
 from pairinteraction import _backend
 from pairinteraction._wrapped.database.downloader import GitHubDownloader
+from pairinteraction.custom_logging import _flush_pending_logs
 
 if TYPE_CHECKING:
     import os
@@ -46,6 +47,7 @@ class Database:
 
         """
         self._cpp = CPPDatabase(download_missing, use_cache, database_dir)
+        _flush_pending_logs()  # call it manually because constructors of classes from nanobind cannot be decorated
         self.download_missing = download_missing
         self.use_cache = use_cache
         self.database_dir = database_dir
