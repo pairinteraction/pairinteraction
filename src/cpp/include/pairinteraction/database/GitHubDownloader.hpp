@@ -9,7 +9,7 @@
 
 namespace httplib {
 class SSLClient;
-}
+} // namespace httplib
 
 namespace pairinteraction {
 
@@ -61,6 +61,7 @@ Rt0vxuBqw8M0Ayx9lt1awg6nCpnBBYurDC/zXDrPbDdVCYfeU0BsWO/8tqtlbgT2G9w84FoVxp7Z
 8VlIMCFlA2zs6SFz7JsDoeA3raAVGI/6ugLOpyypEBMs1OUIJqsil2D4kF501KKaU73yqWjgom7C
 12yxow+ev+to51byrvLjKzg6CYG1a4XXvi3tPxq3smPi9WIsgtRqAEFQ8TmDn5XpNpaYbg==
 -----END CERTIFICATE-----)"};
+    std::string cert_path_str;
     std::unique_ptr<httplib::SSLClient> client;
 };
 
