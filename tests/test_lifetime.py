@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from pairinteraction.units import NDArray
 
 
+@pytest.mark.skip("The Yb174_mqdt database currently does not have low lying states.")
 def test_lifetime() -> None:
     """Test calculating the lifetime of a state.
 
