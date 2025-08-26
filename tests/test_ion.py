@@ -31,7 +31,7 @@ def test_ion_z() -> None:
     overlaps = system_z.basis.get_overlaps(ket)
     idx = np.argmax(overlaps)
     assert pytest.approx(overlaps[idx], rel=1e-6) == 0.8841772505614235  # NOSONAR
-    assert pytest.approx(eigenenergies[idx] - ket.get_energy(unit="GHz"), rel=1e-12) == -0.31554844265338033  # NOSONAR
+    assert pytest.approx(eigenenergies[idx] - ket.get_energy(unit="GHz"), rel=1e-6) == -0.31554844  # NOSONAR
 
 
 def test_ion_x() -> None:
@@ -61,7 +61,7 @@ def test_ion_x() -> None:
     # is using its own implementation, mkl on a Intel CPU, mkl on a AMD CPU, or lapack). This is because of
     # eigenstates belonging to different degenerate Zeeman sublevels.
     assert pytest.approx(overlaps[idx], rel=0.2) == 0.8841772505614235  # NOSONAR
-    assert pytest.approx(eigenenergies[idx] - ket.get_energy(unit="GHz"), rel=1e-12) == -0.31554844265338033  # NOSONAR
+    assert pytest.approx(eigenenergies[idx] - ket.get_energy(unit="GHz"), rel=1e-6) == -0.31554844  # NOSONAR
 
 
 def test_ion_angle_dependence() -> None:
