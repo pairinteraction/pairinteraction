@@ -10,9 +10,37 @@
 #include <fstream>
 #include <future>
 #include <httplib.h>
+#include <spdlog/spdlog.h>
 #include <stdexcept>
 
 namespace pairinteraction {
+
+void log(const httplib::Request &req, const httplib::Response &res) {
+    if (!spdlog::default_logger()->should_log(spdlog::level::debug)) {
+        return;
+    }
+
+    SPDLOG_DEBUG("[httplib] {} {}", req.method, req.path);
+    for (const auto &[k, v] : req.headers) {
+        SPDLOG_DEBUG("[httplib]   {}: {}\n", k, v);
+    }
+
+    SPDLOG_DEBUG("[httplib] Response with status {}", res.status);
+    for (const auto &[k, v] : res.headers) {
+        SPDLOG_DEBUG("[httplib]   {}: {}\n", k, v);
+    }
+
+    if (res.body.empty()) {
+        return;
+    }
+
+    if (res.body.size() > 1024) {
+        SPDLOG_DEBUG("[httplib] Body ({} bytes, first 1024 bytes):", res.body.size());
+    } else {
+        SPDLOG_DEBUG("[httplib] Body ({} bytes):", res.body.size());
+    }
+    SPDLOG_DEBUG("[httplib]   {}", res.body.substr(0, 1024));
+}
 
 GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClient>(host)) {
     std::filesystem::path configdir = paths::get_config_directory();
@@ -33,12 +61,14 @@ GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClien
         out << cert;
         out.close();
     }
+    cert_path_str = cert_path.string();
 
     client->set_follow_location(true);
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
-    client->set_ca_cert_path(cert_path.string());
+    client->set_ca_cert_path(cert_path_str);
+    client->set_logger(log);
 }
 
 GitHubDownloader::~GitHubDownloader() = default;
@@ -48,6 +78,8 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
                            bool use_octet_stream) const {
     return std::async(
         std::launch::async, [this, remote_url, if_modified_since, use_octet_stream]() -> Result {
+            SPDLOG_DEBUG("Downloading from GitHub: {}", remote_url);
+
             // Prepare headers
             httplib::Headers headers{
                 {"X-GitHub-Api-Version", "2022-11-28"},
@@ -95,6 +127,8 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
             }
             result.body = response->body;
             result.status_code = response->status;
+
+            SPDLOG_DEBUG("Response status: {}", response->status);
             return result;
         });
 }

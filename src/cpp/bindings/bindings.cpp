@@ -33,7 +33,9 @@ NB_MODULE(_backend, m) // NOLINT
     static LoggerBridge bridge;
     nb::class_<LoggerBridge::LogEntry>(m, "LogEntry")
         .def_ro("level", &LoggerBridge::LogEntry::level)
-        .def_ro("message", &LoggerBridge::LogEntry::message);
+        .def_prop_ro("message", [](const LoggerBridge::LogEntry &e) {
+            return nb::bytes(e.message.data(), e.message.size());
+        });
     m.def("get_pending_logs", []() { return bridge.get_pending_logs(); });
 
     // enums

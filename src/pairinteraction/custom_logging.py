@@ -49,7 +49,7 @@ def _log_cpp_backend_record(level: int, message: str) -> None:
 
 def _flush_pending_logs() -> None:
     for entry in get_pending_logs():
-        _log_cpp_backend_record(entry.level, entry.message)
+        _log_cpp_backend_record(entry.level, entry.message.decode("utf-8", errors="replace"))
 
 
 def _flush_logs_after(func: Callable[P, R]) -> Callable[P, R]:

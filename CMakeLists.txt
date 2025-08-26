@@ -160,7 +160,7 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/doctest/doctest
   GIT_TAG 3a01ec37828affe4c9650004edb5b304fb9d5b75 # v0.20.0
 )
-# Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
+# Add the EXCLUDE_FROM_ALL option to avoid adding files of doctest to the wheel. In the future, with cmake 3.28, we
 # can add this argument directly to FetchContent_Declare.
 if(NOT doctest_POPULATED)
   FetchContent_Populate(doctest)
@@ -172,10 +172,11 @@ FetchContent_MakeAvailable(doctest)
 set(HTTPLIB_REQUIRE_OPENSSL ON)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
+set(HTTPLIB_USE_NON_BLOCKING_GETADDRINFO OFF)
 FetchContent_Declare(
   httplib
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib
-  GIT_TAG 787a34ad7f01f20922a237d5142aae469828be72 # v0.20.0
+  GIT_TAG 3f44c80fd345e859d6f61b2dda566aa3329ce35e # v0.25.0
 )
 # Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
 # can add this argument directly to FetchContent_Declare.

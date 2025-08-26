@@ -64,7 +64,7 @@ ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDown
     // If repo paths are provided, check the GitHub rate limit
     if (!repo_paths_.empty()) {
         auto rate_limit = downloader.get_rate_limit();
-        if (rate_limit.remaining <= 0) {
+        if (rate_limit.remaining == 0) {
             react_on_rate_limit_reached(rate_limit.reset_time);
         } else {
             SPDLOG_INFO("Remaining GitHub API requests: {}. Rate limit resets at {}.",
@@ -258,7 +258,8 @@ void ParquetManager::update_local_asset(const std::string &key) {
                 remote_version, endpoint);
 
     auto result = downloader.download(endpoint, "", true).get();
-    if (result.status_code == 403 || result.status_code == 429) {
+    if ((result.status_code == 403 || result.status_code == 429) &&
+        result.rate_limit.remaining == 0) {
         react_on_rate_limit_reached(result.rate_limit.reset_time);
         return;
     }
