@@ -11,6 +11,8 @@ from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from scipy import sparse
 
+from .compare_utils import no_log_propagation
+
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
@@ -148,6 +150,7 @@ def test_c3_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     c3_obj = perturbative.C3(ket1, ket2)
+    c3_obj._distance_vector = None  # avoid warning due when setting system pair
     c3_obj.system_pair = system_pair_sample
 
     c3 = c3_obj.get(unit="planck_constant * gigahertz * micrometer^3")
@@ -171,6 +174,7 @@ def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C6 coefficient with a given system is calculated correctly."""
     ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     c6_obj = perturbative.C6(ket, ket)
+    c6_obj._distance_vector = None  # avoid warning due when setting system pair
     c6_obj.system_pair = system_pair_sample
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
@@ -189,18 +193,22 @@ def test_c6() -> None:
     assert np.isclose(c6, 169.149)
 
 
-def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, caplog: pytest.LogCaptureFixture) -> None:
+def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: pytest.CaptureFixture[str]) -> None:
     """Test whether resonance with infinite admixture is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     eff_system = perturbative.EffectiveSystemPair([(ket1, ket2)])
     eff_system.system_pair = system_pair_sample
-    with caplog.at_level(logging.CRITICAL):
+
+    # workaround to test for errors, without showing them in the std output
+    with no_log_propagation("pairinteraction"):
         eff_system.get_effective_hamiltonian()
-    assert "infinite admixture" in caplog.text
+    captured = capsys.readouterr()
+    assert "Detected 'inf' entries" in captured.err
+    assert "|Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
 
 
-def test_near_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
+def test_near_resonance_detection(capsys: pytest.CaptureFixture[str]) -> None:
     """Test whether a near resonance is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
@@ -210,6 +218,9 @@ def test_near_resonance_detection(caplog: pytest.LogCaptureFixture) -> None:
     eff_system.set_distance(10, 35.1, "micrometer")
     eff_system.get_effective_hamiltonian()
 
-    with caplog.at_level(logging.ERROR):
+    # workaround to test for errors, without showing them in the std output
+    with no_log_propagation("pairinteraction"):
         eff_system.check_for_resonances(0.99)
-    assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in caplog.text
+    captured = capsys.readouterr()
+    assert "The most perturbing states are" in captured.err
+    assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in captured.err

@@ -1,8 +1,11 @@
 # SPDX-FileCopyrightText: 2024 Pairinteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+import contextlib
+import logging
+from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 import numpy as np
 
@@ -39,3 +42,16 @@ def compare_eigensystem_to_reference(
         # Thus, we only check their normalization and orthogonality.
         cumulative_norm = (np.array(eigenvectors) * np.array(eigenvectors).conj()).sum(axis=1)
         np.testing.assert_allclose(cumulative_norm, n_kets * np.ones(n_systems))
+
+
+@contextlib.contextmanager
+def no_log_propagation(logger: Union[logging.Logger, str]) -> Iterator[None]:
+    """Context manager to temporarily disable log propagation for a given logger."""
+    if isinstance(logger, str):
+        logger = logging.getLogger(logger)
+    old_value = logger.propagate
+    try:
+        logger.propagate = False
+        yield
+    finally:
+        logger.propagate = old_value
