@@ -574,29 +574,28 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
         for (auto label : unique_labels) {
-            if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
-                if (std::abs(state_index_to_quantum_number_f[i] - last_quantum_number_f) >
+            if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F &&
+                std::abs(state_index_to_quantum_number_f[i] - last_quantum_number_f) >
                     numerical_precision) {
-                    blocks_creator.add(i);
-                    break;
-                }
-            } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
-                if (std::abs(state_index_to_quantum_number_m[i] - last_quantum_number_m) >
+                blocks_creator.add(i);
+                break;
+            }
+            if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M &&
+                std::abs(state_index_to_quantum_number_m[i] - last_quantum_number_m) >
                     numerical_precision) {
-                    blocks_creator.add(i);
-                    break;
-                }
-            } else if (label == TransformationType::SORT_BY_PARITY) {
-                if (state_index_to_parity[i] != last_parity) {
-                    blocks_creator.add(i);
-                    break;
-                }
-            } else if (label == TransformationType::SORT_BY_KET) {
-                if (state_index_to_ket_index[i] != last_ket &&
-                    last_ket != std::numeric_limits<int>::max()) {
-                    blocks_creator.add(i);
-                    break;
-                }
+                blocks_creator.add(i);
+                break;
+            }
+            if (label == TransformationType::SORT_BY_PARITY &&
+                state_index_to_parity[i] != last_parity) {
+                blocks_creator.add(i);
+                break;
+            }
+            if (label == TransformationType::SORT_BY_KET &&
+                state_index_to_ket_index[i] != last_ket &&
+                last_ket != std::numeric_limits<int>::max()) {
+                blocks_creator.add(i);
+                break;
             }
         }
         last_quantum_number_f = state_index_to_quantum_number_f[i];
