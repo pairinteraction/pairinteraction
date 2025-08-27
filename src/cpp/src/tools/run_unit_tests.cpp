@@ -27,11 +27,6 @@ namespace doctest {
 // SPDX-FileCopyrightText: (c) 2016-2025 Viktor Kirilov, Sebastian Weber
 // SPDX-License-Identifier: MIT
 
-// NOLINTBEGIN(cppcoreguidelines-macro-usage)
-#define DOCTEST_LOCK_MUTEX(name)                                                                   \
-    std::lock_guard<std::mutex> DOCTEST_ANONYMOUS(DOCTEST_ANON_LOCK_)(name);
-// NOLINTEND(cppcoreguidelines-macro-usage)
-
 struct LoggingReporter : public ConsoleReporter {
     LoggingReporter(const ContextOptions &co) : ConsoleReporter(co) {}
 
