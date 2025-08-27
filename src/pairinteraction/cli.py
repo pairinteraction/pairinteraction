@@ -88,15 +88,31 @@ def download_databases(species_list: list[str]) -> int:
     from pairinteraction._backend import get_cache_directory
 
     database_dir = get_cache_directory() / "database"
-
     database = pi.Database(download_missing=True, use_cache=False, database_dir=database_dir)
 
-    for species in [*species_list, "misc"]:
-        print(f"Downloading tables for {species}...")
-        status = database.download(species)
-        print(Fore.GREEN + f"  Download {status}." + Style.RESET_ALL)
+    is_wigner_downloaded = False
+    exit_code = 0
 
-    return 0
+    for species in species_list:
+        print(f"Downloading tables for {species}...")
+
+        try:
+            # We make use of the fact that all tables of a species get downloaded
+            # automatically when we create a BasisAtom object.
+            basis = pi.BasisAtom(species, n=(50, 51), l=(0, 2), database=database)
+
+            # We calculate matrix elements to ensure that the Wigner table is
+            # downloaded as well.
+            if not is_wigner_downloaded:
+                basis.get_matrix_elements(basis, "electric_dipole", 0)
+                is_wigner_downloaded = True
+
+            print(Fore.GREEN + "Download successful." + Style.RESET_ALL)
+        except Exception as e:
+            exit_code = 1
+            print(Fore.RED + f"Download failed: {e}" + Style.RESET_ALL)
+
+    return exit_code
 
 
 def purge_cache() -> int:

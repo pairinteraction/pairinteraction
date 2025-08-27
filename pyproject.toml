@@ -62,7 +62,6 @@ dependencies = [
   "nbformat >= 5.10",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.0.1; sys_platform != 'darwin'",
-  "tqdm >= 4.66",
 ]
 
 [project.optional-dependencies]
@@ -90,7 +89,6 @@ mypy = [
   "mypy >= 1.14",
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
-  "types-tqdm >= 4.66",
 ]
 
 [dependency-groups]
@@ -244,7 +242,6 @@ extend-ignore = [
   "ANN401",  # FIXME: Dynamically typed expressions (typing.Any) are disallowed in {name}
   "D1",  # FIXME: remove once more docstrings are added
   "S101",  # FIXME: Use of assert detected
-  "S310",  # suspicious-url-open-usage
   # We don't use the following rules
   "COM812",  # (missing-trailing-comma) incompatible with ruff format
   "D203",  # (incorrect-blank-line-before-class) incompatible with D211: no-blank-line-before-class

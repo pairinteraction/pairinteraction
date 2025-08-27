@@ -52,7 +52,7 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint >= 0.21.1", "attrs >= 24.0", "types-tqdm >= 4.66"]
+        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint >= 0.21.1", "attrs >= 24.0"]
         args: ["--ignore-missing-imports"]
 
   - repo: https://github.com/fsfe/reuse-tool
