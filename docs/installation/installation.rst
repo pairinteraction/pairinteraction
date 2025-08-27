@@ -3,7 +3,7 @@
 Installation
 ============
 
-The PairInteraction software runs on Linux, macOS 13 or later (Intel & Apple Silicon), and Windows. It is compatible
+The PairInteraction software runs on Linux, macOS 13+ or later (Intel & Apple Silicon), and Windows. It is compatible
 with Python ≥ 3.9.
 
 Installing from PyPI
@@ -85,10 +85,10 @@ After the installation, we recommend verifying that everything is working:
     # download the databases for the species you want to use (e.g. Rb and Yb174_mqdt)
     pairinteraction download Rb Yb174_mqdt
 
-If the download command fails, you can also download the databases manually from github and place them in the cache
+If the download command fails, you can also download the databases manually from GitHub and place them in the cache
 directory. For more details on this, see the :ref:`database <database>` section of the documentation.
 
-Note that every command `pairinteraction ...` can also be run via `python3 -m pairinteraction ...`.
+Note that any `pairinteraction ...` command can also be run via `python3 -m pairinteraction ...`.
 
 **Using PairInteraction as a Python Library:** For usage examples of the Python library, visit the :ref:`tutorial-api`
 section of the documentation.

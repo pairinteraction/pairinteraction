@@ -1,8 +1,8 @@
-Overview About PairInteraction's Architecture
-=============================================
+Overview of PairInteraction's Architecture
+==========================================
 
-This page provides an overview about how the PairInteraction software is structured and how it is working internally.
-The information is intended for developers and advanced users who want to understand the software's architecture in more
+This page provides an overview of how the PairInteraction software is structured and how it is working internally. The
+information is intended for developers and advanced users who want to understand the software's architecture in more
 detail.
 
 Code Structure
@@ -15,11 +15,10 @@ PairInteraction repository:
   Hamiltonians of systems of Rydberg atoms. Python bindings are created using nanobind_.
 - :github:`src/pairinteraction <tree/master/src/pairinteraction>` - A Python library that wraps the Python bindings,
   providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library
-  adds additional functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians.
-  The Python classes that wrap the Python bindings are defined inside the private submodules
-  ``pairinteraction._wrapped`` and then aliased to the ``pairinteraction.real`` and ``pairinteraction.complex``
-  namespaces. The two submodules ``real`` and ``complex`` are completely identical in their functionality, but only
-  differ in the data type they use.
+  adds functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The Python
+  classes that wrap the Python bindings are defined inside the private submodules ``pairinteraction._wrapped`` and then
+  aliased to the ``pairinteraction.real`` and ``pairinteraction.complex`` namespaces. The two submodules ``real`` and
+  ``complex`` are completely identical in their functionality, but only differ in the data type they use.
 - :github:`src/pairinteraction_gui <tree/master/src/pairinteraction_gui>` - A graphical user interface (GUI) that allows
   users to perform common calculations without writing any code. The GUI is built on top of the Python library.
 
@@ -42,7 +41,7 @@ the criteria.
 2. Constructing a Hamiltonian
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Independently on whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain
+Independent of whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain
 matrix elements of fundamental operators within a single-atom basis (for example, matrix elements for the dipole
 operators d0, d+, and d-). The matrix elements of the operators are received from PairInteraction's :ref:`database
 <database>` where they are indexed by the corresponding states. Next, the matrix elements of the fundamental operators

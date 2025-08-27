@@ -22,7 +22,7 @@ BasisType = TypeVar("BasisType", bound="BasisAtom[Any]", covariant=True)
 class StateAtom(StateBase[BasisType, KetAtom]):
     """State of a single atom.
 
-    A coefficient vector and a list of kets are used to represent an arbitrary single atom state.
+    A coefficient vector and a list of kets are used to represent an arbitrary single-atom state.
 
     Examples:
         >>> import pairinteraction.real as pi

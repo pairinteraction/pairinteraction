@@ -21,12 +21,12 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ParametersOneAtom(Parameters["OneAtomPage"]):
-    """Parameters for the one atom calculation."""
+    """Parameters for the single-atom calculation."""
 
 
 @dataclass
 class ResultsOneAtom(Results):
-    """Results for the one atom calculation."""
+    """Results for the single-atom calculation."""
 
 
 @run_in_other_process

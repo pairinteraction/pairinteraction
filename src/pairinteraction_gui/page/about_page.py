@@ -86,7 +86,7 @@ class AboutPage(BasePage):
             "Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms "
             "for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. "
             "The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. "
-            "When supported, symmetries where used to reduce the Hilbert space size. "
+            "When supported, symmetries were used to reduce the Hilbert space size. "
             "See the <a href='https://github.com/pairinteraction/pairinteraction/tree/master/tools/benchmarking' "
             "style='color: #007bff;'>benchmarking tool</a>."
             "</p>"

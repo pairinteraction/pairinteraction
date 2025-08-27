@@ -17,7 +17,7 @@ Reporting Issues
 Contributing New Quantum Defects
     Precise quantum defects are crucial for our software's accuracy. We particularly seek improvements for species with
     two-valence electrons, where data remains sparse. If you've conducted research that provides new quantum defects,
-    sharing your data would significantly benefit the community. To ensure that your research receive appropriate
+    sharing your data would significantly benefit the community. To ensure that your research receives appropriate
     recognition, our :doc:`README <../index>` promotes the citation of publications that have contributed quantum
     defects.
 
@@ -59,8 +59,8 @@ Once forked, clone the repository to your local machine to start working on the 
 
 Familiarize yourself with the repository's architecture. The software is divided into a :github:`C++ backend
 <tree/master/src/cpp>` with Python bindings and a :github:`Python library <tree/master/src/pairinteraction>`. The Python
-library makes the Python bindings accessible and add additional functionality like the perturbative calculation of
-effective Hamiltonians.
+library makes the Python bindings accessible and adds functionality like the perturbative calculation of effective
+Hamiltonians.
 
 2. Set Up a Development Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,7 +79,7 @@ necessary steps:
   <tree/master/.github/workflows/cpp-backend.yml>`.
 
   If you are using Windows, you can use ``vcpkg`` to install the dependencies. To set up vcpkg execute the following
-  commands in the powershell:
+  commands in the PowerShell:
 
   .. code-block:: bash
 

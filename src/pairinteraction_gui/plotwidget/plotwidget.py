@@ -104,18 +104,18 @@ class PlotEnergies(PlotWidget):
         # Flatten the arrays for scatter plot and repeat x value for each energy
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
         x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_list, energies_list)])
-        energies_flattend = np.hstack(energies_list)
-        overlaps_flattend = np.hstack(overlaps_list)
+        energies_flattened = np.hstack(energies_list)
+        overlaps_flattened = np.hstack(overlaps_list)
 
         min_overlap = 1e-4
-        inds: NDArray[Any] = np.argwhere(overlaps_flattend > min_overlap).flatten()
-        inds = inds[np.argsort(overlaps_flattend[inds])]
+        inds: NDArray[Any] = np.argwhere(overlaps_flattened > min_overlap).flatten()
+        inds = inds[np.argsort(overlaps_flattened[inds])]
 
         if len(inds) > 0:
             ax.scatter(
                 x_repeated[inds],
-                energies_flattend[inds],
-                c=overlaps_flattend[inds],
+                energies_flattened[inds],
+                c=overlaps_flattened[inds],
                 s=15,
                 vmin=0,
                 vmax=1,

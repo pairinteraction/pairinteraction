@@ -24,7 +24,7 @@ class KetBase(ABC):
     the coefficient matrix of the basis objects are defined.
     For single atoms we simply choose the atomic states defined by their quantum numbers,
     therefore all KetAtom objects are orthogonal to each other.
-    For pair systems, we choose the product states of the single atom eigenstates, which depends on the system
+    For pair systems, we choose the product states of the single-atom eigenstates, which depends on the system
     and the applied fields. Thus for different pair systems the KetPair objects are not necessarily orthogonal anymore.
 
     All ket objects share a few common attributes and methods, that are defined in this base class.

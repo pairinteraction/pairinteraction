@@ -87,7 +87,7 @@ Python
 - List/Tuples of objects with a fixed length should typically be annotated as ``collections.abc.Sequence[Type]``; for a
   variable length use ``collections.abc.Iterable[Type]`` instead (see also `collections.abc abstract base classes
   <https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes>`_).
-- Numpy arrays should be annotated as ``"pairinteraction.units.NDArray"`` (which is an alias for
+- NumPy arrays should be annotated as ``"pairinteraction.units.NDArray"`` (which is an alias for
   ``numpy.typing.NDArray[Any]``).
 
 **Return types** ``def my_func(...) -> ReturnType:``
@@ -96,7 +96,7 @@ Python
   the returned values.
 - Lists should be annotated as ``list[Type]``.
 - Tuples should be annotated as ``tuple[Type1, Type2]`` or ``tuple[Type1, ...]`` for a variable length.
-- Numpy arrays should be annotated as ``"pairinteraction.units.NDArray"`` (which is an alias for
+- NumPy arrays should be annotated as ``"pairinteraction.units.NDArray"`` (which is an alias for
   ``numpy.typing.NDArray[Any]``).
 - Pint objects should be annotated as ``"pairinteraction.units.PintFloat"``, ``"pairinteraction.units.PintArray"`` or
   ``"pairinteraction.units.PintSparse"`` for scalar, dense matrix and sparse matrix respectively. These are aliases for

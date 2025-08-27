@@ -300,7 +300,7 @@ class QnSQDT(QnBase):
 
 
 class QnMQDT(QnBase):
-    """Configuration for earth alkali atoms using MQDT."""
+    """Configuration for alkaline-earth atoms using MQDT."""
 
     def __init__(
         self,

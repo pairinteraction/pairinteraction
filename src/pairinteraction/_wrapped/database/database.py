@@ -17,7 +17,7 @@ CPPDatabase = _backend.Database
 
 
 class Database:
-    """Class for a handling the databases for the PairInteraction package.
+    """Class for handling the databases for the PairInteraction package.
 
     The Databases are used to store the atomic states, their energies, and their matrix elements to other states.
     The databases are stored in the user's cache directory by default, but can be stored in a different directory.

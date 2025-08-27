@@ -21,10 +21,10 @@ if TYPE_CHECKING:
 class KetAtom(KetBase):
     """Ket for an atomic basis state.
 
-    Each KetAtom object uniquely represents a single atomic basis state
+    Each KetAtom object uniquely represents a single-atom basis state
     (and therefore all KetAtom objects are orthogonal).
     When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
-    which uniquely define a single atomic basis state (this always includes providing a magnetic quantum number m).
+    which uniquely define a single-atom basis state (this always includes providing a magnetic quantum number m).
 
     SQDT (Single Channel Quantum Defect Theory) for one valence electron (alkali atoms):
         The quantum numbers n (int), l (int), j (half-int) and m (half-int)
@@ -33,7 +33,7 @@ class KetAtom(KetBase):
         s = 1/2, f = j (we neglect hyperfine interaction for SQDT),
         nu = n - delta, l_ryd = l, j_ryd = j.
 
-    SQDT (Single Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+    SQDT (Single Channel Quantum Defect Theory) for two valence electrons (alkaline-earth atoms):
         The quantum numbers n (int), l_ryd (int), j (int) and m (int)
         should be used to define the desired atomic basis state.
         The spin quantum number s is taken from the species label,
@@ -41,7 +41,7 @@ class KetAtom(KetBase):
         Again we neglect hyperfine interaction, thus f = j. And nu = n - delta.
         All other quantum numbers are not necessarily eigenvalues anymore and are given as expectation values.
 
-    MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+    MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (alkaline-earth atoms):
         The quantum numbers nu (float), f (int or half-int) and m (int or half-int) are still good quantum numbers.
         All other quantum numbers (like l, s, j, l_ryd, j_ryd) are not necessarily eigenvalues anymore.
         You can still provide them to specify the atomic basis state,
@@ -83,7 +83,7 @@ class KetAtom(KetBase):
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
     ) -> None:
-        """Create a single atomic canonical basis state, which is defined by its species and quantum numbers.
+        """Create a single-atom canonical basis state, which is defined by its species and quantum numbers.
 
         Args:
             species: See attribute.
@@ -311,7 +311,7 @@ class KetAtom(KetBase):
     ) -> tuple[list["KetAtom"], Union["NDArray", "PintArray"]]:
         """Calculate the black body transition rates of the KetAtom.
 
-        The black body transitions rates are given by the Einstein B coefficients,
+        The black body transition rates are given by the Einstein B coefficients,
         with a weight factor given by Planck's law.
 
         Args:

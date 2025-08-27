@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class C6(EffectiveSystemPair):
-    """Class for calculating the C6 coefficient for a two atom state ``|ket1, ket2>``.
+    """Class for calculating the C6 coefficient for a two-atom state ``|ket1, ket2>``.
 
     Given two `KetAtom` objects ket1 and ket2,
     this class computes the C6 coefficient for the pair state ``|ket1, ket2>``.

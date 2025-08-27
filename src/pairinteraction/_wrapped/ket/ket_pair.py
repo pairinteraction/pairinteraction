@@ -28,7 +28,7 @@ def is_ket_atom_tuple(obj: Any) -> TypeGuard[KetAtomTuple]:
 class KetPair(KetBase):
     """Ket for a pair state of two atoms.
 
-    For pair systems, we choose KetPair object as the product states of the single atom eigenstates.
+    For pair systems, we choose KetPair object as the product states of the single-atom eigenstates.
     Thus, the Ket pair objects depend on the system and the applied fields.
     Therefore for different pair systems the KetPair objects are not necessarily orthogonal anymore.
 

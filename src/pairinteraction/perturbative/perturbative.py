@@ -134,10 +134,10 @@ def get_c3_from_system(ket_tuple_list: Collection["KetPairLike"], system_pair: "
 def get_c3_from_system(
     ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair", unit: Optional[str] = None
 ) -> Union[float, "PintFloat"]:
-    r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.
+    r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single-atom ket states.
 
     This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of
-    single atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.
+    single-atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.
 
     Args:
         ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)],
@@ -150,7 +150,7 @@ def get_c3_from_system(
         The :math:`C_3` coefficient with its unit.
 
     Raises:
-        ValueError: If a list of not exactly two tuples of single atom states is given.
+        ValueError: If a list of not exactly two tuples of single-atom states is given.
 
     """
     if len(ket_tuple_list) != 2:
@@ -187,11 +187,11 @@ def get_c6_from_system(
 ) -> Union[float, "PintFloat"]:
     r"""Calculate the :math:`C_6` coefficient for a given tuple of ket states.
 
-    This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single atom ket
+    This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single-atom ket
     states.
 
     Args:
-        ket_tuple: The input is a tuple repeating the same single atom state in the format (a,a).
+        ket_tuple: The input is a tuple repeating the same single-atom state in the format (a,a).
         If a tuple with not exactly two identical states is given, a ValueError is raised.
         system_pair: The pair system that is used for the calculation.
         unit: The unit to which to convert the result. Default None will return a pint quantity.
@@ -200,7 +200,7 @@ def get_c6_from_system(
         The :math:`C_6` coefficient. If a unit is specified, the value in this unit is returned.
 
     Raises:
-        ValueError: If a tuple with more than two single atom states is given.
+        ValueError: If a tuple with more than two single-atom states is given.
 
     """
     if isinstance(ket_tuple, Iterable):

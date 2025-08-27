@@ -5,7 +5,7 @@ Tutorials
 
 The PairInteraction software comes with a graphical user interface (GUI) and a Python API. The GUI provides a quick way
 to calculate Rydberg interaction potentials, lifetimes, and energy shifts in the presence of external fields. The Python
-API is designed to automatize calculations and to have more fine-grained control.
+API is designed to automate calculations and to have more fine-grained control.
 
 .. _tutorial-api:
 
@@ -14,7 +14,7 @@ Tutorials - Python API
 
 **Introduction**
 
-The following jupyter notebooks introduce the Python API. The other tutorials build on this introduction.
+The following Jupyter notebooks introduce the Python API. The other tutorials build on this introduction.
 
 .. nbgallery::
 

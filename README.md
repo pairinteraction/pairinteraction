@@ -53,7 +53,7 @@ pairinteraction gui
 
   ![benchmarking results][benchmark-results-link]
 
-  *Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. When supported, symmetries where used to reduce the Hilbert space size. See the [benchmarking tool][benchmark-tool].*
+  *Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. When supported, symmetries were used to reduce the Hilbert space size. See the [benchmarking tool][benchmark-tool].*
 
 * The software uses single-channel quantum defect theory (SQDT) and also **multi-channel quantum defect theory (MQDT)** for the accurate description of atoms.
 
@@ -140,7 +140,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 - [Getting Started as a Contributor] - Discover the many ways you can help improve PairInteraction, from contributing to the repository to providing quantum defects.
 
-- [Overview About PairInteraction's Architecture] - Find out how PairInteraction is structured.
+- [Overview of PairInteraction's Architecture] - Find out how PairInteraction is structured.
 
 - [Style Guide] - Learn about the coding style used in PairInteraction.
 
@@ -157,7 +157,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 [API Reference]: https://www.pairinteraction.org/pairinteraction/master/api_reference.html
 [Publications]: https://www.pairinteraction.org/pairinteraction/master/publications/publications.html
 [Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
-[Overview About PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/master/contribute/architecture.html
+[Overview of PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/master/contribute/architecture.html
 [Style Guide]: https://www.pairinteraction.org/pairinteraction/master/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/master/contribute/database.html
 [MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
