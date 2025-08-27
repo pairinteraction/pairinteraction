@@ -11,7 +11,7 @@ from pairinteraction import _backend
 from pairinteraction._wrapped.diagonalize.diagonalize import diagonalize
 from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer
 from pairinteraction._wrapped.enums import FloatType
-from pairinteraction.units import QuantityArray, QuantitySparse
+from pairinteraction.units import UnitConverterArray, UnitConverterSparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -167,7 +167,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenenergies(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
         eigenenergies_au: NDArray = np.array(self._cpp.get_eigenenergies())
-        return QuantityArray.convert_au_to_user(eigenenergies_au, "energy", unit)
+        return UnitConverterArray.au_to_user(eigenenergies_au, "energy", unit)
 
     @overload
     def get_hamiltonian(self, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
@@ -177,4 +177,4 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PintSparse"]:
         hamiltonian_au = self._cpp.get_matrix()
-        return QuantitySparse.convert_au_to_user(hamiltonian_au, "energy", unit)
+        return UnitConverterSparse.au_to_user(hamiltonian_au, "energy", unit)

@@ -5,7 +5,7 @@
 
 import numpy as np
 import pairinteraction.real as pi
-from pairinteraction.units import AtomicUnits, QuantityScalar, ureg
+from pairinteraction.units import AtomicUnits, UnitConverterScalar, ureg
 
 
 def test_magnetic() -> None:
@@ -18,9 +18,9 @@ def test_magnetic() -> None:
     assert np.isclose(mu.magnitude, -1 / 2 * lande_factor)
 
     # check magnetic field conversion is correct
-    magnetic_field = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
+    magnetic_field_au = UnitConverterScalar.user_to_au(1, "gauss", "magnetic_field")
     magnetic_field_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
-    assert np.isclose(magnetic_field.to_au(), magnetic_field_pint.to_base_units().magnitude)
+    assert np.isclose(magnetic_field_au, magnetic_field_pint.to_base_units().magnitude)
 
     # such that mu * magnetic_field is of dimension energy
     zeeman_energy = -mu * magnetic_field_pint
@@ -48,7 +48,7 @@ def test_electric_dipole() -> None:
     c3 = c3 * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("hartree", "spectroscopy")
     c3 = c3.to("GHz micrometer^3")
 
-    assert c3.magnitude == QuantityScalar.from_pint(kappa * dipole_a_c * dipole_b_c, "c3").to_unit("GHz micrometer^3")
+    assert c3.magnitude == UnitConverterScalar.pint_to_user(kappa * dipole_a_c * dipole_b_c, "c3", "GHz micrometer^3")
 
     distance = ureg.Quantity(10, "micrometer")
     basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])

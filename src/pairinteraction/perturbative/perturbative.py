@@ -15,7 +15,7 @@ from pairinteraction import (
     real as pi_real,
 )
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
-from pairinteraction.units import QuantityArray, QuantityScalar, ureg
+from pairinteraction.units import UnitConverterArray, UnitConverterScalar, ureg
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -116,7 +116,7 @@ def get_effective_hamiltonian_from_system(
     else:
         h_eff_au = sum(h_eff for h_eff in h_eff_dict_au.values())  # type: ignore [assignment]
 
-    h_eff = QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
+    h_eff = UnitConverterArray.au_to_user(h_eff_au, "energy", unit)
     return h_eff, eigvec_perturb
 
 
@@ -169,8 +169,8 @@ def get_c3_from_system(
         return c3
 
     h_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)
-    c3_pint = h_eff[0, 1] * r**3  # type: ignore [index] # PintArray does not know it can be indexed
-    return QuantityScalar.from_pint(c3_pint, "c3").to_pint_or_unit(unit)
+    c3_pint = h_eff[0, 1] * r**3
+    return UnitConverterScalar.pint_to_user(c3_pint, "c3", unit)
 
 
 @overload
@@ -227,8 +227,8 @@ def get_c6_from_system(
     h_eff, _ = get_effective_hamiltonian_from_system(
         [ket_tuple], system_pair, order=2, return_only_specified_order=True
     )
-    c6_pint = h_eff[0, 0] * r**6  # type: ignore [index] # PintArray does not know it can be indexed
-    return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
+    c6_pint = h_eff[0, 0] * r**6
+    return UnitConverterScalar.pint_to_user(c6_pint, "c6", unit)
 
 
 def _get_model_inds(ket_tuple_list: Collection["KetPairLike"], system_pair: "SystemPair") -> list[int]:
@@ -352,8 +352,8 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
     electric_field = electric_field if electric_field is not None else ureg.Quantity([0, 0, 0], "V/cm")
     magnetic_field = magnetic_field if magnetic_field is not None else ureg.Quantity([0, 0, 0], "G")
 
-    pi = pi_real if electric_field[1] == 0 and magnetic_field[1] == 0 else pi_complex  # type: ignore [index]
-    are_fields_along_z = all(x == 0 for x in [*magnetic_field[:2], *electric_field[:2]])  # type: ignore [index]
+    pi = pi_real if electric_field[1] == 0 and magnetic_field[1] == 0 else pi_complex
+    are_fields_along_z = all(x == 0 for x in [*magnetic_field[:2], *electric_field[:2]])
 
     system_atoms: list[Union[pi_real.SystemAtom, pi_complex.SystemAtom]] = []
 
@@ -394,7 +394,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
             energy_unit="hartree",
         )
 
-    mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")
+    mhz_au = UnitConverterScalar.user_to_au(1, "MHz", "energy")
     delta_energy_au = mhz_au
     min_delta, max_delta = None, None
 

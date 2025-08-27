@@ -9,7 +9,7 @@ import numpy as np
 from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
 from pairinteraction._wrapped.system.system import SystemBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import UnitConverterScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -78,7 +78,7 @@ class SystemAtom(SystemBase[BasisType]):
                 Default None expects a `pint.Quantity`.
 
         """
-        electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, "electric_field") for v in electric_field]
+        electric_field_au = [UnitConverterScalar.user_to_au(v, unit, "electric_field") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
         return self
 
@@ -95,7 +95,7 @@ class SystemAtom(SystemBase[BasisType]):
                 Default None expects a `pint.Quantity`.
 
         """
-        magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, "magnetic_field") for v in magnetic_field]
+        magnetic_field_au = [UnitConverterScalar.user_to_au(v, unit, "magnetic_field") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
@@ -120,12 +120,12 @@ class SystemAtom(SystemBase[BasisType]):
         distance: Union["PintArrayLike", "ArrayLike"],
         unit: Optional[str] = None,
     ) -> "Self":
-        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
+        distance_au = [UnitConverterScalar.user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_ion_distance_vector(distance_au)
         return self
 
     def set_ion_charge(self: "Self", charge: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
-        charge_au = QuantityScalar.convert_user_to_au(charge, unit, "charge")
+        charge_au = UnitConverterScalar.user_to_au(charge, unit, "charge")
         self._cpp.set_ion_charge(charge_au)
         return self
 
@@ -146,7 +146,7 @@ class SystemAtom(SystemBase[BasisType]):
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [no-any-return]
 
 
 class SystemAtomReal(SystemAtom[BasisAtomReal]):

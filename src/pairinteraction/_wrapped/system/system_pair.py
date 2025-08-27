@@ -10,7 +10,7 @@ from pairinteraction import _backend
 from pairinteraction._wrapped.basis.basis_pair import BasisPairComplex, BasisPairReal
 from pairinteraction._wrapped.system.green_tensor import GreenTensor
 from pairinteraction._wrapped.system.system import SystemBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import UnitConverterScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -139,7 +139,7 @@ class SystemPair(SystemBase[BasisType]):
                 Default None expects a `pint.Quantity`.
 
         """
-        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
+        distance_au = [UnitConverterScalar.user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         self._distance_vector_au = distance_au
         return self
@@ -151,7 +151,7 @@ class SystemPair(SystemBase[BasisType]):
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
     def get_distance_vector(self, unit: Optional[str] = None) -> Union[list[float], list["PintFloat"]]:
-        return [QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
+        return [UnitConverterScalar.au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
 
     @overload
     def get_distance(self, unit: None = None) -> "PintFloat": ...
@@ -161,7 +161,7 @@ class SystemPair(SystemBase[BasisType]):
 
     def get_distance(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
         distance = np.linalg.norm(self._distance_vector_au)
-        return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
+        return UnitConverterScalar.au_to_user(float(distance), "distance", unit)
 
     def set_green_tensor(self, green_tensor: GreenTensor) -> "Self":
         """Set the Green tensor for the pair system.
@@ -196,7 +196,7 @@ class SystemPair(SystemBase[BasisType]):
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [no-any-return]
 
 
 class SystemPairReal(SystemPair[BasisPairReal]):
