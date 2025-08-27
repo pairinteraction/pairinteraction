@@ -4,11 +4,11 @@
     <span class="fa fa-caret-down"></span>
   </span>
   <div class="rst-other-versions">
-    {% if versions_dict|length >= 1 %}
+    {% if version_tuples|length >= 1 %}
     <dl>
       <dt>{{ _('Versions') }}</dt>
-      {% for version, url in versions_dict %}
-        <dd><a href="{{ url }}/index.html">{{ version }}</a></dd>
+      {% for version, url in version_tuples %}
+        <dd><a href="{{ url }}">{{ version }}</a></dd>
       {% endfor %}
     </dl>
     {% endif %}
