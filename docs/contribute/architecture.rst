@@ -1,15 +1,15 @@
-Overview About pairinteraction's Architecture
+Overview About PairInteraction's Architecture
 =============================================
 
-This page provides an overview about how the pairinteraction software is structured and how it is working internally.
+This page provides an overview about how the PairInteraction software is structured and how it is working internally.
 The information is intended for developers and advanced users who want to understand the software's architecture in more
 detail.
 
 Code Structure
 --------------
 
-The pairinteraction software consists of three parts. Each part is implemented in a separate directory in the
-pairinteraction repository:
+The PairInteraction software consists of three parts. Each part is implemented in a separate directory in the
+PairInteraction repository:
 
 - :github:`src/cpp <tree/master/src/cpp>` - A high performance C++ backend for constructing and diagonalizing
   Hamiltonians of systems of Rydberg atoms. Python bindings are created using nanobind_.
@@ -26,7 +26,7 @@ pairinteraction repository:
 Control Flow
 ------------
 
-Calculations with the pairinteraction software typically involve three steps that we describe in the following. Hereby,
+Calculations with the PairInteraction software typically involve three steps that we describe in the following. Hereby,
 the result of one step is used as input for the next step. Note that, regardless of whether you use the Python library
 or the GUI, the steps are always the same and eventually performed by the C++ backend:
 
@@ -34,9 +34,9 @@ or the GUI, the steps are always the same and eventually performed by the C++ ba
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 A user can specify a basis by restricting the energies and quantum numbers of the states to be included. If a basis for
-a single atom should be constructed, the pairinteraction software uses these restrictions internally to search its
+a single atom should be constructed, the PairInteraction software uses these restrictions internally to search its
 :ref:`database <database>` for states that match the criteria. If a basis for two atoms should be constructed, the
-pairinteraction software combines eigenstates of two single-atom Hamiltonians so that the resulting pair states match
+PairInteraction software combines eigenstates of two single-atom Hamiltonians so that the resulting pair states match
 the criteria.
 
 2. Constructing a Hamiltonian
@@ -44,7 +44,7 @@ the criteria.
 
 Independently on whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain
 matrix elements of fundamental operators within a single-atom basis (for example, matrix elements for the dipole
-operators d0, d+, and d-). The matrix elements of the operators are received from pairinteraction's :ref:`database
+operators d0, d+, and d-). The matrix elements of the operators are received from PairInteraction's :ref:`database
 <database>` where they are indexed by the corresponding states. Next, the matrix elements of the fundamental operators
 are combined to matrix elements of more complex operators (for example, the operator describing the interaction with an
 electric field). For the multipole interaction between two atoms, tensor products of the single-atom operators are

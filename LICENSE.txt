@@ -1,4 +1,4 @@
-The pairinteraction software is licensed under:
+The PairInteraction software is licensed under:
 
     SPDX-License-Identifier: LGPL-3.0-or-later
 
@@ -8,6 +8,6 @@ The file src/cpp/src/tools/run_unit_tests.cpp contains derived work from the
 doctest library, which is licensed under the MIT License. For the license
 text, see LICENSES/MIT.txt.
 
-Binary builds of the pairinteraction software include third-party libraries
+Binary builds of the PairInteraction software include third-party libraries
 that are subject to their own licenses. For their respective license texts,
 see the files in the LICENSES-THIRD-PARTY directory.

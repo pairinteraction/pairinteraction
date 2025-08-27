@@ -3,7 +3,7 @@
 Tutorials
 =========
 
-The pairinteraction software comes with a graphical user interface (GUI) and a Python API. The GUI provides a quick way
+The PairInteraction software comes with a graphical user interface (GUI) and a Python API. The GUI provides a quick way
 to calculate Rydberg interaction potentials, lifetimes, and energy shifts in the presence of external fields. The Python
 API is designed to automatize calculations and to have more fine-grained control.
 
@@ -35,7 +35,7 @@ lifetimes to calculations of pair potentials.
 
 **Examples From Publications**
 
-We show how pairinteraction's Python API can be applied to solve complex problems and reproduce results from literature.
+We show how PairInteraction's Python API can be applied to solve complex problems and reproduce results from literature.
 
 .. nbgallery::
 
@@ -49,7 +49,7 @@ We show how pairinteraction's Python API can be applied to solve complex problem
 Tutorials - Graphical User Interface
 ------------------------------------
 
-The graphical user interface (GUI) of pairinteraction can be started by executing
+The graphical user interface (GUI) of PairInteraction can be started by executing
 
 .. code-block:: bash
 

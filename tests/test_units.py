@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 """Test the conversion from AtomicUnits used in the backend and the units input and output to the user."""

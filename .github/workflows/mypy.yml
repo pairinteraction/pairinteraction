@@ -25,7 +25,7 @@ jobs:
     - uses: actions/checkout@v5
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install pairinteraction into virtual environment
+    - name: Install PairInteraction into virtual environment
       run: uv pip install .[mypy]
     - name: Install the benchmarking tool
       run: uv pip install tools/benchmarking[mypy]

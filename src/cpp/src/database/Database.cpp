@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+// SPDX-FileCopyrightText: 2024 PairInteraction Developers
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "pairinteraction/database/Database.hpp"
@@ -1162,7 +1162,7 @@ struct database_dir_noexcept : std::filesystem::path {
     explicit database_dir_noexcept() noexcept try : std
         ::filesystem::path(paths::get_cache_directory() / "database") {}
     catch (...) {
-        SPDLOG_ERROR("Error getting the pairinteraction cache directory.");
+        SPDLOG_ERROR("Error getting the PairInteraction cache directory.");
         std::terminate();
     }
 };

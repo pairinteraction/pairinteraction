@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 """Test the mapping between kets and states."""
@@ -37,7 +37,7 @@ def test_mapping() -> None:
     cols = cols[sorter]
 
     # Because we have chosen the electric field to be weak enough to avoid strong mixing of states,
-    # the mapping obtained by pairinteraction's heuristic should be the same as the optimal mapping
+    # the mapping obtained by PairInteraction's heuristic should be the same as the optimal mapping
     # obtained by scipy's linear_sum_assignment
     np.testing.assert_array_equal(rows, np.arange(eigenbasis.number_of_kets))
     np.testing.assert_array_equal(cols, state_indices)  # TODO

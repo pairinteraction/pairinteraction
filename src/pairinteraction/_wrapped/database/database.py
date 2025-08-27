@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
@@ -17,11 +17,11 @@ CPPDatabase = _backend.Database
 
 
 class Database:
-    """Class for a handling the databases for the pairinteraction package.
+    """Class for a handling the databases for the PairInteraction package.
 
     The Databases are used to store the atomic states, their energies, and their matrix elements to other states.
     The databases are stored in the user's cache directory by default, but can be stored in a different directory.
-    When running pairinteraction for the first time, the databases have to be downloaded from the internet
+    When running PairInteraction for the first time, the databases have to be downloaded from the internet
     (e.g. by explicitly passing `download_missing=True` to the constructor).
     Once the databases are downloaded, the user usually does not have to interact with the Database class directly.
 

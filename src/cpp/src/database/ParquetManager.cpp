@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+// SPDX-FileCopyrightText: 2025 PairInteraction Developers
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "pairinteraction/database/ParquetManager.hpp"
@@ -175,7 +175,7 @@ void ParquetManager::scan_remote() {
     if (!downloads.empty() && remote_asset_info.empty()) {
         throw std::runtime_error(
             "No compatible database tables were found in the remote repositories. Consider "
-            "upgrading pairinteraction to a newer version.");
+            "upgrading PairInteraction to a newer version.");
     }
 }
 

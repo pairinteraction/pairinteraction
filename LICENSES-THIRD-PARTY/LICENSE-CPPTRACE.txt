@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the cpptrace
+The binary builds of the PairInteraction software include the cpptrace
 library. The use of this library is subject to the MIT License:
 
 https://github.com/jeremy-rifkin/cpptrace/blob/main/LICENSE

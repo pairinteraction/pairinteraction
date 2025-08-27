@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the oneAPI
+The binary builds of the PairInteraction software include the oneAPI
 Threading Building Blocks (oneTBB) library. The use of this library is subject
 to the Apache License, Version 2.0:
 

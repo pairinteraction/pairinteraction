@@ -3,14 +3,14 @@
 Installation
 ============
 
-The pairinteraction software runs on Linux, macOS 13 or later (Intel & Apple Silicon), and Windows. It is compatible
+The PairInteraction software runs on Linux, macOS 13 or later (Intel & Apple Silicon), and Windows. It is compatible
 with Python ≥ 3.9.
 
 Installing from PyPI
 --------------------
 
-For most users, we recommend installing pairinteraction from the `Python Package Index (PyPI)`_. You can install
-pairinteraction from the command line via the pip_ package manager:
+For most users, we recommend installing PairInteraction from the `Python Package Index (PyPI)`_. You can install
+PairInteraction from the command line via the pip_ package manager:
 
 .. code-block:: bash
 
@@ -21,7 +21,7 @@ pairinteraction from the command line via the pip_ package manager:
     We strongly advise performing the installation inside a virtual environment to avoid conflicts with other Python
     packages. For an easy setup, even on systems where Python is not yet installed, we recommend using uv_. This
     blazingly fast package manager is becoming increasingly popular as an alternative to pip_. You can run the following
-    commands to set up uv_ and install pairinteraction in a new virtual environment with a recent version of Python:
+    commands to set up uv_ and install PairInteraction in a new virtual environment with a recent version of Python:
 
     .. tabs::
 
@@ -38,10 +38,10 @@ pairinteraction from the command line via the pip_ package manager:
                 # activate the environment
                 source .venv/bin/activate
 
-                # install pairinteraction
+                # install PairInteraction
                 uv pip install pairinteraction
 
-                # deactivate the environment when you are done using pairinteraction
+                # deactivate the environment when you are done using PairInteraction
                 deactivate
 
         .. tab:: Windows
@@ -57,10 +57,10 @@ pairinteraction from the command line via the pip_ package manager:
                 # activate the environment
                 .venv\Scripts\activate
 
-                # install pairinteraction
+                # install PairInteraction
                 uv pip install pairinteraction
 
-                # deactivate the environment when you are done using pairinteraction
+                # deactivate the environment when you are done using PairInteraction
                 deactivate
 
 .. _pip: https://pypi.org/project/pip/
@@ -76,7 +76,7 @@ After the installation, we recommend verifying that everything is working:
 
 .. code-block:: bash
 
-    # print the current version of the pairinteraction library
+    # print the current version of the PairInteraction library
     pairinteraction --version
 
     # run a module test to check if everything is working correctly
@@ -90,7 +90,7 @@ directory. For more details on this, see the :ref:`database <database>` section 
 
 Note that every command `pairinteraction ...` can also be run via `python3 -m pairinteraction ...`.
 
-**Using pairinteraction as a Python Library:** For usage examples of the Python library, visit the :ref:`tutorial-api`
+**Using PairInteraction as a Python Library:** For usage examples of the Python library, visit the :ref:`tutorial-api`
 section of the documentation.
 
 **Using the Graphical User Interface (GUI):** The graphical user interface can be started by executing
@@ -105,7 +105,7 @@ information on how to use the graphical user interface, visit the :ref:`tutorial
 Installing from Flathub (Linux only)
 ------------------------------------
 
-If you are on Linux and only interested in the graphical user interface, you can install pairinteraction as a Flatpak_
+If you are on Linux and only interested in the graphical user interface, you can install PairInteraction as a Flatpak_
 package. For the installation, you have to first install Flatpak (follow the `setup guide`_ for your Linux distribution)
 and then run:
 

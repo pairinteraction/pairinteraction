@@ -26,7 +26,7 @@ jobs:
     - uses: actions/checkout@v5
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install pairinteraction into virtual environment
+    - name: Install PairInteraction into virtual environment
       run: uv pip install .[docs]
     - name: Build documentation
       working-directory: docs/
@@ -46,9 +46,9 @@ jobs:
       run: git fetch origin master:master || true  # ignore error if branch already exists
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install pairinteraction into virtual environment
+    - name: Install PairInteraction into virtual environment
       run: uv pip install .[docs]
-    - name: Setup 2nd virtual environment for pairinteraction v0.9.10
+    - name: Setup 2nd virtual environment for PairInteraction v0.9.10
       run: |
         uv venv venv_pairinteraction_v0.9.10 --python=python3.11
         uv pip install --python venv_pairinteraction_v0.9.10/bin/python 'pairinteraction==0.9.10' sphinx nbsphinx 'sphinxcontrib-mermaid<1' sphinx_rtd_theme sphinx_polyversion
@@ -96,7 +96,7 @@ jobs:
     - uses: actions/checkout@v5
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install pairinteraction into virtual environment
+    - name: Install PairInteraction into virtual environment
       run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[tests]
     - name: Run pytest
       run: uv run --no-project pytest
@@ -121,7 +121,7 @@ jobs:
     - uses: actions/checkout@v5
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install pairinteraction into virtual environment
+    - name: Install PairInteraction into virtual environment
       run: uv pip install -e .[tests]  # -e is needed for coverage to work
     - name: Run pytest with coverage
       run: |  # also run with --generate-reference to get 100% tests coverage and test the reference generation

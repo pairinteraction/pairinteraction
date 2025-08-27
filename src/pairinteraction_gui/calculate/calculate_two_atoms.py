@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
@@ -59,7 +59,7 @@ class ResultsTwoAtoms(Results):
 def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     """Calculate the energy plot for two atoms.
 
-    This means, given a Parameters object, do the pairinteraction calculations and return an ResultsTwoAtoms object.
+    This means, given a Parameters object, do the PairInteraction calculations and return an ResultsTwoAtoms object.
     """
     return _calculate_two_atoms(parameters)
 

@@ -105,12 +105,12 @@ Python
 Adding License Information
 --------------------------
 
-The pairinteraction software is licensed under LGPL v3. Code files should contain the following license header:
+The PairInteraction software is licensed under LGPL v3. Code files should contain the following license header:
 
 .. code-block::
 
-    SPDX-FileCopyrightText: <year of the creation of the file> Pairinteraction Developers
+    SPDX-FileCopyrightText: <year of the creation of the file> PairInteraction Developers
     SPDX-License-Identifier: LGPL-3.0-or-later
 
-If a third-party library is used *and* binary builds of the pairinteraction software include it, license information for
+If a third-party library is used *and* binary builds of the PairInteraction software include it, license information for
 the library should be added to the :github:`LICENSES-THIRD-PARTY <tree/master/LICENSES-THIRD-PARTY>` directory.

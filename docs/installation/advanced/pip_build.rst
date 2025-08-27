@@ -12,12 +12,12 @@ library using pip_.
 
 .. note::
 
-    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you
-    can install pairinteraction directly from the :github:`GitHub <>` repository by running ``pip install
+    If you do not want to modify the source code and just want to use the most recent version of PairInteraction, you
+    can install PairInteraction directly from the :github:`GitHub <>` repository by running ``pip install
     git+https://github.com/pairinteraction/pairinteraction``.
 
 If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of
-the pairinteraction repository.
+the PairInteraction repository.
 
 .. _pip: https://pypi.org/project/pip/
 
@@ -85,7 +85,7 @@ Advanced options for developers when building the package:
     via ``uv pip install -r .build_requirements.txt``).
 |   ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
 |   ``-v``: Make the output more verbose.
-|   ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction are
+|   ``-e``: Install the package in editable mode (i.e. changes to the python files inside PairInteraction are
     immediately effective).
 
 To install all dependencies without building the package, confer the :ref:`python setup <python_setup>`.

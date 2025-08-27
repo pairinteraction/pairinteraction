@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the spdlog
+The binary builds of the PairInteraction software include the spdlog
 library. The use of this library is subject to the MIT License:
 
 https://github.com/gabime/spdlog/blob/v1.x/LICENSE

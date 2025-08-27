@@ -1,7 +1,7 @@
 Publications
 ============
 
-If you use pairinteraction in your research, please cite the following publication:
+If you use PairInteraction in your research, please cite the following publication:
 
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian
     Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, `J. Phys. B: At. Mol. Opt. Phys. 50, 133001
@@ -21,8 +21,8 @@ If you use pairinteraction in your research, please cite the following publicati
             url = {https://doi.org/10.1088/1361-6455/aa743a}
         }
 
-The pairinteraction software relies on quantum defects provided by the community. Please consider citing relevant
-publications for your atomic species alongside pairinteraction:
+The PairInteraction software relies on quantum defects provided by the community. Please consider citing relevant
+publications for your atomic species alongside PairInteraction:
 
 ======= ==================== ================ =========================================================================
 Element Model                Identifier       References
@@ -47,7 +47,7 @@ Yb173   MQDT                 ``Yb173_mqdt``   MQDT model formulated by us
 Yb174   MQDT                 ``Yb174_mqdt``   `10.48550/arXiv.2406.01482`_ (2024)
 ======= ==================== ================ =========================================================================
 
-The identifier can be used to specify an atomic species in the pairinteraction software.
+The identifier can be used to specify an atomic species in the PairInteraction software.
 
 .. _10.1016/0030-4018(81)90225-x: https://doi.org/10.1016/0030-4018(81)90225-X
 

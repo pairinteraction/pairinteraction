@@ -20,7 +20,7 @@ Build tools
 You can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most C++ dependencies.
 Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`github workflow
 <tree/master/.github/workflows/cpp-backend.yml>` and :github:`actions folder <tree/master/.github/actions>` of the
-pairinteraction repository.
+PairInteraction repository.
 
 In addition, you need to adjust your path environment variable if you want to use certain tools from the command line.
 In order to smoothly run all the commands described on this page, add the following paths to your path environment
@@ -108,4 +108,4 @@ Tips independent of the OS
 .. note::
 
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the
-    :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
+    :github:`workflows <tree/master/.github/workflows>` directory of the PairInteraction repository.

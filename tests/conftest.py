@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import multiprocessing
@@ -41,7 +41,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     download_missing: bool = session.config.getoption("--download-missing")
     database_dir: Optional[str] = session.config.getoption("--database-dir")
 
-    # Disable the test mode of pairinteraction that would call _setup_test_mode
+    # Disable the test mode of PairInteraction that would call _setup_test_mode
     # automatically. This would be necessary for testing the jupyter notebooks
     # but we want to call _setup_test_mode manually.
     test_mode = os.environ.get("PAIRINTERACTION_TEST_MODE", "1")

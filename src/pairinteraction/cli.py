@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import argparse
@@ -11,9 +11,9 @@ from pairinteraction import __version__, configure_logging
 
 
 def main() -> int:
-    """Entry point for the pairinteraction CLI."""
+    """Entry point for the PairInteraction CLI."""
     parser = argparse.ArgumentParser(
-        description="Pairinteraction CLI: launch the GUI, run tests, or manage the cache",
+        description="PairInteraction CLI: launch the GUI, run tests, or manage the cache",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
@@ -24,7 +24,7 @@ def main() -> int:
             "  pairinteraction purge"
         ),
     )
-    parser.add_argument("--version", action="version", version=f"pairinteraction v{__version__}")
+    parser.add_argument("--version", action="version", version=f"PairInteraction v{__version__}")
     parser.add_argument(
         "--log-level",
         default="WARNING",

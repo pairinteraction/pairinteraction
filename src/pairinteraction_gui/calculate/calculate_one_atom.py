@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
@@ -33,7 +33,7 @@ class ResultsOneAtom(Results):
 def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     """Calculate the energy plot for one atom.
 
-    This means, given a Parameters object, do the pairinteraction calculations and return an ResultsOneAtom object.
+    This means, given a Parameters object, do the PairInteraction calculations and return an ResultsOneAtom object.
     """
     return _calculate_one_atom(parameters)
 

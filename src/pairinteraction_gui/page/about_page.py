@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from pathlib import Path
@@ -13,10 +13,10 @@ images_dir = Path(__file__).parent.parent / "images"
 
 
 class AboutPage(BasePage):
-    """Page for displaying information about pairinteraction and the pairinteraction gui."""
+    """Page for displaying information about PairInteraction and the PairInteraction gui."""
 
     title = "About"
-    tooltip = "Learn more about pairinteraction"
+    tooltip = "Learn more about PairInteraction"
     # icon_path = Path(__file__).parent.parent / "icons" / "about.svg"
 
     def setupWidget(self) -> None:
@@ -34,7 +34,7 @@ class AboutPage(BasePage):
         layout.setContentsMargins(40, 40, 40, 40)
 
         # Title with modern styling
-        title = QLabel("Pairinteraction")
+        title = QLabel("PairInteraction")
         title_font = QFont()
         title_font.setPointSize(32)
         title_font.setBold(True)
@@ -45,7 +45,7 @@ class AboutPage(BasePage):
         # Description with better formatting
         desc = QLabel(
             "<p style='font-size: 14px; line-height: 1.5;'>"
-            "The pairinteraction software calculates properties of Rydberg atoms. "
+            "The PairInteraction software calculates properties of Rydberg atoms. "
             "It consists of a Python library and this graphical user interface for obtaining "
             "single-atom properties and calculating pair potentials, making use of a "
             "high-performance C++ backend."

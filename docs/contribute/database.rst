@@ -3,11 +3,11 @@
 Database Format
 ===============
 
-The pairinteraction software constructs Hamiltonians from matrix elements that are stored in databases. This design
+The PairInteraction software constructs Hamiltonians from matrix elements that are stored in databases. This design
 enables the inclusion of new atomic species and even molecules into the software without requiring modifying the code of
 the software itself.
 
-The currently available databases are hosted on GitHub and are downloaded by pairinteraction when needed. We manage two
+The currently available databases are hosted on GitHub and are downloaded by PairInteraction when needed. We manage two
 database repositories:
 
 - database-sqdt_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool
@@ -25,8 +25,8 @@ database repositories:
 
 You can also manually download the databases from database-sqdt_ and database-mqdt_. Simply download the zip file of the
 species you are interested in and extract it. Alternatively, you can create your own custom database (see
-https://github.com/pairinteraction/database-sqdt for an example on how to create a database for pairinteraction). Then
-move the extracted folder (e.g. ``Rb_v1.2``) to the cache directory of pairinteraction inside the
+https://github.com/pairinteraction/database-sqdt for an example on how to create a database for PairInteraction). Then
+move the extracted folder (e.g. ``Rb_v1.2``) to the cache directory of PairInteraction inside the
 ``pairinteraction/database/tables/`` directory. On Linux, this is usually located at
 ``~/.cache/pairinteraction/database/tables/``. For other platforms, you can use our command line interface to find the
 directory:

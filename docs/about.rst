@@ -14,11 +14,11 @@ simulators and to build quantum gates for quantum computing. While quantum compu
 are still a rather young technology, they already achieve fidelities on par with other leading quantum computing
 platforms, and offer the potential for scalable architectures.
 
-For what is the pairinteraction software?
+For what is the PairInteraction software?
 -----------------------------------------
 
 To use Rydberg atoms, it is necessary to understand the interactions between them and how they can be tuned to fulfill
-the needs of the desired application. The pairinteraction software package provides a Python library and graphical user
+the needs of the desired application. The PairInteraction software package provides a Python library and graphical user
 interface to calculate the interaction potentials between Rydberg atoms as well as single-atom properties such as
 lifetimes, energies, and energy shifts by electric and magnetic fields. To achieve accurate results, state-of-the-art
 approaches are used (such as multi-channel quantum defect theory for atoms with two valence electrons and Green tensor

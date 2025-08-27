@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 # ruff: noqa: E402
@@ -142,7 +142,7 @@ _setup_dynamic_libaries()
 
 
 # ---------------------------------------------------------------------------------------
-# Configure pairinteraction for running tests with a local database if requested
+# Configure PairInteraction for running tests with a local database if requested
 # ---------------------------------------------------------------------------------------
 def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str] = None) -> None:
     from pathlib import Path

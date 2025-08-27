@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import argparse
@@ -43,7 +43,7 @@ class BenchmarkResult:
 def benchmark_pairinteraction(
     pi: ModuleType, float_type: str, name: str, settings: dict[str, Any]
 ) -> list[BenchmarkResult]:
-    """Benchmark pairinteraction."""
+    """Benchmark PairInteraction."""
     assert pi is pi_real or pi is pi_complex
 
     species = settings["species"]
@@ -139,9 +139,11 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
     unique_softwares = data["software"].unique()
     palette = {
         "Alkali.ne Rydberg Calculator": sns.color_palette("deep")[3],
-        "old pairinteraction": sns.color_palette("deep")[1],
+        "Legacy PairInteraction (v0.9.10)": sns.color_palette("deep")[1],
     }
-    other_softwares = [s for s in unique_softwares if s not in ["Alkali.ne Rydberg Calculator", "old pairinteraction"]]
+    other_softwares = [
+        s for s in unique_softwares if s not in ["Alkali.ne Rydberg Calculator", "Legacy PairInteraction (v0.9.10)"]
+    ]
     palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)))))
 
     # Set up a split plot if necessary
@@ -227,7 +229,7 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
 def run() -> None:
     """Run the benchmarking."""
     parser = argparse.ArgumentParser(
-        description="Run benchmarks for the pairinteraction software.",
+        description="Run benchmarks for the PairInteraction software.",
     )
     parser.add_argument(
         "--reps",
@@ -269,28 +271,28 @@ def run() -> None:
 
     if args.floats:
         backends = {
-            "pairinteraction, real 32": (pi_real, "float32"),
-            "pairinteraction, real 64": (pi_real, "float64"),
-            "pairinteraction, complex 32": (pi_complex, "float32"),
-            "pairinteraction, complex 64": (pi_complex, "float64"),
+            "PairInteraction, real 32": (pi_real, "float32"),
+            "PairInteraction, real 64": (pi_real, "float64"),
+            "PairInteraction, complex 32": (pi_complex, "float32"),
+            "PairInteraction, complex 64": (pi_complex, "float64"),
         }
         external_scripts: dict[str, Path] = {}
     else:
         backends = {
-            "pairinteraction": (pi_real, "float32"),
+            f"Latest PairInteraction (v{__version__})": (pi_real, "float32"),
         }
         external_scripts = {
-            "old pairinteraction": Path(__file__).parent / "_run_old_pairinteraction.py",
+            "Legacy PairInteraction (v0.9.10)": Path(__file__).parent / "_run_old_pairinteraction.py",
             "Alkali.ne Rydberg Calculator": Path(__file__).parent / "_run_arc.py",
         }
 
     for _ in range(args.reps):
-        # Benchmark pairinteraction backends
+        # Benchmark PairInteraction backends
         for name, (module, float_type) in backends.items():
             logger.info("Benchmarking '%s'", name)
             all_results += benchmark_pairinteraction(module, float_type, name, settings)
 
-        # Benchmark ARC and old pairinteraction
+        # Benchmark ARC and old PairInteraction
         for name, script_path in external_scripts.items():
             logger.info("Benchmarking '%s'", name)
             all_results.extend(benchmark_external_script(script_path, name, settings))

@@ -121,7 +121,7 @@ directory. Note that ninja uses all available processors by default.
 
 **3. Using Compiler Caching**
 
-If you delete the build directory because you want to compile a different branch of pairinteraction or use different
+If you delete the build directory because you want to compile a different branch of PairInteraction or use different
 build options, the compilation has to start from scratch - as long as you do not use a compiler cache like `ccache`.
 Using this tool has the additional advantage that adding comments to the source code does not trigger a recompilation.
 It can be installed on many operating systems, e.g., on Ubuntu by running:

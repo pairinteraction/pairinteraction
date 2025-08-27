@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the OpenSSL
+The binary builds of the PairInteraction software include the OpenSSL
 library. The use of this library is subject to the Apache License,
 Version 2.0:
 

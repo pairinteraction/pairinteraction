@@ -1,4 +1,4 @@
-The binary builds of the pairinteraction software include the nanobind
+The binary builds of the PairInteraction software include the nanobind
 library. The use of this library is subject a three-clause BSD license:
 
 https://github.com/wjakob/nanobind/blob/master/LICENSE

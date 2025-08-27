@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 # ruff: noqa: S608
@@ -221,7 +221,7 @@ def shrink() -> None:
     """Shrink the parquet database files by filtering and compressing the data."""
     parser = argparse.ArgumentParser(
         description="Shrink the parquet database files by filtering and compressing the data. The default output "
-        "directory is the data/database directory of the pairinteraction repository."
+        "directory is the data/database directory of the PairInteraction repository."
     )
     parser.add_argument(
         "--out",

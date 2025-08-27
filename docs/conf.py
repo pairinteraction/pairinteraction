@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Pairinteraction Developers
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 # ruff: noqa: INP001
@@ -12,8 +12,8 @@ import pairinteraction
 # -- Project information -----------------------------------------------------
 
 project = "pairinteraction"
-copyright = "2017, Pairinteraction Developers"  # noqa: A001
-author = "Pairinteraction Developers"
+copyright = "2017, PairInteraction Developers"  # noqa: A001
+author = "PairInteraction Developers"
 
 version = pairinteraction.__version__  # The short X.Y version, use via |version|
 release = version  # The full version, including alpha/beta/rc tags, use via |release|

@@ -3,7 +3,7 @@
 API Reference
 =============
 
-The pairinteraction package provides a Python interface for easily accessing the functionality in a pythonic way. This
+The PairInteraction package provides a Python interface for easily accessing the functionality in a pythonic way. This
 Python interface can be accessed via the ``pairinteraction`` module by importing
 
 .. code-block:: python

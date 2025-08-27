@@ -34,13 +34,13 @@ To activate the virtual environment, you can run
     # For Windows users
     .venv\Scripts\activate
 
-In order to install all build dependencies for pairinteraction, run
+In order to install all build dependencies for PairInteraction, run
 
 .. code-block:: bash
 
     uv pip install -r .build_requirements.txt
 
-inside the pairinteraction repository.
+inside the PairInteraction repository.
 
 If in addition you want to install all dependencies from the `pyproject.toml` file, you can use the following commands:
 
@@ -67,7 +67,7 @@ running the following commands:
     conda install pip-tools
 
 In order to install all dependencies to build the package, you can run from inside the conda environment and the root
-directory of the pairinteraction repository
+directory of the PairInteraction repository
 
 .. code-block:: bash
 
