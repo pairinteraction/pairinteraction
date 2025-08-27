@@ -5,11 +5,15 @@ import datetime
 import inspect
 import logging
 import re
-from typing import Any, Callable, ClassVar
+from functools import wraps
+from typing import Callable, ClassVar, ParamSpec, TypeVar
 
 from colorama import Fore, Style, just_fix_windows_console
 
 from pairinteraction._backend import get_pending_logs
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def _extract_cpp_backend_log_fields(message: str) -> dict[str, str]:
@@ -48,8 +52,9 @@ def _flush_pending_logs() -> None:
         _log_cpp_backend_record(entry.level, entry.message)
 
 
-def _flush_logs_after(func: Callable[..., Any]) -> Callable[..., Any]:
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+def _flush_logs_after(func: Callable[P, R]) -> Callable[P, R]:
+    @wraps(func)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         result = func(*args, **kwargs)
         _flush_pending_logs()
         return result
