@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Build SDist
       run: pipx run build --sdist
@@ -45,7 +45,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Log in to the Container registry
       if: runner.os == 'Linux'
@@ -101,7 +101,7 @@ jobs:
     needs: [wheel]
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
@@ -145,7 +145,7 @@ jobs:
       image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-ubuntu:docker') || null }}
     needs: [sdist]
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install Windows dependencies
       if: runner.os == 'Windows'

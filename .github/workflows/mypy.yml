@@ -22,7 +22,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
