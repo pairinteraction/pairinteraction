@@ -37,20 +37,22 @@ shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
 # Define all branches and tags to build documentation for (using regex expressions)
 LATEST_BRANCH = "master"
-TAG_REGEX = "v0.9.10"
+LEGACY_VERSION = "v0.9.10"
 
 
 # Define factory method for data passed to sphinx, important for the version selector (see _templates/versions.html)
 def data_factory(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict[str, Any]:
+    version_names = {
+        LATEST_BRANCH: f"latest (v{pairinteraction.__version__})",
+        LEGACY_VERSION: f"legacy ({LEGACY_VERSION})",
+    }
     base_url = "../"
     version_tuples = [
-        [f"latest (v{pairinteraction.__version__})", base_url + "index.html"],
-        ["legacy (v0.9.10)", base_url + "v0.9.10/index.html"],
+        [version_names[LATEST_BRANCH], base_url + "index.html"],
+        [version_names[LEGACY_VERSION], base_url + f"{LEGACY_VERSION}/index.html"],
     ]
 
-    current_version = rev.name
-    if current_version == LATEST_BRANCH:
-        current_version = f"latest (v{pairinteraction.__version__})"
+    current_version = version_names.get(rev.name, rev.name)
     return {
         "current_version": current_version,
         "version_tuples": version_tuples,
@@ -129,12 +131,9 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
 # Versions/Revisions not listed here will use the entry, which revision is the closest ancestor of the wanted revision
 # IMPORTANT: The revisions must be put in in the correct order (starting with the oldest)
 BUILDER_MAPPING = {
-    "v0.9.10": CustomCommandBuilder(
+    LEGACY_VERSION: CustomCommandBuilder(
         Path("doc/sphinx/"),
-        pre_cmds=[
-            ("cp", "Placeholder.SOURCE_DIR/conf.py.in", "Placeholder.SOURCE_DIR/conf.py"),
-            ("cp", f"{DOCS_DIR}/_templates/versions.html", "Placeholder.SOURCE_DIR/_templates/versions.html"),
-        ],
+        pre_cmds=[("git", "-C", "Placeholder.SOURCE_DIR/../..", "apply", f"{DOCS_DIR}/patches/{LEGACY_VERSION}.patch")],
         cmds=[
             ("sphinx-build", "--color", "-a", "-v", "--keep-going", "Placeholder.SOURCE_DIR", "Placeholder.OUTPUT_DIR")
         ],
@@ -143,7 +142,7 @@ BUILDER_MAPPING = {
 }
 
 ENVIRONMENT_MAPPING = {
-    "v0.9.10": VirtualPythonEnvironment.factory(venv=ROOT_DIR / "venv_pairinteraction_v0.9.10"),
+    LEGACY_VERSION: VirtualPythonEnvironment.factory(venv=ROOT_DIR / "venv_pairinteraction_v0.9.10"),
     "v2.0.0": VirtualPythonEnvironment.factory(venv=ROOT_DIR / ".venv"),
 }
 
@@ -154,7 +153,7 @@ DefaultDriver(
     output_dir=OUTPUT_DIR,
     vcs=Git(
         branch_regex=LATEST_BRANCH,
-        tag_regex=TAG_REGEX,
+        tag_regex=LEGACY_VERSION,
         buffer_size=1 * 10**9,  # 1 GB
     ),
     builder=BUILDER_MAPPING,

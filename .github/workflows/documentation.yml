@@ -51,7 +51,7 @@ jobs:
     - name: Setup 2nd virtual environment for pairinteraction v0.9.10
       run: |
         uv venv venv_pairinteraction_v0.9.10 --python=python3.11
-        uv pip install --python venv_pairinteraction_v0.9.10/bin/python 'pairinteraction==0.9.10' sphinx nbsphinx 'sphinxcontrib-mermaid<1' sphinx_rtd_theme
+        uv pip install --python venv_pairinteraction_v0.9.10/bin/python 'pairinteraction==0.9.10' sphinx nbsphinx 'sphinxcontrib-mermaid<1' sphinx_rtd_theme sphinx_polyversion
     - name: Build documentation
       run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts
