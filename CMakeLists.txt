@@ -225,7 +225,6 @@ endif()
 # Add subdirectories for building the project
 add_subdirectory(src/cpp)
 add_subdirectory(src/cpp/bindings)
-add_subdirectory(src/cpp/docs)
 
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 

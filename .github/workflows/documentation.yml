@@ -60,27 +60,6 @@ jobs:
         name: pairinteraction-docs
         path: docs/_build_polyversion/
 
-  build_doxygen:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
-    steps:
-    - uses: actions/checkout@v4
-    - name: Setup uv build virtual environment
-      uses: ./.github/actions/setup-uv-build-venv
-    - name: Configure
-      run: uv run --no-project cmake -S . -B build/
-    - name: Build
-      run: cmake --build build/ -- --keep-going
-    - name: Doxygen Documentation
-      run: cmake --build build/ --target doxygen -- --keep-going
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: pairinteraction-doxygen
-        path: build/src/cpp/docs/html
-
   coverage_cpp_ctest:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -160,7 +139,7 @@ jobs:
         path: docs/coverage
 
   deploy_docs:
-    needs: [build_latest_sphinx, build_sphinx_polyversion, build_doxygen, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
+    needs: [build_latest_sphinx, build_sphinx_polyversion, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -171,12 +150,6 @@ jobs:
       with:
         name: pairinteraction-docs
         path: public/
-
-    - name: Download artifacts doxygen
-      uses: actions/download-artifact@v5
-      with:
-        name: pairinteraction-doxygen
-        path: public/doxygen/html
 
     - name: Download artifacts coverage-cpp-ctest
       uses: actions/download-artifact@v5

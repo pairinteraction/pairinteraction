@@ -36,12 +36,11 @@ Option            Effect                             Default
 
 .. [1] This mode implies building the debug version of the software.
 
-Moreover, executing the commands manually allows for running additional targets. For example, you can use the
-``doxygen`` target to build the C++ `doxygen documentation
-<https://www.pairinteraction.org/pairinteraction/doxygen/html/index.html>`_ by executing ``cmake --build . --target
-doxygen``. In contrast, if you use pip_ to build the software, only the default target for building the library is
-executed. In the following, a list of all available targets is provided. Note that some targets require specific build
-options to be enabled in addition to the default options, and have varying names depending on the platform.
+Moreover, executing the commands manually allows for running additional targets. For example, you can use the ``test``
+target to run the C++ tests by executing ``cmake --build . --target test``. In contrast, if you use pip_ to build the
+software, only the default target for building the library is executed. In the following, a list of all available
+targets is provided. Note that some targets require specific build options to be enabled in addition to the default
+options, and have varying names depending on the platform.
 
 ================ ====================== ==================================================================== ===========
 Target (Windows) Target (OS X and Unix) Task                                                                 Requirement
@@ -49,7 +48,6 @@ Target (Windows) Target (OS X and Unix) Task                                    
 ``ALL_BUILD``    ``all``                Build the software (default target)
 ``RUN_TESTS``    ``test``               Run the C++ tests (without any python tests, use the automatic build
                                         above for this)
-``DOXYGEN``      ``doxygen``            Build the Doxygen documentation in ``src/cpp/docs``
 ================ ====================== ==================================================================== ===========
 
 .. note::
