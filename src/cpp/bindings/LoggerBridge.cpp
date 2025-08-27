@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fmt/core.h>
 #include <memory>
+#include <mutex>
 #include <spdlog/sinks/base_sink.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
@@ -46,7 +47,7 @@ void LoggerBridge::QueueSink::sink_it_(const spdlog::details::log_msg &msg) {
         break;
     }
     entry.message = text;
-    std::lock_guard<std::mutex> lock(parent->log_queue_mtx);
+    std::scoped_lock lock(parent->log_queue_mtx);
     parent->log_queue.push_back(std::move(entry));
 }
 
@@ -82,7 +83,7 @@ LoggerBridge::~LoggerBridge() {
 std::vector<LoggerBridge::LogEntry> LoggerBridge::get_pending_logs() {
     std::deque<LogEntry> log_queue_local;
     {
-        std::lock_guard<std::mutex> lock(log_queue_mtx);
+        std::scoped_lock lock(log_queue_mtx);
         log_queue_local.swap(log_queue);
     }
 
