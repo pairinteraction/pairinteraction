@@ -28,12 +28,12 @@ species you are interested in and extract it. Alternatively, you can create your
 https://github.com/pairinteraction/database-sqdt for an example on how to create a database for pairinteraction). Then
 move the extracted folder (e.g. ``Rb_v1.2``) to the cache directory of pairinteraction inside the
 ``pairinteraction/database/tables/`` directory. On Linux, this is usually located at
-``~/.cache/pairinteraction/database/tables/``. For other platforms, you can find the directory by running:
+``~/.cache/pairinteraction/database/tables/``. For other platforms, you can use our command line interface to find the
+directory:
 
 .. code-block:: bash
 
-    # print the cache directory of pairinteraction
-    python -c "from pairinteraction._backend import get_cache_directory; print(get_cache_directory())"
+    pairinteraction paths
 
 Your final directory structure should look like this:
 
