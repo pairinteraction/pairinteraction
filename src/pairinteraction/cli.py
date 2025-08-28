@@ -99,7 +99,7 @@ def download_databases(species_list: list[str]) -> int:
     exit_code = 0
 
     for species in species_list:
-        print(f"Downloading tables for {species}...")
+        print(f"Check for tables for {species}...")
 
         try:
             # We make use of the fact that all tables of a species get downloaded
@@ -112,10 +112,10 @@ def download_databases(species_list: list[str]) -> int:
                 basis.get_matrix_elements(basis, "electric_dipole", 0)
                 is_wigner_downloaded = True
 
-            print(Fore.GREEN + "Download successful." + Style.RESET_ALL)
+            print(Fore.GREEN + "Successful." + Style.RESET_ALL)
         except Exception as e:
             exit_code = 1
-            print(Fore.RED + f"Download failed: {e}" + Style.RESET_ALL)
+            print(Fore.RED + f"Failed: {e}" + Style.RESET_ALL)
 
     return exit_code
 
