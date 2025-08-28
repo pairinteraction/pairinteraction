@@ -375,14 +375,13 @@ std::string ParquetManager::get_path(const std::string &key, const std::string &
     // Ensure availability of the local table file
     auto asset_it = local_asset_info.find(key);
     if (asset_it == local_asset_info.end()) {
-        throw std::runtime_error("Table " + key + "/" + table + ".parquet" +
-                                 " not found. Try downloading it "
-                                 "by running `pairinteraction download " +
-                                 key + "` in your terminal.");
+        throw std::runtime_error("Table " + table + ".parquet for " + key +
+                                 " not found. Check the spelling of the species.");
     }
     auto table_it = asset_it->second.paths.find(table);
     if (table_it == asset_it->second.paths.end()) {
-        throw std::runtime_error("Table " + key + "/" + table + ".parquet" + " not found.");
+        throw std::runtime_error("Table " + table + ".parquet for " + key +
+                                 " not found. Check the spelling of the species.");
     }
 
     // Cache the local table in memory if requested
