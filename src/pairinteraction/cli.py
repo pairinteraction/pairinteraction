@@ -20,6 +20,7 @@ def main() -> int:
             "  pairinteraction --log-level INFO gui\n"
             "  pairinteraction --log-level INFO test\n"
             "  pairinteraction download Rb Cs\n"
+            "  pairinteraction paths\n"
             "  pairinteraction purge"
         ),
     )
@@ -44,6 +45,10 @@ def main() -> int:
     download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
     download_parser.add_argument("species", nargs="+", help="list of species to download data for")
     download_parser.set_defaults(func=lambda args: download_databases(args.species))
+
+    # Paths command
+    paths_parser = subparsers.add_parser("paths", help="show config and cache directories")
+    paths_parser.set_defaults(func=lambda _args: show_paths())
 
     # Purge command
     purge_parser = subparsers.add_parser("purge", help="delete all cached data")
@@ -113,6 +118,16 @@ def download_databases(species_list: list[str]) -> int:
             print(Fore.RED + f"Download failed: {e}" + Style.RESET_ALL)
 
     return exit_code
+
+
+def show_paths() -> int:
+    """Show config and cache directories."""
+    from pairinteraction._backend import get_cache_directory, get_config_directory
+
+    print("Config directory:", get_config_directory())
+    print("Cache directory:", get_cache_directory())
+    print("Database directory:", get_cache_directory() / "database/tables")
+    return 0
 
 
 def purge_cache() -> int:
