@@ -82,6 +82,7 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
 
             // Prepare headers
             httplib::Headers headers{
+                {"User-Agent", "pairinteraction"},
                 {"X-GitHub-Api-Version", "2022-11-28"},
                 {"Accept",
                  use_octet_stream ? "application/octet-stream" : "application/vnd.github+json"}};
@@ -99,7 +100,39 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
                                 "avoids-an-increase-in-ratelimits-used-if-304-is-returned");
             }
 
-            auto response = client->Get(remote_url, headers);
+            // If we're fetching binary, stream with a progress callback; otherwise use a simple get
+            httplib::Result response;
+            std::string streamed_body;
+            if (use_octet_stream) {
+                auto content_receiver = [&](const char *data, size_t len) {
+                    streamed_body.append(data, len);
+                    return true;
+                };
+
+                // Progress display
+                int last_pct = -1;
+                auto progress_display = [&last_pct, remote_url](uint64_t cur, uint64_t total) {
+                    if (total == 0) {
+                        fmt::print(stderr, "\rDownloading {}...", remote_url);
+                        (void)std::fflush(stderr);
+                    } else if (int pct = static_cast<int>((cur * 100) / total); pct != last_pct) {
+                        last_pct = pct;
+                        fmt::print(stderr, "\rDownloading {}... {:3d}%", remote_url, pct);
+                        (void)std::fflush(stderr);
+                    }
+                    return true;
+                };
+
+                response = client->Get(remote_url, headers, content_receiver, progress_display);
+
+                // Ensure the progress display ends cleanly if we showed it
+                if (last_pct >= 0) {
+                    fmt::print(stderr, "\n");
+                    (void)std::fflush(stderr);
+                }
+            } else {
+                response = client->Get(remote_url, headers);
+            }
 
             // Handle if the response is null
             if (!response) {
@@ -125,7 +158,7 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
             if (response->has_header("last-modified")) {
                 result.last_modified = response->get_header_value("last-modified");
             }
-            result.body = response->body;
+            result.body = use_octet_stream ? std::move(streamed_body) : response->body;
             result.status_code = response->status;
 
             SPDLOG_DEBUG("Response status: {}", response->status);
