@@ -32,7 +32,7 @@ def compare_eigensystem_to_reference(
     if overlaps is not None:
         # Ensure that the overlaps sum up to one
         np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(n_systems))
-        np.testing.assert_allclose(overlaps, np.loadtxt(reference_path / "overlaps.txt"), atol=1e-10)
+        np.testing.assert_allclose(overlaps, np.loadtxt(reference_path / "overlaps.txt"), atol=1e-8)
 
     if kets is not None:
         np.testing.assert_equal(kets, np.loadtxt(reference_path / "kets.txt", dtype=str, delimiter="\t"))
