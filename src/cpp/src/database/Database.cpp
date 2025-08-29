@@ -851,6 +851,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
+    bool is_calculated_with_mqdt = false;
+    double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
 
@@ -889,6 +891,9 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             }
             last_energy = chunk_energy[i];
 
+            is_calculated_with_mqdt |= chunk_is_calculated_with_mqdt[i];
+            min_quantum_number_nu = std::min(min_quantum_number_nu, chunk_quantum_number_nu[i]);
+
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom>(
                 typename KetAtom::Private(), chunk_energy[i], chunk_quantum_number_f[i],
@@ -902,6 +907,20 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 chunk_quantum_number_j_ryd_exp[i], chunk_quantum_number_j_ryd_std[i],
                 chunk_is_j_total_momentum[i], chunk_is_calculated_with_mqdt[i],
                 chunk_underspecified_channel_contribution[i], *this, chunk_id[i]));
+        }
+    }
+
+    // Show a warning for low-lying states
+    if (min_quantum_number_nu < 25) {
+        if (is_calculated_with_mqdt) {
+            SPDLOG_WARN("The multi-channel quantum defect theory might produce inaccurate results "
+                        "for effective principal quantum numbers < 25. The models get increasingly "
+                        "unreliable for small principal quantum numbers, leading to inaccurate "
+                        "matrix elements, energies, and even missing states.");
+        } else {
+            SPDLOG_WARN(
+                "The single-channel quantum defect theory can be inaccurate for effective "
+                "principal quantum numbers < 25. This can lead to inaccurate matrix elements.");
         }
     }
 
