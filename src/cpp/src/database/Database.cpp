@@ -916,7 +916,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             SPDLOG_WARN("The multi-channel quantum defect theory might produce inaccurate results "
                         "for effective principal quantum numbers < 25. The models get increasingly "
                         "unreliable for small principal quantum numbers, leading to inaccurate "
-                        "matrix elements, energies, and even missing states.");
+                        "matrix elements and energies. Due to missing data, even some states might "
+                        "not be present.");
         } else {
             SPDLOG_WARN(
                 "The single-channel quantum defect theory can be inaccurate for effective "

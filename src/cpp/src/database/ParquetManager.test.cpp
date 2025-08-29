@@ -77,10 +77,10 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_local();
         manager.scan_remote();
 
-        CHECK_THROWS_WITH_AS(
-            manager.get_path("misc", "missing_table"),
-            "Table missing_table.parquet for misc not found. Check the spelling of the species.",
-            std::runtime_error);
+        CHECK_THROWS_WITH_AS(manager.get_path("misc", "missing_table"),
+                             "No table 'missing_table.parquet' found for species 'misc'. The "
+                             "tables for the species are incomplete.",
+                             std::runtime_error);
     }
 
     SUBCASE("Check version parsing") {
