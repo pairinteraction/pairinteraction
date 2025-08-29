@@ -86,7 +86,10 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<size_t>(&Basis<T>::get_corresponding_ket_index, nb::const_))
         .def("get_corresponding_ket_index",
              nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket_index,
-                                                         nb::const_));
+                                                         nb::const_))
+        .def("copy", [](const Basis<T> &self) {
+            return std::make_shared<T>(static_cast<const T &>(self));
+        });
 }
 
 template <typename T>
