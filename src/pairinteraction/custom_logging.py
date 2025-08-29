@@ -6,14 +6,17 @@ import inspect
 import logging
 import re
 from functools import wraps
-from typing import Callable, ClassVar, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Callable, ClassVar, TypeVar
 
 from colorama import Fore, Style, just_fix_windows_console
 
 from pairinteraction._backend import get_pending_logs
 
-P = ParamSpec("P")
-R = TypeVar("R")
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
+    P = ParamSpec("P")
+    R = TypeVar("R")
 
 
 def _extract_cpp_backend_log_fields(message: str) -> dict[str, str]:
@@ -52,9 +55,9 @@ def _flush_pending_logs() -> None:
         _log_cpp_backend_record(entry.level, entry.message.decode("utf-8", errors="replace"))
 
 
-def _flush_logs_after(func: Callable[P, R]) -> Callable[P, R]:
+def _flush_logs_after(func: Callable["P", "R"]) -> Callable["P", "R"]:
     @wraps(func)
-    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+    def wrapper(*args: "P.args", **kwargs: "P.kwargs") -> "R":
         result = func(*args, **kwargs)
         _flush_pending_logs()
         return result

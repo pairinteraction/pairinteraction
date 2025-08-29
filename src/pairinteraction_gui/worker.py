@@ -7,14 +7,17 @@ from functools import wraps
 from multiprocessing.pool import Pool
 from pathlib import Path
 from threading import Thread
-from typing import Any, Callable, ClassVar, Optional, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, TypeVar
 
 from PySide6.QtCore import QObject, QSize, Qt, QThread, Signal
 from PySide6.QtGui import QMovie
 from PySide6.QtWidgets import QApplication, QLabel, QWidget
 
-P = ParamSpec("P")
-R = TypeVar("R")
+if TYPE_CHECKING:
+    from typing_extensions import ParamSpec
+
+    P = ParamSpec("P")
+    R = TypeVar("R")
 
 logger = logging.getLogger(__name__)
 
@@ -196,11 +199,11 @@ class MultiProcessWorker:
             cls.create_pool()
 
 
-def run_in_other_process(func: Callable[P, R]) -> Callable[P, R]:
+def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
     MultiProcessWorker.register(func)
 
     @wraps(func)
-    def wrapper_func(*args: P.args, **kwargs: P.kwargs) -> R:
+    def wrapper(*args: "P.args", **kwargs: "P.kwargs") -> "R":
         return MultiProcessWorker(func.__name__, *args, **kwargs).start()  # type: ignore [no-any-return]
 
-    return wrapper_func
+    return wrapper
