@@ -11,7 +11,7 @@ Code Structure
 The PairInteraction software consists of three parts. Each part is implemented in a separate directory in the
 PairInteraction repository:
 
-- :github:`src/cpp <tree/master/src/cpp>` - A high performance C++ backend for constructing and diagonalizing
+- :github:`src/cpp <tree/master/src/cpp>` - A high-performance C++ backend for constructing and diagonalizing
   Hamiltonians of systems of Rydberg atoms. Python bindings are created using nanobind_.
 - :github:`src/pairinteraction <tree/master/src/pairinteraction>` - A Python library that wraps the Python bindings,
   providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library

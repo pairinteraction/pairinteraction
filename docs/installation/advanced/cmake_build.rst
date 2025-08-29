@@ -8,7 +8,7 @@ Build process
 
 If you want to build only the C++ part and want to have more control over the build process, you can manually run the
 tasks that have been automatically executed by pip_ in the :ref:`automatic build <automatic>`. For this, you have to
-first install the python build dependencies for your :ref:`python environment <python_setup>` manually.
+first install the Python build dependencies for your :ref:`Python environment <python_setup>` manually.
 
 If you want to use mkl you should also run ``pip install mkl mkl-devel``.
 
@@ -46,7 +46,7 @@ options, and have varying names depending on the platform.
 Target (Windows) Target (OS X and Unix) Task                                                                 Requirement
 ================ ====================== ==================================================================== ===========
 ``ALL_BUILD``    ``all``                Build the software (default target)
-``RUN_TESTS``    ``test``               Run the C++ tests (without any python tests, use the automatic build
+``RUN_TESTS``    ``test``               Run the C++ tests (without any Python tests, use the automatic build
                                         above for this)
 ================ ====================== ==================================================================== ===========
 

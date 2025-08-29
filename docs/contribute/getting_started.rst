@@ -96,7 +96,7 @@ necessary steps:
 
       vcpkg install --triplet x64-windows
 
-- After installing the dependencies and activating a python environment, you have two options to build the software. You
+- After installing the dependencies and activating a Python environment, you have two options to build the software. You
   can either build the complete software using ``pip``:
 
   .. code-block:: bash
@@ -115,7 +115,7 @@ necessary steps:
       cmake --build .
 
 To ensure your code adheres to the project's coding standards, we highly recommend using the `pre-commit tool`_. Once
-you've installed this tool, integrate it as pre-commit hook into your local repository with the following command:
+you've installed this tool, integrate it as a pre-commit hook into your local repository with the following command:
 
 .. code-block:: bash
 

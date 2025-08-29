@@ -3,8 +3,8 @@
 Python Setup
 ============
 
-In order to install the python library, it is recommended to create a python virtual environment where you can install
-all dependencies. Therefore, you will first need a package management system to create the python environment. This way,
+In order to install the Python library, it is recommended to create a Python virtual environment where you can install
+all dependencies. Therefore, you will first need a package management system to create the Python environment. This way,
 you can avoid package conflicts with packages you may need for different software projects. In general, we recommend
 using uv_ due to its speed, but as many users are familiar with conda_, we also describe its usage as well.
 
@@ -22,7 +22,7 @@ Creating a virtual environment with uv_ can be done via
     uv venv .venv --python 3.10
 
 This will create a folder `.venv/` which contains all information on the virtual environment. Note, that you can choose
-a different python version by simply changing the version number.
+a different Python version by simply changing the version number.
 
 To activate the virtual environment, you can run
 

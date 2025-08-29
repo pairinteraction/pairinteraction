@@ -5,7 +5,7 @@ This guide outlines the coding style and conventions used in the project.
 
 We highly recommend using ruff_ for formatting Python code and clang-format_ for C++ code to ensure consistency. The
 easiest way to use these tools is to integrate them as pre-commit hooks into your local repository. To do this, install
-the clang-format_ tool and the python package pre-commit_ and execute the following command in the root directory of
+the clang-format_ tool and the Python package pre-commit_ and execute the following command in the root directory of
 your repository:
 
 .. code-block:: bash

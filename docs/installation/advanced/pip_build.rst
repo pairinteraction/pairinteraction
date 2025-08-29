@@ -5,8 +5,8 @@ Build using pip
 
 **1. Setup**
 
-For the build via pip, you do not need to build the C++ backend manually, but you can work with python only. In order to
-so, you first have to :ref:`setup your python environment <python_setup>`. All Python dependencies are listed within the
+For the build via pip, you do not need to build the C++ backend manually, but you can work with Python only. In order to
+so, you first have to :ref:`setup your Python environment <python_setup>`. All Python dependencies are listed within the
 :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python
 library using pip_.
 
@@ -32,7 +32,7 @@ After cloning the repository and creating the virtual environment, you can build
 This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. In
 order for pip to find CMake and VCPKG, make sure you have adjusted your environment variables as discussed in our
 section on :ref:`setting up your development environment<system_setup>`. The option ``-e`` installs the software in
-editable mode, which means that changes to the python source code are directly reflected in the installed package. If
+editable mode, which means that changes to the Python source code are directly reflected in the installed package. If
 you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual
 environment.
 
@@ -42,7 +42,7 @@ The graphical user interface can now be started by executing:
 
     start_pairinteraction_gui
 
-To use the Python library within your code, you can simply run your python code from inside the virtual environment.
+To use the Python library within your code, you can simply run your Python code from inside the virtual environment.
 
 **3. Testing**
 
@@ -52,7 +52,7 @@ First run
 
     pip install .[tests]
 
-to install the relevant packages for your python environment. Tests of the Python library and graphical user interface
+to install the relevant packages for your Python environment. Tests of the Python library and graphical user interface
 can be run by executing:
 
 .. code-block:: bash
@@ -85,7 +85,7 @@ Advanced options for developers when building the package:
     via ``uv pip install -r .build_requirements.txt``).
 |   ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
 |   ``-v``: Make the output more verbose.
-|   ``-e``: Install the package in editable mode (i.e. changes to the python files inside PairInteraction are
+|   ``-e``: Install the package in editable mode (i.e. changes to the Python files inside PairInteraction are
     immediately effective).
 
-To install all dependencies without building the package, confer the :ref:`python setup <python_setup>`.
+To install all dependencies without building the package, confer the :ref:`Python setup <python_setup>`.

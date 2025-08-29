@@ -151,7 +151,7 @@ class EffectiveSystemPair:
 
     @property
     def _need_complex(self) -> bool:
-        """Check if the effective system pair needs complex datatype."""
+        """Check if the effective system pair needs a complex data type."""
         if self._is_created("basis_atoms"):
             return isinstance(self.basis_atoms[0], pi_complex.BasisAtom)
         return self.electric_field[1] != 0 or self.magnetic_field[1] != 0  # type: ignore [index, no-any-return]

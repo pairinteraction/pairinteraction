@@ -49,7 +49,7 @@ pairinteraction gui
 
 ## Highlights
 
-* For calculating Rydberg pair potentials, the software uses a similar approach as the [old version of PairInteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.10), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
+* For calculating Rydberg pair potentials, the software uses a similar approach to the [old version of PairInteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.10), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
 
   ![benchmarking results][benchmark-results-link]
 

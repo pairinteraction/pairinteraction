@@ -48,7 +48,7 @@ Your final directory structure should look like this:
     │   ├── matrix_elements_...
     ├── ...
 
-Note that in addition to the species specific databases, you also always need to download the ``misc`` folder, which
+Note that in addition to the species-specific databases, you also always need to download the ``misc`` folder, which
 contains a database with Wigner symbols.
 
 The databases store tables of states and matrix elements of a set of fundamental operators. We have chosen the set of

@@ -5,7 +5,7 @@ Setup of the Development Environment
 
 This section described how to set up your system for a :ref:`manual build <manual>` of the C++ backend from source. This
 is highly platform dependent, and is described below for each operating system individually. In order to create a Python
-environment for the python backend, refer to our :ref:`Python <python_setup>` setup instructions.
+environment for the Python backend, refer to our :ref:`Python <python_setup>` setup instructions.
 
 Windows
 -------
