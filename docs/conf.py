@@ -11,7 +11,7 @@ import pairinteraction
 
 # -- Project information -----------------------------------------------------
 
-project = "pairinteraction"
+project = "PairInteraction"
 copyright = "2017, PairInteraction Developers"  # noqa: A001
 author = "PairInteraction Developers"
 
