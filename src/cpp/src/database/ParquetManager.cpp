@@ -74,6 +74,11 @@ ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDown
 }
 
 void ParquetManager::scan_remote() {
+    // If repo_paths_ is empty, we have nothing to do
+    if (repo_paths_.empty()) {
+        return;
+    }
+
     remote_asset_info.clear();
 
     struct RepoDownload {
@@ -219,6 +224,13 @@ void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
 }
 
 void ParquetManager::update_local_asset(const std::string &key) {
+    assert(remote_asset_info.empty() == repo_paths_.empty());
+
+    // If remote_asset_info is empty, we have nothing to do
+    if (remote_asset_info.empty()) {
+        return;
+    }
+
     // Get remote version if available
     int remote_version = -1;
     auto remote_it = remote_asset_info.find(key);
@@ -375,13 +387,22 @@ std::string ParquetManager::get_path(const std::string &key, const std::string &
     // Ensure availability of the local table file
     auto asset_it = local_asset_info.find(key);
     if (asset_it == local_asset_info.end()) {
-        throw std::runtime_error("Table " + table + ".parquet for " + key +
-                                 " not found. Check the spelling of the species.");
+        // If we do not know about any table that can be downloaded, downloading might be blocked.
+        // Otherwise, the species might be misspelled.
+        if (remote_asset_info.empty()) {
+            throw std::runtime_error(
+                "No tables found for species '" + key +
+                "'. Check whether you have allowed downloading missing tables, or download the "
+                "tables manually via `pairinteraction download " +
+                key + "`.");
+        }
+        throw std::runtime_error("No tables found for species '" + key +
+                                 "'. Check the spelling of the species.");
     }
     auto table_it = asset_it->second.paths.find(table);
     if (table_it == asset_it->second.paths.end()) {
-        throw std::runtime_error("Table " + table + ".parquet for " + key +
-                                 " not found. Check the spelling of the species.");
+        throw std::runtime_error("No table '" + table + ".parquet' found for species '" + key +
+                                 "'. The tables for the species are incomplete.");
     }
 
     // Cache the local table in memory if requested
