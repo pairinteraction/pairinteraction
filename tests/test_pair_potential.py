@@ -40,7 +40,7 @@ def test_pair_potential(generate_reference: bool) -> None:
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))
 
     # Compare to reference data
-    kets = [repr(ket) for ket in basis_pair.kets]
+    kets = [ket.get_label("raw") for ket in basis_pair.kets]
     eigenenergies = np.array([system.get_eigenenergies(unit="GHz") for system in system_pairs])
     eigenvectors = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in system_pairs])
 

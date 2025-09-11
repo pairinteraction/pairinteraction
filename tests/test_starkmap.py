@@ -28,7 +28,7 @@ def test_starkmap(generate_reference: bool) -> None:
     overlaps = np.array([system.basis.get_overlaps(ket) for system in systems])
 
     # Compare to reference data
-    kets = [repr(ket) for ket in systems[0].basis.kets]
+    kets = [ket.get_label("raw") for ket in systems[0].basis.kets]
     eigenenergies = np.array([system.get_eigenenergies(unit="GHz") for system in systems])
     eigenvectors = np.array([system.get_eigenbasis().get_coefficients().todense().A1 for system in systems])
 

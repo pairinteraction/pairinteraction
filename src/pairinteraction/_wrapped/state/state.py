@@ -58,6 +58,9 @@ class StateBase(ABC, Generic[BasisType, KetType]):
     def get_label(self, max_kets: int = 3) -> str:
         """Label representing the state.
 
+        Args:
+            max_kets: Maximum number of kets to include in the label.
+
         Returns:
             The label of the ket in the given format.
 
@@ -65,17 +68,17 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         coefficients = self.get_coefficients()
         sorted_inds = np.argsort(np.abs(coefficients))[::-1]
         norm_squared = self.norm**2
-        raw = ""
+        label = ""
         overlap = 0
         for i, ind in enumerate(sorted_inds, 1):
-            raw += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
+            label += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
             overlap += abs(coefficients[ind]) ** 2
             if overlap > (0.95 * norm_squared) or i >= max_kets:
                 break
-            raw += " + "
+            label += " + "
         if overlap <= norm_squared - 100 * np.finfo(float).eps:
-            raw += " + ... "
-        return raw
+            label += " + ... "
+        return label
 
     @property
     def kets(self) -> list[KetType]:
