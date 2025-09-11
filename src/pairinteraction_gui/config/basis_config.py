@@ -274,7 +274,7 @@ class RestrictionsMQDT(RestrictionsBase):
         else:
             key = "f"
             description = "Restriction for the  total angular momentum f"
-        self.items[key] = QnItemDouble(self, "Δ" + key, vdefault=3, tooltip=description)
+        self.items[key] = QnItemInt(self, "Δ" + key, vdefault=3, tooltip=description)
 
         self.items["m"] = QnItemInt(
             self, "Δm", vdefault=5, tooltip="Restriction for the magnetic quantum number m", checked=False
