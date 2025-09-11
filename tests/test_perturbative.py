@@ -205,7 +205,7 @@ def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: py
         eff_system.get_effective_hamiltonian()
     captured = capsys.readouterr()
     assert "Detected 'inf' entries" in captured.err
-    assert "|Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
+    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
 
 
 def test_near_resonance_detection(capsys: pytest.CaptureFixture[str]) -> None:

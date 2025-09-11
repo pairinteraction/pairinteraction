@@ -82,7 +82,7 @@ class BasisPair(BasisBase[KetPairType, StateType]):
         ...     energy_unit="GHz",
         ... )
         >>> print(pair_basis)
-        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)
+        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)
 
     """
 

@@ -28,13 +28,17 @@ KetPair<Scalar>::KetPair(
 
 template <typename Scalar>
 std::string KetPair<Scalar>::get_label() const {
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+
     std::string label;
     std::string separator;
     for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
-        label += separator +
-            atomic_bases[atom_index]
-                ->get_corresponding_ket(atomic_indices[atom_index])
-                ->get_label();
+        const auto &basis = atomic_bases[atom_index];
+        size_t idx = atomic_indices[atom_index];
+        Scalar coefficient =
+            basis->get_coefficients().coeff(idx, basis->get_corresponding_ket_index(idx));
+        std::string optional_tilde = (std::abs(coefficient - 1.0) > numerical_precision) ? "~" : "";
+        label += separator + optional_tilde + basis->get_corresponding_ket(idx)->get_label();
         separator = "; ";
     }
     return label;
