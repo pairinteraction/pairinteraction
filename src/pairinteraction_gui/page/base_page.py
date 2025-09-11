@@ -162,18 +162,9 @@ class CalculationPage(SimulationPage):
         raise NotImplementedError("Subclasses must implement this method")
 
     def update_plot(self, parameters: Parameters[Any], results: Results) -> None:
-        energies = results.energies
-        overlaps = results.ket_overlaps
-
-        x_values = parameters.get_x_values()
-        x_label = parameters.get_x_label()
-
-        self.plotwidget.plot(x_values, energies, overlaps, x_label)
-
-        self.plotwidget.add_cursor(x_values, energies, results.state_labels)
-
+        self.plotwidget.plot(parameters, results)
+        self.plotwidget.add_cursor(parameters, results)
         self.plotwidget.canvas.draw()
-        self._plot_finished = False
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""

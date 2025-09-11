@@ -3,7 +3,7 @@
 
 import logging
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Optional
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -14,6 +14,7 @@ from PySide6.QtWidgets import QHBoxLayout
 from scipy.optimize import curve_fit
 
 from pairinteraction.visualization.colormaps import alphamagma
+from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
@@ -61,9 +62,9 @@ class PlotWidget(WidgetV):
 class PlotEnergies(PlotWidget):
     """Plotwidget for plotting energy levels."""
 
-    x_list: "NDArray[Any]"
-    energies_list: Sequence["NDArray[Any]"]
-    overlaps_list: Sequence["NDArray[Any]"]
+    parameters: Optional[Parameters[Any]] = None
+    results: Optional[Results] = None
+
     fit_idx: int = 0
     fit_type: str = ""
     fit_data_highlight: mpl.collections.PathCollection
@@ -76,36 +77,32 @@ class PlotEnergies(PlotWidget):
         self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest")
         self.canvas.fig.tight_layout()
 
-    def plot(
-        self,
-        x_list: Sequence[float],
-        energies_list: Sequence["NDArray[Any]"],
-        overlaps_list: Sequence["NDArray[Any]"],
-        xlabel: str,
-    ) -> None:
-        # store data to allow fitting later on
-        self.x_list = np.array(x_list)
-        self.energies_list = energies_list
-        self.overlaps_list = overlaps_list
+    def plot(self, parameters: Parameters[Any], results: Results) -> None:
         self.reset_fit()
-
         ax = self.canvas.ax
         ax.clear()
 
+        # store data to allow fitting later on
+        self.parameters = parameters
+        self.results = results
+
+        x_values = parameters.get_x_values()
+        energies = results.energies
+
         try:
-            ax.plot(x_list, np.array(energies_list), c="0.75", lw=0.25, zorder=-10)
+            ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
-                for x_value, es in zip(x_list, energies_list):
+                for x_value, es in zip(x_values, energies):
                     ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
             else:
                 raise err
 
         # Flatten the arrays for scatter plot and repeat x value for each energy
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
-        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_list, energies_list)])
-        energies_flattened = np.hstack(energies_list)
-        overlaps_flattened = np.hstack(overlaps_list)
+        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies)])
+        energies_flattened = np.hstack(energies)
+        overlaps_flattened = np.hstack(results.ket_overlaps)
 
         min_overlap = 1e-4
         inds: NDArray[Any] = np.argwhere(overlaps_flattened > min_overlap).flatten()
@@ -122,27 +119,26 @@ class PlotEnergies(PlotWidget):
                 cmap=alphamagma,
             )
 
-        ax.set_xlabel(xlabel)
+        ax.set_xlabel(parameters.get_x_label())
         ax.set_ylabel("Energy [GHz]")
 
         self.canvas.fig.tight_layout()
 
-    def add_cursor(
-        self, x_value: list[float], energies: list["NDArray[Any]"], state_labels: dict[int, list[str]]
-    ) -> None:
+    def add_cursor(self, parameters: Parameters[Any], results: Results) -> None:
         # Remove any existing cursors to avoid duplicates
         if hasattr(self, "mpl_cursor"):
             if hasattr(self.mpl_cursor, "remove"):  # type: ignore
                 self.mpl_cursor.remove()  # type: ignore
             del self.mpl_cursor  # type: ignore
 
-        ax = self.canvas.ax
+        energies = results.energies
+        x_values = parameters.get_x_values()
 
         artists = []
-        for idx, labels in state_labels.items():
-            x = x_value[idx]
+        for idx, labels in results.state_labels.items():
+            x = x_values[idx]
             for energy, label in zip(energies[idx], labels):
-                artist = ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
+                artist = self.canvas.ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
                 artists.extend(artist)
 
         self.mpl_cursor = mplcursors.cursor(
@@ -159,7 +155,7 @@ class PlotEnergies(PlotWidget):
             label = sel.artist.get_label()
             sel.annotation.set_text(label.replace(" + ", "\n + "))
 
-    def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, C901
+    def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, PLR0915, C901
         """Fits a potential curve and displays the fit values.
 
         Args:
@@ -171,6 +167,14 @@ class PlotEnergies(PlotWidget):
         Iterative calls will iterate through the potential curves
 
         """
+        if self.parameters is None or self.results is None:
+            logger.warning("No data to fit.")
+            return
+
+        energies = self.results.energies
+        x_values = self.parameters.get_x_values()
+        overlaps_list = self.results.ket_overlaps
+
         fit_func: Callable[..., NDArray[Any]]
         if fit_type == "c6":
             fit_func = lambda x, e0, c6: e0 + c6 / x**6  # noqa: E731
@@ -184,13 +188,9 @@ class PlotEnergies(PlotWidget):
         else:
             raise ValueError(f"Unknown fit type: {fit_type}")
 
-        # first see if we actually have data to fit
-        if not (hasattr(self, "x_list") and hasattr(self, "energies_list") and hasattr(self, "overlaps_list")):
-            return
-
         # increase the selected potential curve by one if we use the same fit type
         if self.fit_type == fit_type:
-            self.fit_idx = (self.fit_idx + 1) % len(self.energies_list)
+            self.fit_idx = (self.fit_idx + 1) % len(energies)
         else:
             self.fit_idx = 1
         self.fit_type = fit_type
@@ -203,9 +203,9 @@ class PlotEnergies(PlotWidget):
         # of the curves. This approach is simple, fast and robust, but curves may e.g. merge.
         # This does not at all take into account the line shapes of the curves. There is also no trade-off
         # between overlap being close and not doing jumps.
-        idxs = [np.argpartition(self.overlaps_list[0], -self.fit_idx)[-self.fit_idx]]
-        last_overlap = self.overlaps_list[0][idxs[-1]]
-        for overlaps in self.overlaps_list[1:]:
+        idxs = [np.argpartition(overlaps_list[0], -self.fit_idx)[-self.fit_idx]]
+        last_overlap = overlaps_list[0][idxs[-1]]
+        for overlaps in overlaps_list[1:]:
             idx = idxs[-1]
             overlap = overlaps[idx]
             if 0.5 * last_overlap < overlap < 2 * last_overlap or abs(overlap - last_overlap) < 0.05:
@@ -229,7 +229,7 @@ class PlotEnergies(PlotWidget):
 
         # this could be a call to np.take_along_axis if the sizes match, but the handling of inhomogeneous shapes
         # in the plot() function makes me worry they won't, so I go for a slower python for loop...
-        energies = np.array([energy[idx] for energy, idx in zip(self.energies_list, idxs)])
+        energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs)])
 
         # stop highlighting the previous fit
         if hasattr(self, "fit_data_highlight"):
@@ -238,16 +238,16 @@ class PlotEnergies(PlotWidget):
             for curve in self.fit_curve:
                 curve.remove()
 
-        self.fit_data_highlight = self.canvas.ax.scatter(self.x_list, energies, c="green", s=5)
+        self.fit_data_highlight = self.canvas.ax.scatter(x_values, energies_fit, c="green", s=5)
 
         try:
-            fit_params = curve_fit(fit_func, self.x_list, energies)[0]
+            fit_params = curve_fit(fit_func, x_values, energies_fit)[0]
         except (RuntimeError, TypeError):
             logger.warning("Curve fit failed.")
         else:
             self.fit_curve = self.canvas.ax.plot(
-                self.x_list,
-                fit_func(self.x_list, *fit_params),
+                x_values,
+                fit_func(x_values, *fit_params),
                 c="green",
                 linestyle="dashed",
                 lw=2,
