@@ -8,8 +8,7 @@ import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction.diagonalize.diagonalize import diagonalize
-from pairinteraction.diagonalize.diagonalizer import Diagonalizer
+from pairinteraction.diagonalize import Diagonalizer, diagonalize
 from pairinteraction.enums import FloatType
 from pairinteraction.units import QuantityArray, QuantitySparse
 
@@ -17,22 +16,15 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction.basis.basis import BasisBase
+    from pairinteraction.basis import BasisBase
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
     Quantity = TypeVar("Quantity", float, "PintFloat")
 
 
 BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]", covariant=True)
-UnionCPPSystem = Union[
-    _backend.SystemAtomReal, _backend.SystemAtomComplex, _backend.SystemPairReal, _backend.SystemPairComplex
-]
-UnionTypeCPPSystem = Union[
-    type[_backend.SystemAtomReal],
-    type[_backend.SystemAtomComplex],
-    type[_backend.SystemPairReal],
-    type[_backend.SystemPairComplex],
-]
+UnionCPPSystem = Union[_backend.SystemAtomComplex, _backend.SystemPairComplex]
+UnionTypeCPPSystem = Union[type[_backend.SystemAtomComplex], type[_backend.SystemPairComplex]]
 
 
 class SystemBase(ABC, Generic[BasisType]):
@@ -54,7 +46,7 @@ class SystemBase(ABC, Generic[BasisType]):
     _cpp: UnionCPPSystem
     _cpp_type: ClassVar[UnionTypeCPPSystem]
     _basis: BasisType
-    _TypeBasis: type[BasisType]  # should be ClassVar, but cannot be nested yet
+    _basis_class: type[BasisType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, basis: BasisType) -> None:
         self._cpp = self._cpp_type(basis._cpp)  # type: ignore [arg-type]
@@ -64,10 +56,10 @@ class SystemBase(ABC, Generic[BasisType]):
         return f"{type(self).__name__}({self.basis!r}, is_diagonal={self.is_diagonal})"
 
     def __str__(self) -> str:
-        return self.__repr__().replace("Real", "").replace("Complex", "")
+        return self.__repr__()
 
     def _update_basis(self) -> None:
-        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())
+        self._basis = self._basis_class._from_cpp_object(self._cpp.get_basis())
 
     @overload
     def diagonalize(
@@ -157,7 +149,7 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenbasis(self) -> BasisType:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
+        return self._basis_class._from_cpp_object(cpp_eigenbasis)
 
     @overload
     def get_eigenenergies(self, unit: None = None) -> "PintArray": ...

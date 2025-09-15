@@ -2,27 +2,25 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 
-from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.ket import KetAtom
 from pairinteraction.state.state import StateBase
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.basis.basis_atom import BasisAtom, BasisAtomComplex, BasisAtomReal
-    from pairinteraction.database.database import Database
+    from pairinteraction.basis import BasisAtom
+    from pairinteraction.database import Database
     from pairinteraction.enums import OperatorType
     from pairinteraction.units import PintComplex, PintFloat
 
 logger = logging.getLogger(__name__)
 
-BasisType = TypeVar("BasisType", bound="BasisAtom[Any]", covariant=True)
 
-
-class StateAtom(StateBase[BasisType, KetAtom]):
+class StateAtom(StateBase["BasisAtom", KetAtom]):
     """State of a single atom.
 
     A coefficient vector and a list of kets are used to represent an arbitrary single-atom state.
@@ -42,7 +40,10 @@ class StateAtom(StateBase[BasisType, KetAtom]):
 
     """
 
-    def __init__(self, ket: KetAtom, basis: BasisType) -> None:
+    _basis: "BasisAtom"
+    _ket_class = KetAtom
+
+    def __init__(self, ket: KetAtom, basis: "BasisAtom") -> None:
         """Initialize a state object representing a ket in a given basis.
 
         Args:
@@ -50,7 +51,7 @@ class StateAtom(StateBase[BasisType, KetAtom]):
             basis: The basis to which the state belongs.
 
         """
-        new_basis: BasisType = basis.get_corresponding_state(ket)._basis
+        new_basis: BasisAtom = basis.get_corresponding_state(ket)._basis
         ket_idx = new_basis.kets.index(ket)
         coeffs = new_basis._cpp.get_coefficients() * 0  # type: ignore [operator]
         coeffs[ket_idx, 0] = 1.0
@@ -168,7 +169,7 @@ class StateAtom(StateBase[BasisType, KetAtom]):
             logger.warning("WARNING: get_amplitude is called with a non-normalized state.")
         return self._basis.get_amplitudes(other)[0]  # type: ignore [no-any-return]
 
-    def get_overlap(self, other: Union["Self", KetAtom]) -> Union[float, complex]:
+    def get_overlap(self, other: Union["Self", KetAtom]) -> float:
         r"""Calculate the overlap of the state with respect to another state or ket.
 
         This means calculate :math:`|\langle \mathrm{self} | \mathrm{other} \rangle|^2`.
@@ -217,11 +218,6 @@ class StateAtom(StateBase[BasisType, KetAtom]):
         return self._basis.get_matrix_elements(other, operator, q, unit=unit)[0]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
-class StateAtomReal(StateAtom["BasisAtomReal"]):
-    _basis: "BasisAtomReal"
-    _TypeKet = KetAtom
-
-
-class StateAtomComplex(StateAtom["BasisAtomComplex"]):
-    _basis: "BasisAtomComplex"
-    _TypeKet = KetAtom
+class StateAtomReal(StateAtom):
+    _basis: "BasisAtom"
+    _ket_class = KetAtom

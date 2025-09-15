@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
 
 from pairinteraction import _backend
 
@@ -10,20 +10,12 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction.ket.ket import KetBase
-    from pairinteraction.state.state import StateBase
+    from pairinteraction.ket import KetBase
+    from pairinteraction.state import StateBase
 
 KetType = TypeVar("KetType", bound="KetBase", covariant=True)
 StateType = TypeVar("StateType", bound="StateBase[Any, Any]", covariant=True)
-UnionCPPBasis = Union[
-    _backend.BasisAtomReal, _backend.BasisAtomComplex, _backend.BasisPairReal, _backend.BasisPairComplex
-]
-UnionTypeCPPBasisCreator = Union[
-    type[_backend.BasisAtomCreatorReal],
-    type[_backend.BasisAtomCreatorComplex],
-    type[_backend.BasisPairCreatorReal],
-    type[_backend.BasisPairCreatorComplex],
-]
+UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
 
 
 class BasisBase(ABC, Generic[KetType, StateType]):
@@ -40,9 +32,8 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     """
 
     _cpp: UnionCPPBasis
-    _cpp_creator: ClassVar[UnionTypeCPPBasisCreator]
-    _TypeKet: type[KetType]  # should be ClassVar, but cannot be nested yet
-    _TypeState: type[StateType]  # should be ClassVar, but cannot be nested yet
+    _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
+    _state_class: type[StateType]  # should be ClassVar, but cannot be nested yet
 
     @abstractmethod
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
@@ -58,7 +49,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return f"{type(self).__name__}({args})"
 
     def __str__(self) -> str:
-        return self.__repr__().replace("Real", "").replace("Complex", "")
+        return self.__repr__()
 
     def copy(self: "Self") -> "Self":
         """Return a copy of the basis object."""
@@ -68,7 +59,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
+        return [self._ket_class._from_cpp_object(ket) for ket in self._cpp.get_kets()]
 
     @property
     def states(self) -> list[StateType]:
@@ -77,7 +68,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         for i in range(self.number_of_states):
             state_cpp = self._cpp.get_state(i)
             state_basis = type(self)._from_cpp_object(state_cpp)
-            states.append(self._TypeState._from_basis_object(state_basis))
+            states.append(self._state_class._from_basis_object(state_basis))
         return states
 
     @property
@@ -113,7 +104,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def get_corresponding_state(self, ket: "KetBase") -> StateType:
         state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
         state_basis = type(self)._from_cpp_object(state_cpp)
-        return self._TypeState._from_basis_object(state_basis)
+        return self._state_class._from_basis_object(state_basis)
 
     def get_corresponding_state_index(self, ket: "KetBase") -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]

@@ -2,20 +2,19 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction.basis import BasisAtom, BasisAtomReal
 from pairinteraction.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.basis.basis_atom import BasisAtom
-    from pairinteraction.ket.ket_atom import KetAtom
+    from pairinteraction.ket import KetAtom
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
@@ -23,14 +22,11 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-BasisType = TypeVar("BasisType", bound="BasisAtom[Any]", covariant=True)
-UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
-UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
 logger = logging.getLogger(__name__)
 
 
-class SystemAtom(SystemBase[BasisType]):
+class SystemAtom(SystemBase[BasisAtom]):
     """System of a single atom.
 
     Use the given BasisAtom object to create the system object.
@@ -51,14 +47,15 @@ class SystemAtom(SystemBase[BasisType]):
 
     """
 
-    _cpp: UnionCPPSystemAtom
-    _cpp_type: ClassVar[UnionTypeCPPSystemAtom]
+    _cpp: _backend.SystemAtomComplex
+    _cpp_type = _backend.SystemAtomComplex
+    _basis_class = BasisAtom
 
-    def __init__(self, basis: BasisType) -> None:
+    def __init__(self, basis: BasisAtom) -> None:
         """Create a system object for a single atom.
 
         Args:
-            basis: The :class:`pairinteraction.real.BasisAtom` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.BasisAtom` object that describes the basis of the system.
 
         """
         super().__init__(basis)
@@ -147,13 +144,7 @@ class SystemAtom(SystemBase[BasisType]):
         return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
-class SystemAtomReal(SystemAtom[BasisAtomReal]):
+class SystemAtomReal(SystemAtom):
     _cpp: _backend.SystemAtomReal
     _cpp_type = _backend.SystemAtomReal
-    _TypeBasis = BasisAtomReal
-
-
-class SystemAtomComplex(SystemAtom[BasisAtomComplex]):
-    _cpp: _backend.SystemAtomComplex
-    _cpp_type = _backend.SystemAtomComplex
-    _TypeBasis = BasisAtomComplex
+    _basis_class = BasisAtomReal

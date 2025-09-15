@@ -1,24 +1,24 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
-from pairinteraction.ket.ket_pair import KetPair, KetPairComplex, KetPairReal
+from pairinteraction.ket import KetPair, KetPairReal
 from pairinteraction.state.state import StateBase
 
 if TYPE_CHECKING:
-    from pairinteraction.basis.basis_pair import BasisPair, BasisPairComplex, BasisPairReal
-
-KetPairType = TypeVar("KetPairType", bound="KetPair", covariant=True)
-BasisPairType = TypeVar("BasisPairType", bound="BasisPair[Any, Any]", covariant=True)
+    from pairinteraction.basis import BasisPair, BasisPairReal
 
 
-class StatePair(StateBase[BasisPairType, KetPairType]):
+class StatePair(StateBase["BasisPair", KetPair]):
     """Pair state of two atoms.
 
     Currently StatePair objects don't offer any additional functionality.
 
     """
+
+    _basis: "BasisPair"
+    _ket_class = KetPair
 
     def get_amplitude(self, other: Any) -> Any:
         raise NotImplementedError("StatePair.get_amplitude not implemented yet")
@@ -30,11 +30,6 @@ class StatePair(StateBase[BasisPairType, KetPairType]):
         raise NotImplementedError("StatePair.get_matrix_element not implemented yet")
 
 
-class StatePairReal(StatePair["BasisPairReal", "KetPairReal"]):
+class StatePairReal(StatePair):
     _basis: "BasisPairReal"
-    _TypeKet = KetPairReal
-
-
-class StatePairComplex(StatePair["BasisPairComplex", "KetPairComplex"]):
-    _basis: "BasisPairComplex"
-    _TypeKet = KetPairComplex
+    _ket_class = KetPairReal

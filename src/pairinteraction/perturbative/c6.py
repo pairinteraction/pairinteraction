@@ -7,7 +7,7 @@ from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPa
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pairinteraction.ket.ket_atom import KetAtom
+    from pairinteraction.ket import KetAtom
     from pairinteraction.units import PintFloat
 
 
