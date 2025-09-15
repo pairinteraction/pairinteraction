@@ -65,7 +65,7 @@ def diagonalize(
     This is much faster than diagonalizing each system individually on the Python side.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
         >>> systems = [pi.SystemAtom(basis).set_magnetic_field([0, 0, b], unit="gauss") for b in range(1, 4)]

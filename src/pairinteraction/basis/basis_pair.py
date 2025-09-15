@@ -49,7 +49,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     and d is the number of basis states (after applying the restrictions).
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
         >>> system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit="G").diagonalize()

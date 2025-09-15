@@ -33,7 +33,7 @@ class SystemAtom(SystemBase[BasisAtom]):
     You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
         >>> system = pi.SystemAtom(basis)

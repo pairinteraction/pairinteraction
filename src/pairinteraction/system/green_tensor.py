@@ -24,7 +24,7 @@ class GreenTensor:
     which can then be used for the interaction of a :class:`SystemPair` (see :meth:`SystemPair.set_green_tensor`).
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> gt = pi.GreenTensor()
         >>> distance_mum = 5
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
