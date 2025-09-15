@@ -73,6 +73,6 @@ class KetPair(KetBase):
 
 
 class KetPairReal(KetPair):
-    _cpp: _backend.KetPairReal
+    _cpp: _backend.KetPairReal  # type: ignore [assignment]
     _basis_atom_class = BasisAtomReal
     _state_atom_class = StateAtomReal

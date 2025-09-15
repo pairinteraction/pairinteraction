@@ -220,7 +220,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
 
 class BasisPairReal(BasisPair):
-    _cpp: _backend.BasisPairReal
-    _cpp_creator = _backend.BasisPairCreatorReal
+    _cpp: _backend.BasisPairReal  # type: ignore [assignment]
+    _cpp_creator = _backend.BasisPairCreatorReal  # type: ignore [assignment]
     _ket_class = KetPairReal
     _state_class = StatePairReal

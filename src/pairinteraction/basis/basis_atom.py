@@ -222,7 +222,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
 
 class BasisAtomReal(BasisAtom):
-    _cpp: _backend.BasisAtomReal
-    _cpp_creator = _backend.BasisAtomCreatorReal
+    _cpp: _backend.BasisAtomReal  # type: ignore [assignment]
+    _cpp_creator = _backend.BasisAtomCreatorReal  # type: ignore [assignment]
     _ket_class = KetAtom
     _state_class = StateAtomReal
