@@ -86,7 +86,7 @@ tests = [
   "sympy >= 1.13.3",
 ]
 mypy = [
-  "mypy >= 1.14",
+  "mypy == 1.17",  # FIXME: update this regularly
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
 ]
