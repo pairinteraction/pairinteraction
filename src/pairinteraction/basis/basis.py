@@ -95,10 +95,10 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         """
         return self._cpp.get_coefficients()
 
-    def get_corresponding_ket(self: "Self", state: "StateBase[Any, Any]") -> KetType:
+    def get_corresponding_ket(self: "Self", state: StateType) -> KetType:
         raise NotImplementedError("Not implemented yet.")
 
-    def get_corresponding_ket_index(self, state: "StateBase[Any, Any]") -> int:
+    def get_corresponding_ket_index(self, state: StateType) -> int:
         raise NotImplementedError("Not implemented yet.")
 
     def get_corresponding_state(self, ket: "KetBase") -> StateType:

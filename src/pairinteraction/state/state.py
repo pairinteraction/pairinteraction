@@ -44,7 +44,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         )
 
     @classmethod
-    def _from_basis_object(cls: "type[Self]", basis_obj: "BasisBase[KetType, StateBase[Any, Any]]") -> "Self":
+    def _from_basis_object(cls: "type[Self]", basis_obj: "BasisBase[Any, Any]") -> "Self":
         obj = cls.__new__(cls)
         obj._basis = basis_obj  # type: ignore [assignment]
         return obj
