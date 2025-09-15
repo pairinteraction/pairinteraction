@@ -257,9 +257,9 @@ class KetAtom(KetBase):
             The matrix element between the two states in the given unit or as a `pint.Quantity`.
 
         """
-        from pairinteraction.basis import BasisAtom
+        from pairinteraction.basis import BasisAtomReal
 
-        basis = BasisAtom(self.species, additional_kets=[self, ket], database=self.database)
+        basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
         state_2 = basis.get_corresponding_state(ket)
 
@@ -381,8 +381,8 @@ class KetAtom(KetBase):
     def _get_transition_rates(
         self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: Union[float, None] = None
     ) -> tuple[list["KetAtom"], "NDArray"]:
-        from pairinteraction.basis import BasisAtom
-        from pairinteraction.system import SystemAtom
+        from pairinteraction.basis import BasisAtomReal
+        from pairinteraction.system import SystemAtomReal
 
         assert which_transitions in ["spontaneous", "black_body"]
 
@@ -393,7 +393,7 @@ class KetAtom(KetBase):
         if is_spontaneous:
             energy_range = (-1, self.get_energy("hartree"))
 
-        basis = BasisAtom(
+        basis = BasisAtomReal(
             self.species,
             n=(1, n_max),
             l=(self.l - 1, self.l + 1),
@@ -403,7 +403,7 @@ class KetAtom(KetBase):
             additional_kets=[self],  # needed to make get_matrix_elements(self, ...) work
             database=self.database,
         )
-        system = SystemAtom(basis)
+        system = SystemAtomReal(basis)
 
         relevant_kets = basis.kets
         energy_differences_au = self.get_energy("hartree") - system.get_eigenenergies("hartree")

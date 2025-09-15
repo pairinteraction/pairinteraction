@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QComboBox, QLabel, QWidget
 
-import pairinteraction.real as pi
+import pairinteraction as pi
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import (

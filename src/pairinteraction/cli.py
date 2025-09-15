@@ -148,7 +148,7 @@ def download_databases(species_list: list[str]) -> int:
     """Download the required data files for the specified species."""
     from urllib.parse import urlparse
 
-    import pairinteraction.real as pi
+    import pairinteraction as pi
     from pairinteraction._backend import get_cache_directory
 
     database_dir = get_cache_directory() / "database"

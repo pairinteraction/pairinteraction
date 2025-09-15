@@ -71,7 +71,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         label = ""
         overlap = 0
         for i, ind in enumerate(sorted_inds, 1):
-            label += f"{coefficients[ind]:.2f} {self.kets[ind].get_label('ket')}"
+            label += f"{np.real_if_close(coefficients[ind]):.2f} {self.kets[ind].get_label('ket')}"
             overlap += abs(coefficients[ind]) ** 2
             if overlap > (0.95 * norm_squared) or i >= max_kets:
                 break

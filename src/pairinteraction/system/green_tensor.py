@@ -170,7 +170,7 @@ class GreenTensor:
 
         dim1 = 3 if kappa1 == 1 else 6
         dim2 = 3 if kappa2 == 1 else 6
-        tensor_au = np.zeros((dim1, dim2))
+        tensor_au = np.zeros((dim1, dim2), dtype=complex)
         for entry_cpp in entries_cpp:
             if isinstance(entry_cpp, (_backend.ConstantEntryReal, _backend.ConstantEntryComplex)):
                 val = entry_cpp.val()
@@ -179,6 +179,7 @@ class GreenTensor:
                     raise ValueError("The Green tensor has omega dependent entries, please specify an omega.")
                 val = entry_cpp.val(omega_au)
             tensor_au[entry_cpp.row(), entry_cpp.col()] = val
+        tensor_au = np.real_if_close(tensor_au)
 
         return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 

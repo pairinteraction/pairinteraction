@@ -9,10 +9,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from pairinteraction import (
-    complex as pi_complex,
-    real as pi_real,
-)
+import pairinteraction as pi_complex
+import pairinteraction.real as pi_real
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.qobjects.item import RangeItem
