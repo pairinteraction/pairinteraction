@@ -6,10 +6,8 @@ from typing import TYPE_CHECKING
 
 from attr import dataclass
 
-from pairinteraction import (
-    complex as pi_complex,
-    real as pi_real,
-)
+import pairinteraction as pi_complex
+import pairinteraction.real as pi_real
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.worker import run_in_other_process
 

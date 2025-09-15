@@ -19,7 +19,7 @@ def basis() -> pi.BasisAtom:
 def state(basis: pi.BasisAtom) -> pi.StateAtom:
     """Create a test state."""
     ket = pi.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
-    return basis.get_corresponding_state(ket)
+    return basis.get_corresponding_state(ket)  # type: ignore [return-value]
 
 
 def test_state_creation(state: pi.StateAtom) -> None:

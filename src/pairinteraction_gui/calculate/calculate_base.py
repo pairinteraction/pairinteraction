@@ -9,16 +9,13 @@ from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
 import numpy as np
 from attr import dataclass
 
-from pairinteraction import (
-    _wrapped,
-    complex as pi_complex,
-    real as pi_real,
-)
+import pairinteraction as pi
 from pairinteraction_gui.config.system_config import RangesKeys
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
     from pairinteraction.units import NDArray
     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
     from pairinteraction_gui.config.ket_config import QuantumNumbers
@@ -142,9 +139,9 @@ class Parameters(ABC, Generic[PageType]):
         """Return the quantum numbers for the given ket."""
         return self.quantum_numbers[self._check_atom(atom)]
 
-    def get_ket_atom(self, atom: Optional[int] = None) -> _wrapped.KetAtom:
+    def get_ket_atom(self, atom: Optional[int] = None) -> pi.KetAtom:
         """Return the ket atom for the given atom index."""
-        return _wrapped.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
+        return pi.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
 
     def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> "QuantumNumberRestrictions":
         """Return the quantum number restrictions."""
@@ -238,10 +235,8 @@ class Results(ABC):
     def from_calculate(
         cls,
         parameters: Parameters[Any],
-        system_list: Union[
-            list[pi_real.SystemPair], list[pi_complex.SystemPair], list[pi_real.SystemAtom], list[pi_complex.SystemAtom]
-        ],
-        ket: Union[_wrapped.KetAtom, tuple[_wrapped.KetAtom, ...]],
+        system_list: Union[list["SystemPairReal"], list["SystemPair"], list["SystemAtomReal"], list["SystemAtom"]],
+        ket: Union[pi.KetAtom, tuple[pi.KetAtom, ...]],
         energy_offset: float,
     ) -> "Self":
         """Create Results object from ket, basis, and diagonalized systems."""

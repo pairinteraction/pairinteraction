@@ -12,6 +12,7 @@ import numpy as np
 from scipy import sparse
 
 from pairinteraction import (
+    _backend,
     complex as pi_complex,
     real as pi_real,
 )
@@ -151,7 +152,7 @@ class EffectiveSystemPair:
     def _need_complex(self) -> bool:
         """Check if the effective system pair needs a complex data type."""
         if self._is_created("basis_atoms"):
-            return isinstance(self.basis_atoms[0], pi_complex.BasisAtom)
+            return isinstance(self.basis_atoms[0]._cpp, _backend.BasisAtomComplex)
         return self.electric_field[1] != 0 or self.magnetic_field[1] != 0  # type: ignore [index, no-any-return]
 
     # # # Perturbation methods and attributes # # #

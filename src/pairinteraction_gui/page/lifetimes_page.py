@@ -13,7 +13,7 @@ from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import show_status_tip
 
 if TYPE_CHECKING:
-    import pairinteraction.real as pi
+    import pairinteraction as pi
 
 logger = logging.getLogger(__name__)
 
