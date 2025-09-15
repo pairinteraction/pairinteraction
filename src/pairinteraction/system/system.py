@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, overload
 
 import numpy as np
 from typing_extensions import deprecated
@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]")
 UnionCPPSystem = Union[_backend.SystemAtomComplex, _backend.SystemPairComplex]
-UnionTypeCPPSystem = Union[type[_backend.SystemAtomComplex], type[_backend.SystemPairComplex]]
 
 
 class SystemBase(ABC, Generic[BasisType]):
@@ -44,13 +43,8 @@ class SystemBase(ABC, Generic[BasisType]):
     """
 
     _cpp: UnionCPPSystem
-    _cpp_type: ClassVar[UnionTypeCPPSystem]
     _basis: BasisType
     _basis_class: type[BasisType]  # should be ClassVar, but cannot be nested yet
-
-    def __init__(self, basis: BasisType) -> None:
-        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [arg-type]
-        self._basis = basis
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.basis!r}, is_diagonal={self.is_diagonal})"

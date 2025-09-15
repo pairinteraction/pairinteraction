@@ -68,7 +68,8 @@ class SystemPair(SystemBase[BasisPair]):
             basis: The :class:`pairinteraction.BasisPair` object that describes the basis of the system.
 
         """
-        super().__init__(basis)
+        self._cpp = self._cpp_type(basis._cpp)
+        self._basis = basis
         self._distance_vector_au = [0, 0, np.inf]
         self._interaction_order = 3
 
