@@ -65,8 +65,9 @@ Python
 
 - Always use ``snake_case`` for folders and files. It is common to have multiple classes in one file if they are closely
   related.
-- The code that wraps the C++ backend is located in the private module ``src/pairinteraction/_wrapped/`` and made
-  available to the user via the public modules ``src/pairinteraction/real.py`` and ``src/pairinteraction/complex.py``.
+- The code that wraps the C++ backend is located in the modules ``src/pairinteraction/ket/``,
+  ``src/pairinteraction/basis/``, etc. and made available to the user via the public modules
+  ``src/pairinteraction/real.py`` and ``src/pairinteraction/complex.py``.
 - If you want to add a new feature purely in Python, add a new file to ``src/pairinteraction/`` (if the feature does not
   require much code) or create a new folder in ``src/pairinteraction/`` with multiple files (if the feature is more
   complex).

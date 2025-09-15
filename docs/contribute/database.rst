@@ -60,7 +60,7 @@ interaction.
     <p><details>
     <summary><a>SQL File Defining the Tables of the Database</a></summary>
 
-.. literalinclude:: ../../src/pairinteraction/_wrapped/database/database.sql
+.. literalinclude:: ../../src/pairinteraction/database/database.sql
     :language: sql
 
 .. raw:: html
