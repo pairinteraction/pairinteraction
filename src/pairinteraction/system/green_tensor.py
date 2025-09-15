@@ -187,5 +187,5 @@ class GreenTensor:
 
 
 class GreenTensorReal(GreenTensor):
-    _cpp: _backend.GreenTensorReal
-    _cpp_type = _backend.GreenTensorReal
+    _cpp: _backend.GreenTensorReal  # type: ignore [assignment]
+    _cpp_type = _backend.GreenTensorReal  # type: ignore [assignment]

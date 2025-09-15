@@ -188,6 +188,6 @@ class SystemPair(SystemBase[BasisPair]):
 
 
 class SystemPairReal(SystemPair):
-    _cpp: _backend.SystemPairReal
-    _cpp_type = _backend.SystemPairReal
+    _cpp: _backend.SystemPairReal  # type: ignore [assignment]
+    _cpp_type = _backend.SystemPairReal  # type: ignore [assignment]
     _basis_class = BasisPairReal

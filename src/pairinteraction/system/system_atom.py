@@ -145,6 +145,6 @@ class SystemAtom(SystemBase[BasisAtom]):
 
 
 class SystemAtomReal(SystemAtom):
-    _cpp: _backend.SystemAtomReal
-    _cpp_type = _backend.SystemAtomReal
+    _cpp: _backend.SystemAtomReal  # type: ignore [assignment]
+    _cpp_type = _backend.SystemAtomReal  # type: ignore [assignment]
     _basis_class = BasisAtomReal
