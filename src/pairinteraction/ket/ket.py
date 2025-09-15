@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from abc import ABC
-from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Literal, Optional, Union, overload
 
 from pairinteraction import _backend
 from pairinteraction.enums import Parity, get_python_parity
@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import PintFloat
 
-UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex, _backend.KetPairReal]
-UnionTypeCPPKetCreator = type[_backend.KetAtomCreator]  # since there currently is no KetPairCreator
+UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex]
 
 
 class KetBase(ABC):
@@ -33,7 +32,6 @@ class KetBase(ABC):
     """
 
     _cpp: UnionCPPKet
-    _cpp_creator: ClassVar[UnionTypeCPPKetCreator]
 
     @classmethod
     def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPKet) -> "Self":

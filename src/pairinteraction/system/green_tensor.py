@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, TypeVar, Union, overload
 
 import numpy as np
 
@@ -16,9 +16,6 @@ if TYPE_CHECKING:
 
     Quantity = TypeVar("Quantity", float, "PintFloat")
 
-UnionCPPGreenTensor = Union[_backend.GreenTensorReal, _backend.GreenTensorComplex]
-UnionTypeCPPGreenTensor = Union[type[_backend.GreenTensorReal], type[_backend.GreenTensorComplex]]
-
 
 class GreenTensor:
     """Green tensor for the multipole pair interactions.
@@ -28,7 +25,7 @@ class GreenTensor:
 
     Examples:
         >>> import pairinteraction.real as pi
-        >>> gt = GreenTensorReal()
+        >>> gt = pi.GreenTensor()
         >>> distance_mum = 5
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
         >>> tensor_unit = "hartree / (e^2 micrometer^3)"
@@ -39,8 +36,8 @@ class GreenTensor:
 
     """
 
-    _cpp: UnionCPPGreenTensor
-    _cpp_type: ClassVar[UnionTypeCPPGreenTensor]
+    _cpp: _backend.GreenTensorComplex
+    _cpp_type = _backend.GreenTensorComplex
 
     def __init__(self) -> None:
         """Initialize a new Green tensor object.
@@ -53,7 +50,7 @@ class GreenTensor:
         return f"{type(self).__name__}(...)"
 
     def __str__(self) -> str:
-        return self.__repr__().replace("Real", "").replace("Complex", "")
+        return self.__repr__()
 
     @overload
     def set_from_cartesian(
@@ -192,8 +189,3 @@ class GreenTensor:
 class GreenTensorReal(GreenTensor):
     _cpp: _backend.GreenTensorReal
     _cpp_type = _backend.GreenTensorReal
-
-
-class GreenTensorComplex(GreenTensor):
-    _cpp: _backend.GreenTensorComplex
-    _cpp_type = _backend.GreenTensorComplex

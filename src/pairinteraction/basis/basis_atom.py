@@ -1,16 +1,16 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis import BasisBase
-from pairinteraction.database.database import Database
+from pairinteraction.database import Database
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction.ket.ket_atom import KetAtom
-from pairinteraction.state.state_atom import StateAtom, StateAtomComplex, StateAtomReal
+from pairinteraction.ket import KetAtom
+from pairinteraction.state import StateAtom, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -19,12 +19,8 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-StateType = TypeVar("StateType", bound="StateAtom[Any]", covariant=True)
-UnionCPPBasisAtom = Union[_backend.BasisAtomReal, _backend.BasisAtomComplex]
-UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_backend.BasisAtomCreatorComplex]]
 
-
-class BasisAtom(BasisBase[KetAtom, StateType]):
+class BasisAtom(BasisBase[KetAtom, StateAtom]):
     """Basis for a single atom.
 
     Add all KetAtom objects that match the given quantum numbers to the basis.
@@ -42,8 +38,10 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
 
     """
 
-    _cpp: UnionCPPBasisAtom
-    _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
+    _cpp: _backend.BasisAtomComplex
+    _cpp_creator = _backend.BasisAtomCreatorComplex
+    _ket_class = KetAtom
+    _state_class = StateAtom
 
     def __init__(  # noqa: C901, PLR0912, PLR0915
         self,
@@ -161,51 +159,43 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
         return self._database
 
     @overload
-    def get_amplitudes(self, other: Union[KetAtom, StateAtom[Any]]) -> "NDArray": ...
+    def get_amplitudes(self, other: Union[KetAtom, StateAtom]) -> "NDArray": ...
 
     @overload
     def get_amplitudes(self, other: "Self") -> "csr_matrix": ...
 
-    def get_amplitudes(self, other: Union[KetAtom, StateAtom[Any], "Self"]) -> Union["NDArray", "csr_matrix"]:
+    def get_amplitudes(self, other: Union[KetAtom, StateAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
-        if isinstance(self, BasisAtomReal) and isinstance(other, StateAtomReal):
+        if isinstance(other, StateAtom):
             return self._cpp.get_amplitudes(other._basis._cpp).toarray().flatten()
-        if isinstance(self, BasisAtomComplex) and isinstance(other, StateAtomComplex):
-            return self._cpp.get_amplitudes(other._basis._cpp).toarray().flatten()
-        if isinstance(self, BasisAtomReal) and isinstance(other, BasisAtomReal):
-            return self._cpp.get_amplitudes(other._cpp)
-        if isinstance(self, BasisAtomComplex) and isinstance(other, BasisAtomComplex):
+        if isinstance(other, BasisAtom):
             return self._cpp.get_amplitudes(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     @overload
-    def get_overlaps(self, other: Union[KetAtom, StateAtom[Any]]) -> "NDArray": ...
+    def get_overlaps(self, other: Union[KetAtom, StateAtom]) -> "NDArray": ...
 
     @overload
     def get_overlaps(self, other: "Self") -> "csr_matrix": ...
 
-    def get_overlaps(self, other: Union[KetAtom, StateAtom[Any], "Self"]) -> Union["NDArray", "csr_matrix"]:
+    def get_overlaps(self, other: Union[KetAtom, StateAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
-        if isinstance(self, BasisAtomReal) and isinstance(other, StateAtomReal):
+        if isinstance(other, StateAtom):
             return self._cpp.get_overlaps(other._basis._cpp).toarray().flatten()
-        if isinstance(self, BasisAtomComplex) and isinstance(other, StateAtomComplex):
-            return self._cpp.get_overlaps(other._basis._cpp).toarray().flatten()
-        if isinstance(self, BasisAtomReal) and isinstance(other, BasisAtomReal):
-            return self._cpp.get_overlaps(other._cpp)
-        if isinstance(self, BasisAtomComplex) and isinstance(other, BasisAtomComplex):
+        if isinstance(other, BasisAtom):
             return self._cpp.get_overlaps(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     @overload
     def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom[Any]], operator: OperatorType, q: int, unit: None = None
+        self, other: Union[KetAtom, StateAtom], operator: OperatorType, q: int, unit: None = None
     ) -> "PintArray": ...
 
     @overload
     def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom[Any]], operator: OperatorType, q: int, unit: str
+        self, other: Union[KetAtom, StateAtom], operator: OperatorType, q: int, unit: str
     ) -> "NDArray": ...
 
     @overload
@@ -215,42 +205,24 @@ class BasisAtom(BasisBase[KetAtom, StateType]):
     def get_matrix_elements(self, other: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
 
     def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom[Any], "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
+        self, other: Union[KetAtom, StateAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
     ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
         cpp_op = get_cpp_operator_type(operator)
 
-        matrix_elements_au: Union[NDArray, csr_matrix]
         if isinstance(other, KetAtom):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
-            if isinstance(self, BasisAtomReal) and isinstance(other, StateAtomReal):
-                matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
-            elif isinstance(self, BasisAtomComplex) and isinstance(other, StateAtomComplex):
-                matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
-            else:
-                raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+            matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
-            if isinstance(self, BasisAtomReal) and isinstance(other, BasisAtomReal):
-                matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
-            elif isinstance(self, BasisAtomComplex) and isinstance(other, BasisAtomComplex):
-                matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
-            else:
-                raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
             return QuantitySparse.convert_au_to_user(matrix_elements_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 
 
-class BasisAtomReal(BasisAtom[StateAtomReal]):
+class BasisAtomReal(BasisAtom):
     _cpp: _backend.BasisAtomReal
     _cpp_creator = _backend.BasisAtomCreatorReal
-    _TypeKet = KetAtom
-    _TypeState = StateAtomReal
-
-
-class BasisAtomComplex(BasisAtom[StateAtomComplex]):
-    _cpp: _backend.BasisAtomComplex
-    _cpp_creator = _backend.BasisAtomCreatorComplex
-    _TypeKet = KetAtom
-    _TypeState = StateAtomComplex
+    _ket_class = KetAtom
+    _state_class = StateAtomReal

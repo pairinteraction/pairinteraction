@@ -3,21 +3,18 @@
 
 from collections.abc import Sequence
 from functools import cached_property
-from typing import Any, ClassVar, Literal, Union
+from typing import Any, Literal, Union
 
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction.basis.basis_atom import BasisAtom, BasisAtomReal
 from pairinteraction.ket.ket import KetBase
 from pairinteraction.ket.ket_atom import KetAtom
-from pairinteraction.state.state_atom import StateAtomComplex, StateAtomReal
-
-UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
-UnionTypeCPPKetPairCreator = Any
+from pairinteraction.state.state_atom import StateAtom, StateAtomReal
 
 KetAtomTuple = Union[tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
-KetPairLike = Union["KetPairReal", "KetPairComplex", KetAtomTuple]
+KetPairLike = Union["KetPair", KetAtomTuple]
 
 
 def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:
@@ -40,10 +37,9 @@ class KetPair(KetBase):
 
     """
 
-    _cpp: UnionCPPKetPair
-    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator] = None
-    _TypeBasisAtom: Union[type[BasisAtomReal], type[BasisAtomComplex]]  # should be ClassVar, but cannot be nested yet
-    _TypeStateAtom: Union[type[StateAtomReal], type[StateAtomComplex]]  # should be ClassVar, but cannot be nested yet
+    _cpp: _backend.KetPairComplex
+    _basis_atom_class = BasisAtom
+    _state_atom_class = StateAtom
 
     def __init__(self) -> None:
         """Creating a KetPair object directly is not possible."""  # noqa: D401
@@ -66,25 +62,17 @@ class KetPair(KetBase):
         return super().get_label(fmt)
 
     @cached_property
-    def state_atoms(self) -> Union[tuple[StateAtomReal, StateAtomReal], tuple[StateAtomComplex, StateAtomComplex]]:
+    def state_atoms(self) -> tuple[StateAtom, StateAtom]:
         """Return the state atoms of the ket pair."""
         state_atoms = []
         for atomic_state in self._cpp.get_atomic_states():
-            basis = self._TypeBasisAtom._from_cpp_object(atomic_state)
-            state = self._TypeStateAtom._from_basis_object(basis)
+            basis = self._basis_atom_class._from_cpp_object(atomic_state)
+            state = self._state_atom_class._from_basis_object(basis)
             state_atoms.append(state)
         return tuple(state_atoms)  # type: ignore [return-value]
 
 
 class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal
-    _TypeBasisAtom = BasisAtomReal
-    _TypeStateAtom = StateAtomReal
-    state_atoms: tuple[StateAtomReal, StateAtomReal]
-
-
-class KetPairComplex(KetPair):
-    _cpp: _backend.KetPairComplex
-    _TypeBasisAtom = BasisAtomComplex
-    _TypeStateAtom = StateAtomComplex
-    state_atoms: tuple[StateAtomComplex, StateAtomComplex]
+    _basis_atom_class = BasisAtomReal
+    _state_atom_class = StateAtomReal

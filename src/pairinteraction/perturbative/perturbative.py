@@ -20,8 +20,8 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
-    from pairinteraction.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
-    from pairinteraction.ket.ket_pair import (  # noqa: F401  # required for sphinx for KetPairLike
+    from pairinteraction.ket import (  # noqa: F401  # required for sphinx for KetPairLike
+        KetAtom,  # required for sphinx for KetPairLike
         KetAtomTuple,
         KetPairComplex,
         KetPairLike,

@@ -9,8 +9,8 @@ import numpy as np
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.basis.basis import BasisBase
-    from pairinteraction.ket.ket import KetBase
+    from pairinteraction.basis import BasisBase
+    from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
 
 KetType = TypeVar("KetType", bound="KetBase", covariant=True)
@@ -35,7 +35,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
     """
 
     _basis: BasisType
-    _TypeKet: type[KetType]  # should be ClassVar, but cannot be nested yet
+    _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         raise NotImplementedError(
@@ -53,7 +53,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         return f"{type(self).__name__}({self.get_label()})"
 
     def __str__(self) -> str:
-        return self.__repr__().replace("Real", "").replace("Complex", "")
+        return self.__repr__()
 
     def get_label(self, max_kets: int = 3) -> str:
         """Label representing the state.

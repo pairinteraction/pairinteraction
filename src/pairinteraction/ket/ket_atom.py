@@ -7,7 +7,7 @@ import numpy as np
 from scipy.special import exprel
 
 from pairinteraction import _backend
-from pairinteraction.database.database import Database
+from pairinteraction.database import Database
 from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
 from pairinteraction.ket.ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
@@ -63,7 +63,6 @@ class KetAtom(KetBase):
     """
 
     _cpp: _backend.KetAtom
-    _cpp_creator = _backend.KetAtomCreator
 
     def __init__(  # noqa: C901, PLR0912
         self,
@@ -104,7 +103,7 @@ class KetAtom(KetBase):
             database: Which database to use. Default None, i.e. use the global database instance.
 
         """
-        creator = self._cpp_creator()
+        creator = _backend.KetAtomCreator()
         creator.set_species(species)
         if energy is not None:
             energy_au = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
@@ -258,9 +257,9 @@ class KetAtom(KetBase):
             The matrix element between the two states in the given unit or as a `pint.Quantity`.
 
         """
-        from pairinteraction.basis.basis_atom import BasisAtomReal
+        from pairinteraction.basis import BasisAtom
 
-        basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
+        basis = BasisAtom(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
         state_2 = basis.get_corresponding_state(ket)
 
@@ -382,8 +381,8 @@ class KetAtom(KetBase):
     def _get_transition_rates(
         self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: Union[float, None] = None
     ) -> tuple[list["KetAtom"], "NDArray"]:
-        from pairinteraction.basis.basis_atom import BasisAtomReal
-        from pairinteraction.system.system_atom import SystemAtomReal
+        from pairinteraction.basis import BasisAtom
+        from pairinteraction.system import SystemAtom
 
         assert which_transitions in ["spontaneous", "black_body"]
 
@@ -394,7 +393,7 @@ class KetAtom(KetBase):
         if is_spontaneous:
             energy_range = (-1, self.get_energy("hartree"))
 
-        basis = BasisAtomReal(
+        basis = BasisAtom(
             self.species,
             n=(1, n_max),
             l=(self.l - 1, self.l + 1),
@@ -404,7 +403,7 @@ class KetAtom(KetBase):
             additional_kets=[self],  # needed to make get_matrix_elements(self, ...) work
             database=self.database,
         )
-        system = SystemAtomReal(basis)
+        system = SystemAtom(basis)
 
         relevant_kets = basis.kets
         energy_differences_au = self.get_energy("hartree") - system.get_eigenenergies("hartree")

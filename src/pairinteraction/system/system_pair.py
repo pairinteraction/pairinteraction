@@ -2,24 +2,23 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import logging
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis_pair import BasisPairComplex, BasisPairReal
-from pairinteraction.system.green_tensor import GreenTensor
+from pairinteraction.basis import BasisPair, BasisPairReal
 from pairinteraction.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.basis.basis_pair import BasisPair
-    from pairinteraction.ket.ket_atom import (
+    from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
+        KetAtomTuple,
     )
-    from pairinteraction.ket.ket_pair import KetAtomTuple
+    from pairinteraction.system.green_tensor import GreenTensor
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
@@ -27,14 +26,10 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-BasisType = TypeVar("BasisType", bound="BasisPair[Any, Any]", covariant=True)
-UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
-UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
-
 logger = logging.getLogger(__name__)
 
 
-class SystemPair(SystemBase[BasisType]):
+class SystemPair(SystemBase[BasisPair]):
     """System of a pair of atoms.
 
     Use the given BasisPair object to create the system object.
@@ -62,21 +57,22 @@ class SystemPair(SystemBase[BasisType]):
 
     """  # noqa: E501
 
-    _cpp: UnionCPPSystemPair
-    _cpp_type: ClassVar[UnionTypeCPPSystemPair]
+    _cpp: _backend.SystemPairComplex
+    _cpp_type = _backend.SystemPairComplex
+    _basis_class = BasisPair
 
-    def __init__(self, basis: BasisType) -> None:
+    def __init__(self, basis: BasisPair) -> None:
         """Create a system object for a pair of atoms.
 
         Args:
-            basis: The :class:`pairinteraction.real.BasisPair` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.BasisPair` object that describes the basis of the system.
 
         """
         super().__init__(basis)
         self._distance_vector_au = [0, 0, np.inf]
         self._interaction_order = 3
 
-    def get_eigenbasis(self) -> BasisType:
+    def get_eigenbasis(self) -> BasisPair:
         """Get the eigenbasis of the system.
 
         This method retrieves the eigenbasis of the system, which is the basis in which the Hamiltonian is diagonal.
@@ -163,22 +159,14 @@ class SystemPair(SystemBase[BasisType]):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor(self, green_tensor: GreenTensor) -> "Self":
+    def set_green_tensor(self, green_tensor: "GreenTensor") -> "Self":
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
 
         """
-        if isinstance(self._cpp, _backend.SystemPairReal) and isinstance(green_tensor._cpp, _backend.GreenTensorReal):
-            self._cpp.set_green_tensor(green_tensor._cpp)
-        elif isinstance(self._cpp, _backend.SystemPairComplex) and isinstance(
-            green_tensor._cpp, _backend.GreenTensorComplex
-        ):
-            self._cpp.set_green_tensor(green_tensor._cpp)
-        else:
-            raise TypeError(f"Incompatible types: {type(self)=}; {type(green_tensor)=}")
-
+        self._cpp.set_green_tensor(green_tensor._cpp)
         return self
 
     @overload
@@ -199,13 +187,7 @@ class SystemPair(SystemBase[BasisType]):
         return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
-class SystemPairReal(SystemPair[BasisPairReal]):
+class SystemPairReal(SystemPair):
     _cpp: _backend.SystemPairReal
     _cpp_type = _backend.SystemPairReal
-    _TypeBasis = BasisPairReal
-
-
-class SystemPairComplex(SystemPair[BasisPairComplex]):
-    _cpp: _backend.SystemPairComplex
-    _cpp_type = _backend.SystemPairComplex
-    _TypeBasis = BasisPairComplex
+    _basis_class = BasisPairReal
