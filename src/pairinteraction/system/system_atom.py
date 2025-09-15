@@ -58,7 +58,8 @@ class SystemAtom(SystemBase[BasisAtom]):
             basis: The :class:`pairinteraction.BasisAtom` object that describes the basis of the system.
 
         """
-        super().__init__(basis)
+        self._cpp = self._cpp_type(basis._cpp)
+        self._basis = basis
 
     def set_electric_field(
         self: "Self",
