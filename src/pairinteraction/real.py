@@ -11,6 +11,11 @@ from pairinteraction.ket import (
     KetAtom,
     KetPairReal as KetPair,
 )
+from pairinteraction.perturbative import (
+    C3Real as C3,  # noqa: N814
+    C6Real as C6,  # noqa: N814
+    EffectiveSystemPairReal as EffectiveSystemPair,
+)
 from pairinteraction.state import (
     StateAtomReal as StateAtom,
     StatePairReal as StatePair,
@@ -22,9 +27,12 @@ from pairinteraction.system import (
 )
 
 __all__ = [
+    "C3",
+    "C6",
     "BasisAtom",
     "BasisPair",
     "Database",
+    "EffectiveSystemPair",
     "GreenTensor",
     "KetAtom",
     "KetPair",

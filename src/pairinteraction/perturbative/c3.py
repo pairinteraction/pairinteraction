@@ -3,7 +3,7 @@
 
 from typing import TYPE_CHECKING, Optional, Union, overload
 
-from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair
+from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair, EffectiveSystemPairReal
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -56,3 +56,7 @@ class C3(EffectiveSystemPair):
         distance = self.system_pair.get_distance()
         c3_pint = h_eff_pint[1, 0] * distance**3  # type: ignore [index]  # pint does not know it can be indexed
         return QuantityScalar.convert_pint_to_user(c3_pint, "c3", unit)
+
+
+class C3Real(C3, EffectiveSystemPairReal):
+    pass
