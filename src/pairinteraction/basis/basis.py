@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from pairinteraction.ket import KetBase
     from pairinteraction.state import StateBase
 
-KetType = TypeVar("KetType", bound="KetBase", covariant=True)
-StateType = TypeVar("StateType", bound="StateBase[Any, Any]", covariant=True)
+KetType = TypeVar("KetType", bound="KetBase")
+StateType = TypeVar("StateType", bound="StateBase[Any, Any]")
 UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
 
 

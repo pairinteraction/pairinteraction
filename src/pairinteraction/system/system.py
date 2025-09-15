@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     Quantity = TypeVar("Quantity", float, "PintFloat")
 
 
-BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]", covariant=True)
+BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]")
 UnionCPPSystem = Union[_backend.SystemAtomComplex, _backend.SystemPairComplex]
 UnionTypeCPPSystem = Union[type[_backend.SystemAtomComplex], type[_backend.SystemPairComplex]]
 

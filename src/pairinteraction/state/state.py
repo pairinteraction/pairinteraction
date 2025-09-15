@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
 
-KetType = TypeVar("KetType", bound="KetBase", covariant=True)
-BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]", covariant=True)
+KetType = TypeVar("KetType", bound="KetBase")
+BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]")
 
 
 class StateBase(ABC, Generic[BasisType, KetType]):
