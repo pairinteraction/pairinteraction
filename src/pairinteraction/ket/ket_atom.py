@@ -48,7 +48,7 @@ class KetAtom(KetBase):
         whose expectation value is closest to the provided value.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
         ('Rb', 60, 0.0, 0.5, 0.5, 0.5)

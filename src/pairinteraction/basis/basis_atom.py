@@ -29,7 +29,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     i.e. the number of kets is equal to the number of states.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
         >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")

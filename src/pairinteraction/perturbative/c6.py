@@ -26,7 +26,7 @@ class C6(EffectiveSystemPair):
 
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> from pairinteraction.perturbative import C6
         >>> ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
         >>> c6_obj = C6(ket, ket)

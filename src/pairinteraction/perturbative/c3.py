@@ -20,7 +20,7 @@ class C3(EffectiveSystemPair):
     as well as the angle between the two atoms like in the `SystemPair` class.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> from pairinteraction.perturbative import C3
         >>> ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
         >>> ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)

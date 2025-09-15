@@ -47,7 +47,7 @@ class EffectiveSystemPair:
     as well as the angle and distance between the two atoms like in the `SystemPair` class.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> from pairinteraction.perturbative import EffectiveSystemPair
         >>> ket_atoms = {
         ...     "+": pi.KetAtom("Rb", n=59, l=0, j=0.5, m=0.5),

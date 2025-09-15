@@ -26,7 +26,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
     A coefficient vector and a list of kets are used to represent an arbitrary single-atom state.
 
     Examples:
-        >>> import pairinteraction.real as pi
+        >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
         >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3))
         >>> state = basis.get_corresponding_state(ket)
