@@ -20,12 +20,11 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
-    from pairinteraction.ket import (  # noqa: F401  # required for sphinx for KetPairLike
-        KetAtom,  # required for sphinx for KetPairLike
+    from pairinteraction.ket import (
+        KetAtom,  # noqa: F401  # required for sphinx for KetPairLike
         KetAtomTuple,
-        KetPair,
+        KetPair,  # noqa: F401  # required for sphinx for KetPairLike
         KetPairLike,
-        KetPairReal,
     )
     from pairinteraction.units import NDArray, PintArray, PintFloat
 
