@@ -16,9 +16,14 @@ PairInteraction repository:
 - :github:`src/pairinteraction <tree/master/src/pairinteraction>` - A Python library that wraps the Python bindings,
   providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library
   adds functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The Python
-  classes that wrap the Python bindings are defined inside the private submodules ``pairinteraction._wrapped`` and then
-  aliased to the ``pairinteraction.real`` and ``pairinteraction.complex`` namespaces. The two submodules ``real`` and
-  ``complex`` are completely identical in their functionality, but only differ in the data type they use.
+  classes that wrap the Python bindings are defined inside the corresponding submodules ``pairinteraction.ket``,
+  ``pairinteraction.basis``, etc. . This classes are defined for the general case of complex-valued data types (and thus
+  also use the complex C++ bindings). This classes can be accessed via the ``pairinteraction`` and
+  ``pairinteraction.complex`` namespaces. To also make the C++ classes with only real valued data types available, we
+  also define e.g. classes like ``BasisAtomReal`` and make them available via the ``pairinteraction.real`` namespace
+  directly via ``pairinteraction.real.BasisAtom``. This allows a user to simply switch between real and complex data
+  types by changing the import statement from ``import pairinteraction.complex as pi`` to ``import pairinteraction.real
+  as pi``, without changing any other code.
 - :github:`src/pairinteraction_gui <tree/master/src/pairinteraction_gui>` - A graphical user interface (GUI) that allows
   users to perform common calculations without writing any code. The GUI is built on top of the Python library.
 
