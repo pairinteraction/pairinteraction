@@ -3,13 +3,11 @@
 
 from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 
-import pairinteraction.complex as pi_complex
-import pairinteraction.real as pi_real
 from pairinteraction import _backend
 from pairinteraction.enums import FloatType, get_cpp_float_type
 
 if TYPE_CHECKING:
-    from pairinteraction.system.system import SystemBase
+    from pairinteraction.system import SystemBase
 
 
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
@@ -43,9 +41,9 @@ def get_cpp_diagonalizer(
     if diagonalizer != "feast" and m0 is not None:
         raise ValueError("m0 must not be specified if the diagonalizer is not 'feast'")
 
-    if isinstance(system, (pi_real.SystemAtom, pi_real.SystemPair)):
+    if isinstance(system._cpp, (_backend.SystemAtomReal, _backend.SystemPairReal)):
         type_ = "real"
-    elif isinstance(system, (pi_complex.SystemAtom, pi_complex.SystemPair)):
+    elif isinstance(system._cpp, (_backend.SystemAtomComplex, _backend.SystemPairComplex)):
         type_ = "complex"
     else:
         raise TypeError(
