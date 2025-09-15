@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.basis import BasisBase
-from pairinteraction._wrapped.database.database import Database
-from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction._wrapped.ket.ket_atom import KetAtom
-from pairinteraction._wrapped.state.state_atom import StateAtom, StateAtomComplex, StateAtomReal
+from pairinteraction.basis.basis import BasisBase
+from pairinteraction.database.database import Database
+from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.state.state_atom import StateAtom, StateAtomComplex, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:

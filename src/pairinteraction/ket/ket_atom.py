@@ -7,9 +7,9 @@ import numpy as np
 from scipy.special import exprel
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.database.database import Database
-from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_parity
-from pairinteraction._wrapped.ket.ket import KetBase
+from pairinteraction.database.database import Database
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
+from pairinteraction.ket.ket import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -258,7 +258,7 @@ class KetAtom(KetBase):
             The matrix element between the two states in the given unit or as a `pint.Quantity`.
 
         """
-        from pairinteraction._wrapped.basis.basis_atom import BasisAtomReal
+        from pairinteraction.basis.basis_atom import BasisAtomReal
 
         basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
@@ -382,8 +382,8 @@ class KetAtom(KetBase):
     def _get_transition_rates(
         self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: Union[float, None] = None
     ) -> tuple[list["KetAtom"], "NDArray"]:
-        from pairinteraction._wrapped.basis.basis_atom import BasisAtomReal
-        from pairinteraction._wrapped.system.system_atom import SystemAtomReal
+        from pairinteraction.basis.basis_atom import BasisAtomReal
+        from pairinteraction.system.system_atom import SystemAtomReal
 
         assert which_transitions in ["spontaneous", "black_body"]
 

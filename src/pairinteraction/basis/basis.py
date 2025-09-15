@@ -10,8 +10,8 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.ket.ket import KetBase
-    from pairinteraction._wrapped.state.state import StateBase
+    from pairinteraction.ket.ket import KetBase
+    from pairinteraction.state.state import StateBase
 
 KetType = TypeVar("KetType", bound="KetBase", covariant=True)
 StateType = TypeVar("StateType", bound="StateBase[Any, Any]", covariant=True)

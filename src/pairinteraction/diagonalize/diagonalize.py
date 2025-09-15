@@ -7,13 +7,15 @@ from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 from typing_extensions import deprecated
 
-from pairinteraction import _backend, _wrapped
-from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
-from pairinteraction._wrapped.enums import FloatType
+import pairinteraction.complex as pi_complex
+import pairinteraction.real as pi_real
+from pairinteraction import _backend
+from pairinteraction.diagonalize.diagonalizer import Diagonalizer, get_cpp_diagonalizer
+from pairinteraction.enums import FloatType
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
-    from pairinteraction._wrapped.system.system import SystemBase
+    from pairinteraction.system.system import SystemBase
     from pairinteraction.units import PintFloat
 
     Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
@@ -120,13 +122,13 @@ def diagonalize(
 
 
 def get_cpp_diagonalize_function(system: "SystemBase[Any]") -> Callable[..., None]:
-    if isinstance(system, _wrapped.SystemAtomReal):
+    if isinstance(system, pi_real.SystemAtom):
         return _backend.diagonalizeSystemAtomReal
-    if isinstance(system, _wrapped.SystemAtomComplex):
+    if isinstance(system, pi_complex.SystemAtom):
         return _backend.diagonalizeSystemAtomComplex
-    if isinstance(system, _wrapped.SystemPairReal):
+    if isinstance(system, pi_real.SystemPair):
         return _backend.diagonalizeSystemPairReal
-    if isinstance(system, _wrapped.SystemPairComplex):
+    if isinstance(system, pi_complex.SystemPair):
         return _backend.diagonalizeSystemPairComplex
     raise TypeError(
         f"system must be of type SystemAtomReal, SystemPairReal, SystemAtomComplex, or SystemPairComplex, "

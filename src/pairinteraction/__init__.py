@@ -147,7 +147,7 @@ _setup_dynamic_libaries()
 def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str] = None) -> None:
     from pathlib import Path
 
-    from pairinteraction._wrapped import Database
+    from pairinteraction.database import Database
 
     if database_dir is None:
         possible_dirs = [

@@ -22,14 +22,14 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis_atom import BasisAtom
-    from pairinteraction._wrapped.basis.basis_pair import BasisPair
-    from pairinteraction._wrapped.ket.ket_atom import (
+    from pairinteraction.basis.basis_atom import BasisAtom
+    from pairinteraction.basis.basis_pair import BasisPair
+    from pairinteraction.ket.ket_atom import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
     )
-    from pairinteraction._wrapped.ket.ket_pair import KetAtomTuple
-    from pairinteraction._wrapped.system.system_atom import SystemAtom
-    from pairinteraction._wrapped.system.system_pair import SystemPair
+    from pairinteraction.ket.ket_pair import KetAtomTuple
+    from pairinteraction.system.system_atom import SystemAtom
+    from pairinteraction.system.system_pair import SystemPair
     from pairinteraction.units import ArrayLike, NDArray, PintArray, PintFloat
 
 

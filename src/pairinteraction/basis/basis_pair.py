@@ -8,27 +8,27 @@ import numpy as np
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.basis import BasisBase
-from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
-from pairinteraction._wrapped.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
-from pairinteraction._wrapped.ket.ket_pair import (
+from pairinteraction.basis.basis import BasisBase
+from pairinteraction.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction.ket.ket_pair import (
     KetPair,
     KetPairComplex,
     KetPairReal,
     is_ket_atom_tuple,
     is_ket_pair_like,
 )
-from pairinteraction._wrapped.state.state_pair import StatePairComplex, StatePairReal
-from pairinteraction._wrapped.system.system_atom import SystemAtomComplex, SystemAtomReal
+from pairinteraction.state.state_pair import StatePairComplex, StatePairReal
+from pairinteraction.system.system_atom import SystemAtomComplex, SystemAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
-    from pairinteraction._wrapped.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
-    from pairinteraction._wrapped.ket.ket_pair import KetPairLike
-    from pairinteraction._wrapped.state.state_pair import StatePair
-    from pairinteraction._wrapped.system.system_atom import SystemAtom
+    from pairinteraction.ket.ket_atom import KetAtom  # noqa: F401  # required for sphinx for KetPairLike
+    from pairinteraction.ket.ket_pair import KetPairLike
+    from pairinteraction.state.state_pair import StatePair
+    from pairinteraction.system.system_atom import SystemAtom
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
 KetPairType = TypeVar("KetPairType", bound=KetPair, covariant=True)

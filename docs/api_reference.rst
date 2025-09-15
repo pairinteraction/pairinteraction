@@ -15,7 +15,7 @@ pi``. The two submodules are completely identical in their functionality, but on
 
 All the available classes, methods and functions are documented below:
 
-.. currentmodule:: pairinteraction._wrapped
+.. currentmodule:: pairinteraction
 
 **Database**
 
@@ -51,8 +51,6 @@ All the available classes, methods and functions are documented below:
     :toctree: _autosummary/
 
        diagonalize
-
-.. currentmodule:: pairinteraction
 
 **Perturbative Calculations**
 

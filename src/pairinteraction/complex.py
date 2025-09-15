@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from pairinteraction._wrapped import (
+from pairinteraction import (
     BasisAtomComplex as BasisAtom,
     BasisPairComplex as BasisPair,
     Database,
