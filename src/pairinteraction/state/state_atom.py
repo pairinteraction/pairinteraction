@@ -6,15 +6,15 @@ from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 import numpy as np
 
-from pairinteraction._wrapped.ket.ket_atom import KetAtom
-from pairinteraction._wrapped.state.state import StateBase
+from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.state.state import StateBase
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis_atom import BasisAtom, BasisAtomComplex, BasisAtomReal
-    from pairinteraction._wrapped.database.database import Database
-    from pairinteraction._wrapped.enums import OperatorType
+    from pairinteraction.basis.basis_atom import BasisAtom, BasisAtomComplex, BasisAtomReal
+    from pairinteraction.database.database import Database
+    from pairinteraction.enums import OperatorType
     from pairinteraction.units import PintComplex, PintFloat
 
 logger = logging.getLogger(__name__)

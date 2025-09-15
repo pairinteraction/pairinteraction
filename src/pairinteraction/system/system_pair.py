@@ -7,19 +7,19 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.basis_pair import BasisPairComplex, BasisPairReal
-from pairinteraction._wrapped.system.green_tensor import GreenTensor
-from pairinteraction._wrapped.system.system import SystemBase
+from pairinteraction.basis.basis_pair import BasisPairComplex, BasisPairReal
+from pairinteraction.system.green_tensor import GreenTensor
+from pairinteraction.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis_pair import BasisPair
-    from pairinteraction._wrapped.ket.ket_atom import (
+    from pairinteraction.basis.basis_pair import BasisPair
+    from pairinteraction.ket.ket_atom import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
     )
-    from pairinteraction._wrapped.ket.ket_pair import KetAtomTuple
+    from pairinteraction.ket.ket_pair import KetAtomTuple
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike

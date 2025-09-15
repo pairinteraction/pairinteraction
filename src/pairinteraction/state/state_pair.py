@@ -3,11 +3,11 @@
 
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pairinteraction._wrapped.ket.ket_pair import KetPair, KetPairComplex, KetPairReal
-from pairinteraction._wrapped.state.state import StateBase
+from pairinteraction.ket.ket_pair import KetPair, KetPairComplex, KetPairReal
+from pairinteraction.state.state import StateBase
 
 if TYPE_CHECKING:
-    from pairinteraction._wrapped.basis.basis_pair import BasisPair, BasisPairComplex, BasisPairReal
+    from pairinteraction.basis.basis_pair import BasisPair, BasisPairComplex, BasisPairReal
 
 KetPairType = TypeVar("KetPairType", bound="KetPair", covariant=True)
 BasisPairType = TypeVar("BasisPairType", bound="BasisPair[Any, Any]", covariant=True)

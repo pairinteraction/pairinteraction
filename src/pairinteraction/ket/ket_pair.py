@@ -8,10 +8,10 @@ from typing import Any, ClassVar, Literal, Union
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
-from pairinteraction._wrapped.ket.ket import KetBase
-from pairinteraction._wrapped.ket.ket_atom import KetAtom
-from pairinteraction._wrapped.state.state_atom import StateAtomComplex, StateAtomReal
+from pairinteraction.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction.ket.ket import KetBase
+from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.state.state_atom import StateAtomComplex, StateAtomReal
 
 UnionCPPKetPair = Union[_backend.KetPairReal, _backend.KetPairComplex]
 UnionTypeCPPKetPairCreator = Any
@@ -36,7 +36,7 @@ class KetPair(KetBase):
     Therefore for different pair systems the KetPair objects are not necessarily orthogonal anymore.
 
     Currently one cannot create a KetPair object directly, but they are used in the background when creating a
-    :class:`pairinteraction._wrapped.BasisPair` object.
+    :class:`pairinteraction.BasisPair` object.
 
     """
 

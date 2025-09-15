@@ -6,7 +6,6 @@
 import numpy as np
 import pairinteraction.real as pi
 import pytest
-from pairinteraction._wrapped import GreenTensorReal
 
 
 @pytest.mark.parametrize("distance_mum", [1, 2, 11])
@@ -24,7 +23,7 @@ def test_static_green_tensor(distance_mum: float) -> None:
     basis_pair = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
 
     # Create a system using a user-defined green tensor for dipole-dipole interaction
-    gt = GreenTensorReal()
+    gt = pi.GreenTensor()
     tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
     tensor_unit = "hartree / (e^2 micrometer^3)"
     gt.set_from_cartesian(1, 1, tensor, tensor_unit)
@@ -51,7 +50,7 @@ def test_omega_dependent_green_tensor(distance_mum: float) -> None:
     """Test the interpolation for different values of omega."""
     # Define an simple linear omega-dependent green tensor
     # note that at least four entries are needed for the applied spline interpolation.
-    gt = GreenTensorReal()
+    gt = pi.GreenTensor()
     omegas = [1, 2, 3, 4]  # GHz
     tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
     tensor_unit = "hartree / (e^2 micrometer^3)"

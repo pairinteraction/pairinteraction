@@ -8,16 +8,16 @@ import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.diagonalize.diagonalize import diagonalize
-from pairinteraction._wrapped.diagonalize.diagonalizer import Diagonalizer
-from pairinteraction._wrapped.enums import FloatType
+from pairinteraction.diagonalize.diagonalize import diagonalize
+from pairinteraction.diagonalize.diagonalizer import Diagonalizer
+from pairinteraction.enums import FloatType
 from pairinteraction.units import QuantityArray, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis import BasisBase
+    from pairinteraction.basis.basis import BasisBase
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
     Quantity = TypeVar("Quantity", float, "PintFloat")

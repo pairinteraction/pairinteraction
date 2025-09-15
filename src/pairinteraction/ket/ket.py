@@ -5,7 +5,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, ClassVar, Literal, Optional, Union, overload
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.enums import Parity, get_python_parity
+from pairinteraction.enums import Parity, get_python_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:

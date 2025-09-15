@@ -7,15 +7,15 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction._wrapped.basis.basis_atom import BasisAtomComplex, BasisAtomReal
-from pairinteraction._wrapped.system.system import SystemBase
+from pairinteraction.basis.basis_atom import BasisAtomComplex, BasisAtomReal
+from pairinteraction.system.system import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis_atom import BasisAtom
-    from pairinteraction._wrapped.ket.ket_atom import KetAtom
+    from pairinteraction.basis.basis_atom import BasisAtom
+    from pairinteraction.ket.ket_atom import KetAtom
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike

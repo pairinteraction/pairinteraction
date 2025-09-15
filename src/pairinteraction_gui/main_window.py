@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 import pairinteraction
-from pairinteraction._wrapped import Database
+from pairinteraction import Database
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.page import (
     LifetimesPage,

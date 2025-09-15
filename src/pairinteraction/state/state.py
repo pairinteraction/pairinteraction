@@ -9,8 +9,8 @@ import numpy as np
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction._wrapped.basis.basis import BasisBase
-    from pairinteraction._wrapped.ket.ket import KetBase
+    from pairinteraction.basis.basis import BasisBase
+    from pairinteraction.ket.ket import KetBase
     from pairinteraction.units import NDArray
 
 KetType = TypeVar("KetType", bound="KetBase", covariant=True)
