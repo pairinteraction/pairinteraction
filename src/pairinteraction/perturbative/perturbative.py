@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from pairinteraction.ket import (  # noqa: F401  # required for sphinx for KetPairLike
         KetAtom,  # required for sphinx for KetPairLike
         KetAtomTuple,
-        KetPairComplex,
+        KetPair,
         KetPairLike,
         KetPairReal,
     )
