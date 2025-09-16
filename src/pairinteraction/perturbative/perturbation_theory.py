@@ -62,12 +62,15 @@ def _calculate_unsorted_perturbative_hamiltonian(
     perturbation_order: int,
 ) -> tuple[dict[int, "NDArray"], "csr_matrix"]:
     # This function is outsourced from calculate_perturbative_hamiltonian to allow for better type checking
-    h0 = hamiltonian.diagonal()
-    h0_m = h0[m_inds]
+    energies = np.real_if_close(hamiltonian.diagonal())
+    if any(np.iscomplex(energies)):
+        logger.error("The Hamiltonian has complex entries on the diagonal, this might lead to unexpected results.")
+
+    energies_m = energies[m_inds]
 
     eff_h_dict: dict[int, NDArray] = {}  # perturbation_order -> h_eff
 
-    eff_h_dict[0] = np.diag(h0_m)
+    eff_h_dict[0] = np.diag(energies_m)
     eff_vecs = sparse.csr_matrix(
         sparse.hstack(
             [sparse.eye(len(m_inds), len(m_inds), format="csr"), sparse.csr_matrix((len(m_inds), len(o_inds)))]
@@ -77,32 +80,43 @@ def _calculate_unsorted_perturbative_hamiltonian(
     if perturbation_order == 0:
         return eff_h_dict, eff_vecs
 
-    v_offdiag = hamiltonian - sparse.diags(h0)
+    v_offdiag = hamiltonian - sparse.diags(energies)
     v_mm = v_offdiag[np.ix_(m_inds, m_inds)]
     eff_h_dict[1] = v_mm.toarray()
 
     if perturbation_order == 1:
         return eff_h_dict, eff_vecs
 
-    h0_e = h0[o_inds]
-    v_me = v_offdiag[np.ix_(m_inds, o_inds)]
+    energies_diff = energies_m[np.newaxis, :] - energies[o_inds, np.newaxis]
     with np.errstate(divide="ignore"):
-        delta_e_em = 1 / (h0_m[np.newaxis, :] - h0_e[:, np.newaxis])
+        delta_e_em = 1 / energies_diff
+    v_me = v_offdiag[np.ix_(m_inds, o_inds)]
     eff_h_dict[2] = (v_me @ ((v_me.conj().T).multiply(delta_e_em))).toarray()
 
     addition_mm = sparse.csr_matrix((len(m_inds), len(m_inds)))
     addition_me = sparse.csr_matrix(((v_me.conj().T).multiply(delta_e_em)).T)
-    if np.isinf(addition_me.data).any():
+    if np.isinf(np.isinf(addition_me.data)).any():
         logger.critical(
             "Detected 'inf' entries in the effective basisvectors. "
             "This might happen, if you forgot to include a degenerate state in the model space. "
         )
+
+    nan_idx = np.where(np.isnan(addition_me.data))[0]
+    nonzero_inds = addition_me.nonzero()
+    for i in nan_idx:
+        value = addition_me.data[i]
+        if np.isinf(value.real):
+            row, col = nonzero_inds[0][i], nonzero_inds[1][i]
+            addition_me[row, col] = value.real
+        else:
+            logger.error("Detected unexpected 'nan' entries in the effective basisvectors.")
+
     eff_vecs = eff_vecs + sparse.hstack([addition_mm, addition_me])
 
     if perturbation_order == 2:
         return eff_h_dict, eff_vecs
 
-    diff = h0_m[np.newaxis, :] - h0_m[:, np.newaxis]
+    diff = energies_m[np.newaxis, :] - energies_m[:, np.newaxis]
     diff = np.where(diff == 0, np.inf, diff)
     delta_e_mm = 1 / diff
     v_ee = v_offdiag[np.ix_(o_inds, o_inds)]

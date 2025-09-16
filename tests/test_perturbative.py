@@ -200,7 +200,7 @@ def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: py
     eff_system.system_pair = system_pair_sample
 
     # workaround to test for errors, without showing them in the std output
-    with no_log_propagation("pairinteraction"):
+    with no_log_propagation("pairinteraction"), np.errstate(invalid="ignore"):
         eff_system.get_effective_hamiltonian()
     captured = capsys.readouterr()
     assert "Detected 'inf' entries" in captured.err
