@@ -8,8 +8,7 @@ import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction.diagonalize.diagonalize import diagonalize
-from pairinteraction.diagonalize.diagonalizer import Diagonalizer
+from pairinteraction.diagonalization import Diagonalizer, diagonalize
 from pairinteraction.enums import FloatType
 from pairinteraction.units import QuantityArray, QuantitySparse
 

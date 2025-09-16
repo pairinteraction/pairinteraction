@@ -204,7 +204,7 @@ from pairinteraction._backend import (
 from pairinteraction.basis import BasisAtom, BasisPair
 from pairinteraction.custom_logging import configure_logging
 from pairinteraction.database import Database
-from pairinteraction.diagonalize import diagonalize
+from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import KetAtom, KetPair
 from pairinteraction.module_tests import run_module_tests
 from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
