@@ -4,7 +4,7 @@
 """Test atom-ion interaction."""
 
 import numpy as np
-import pairinteraction.complex as pi
+import pairinteraction as pi
 import pytest
 
 
