@@ -6,7 +6,7 @@ from pairinteraction.basis import (
     BasisPairReal as BasisPair,
 )
 from pairinteraction.database import Database
-from pairinteraction.diagonalize import diagonalize
+from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import (
     KetAtom,
     KetPairReal as KetPair,

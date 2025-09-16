@@ -12,7 +12,7 @@ import numpy as np
 from scipy import sparse
 
 from pairinteraction.basis import BasisAtom, BasisAtomReal, BasisPair, BasisPairReal
-from pairinteraction.diagonalize.diagonalize import diagonalize
+from pairinteraction.diagonalization import diagonalize
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
 from pairinteraction.units import QuantityArray, QuantityScalar
