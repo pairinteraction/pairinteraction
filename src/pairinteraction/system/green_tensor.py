@@ -30,7 +30,7 @@ class GreenTensor:
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
         >>> tensor_unit = "hartree / (e^2 micrometer^3)"
         >>> gt.set_from_cartesian(1, 1, tensor, tensor_unit)
-        GreenTensorReal(...)
+        GreenTensor(...)
         >>> print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())
         [ 0.008 -0.016  0.008]
 

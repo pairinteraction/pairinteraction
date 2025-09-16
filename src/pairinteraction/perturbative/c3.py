@@ -21,10 +21,9 @@ class C3(EffectiveSystemPair):
 
     Examples:
         >>> import pairinteraction as pi
-        >>> from pairinteraction.perturbative import C3
         >>> ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
         >>> ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-        >>> c3_obj = C3(ket1, ket2)
+        >>> c3_obj = pi.C3(ket1, ket2)
         >>> c3 = c3_obj.get(unit="planck_constant * MHz * micrometer^3")
         >>> print(f"{c3:.2f}")
         -93.29
