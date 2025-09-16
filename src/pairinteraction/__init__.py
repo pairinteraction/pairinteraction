@@ -192,7 +192,6 @@ del _setup_logging
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
 from pairinteraction import (
-    complex,  # noqa: A004
     perturbative,
     real,
     visualization,
@@ -227,7 +226,6 @@ __all__ = [
     "StatePair",
     "SystemAtom",
     "SystemPair",
-    "complex",
     "configure_logging",
     "diagonalize",
     "perturbative",

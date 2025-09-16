@@ -21,7 +21,7 @@ import seaborn as sns
 from cpuinfo import get_cpu_info  # type: ignore[import-untyped]
 from matplotlib import ticker
 
-import pairinteraction.complex as pi_complex
+import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from benchmarking.benchmark_timer import timer
 from pairinteraction import __version__, configure_logging

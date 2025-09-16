@@ -10,10 +10,8 @@ from scipy import sparse
 from scipy.sparse import csr_matrix
 from typing_extensions import deprecated
 
-from pairinteraction import (
-    complex as pi_complex,
-    real as pi_real,
-)
+import pairinteraction as pi_complex
+import pairinteraction.real as pi_real
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
