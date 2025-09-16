@@ -45,7 +45,6 @@ class EffectiveSystemPair:
 
     Examples:
         >>> import pairinteraction as pi
-        >>> from pairinteraction.perturbative import EffectiveSystemPair
         >>> ket_atoms = {
         ...     "+": pi.KetAtom("Rb", n=59, l=0, j=0.5, m=0.5),
         ...     "0": pi.KetAtom("Rb", n=58, l=1, j=1.5, m=1.5),
@@ -56,7 +55,7 @@ class EffectiveSystemPair:
         ...     (ket_atoms["0"], ket_atoms["0"]),
         ...     (ket_atoms["-"], ket_atoms["+"]),
         ... ]
-        >>> eff_system = EffectiveSystemPair(ket_tuples)
+        >>> eff_system = pi.EffectiveSystemPair(ket_tuples)
         >>> eff_system = eff_system.set_distance(10, angle_degree=45, unit="micrometer")
         >>> eff_h = eff_system.get_effective_hamiltonian(unit="MHz")
         >>> eff_h -= np.eye(3) * eff_system.get_pair_energies("MHz")[1]
@@ -577,7 +576,7 @@ class EffectiveSystemPair:
                 f"The perturbation order {return_order} is not available in the effective Hamiltonian "
                 f"with the specified perturbation_order {self.perturbation_order}."
             )
-        return QuantityArray.convert_au_to_user(h_eff_au, "energy", unit)
+        return QuantityArray.convert_au_to_user(np.real_if_close(h_eff_au), "energy", unit)
 
     def get_effective_basisvectors(self) -> "csr_matrix":
         """Get the eigenvectors of the perturbative Hamiltonian."""

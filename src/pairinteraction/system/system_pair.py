@@ -50,7 +50,7 @@ class SystemPair(SystemBase[BasisPair]):
         >>> print(pair_system)
         SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
         >>> pair_system.diagonalize()
-        SystemPairReal(BasisPairReal(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=True)
+        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=True)
         >>> eigenenergies = pair_system.get_eigenenergies(unit="GHz")
         >>> print(f"{eigenenergies[0] - pair_energy:.5f}")
         -2.18394
