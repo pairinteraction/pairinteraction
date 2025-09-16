@@ -209,6 +209,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
         cpp_op = get_cpp_operator_type(operator)
 
+        matrix_elements_au: NDArray
         if isinstance(other, KetAtom):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
@@ -216,8 +217,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
-            return QuantitySparse.convert_au_to_user(matrix_elements_au, operator, unit)
+            matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
+            return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 
 

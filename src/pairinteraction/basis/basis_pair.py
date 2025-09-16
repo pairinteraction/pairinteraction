@@ -209,12 +209,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
         # BasisPair like
         if isinstance(other, BasisPair):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs)
-            return QuantitySparse.convert_au_to_user(matrix_elements_au, operators, unit)
+            matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs)
+            return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operators, unit)
         if is_basis_atom_tuple(other):
             basis_cpp = (other[0]._cpp, other[1]._cpp)
-            matrix_elements_au = self._cpp.get_matrix_elements(*basis_cpp, *operators_cpp, *qs)
-            return QuantitySparse.convert_au_to_user(matrix_elements_au, operators, unit)
+            matrix_elements_sparse_au = self._cpp.get_matrix_elements(*basis_cpp, *operators_cpp, *qs)
+            return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operators, unit)
 
         raise TypeError(f"Unknown type: {type(other)=}")
 
