@@ -3,7 +3,7 @@
 
 from typing import Literal
 
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 from pairinteraction.units import ureg
 

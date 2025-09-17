@@ -4,7 +4,7 @@
 """Test the calculation of matrix elements."""
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 
 
 def test_energy() -> None:

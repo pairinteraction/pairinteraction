@@ -3,7 +3,7 @@
 
 """Execute the module tests."""
 
-import pairinteraction.real as pi
+import pairinteraction as pi
 from pairinteraction import run_module_tests
 
 

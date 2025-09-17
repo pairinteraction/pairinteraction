@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 
 
@@ -19,7 +19,7 @@ def basis() -> pi.BasisAtom:
 def state(basis: pi.BasisAtom) -> pi.StateAtom:
     """Create a test state."""
     ket = pi.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
-    return basis.get_corresponding_state(ket)  # type: ignore [return-value]
+    return basis.get_corresponding_state(ket)
 
 
 def test_state_creation(state: pi.StateAtom) -> None:

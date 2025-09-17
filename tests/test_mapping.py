@@ -6,7 +6,7 @@
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 from scipy.optimize import linear_sum_assignment
 
 if TYPE_CHECKING:
