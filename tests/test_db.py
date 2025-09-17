@@ -9,7 +9,7 @@ from typing import Union
 
 import duckdb
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 from packaging.version import Version
 from sympy.physics.wigner import wigner_3j

@@ -4,7 +4,7 @@
 """Test energy range restriction in the diagonalization."""
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 
 
 def test_energy_range() -> None:

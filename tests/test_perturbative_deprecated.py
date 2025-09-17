@@ -3,7 +3,7 @@
 
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 from pairinteraction import perturbative
 from pairinteraction.units import ureg

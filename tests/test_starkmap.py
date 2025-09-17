@@ -4,7 +4,7 @@
 """Test the Stark map calculation."""
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 
 from .compare_utils import REFERENCE_PATHS, compare_eigensystem_to_reference

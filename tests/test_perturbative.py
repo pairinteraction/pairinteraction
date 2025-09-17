@@ -5,9 +5,8 @@ import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
-from pairinteraction import perturbative
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from scipy import sparse
 
@@ -149,7 +148,7 @@ def test_c3_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C3 coefficient with a given system is calculated correctly."""
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    c3_obj = perturbative.C3(ket1, ket2)
+    c3_obj = pi.C3(ket1, ket2)
     c3_obj._distance_vector = None  # avoid warning due when setting system pair
     c3_obj.system_pair = system_pair_sample
 
@@ -161,7 +160,7 @@ def test_c3() -> None:
     """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    c3_obj = perturbative.C3(ket1, ket2)
+    c3_obj = pi.C3(ket1, ket2)
 
     c3_obj.set_electric_field([0, 0, 0], "volt/cm")
     c3_obj.set_magnetic_field([0, 0, 10], "gauss")
@@ -173,7 +172,7 @@ def test_c3() -> None:
 def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     """Test whether the C6 coefficient with a given system is calculated correctly."""
     ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
-    c6_obj = perturbative.C6(ket, ket)
+    c6_obj = pi.C6(ket, ket)
     c6_obj._distance_vector = None  # avoid warning due when setting system pair
     c6_obj.system_pair = system_pair_sample
 
@@ -184,7 +183,7 @@ def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
 def test_c6() -> None:
     """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
     ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
-    c6_obj = perturbative.C6(ket, ket)
+    c6_obj = pi.C6(ket, ket)
 
     c6_obj.set_electric_field([0, 0, 0], "volt/cm")
     c6_obj.set_magnetic_field([0, 0, 10], "gauss")
@@ -197,7 +196,7 @@ def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: py
     """Test whether resonance with infinite admixture is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    eff_system = perturbative.EffectiveSystemPair([(ket1, ket2)])
+    eff_system = pi.EffectiveSystemPair([(ket1, ket2)])
     eff_system.system_pair = system_pair_sample
 
     # workaround to test for errors, without showing them in the std output
@@ -212,7 +211,7 @@ def test_near_resonance_detection(capsys: pytest.CaptureFixture[str]) -> None:
     """Test whether a near resonance is correctly detected."""
     ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket2 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    eff_system = perturbative.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    eff_system = pi.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
     eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")

@@ -4,7 +4,7 @@
 """Test multipole interaction."""
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 
 

@@ -6,7 +6,7 @@
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 from pairinteraction import ureg
 from scipy.optimize import curve_fit

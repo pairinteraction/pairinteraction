@@ -4,7 +4,7 @@
 """Test user-defined green tensors."""
 
 import numpy as np
-import pairinteraction.real as pi
+import pairinteraction as pi
 import pytest
 
 
