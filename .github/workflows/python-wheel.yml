@@ -42,6 +42,7 @@ jobs:
         - os: ubuntu-latest # runs in container anyway
         - os: windows-2022
         - os: macos-13
+        - os: macos-14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     steps:
@@ -59,8 +60,8 @@ jobs:
       if: runner.os == 'Windows'
       uses: ./.github/actions/setup-vcpkg
 
-    - name: Install macOS dependencies for x86_64
-      if: ${{ matrix.os == 'macos-13' }}
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
       run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
 
     - name: Install uv
@@ -75,55 +76,13 @@ jobs:
     - uses: pypa/cibuildwheel@v3.1
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
-
-    - name: Install macOS dependencies for arm64 cross-compilation
-      if: ${{ matrix.os == 'macos-13' }}
-      run: |
-        brew fetch --force --bottle-tag=arm64_ventura spdlog nlohmann-json eigen tbb lapack fmt openssl gcc
-        brew reinstall $(brew --cache --bottle-tag=arm64_ventura spdlog nlohmann-json eigen tbb lapack fmt openssl gcc)
-
-    - uses: pypa/cibuildwheel@v3.1  # Note: This will reuse the previously build stub files
-      if: ${{ matrix.os == 'macos-13' }}
-      name: Run pypa/cibuildwheel@v3.1 for macOS arm64
-      env:
-        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
-        CIBW_ARCHS_MACOS: 'arm64'
+        MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-13' && '13.0' || '14.0' }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4
       with:
         name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl
-
-  test-with-downloaded-database:
-    name: Test with macOS 14 and downloaded database
-    runs-on: macos-14
-    needs: [wheel]
-    timeout-minutes: 15
-    steps:
-    - uses: actions/checkout@v5
-
-    - name: Setup uv project virtual environment
-      uses: ./.github/actions/setup-uv-all-deps
-
-    - name: Download the wheel
-      uses: actions/download-artifact@v5
-      with:
-        name: dist-wheel-macos-13
-        path: dist
-
-    - name: Install the wheel  # Note, the tests dependencies are already automatically installed in setup-uv-all-deps
-      run: uv pip install dist/pairinteraction*abi3*arm64.whl
-
-    - name: Execute a test that downloads the database and runs checks
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: uv run --no-project pairinteraction --log-level INFO test
-
-    - name: Run all python tests including notebooks
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: uv run --no-project pytest --nbmake --download-missing --database-dir="" --verbose -s  # -s for text output to the terminal
 
   test-install-from-sdist:
     strategy:
@@ -132,8 +91,9 @@ jobs:
         include:
         - os: ubuntu-latest  # runs in container anyway
         - os: macos-13
+        - os: macos-14
         - os: windows-2022
-    name: Test installing sdist on ${{ matrix.os }}
+    name: Test installing sdist on ${{ matrix.os }} ${{ matrix.os == 'ubuntu-latest' && '(with database download and notebooks)' || '' }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     container:
@@ -163,8 +123,16 @@ jobs:
       shell: bash
       run: uv pip install dist/*.tar.gz
 
-    - name: Run pytest
+    - name: Run python tests with shipped database
+      if: runner.os != 'Linux'
       run: uv run --no-project pytest
+
+    - name: Run all python tests including notebooks with downloaded database
+      if: runner.os == 'Linux'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        uv run --no-project pytest --nbmake --download-missing --database-dir="" --verbose -s  # -s for text output to the terminal
 
   publish-to-testpypi:
     name: Publish to TestPyPI

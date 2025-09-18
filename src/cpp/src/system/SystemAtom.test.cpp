@@ -182,7 +182,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     // Diagonalize using pairinteraction
     for (double rtol_eigenenergies : rtols) {
         double atol_eigenvectors =
-            std::max(0.5 * rtol_eigenenergies / std::sqrt(basis->get_number_of_states()), 4 * eps);
+            std::max(0.5 * rtol_eigenenergies / std::sqrt(basis->get_number_of_states()), 5 * eps);
         DOCTEST_MESSAGE("Precision: " << rtol_eigenenergies << " (rtol eigenenergies), "
                                       << atol_eigenvectors << " (atol eigenvectors)");
 

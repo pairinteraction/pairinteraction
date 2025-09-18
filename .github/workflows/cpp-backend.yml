@@ -64,11 +64,11 @@ jobs:
     - uses: actions/checkout@v5
 
     - name: Install macOS dependencies
-      if: ${{ matrix.distro == 'macos' }}
-      run: brew install --force-bottle spdlog eigen fmt lapack nlohmann-json tbb
+      if: runner.os == 'macOS'
+      run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
 
     - name: Install Windows dependencies
-      if: ${{ matrix.distro == 'windows' }}
+      if: runner.os == 'Windows'
       uses: ./.github/actions/setup-vcpkg
 
     - name: Setup uv build virtual environment

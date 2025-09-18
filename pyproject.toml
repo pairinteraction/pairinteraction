@@ -110,7 +110,6 @@ wheel.packages = [
   "src/pairinteraction_gui",
 ]
 sdist.include = [
-  "/src/pairinteraction/_backend.pyi",  # HACK: Include _backend.pyi stub file (needed for macos cross compilation)
   "/src/pairinteraction/database/database.sql",
 ]
 sdist.exclude = [
@@ -165,7 +164,6 @@ repair-wheel-command = "auditwheel repair --exclude libmkl_core.so.2 --exclude l
 [[tool.cibuildwheel.overrides]]  # macosx overrides
 select = "*-macosx_*"
 inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "13.0"
 
 [[tool.cibuildwheel.overrides]]  # windows overrides
 select = "*-win_*"
