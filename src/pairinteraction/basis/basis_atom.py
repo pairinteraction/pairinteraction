@@ -88,7 +88,6 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         """
         creator = self._cpp_creator()
         creator.set_species(species)
-        self.species = species
 
         self._qns: dict[str, tuple[float, float]] = {}
         if n is not None:
@@ -140,7 +139,6 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             for ket in additional_kets:
                 creator.append_ket(ket._cpp)
             self._additional_kets = additional_kets
-        self._database = database
         self._cpp = creator.create(database._cpp)
 
     def __repr__(self) -> str:
@@ -158,7 +156,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     @property
     def database(self) -> Database:
         """The database used for this object."""
-        return self._database
+        return self.kets[0].database
+
+    @property
+    def species(self) -> str:
+        """The atomic species."""
+        return self.kets[0].species
 
     @overload
     def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...
@@ -170,7 +173,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if isinstance(other, StateAtom):
-            return self._cpp.get_amplitudes(other._basis._cpp).toarray().flatten()
+            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()
         if isinstance(other, BasisAtom):
             return self._cpp.get_amplitudes(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
@@ -185,7 +188,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if isinstance(other, StateAtom):
-            return self._cpp.get_overlaps(other._basis._cpp).toarray().flatten()
+            return self._cpp.get_overlaps(other._cpp).toarray().flatten()
         if isinstance(other, BasisAtom):
             return self._cpp.get_overlaps(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
@@ -214,7 +217,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._basis._cpp, cpp_op, q).toarray().flatten()
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().flatten()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
             matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)

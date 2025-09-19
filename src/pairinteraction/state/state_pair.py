@@ -8,17 +8,17 @@ from pairinteraction.ket import KetPair, KetPairReal
 from pairinteraction.state.state_base import StateBase
 
 if TYPE_CHECKING:
-    from pairinteraction.basis import BasisPair, BasisPairReal
+    from pairinteraction import _backend
 
 
-class StatePair(StateBase["BasisPair", KetPair]):
+class StatePair(StateBase[KetPair]):
     """Pair state of two atoms.
 
     Currently StatePair objects don't offer any additional functionality.
 
     """
 
-    _basis: BasisPair
+    _cpp: _backend.BasisPairComplex
     _ket_class = KetPair
 
     def get_amplitude(self, other: Any) -> Any:
@@ -32,5 +32,5 @@ class StatePair(StateBase["BasisPair", KetPair]):
 
 
 class StatePairReal(StatePair):
-    _basis: BasisPairReal
+    _cpp: _backend.BasisPairReal  # type: ignore [assignment]
     _ket_class = KetPairReal
