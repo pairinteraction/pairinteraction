@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
@@ -17,7 +18,7 @@ class StatePair(StateBase["BasisPair", KetPair]):
 
     """
 
-    _basis: "BasisPair"
+    _basis: BasisPair
     _ket_class = KetPair
 
     def get_amplitude(self, other: Any) -> Any:
@@ -31,5 +32,5 @@ class StatePair(StateBase["BasisPair", KetPair]):
 
 
 class StatePairReal(StatePair):
-    _basis: "BasisPairReal"
+    _basis: BasisPairReal
     _ket_class = KetPairReal

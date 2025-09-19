@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
@@ -39,7 +40,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     @classmethod
-    def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPBasis) -> "Self":
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis) -> Self:
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
@@ -51,7 +52,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def copy(self: "Self") -> "Self":
+    def copy(self: Self) -> Self:
         """Return a copy of the basis object."""
         cpp_copy = self._cpp.copy()
         return type(self)._from_cpp_object(cpp_copy)
@@ -81,7 +82,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         """Return the number of states in the basis."""
         return self._cpp.get_number_of_states()
 
-    def get_coefficients(self) -> "csr_matrix":
+    def get_coefficients(self) -> csr_matrix:
         """Return the coefficients of the basis as a sparse matrix.
 
         The coefficients are stored in a sparse matrix with shape (number_of_kets, number_of_states),
@@ -95,18 +96,18 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         """
         return self._cpp.get_coefficients()
 
-    def get_corresponding_ket(self: "Self", state: StateType) -> KetType:
+    def get_corresponding_ket(self: Self, state: StateType) -> KetType:
         raise NotImplementedError("Not implemented yet.")
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
         raise NotImplementedError("Not implemented yet.")
 
-    def get_corresponding_state(self, ket: "KetBase") -> StateType:
+    def get_corresponding_state(self, ket: KetBase) -> StateType:
         state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
         state_basis = type(self)._from_cpp_object(state_cpp)
         return self._state_class._from_basis_object(state_basis)
 
-    def get_corresponding_state_index(self, ket: "KetBase") -> int:
+    def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
 
     @abstractmethod

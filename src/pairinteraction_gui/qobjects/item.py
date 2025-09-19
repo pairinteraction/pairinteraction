@@ -1,21 +1,25 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import typing as t
-from typing import TYPE_CHECKING, Callable, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Callable, Generic, TypeVar
 
 import numpy as np
 from PySide6.QtWidgets import (
     QCheckBox,
     QLabel,
     QSpacerItem,
-    QWidget,
 )
 
 from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox, HalfIntSpinBox, IntSpinBox
 from pairinteraction_gui.qobjects.widget import WidgetH
 
 if TYPE_CHECKING:
+    from PySide6.QtWidgets import (
+        QWidget,
+    )
+
     P = TypeVar("P")
 
 ValueType = TypeVar("ValueType", int, float, complex)
@@ -78,7 +82,7 @@ class _QnItem(WidgetH, Generic[ValueType]):
 
     margin = (20, 0, 20, 0)
     spacing = 10
-    _spinbox_class: type[Union[IntSpinBox, HalfIntSpinBox, DoubleSpinBox]]
+    _spinbox_class: type[IntSpinBox | HalfIntSpinBox | DoubleSpinBox]
 
     def __init__(
         self,
@@ -87,15 +91,15 @@ class _QnItem(WidgetH, Generic[ValueType]):
         vmin: ValueType = 0,
         vmax: ValueType = 999,
         vdefault: ValueType = 0,
-        vstep: Optional[ValueType] = None,
+        vstep: ValueType | None = None,
         unit: str = "",
-        tooltip: Optional[str] = None,
+        tooltip: str | None = None,
         checkable: bool = True,
         checked: bool = True,
     ) -> None:
         tooltip = tooltip if tooltip is not None else f"{label} in {unit}"
 
-        self.checkbox: Union[QCheckBox, QSpacerItem]
+        self.checkbox: QCheckBox | QSpacerItem
         if checkable:
             self.checkbox = QCheckBox()
             self.checkbox.setChecked(checked)
@@ -153,8 +157,8 @@ class _QnItem(WidgetH, Generic[ValueType]):
 
     def value(
         self,
-        default: Union["P", NotSet] = NotSet,
-    ) -> Union[ValueType, "P"]:
+        default: P | NotSet = NotSet,
+    ) -> ValueType | P:
         """Return the value of the spinbox."""
         if not self.isChecked():
             if isinstance(default, NotSet):
@@ -194,13 +198,13 @@ class RangeItem(WidgetH):
         vdefaults: tuple[float, float] = (0, 0),
         vrange: tuple[float, float] = (-np.inf, np.inf),
         unit: str = "",
-        tooltip_label: Optional[str] = None,
+        tooltip_label: str | None = None,
         checkable: bool = True,
         checked: bool = True,
     ) -> None:
         tooltip_label = tooltip_label if tooltip_label is not None else label
 
-        self.checkbox: Union[QCheckBox, QSpacerItem]
+        self.checkbox: QCheckBox | QSpacerItem
         if checkable:
             self.checkbox = QCheckBox()
             self.checkbox.setChecked(checked)
@@ -268,7 +272,7 @@ class RangeItem(WidgetH):
             raise ValueError("Cannot uncheck a non-checkable item.")
         self.checkbox.setChecked(checked)
 
-    def values(self, default: Union[tuple[float, float], "P", NotSet] = NotSet) -> Union[tuple[float, float], "P"]:
+    def values(self, default: tuple[float, float] | P | NotSet = NotSet) -> tuple[float, float] | P:
         """Return the values of the min and max spinboxes."""
         if not self.isChecked():
             if isinstance(default, NotSet):

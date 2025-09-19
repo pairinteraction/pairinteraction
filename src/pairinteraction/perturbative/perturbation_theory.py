@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -18,10 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 def calculate_perturbative_hamiltonian(
-    hamiltonian: "csr_matrix",
+    hamiltonian: csr_matrix,
     model_inds: list[int],
     perturbation_order: int,
-) -> tuple[dict[int, "NDArray"], "csr_matrix"]:
+) -> tuple[dict[int, NDArray], csr_matrix]:
     r"""Calculate the perturbative Hamiltonian up to a given order.
 
     This function calculates both the effective Hamiltonian, spanned up by the states of the model space,
@@ -56,11 +57,11 @@ def calculate_perturbative_hamiltonian(
 
 
 def _calculate_unsorted_perturbative_hamiltonian(
-    hamiltonian: "csr_matrix",
-    m_inds: "NDArray",
-    o_inds: "NDArray",
+    hamiltonian: csr_matrix,
+    m_inds: NDArray,
+    o_inds: NDArray,
     perturbation_order: int,
-) -> tuple[dict[int, "NDArray"], "csr_matrix"]:
+) -> tuple[dict[int, NDArray], csr_matrix]:
     # This function is outsourced from calculate_perturbative_hamiltonian to allow for better type checking
     energies = np.real_if_close(hamiltonian.diagonal())
     if any(np.iscomplex(energies)):

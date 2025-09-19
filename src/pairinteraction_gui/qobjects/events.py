@@ -1,16 +1,21 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-import logging
 from functools import partial
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from PySide6.QtCore import QObject, QTimer
+from PySide6.QtCore import QTimer
 from PySide6.QtGui import QStatusTipEvent
 from PySide6.QtWidgets import QApplication
 
+if TYPE_CHECKING:
+    import logging
 
-def show_status_tip(parent: QObject, message: str, timeout: int = 0, logger: Optional[logging.Logger] = None) -> None:
+    from PySide6.QtCore import QObject
+
+
+def show_status_tip(parent: QObject, message: str, timeout: int = 0, logger: logging.Logger | None = None) -> None:
     """Show a status tip message using QStatusTipEvent."""
     QApplication.sendEvent(parent, QStatusTipEvent(message))
     if logger:

@@ -1,11 +1,12 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
-from PySide6.QtCore import QObject, QSize, Qt
-from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QIcon, QKeySequence, QShortcut
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
     QMainWindow,
@@ -31,6 +32,9 @@ from pairinteraction_gui.utils import download_databases_mp
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
 if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+    from PySide6.QtGui import QCloseEvent
+
     from pairinteraction_gui.page import BasePage
 
     ChildType = TypeVar("ChildType", bound=QObject)
@@ -67,8 +71,8 @@ class MainWindow(QMainWindow):
         self.signals.ask_download_database.connect(self.ask_download_database)
 
     def findChild(  # type: ignore [override] # explicitly override type hints
-        self, type_: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
-    ) -> "ChildType":
+        self, type_: type[ChildType], name: str, options: Qt.FindChildOption | None = None
+    ) -> ChildType:
         if options is None:
             options = Qt.FindChildOption.FindChildrenRecursively
         return super().findChild(type_, name, options)  # type: ignore [return-value] # explicitly override type hints
@@ -99,7 +103,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dockwidget)
         return dockwidget
 
-    def setup_stacked_pages(self) -> NamedStackedWidget["BasePage"]:
+    def setup_stacked_pages(self) -> NamedStackedWidget[BasePage]:
         """Set up the different pages for each toolbar option."""
         stacked_pages = NamedStackedWidget["BasePage"]()
         self.setCentralWidget(stacked_pages)

@@ -1,12 +1,15 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from PySide6.QtCore import QObject, Qt
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QFormLayout, QHBoxLayout, QLayout, QVBoxLayout, QWidget
 
 if TYPE_CHECKING:
+    from PySide6.QtCore import QObject
+
     ChildType = TypeVar("ChildType", bound=QObject)
     from pairinteraction_gui.main_window import MainWindow
 
@@ -22,11 +25,11 @@ class Widget(QWidget, Generic[LayoutType]):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
-        name: Optional[str] = None,
-        margin: Optional[tuple[int, int, int, int]] = None,
-        spacing: Optional[int] = None,
+        name: str | None = None,
+        margin: tuple[int, int, int, int] | None = None,
+        spacing: int | None = None,
     ) -> None:
         """Initialize the base section."""
         super().__init__(parent)
@@ -48,12 +51,12 @@ class Widget(QWidget, Generic[LayoutType]):
     def layout(self) -> LayoutType:
         return super().layout()  # type: ignore [return-value] # explicitly override type hints
 
-    def window(self) -> "MainWindow":
+    def window(self) -> MainWindow:
         return super().window()  # type: ignore [return-value] # explicitly override type hints
 
     def findChild(  # type: ignore [override] # explicitly override type hints
-        self, type_: type["ChildType"], name: str, options: Optional["Qt.FindChildOption"] = None
-    ) -> "ChildType":
+        self, type_: type[ChildType], name: str, options: Qt.FindChildOption | None = None
+    ) -> ChildType:
         if options is None:
             options = Qt.FindChildOption.FindChildrenRecursively
         return super().findChild(type_, name, options)  # type: ignore [return-value] # explicitly override type hints

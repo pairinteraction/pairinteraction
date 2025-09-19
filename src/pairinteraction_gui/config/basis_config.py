@@ -1,12 +1,11 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
-from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (
     QLabel,
-    QWidget,
 )
 
 import pairinteraction as pi_complex
@@ -19,6 +18,11 @@ from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, g
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QShowEvent
+    from PySide6.QtWidgets import (
+        QWidget,
+    )
+
     from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
     from pairinteraction_gui.qobjects.item import _QnItem
@@ -39,7 +43,7 @@ class BasisConfig(BaseConfig):
     """Section for configuring the basis."""
 
     title = "Basis"
-    page: Union["OneAtomPage", "TwoAtomsPage"]
+    page: OneAtomPage | TwoAtomsPage
 
     def setupWidget(self) -> None:
         self.stacked_basis_list: list[NamedStackedWidget[RestrictionsBase]] = []
@@ -66,7 +70,7 @@ class BasisConfig(BaseConfig):
     def update_basis_label(self, atom: int) -> None:
         worker = MultiThreadWorker(self.get_basis, atom)
 
-        def update_result(basis: Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]) -> None:
+        def update_result(basis: pi_real.BasisAtom | pi_complex.BasisAtom) -> None:
             self.basis_label_list[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
             self.basis_label_list[atom].setStyleSheet(label_theme)
 
@@ -107,7 +111,7 @@ class BasisConfig(BaseConfig):
 
     def get_basis(
         self, atom: int, dtype: Literal["real", "complex"] = "real"
-    ) -> Union["pi_real.BasisAtom", "pi_complex.BasisAtom"]:
+    ) -> pi_real.BasisAtom | pi_complex.BasisAtom:
         """Return the basis of interest."""
         ket = self.page.ket_config.get_ket_atom(atom)
         qn_restrictions = self.get_quantum_number_restrictions(atom)
@@ -115,7 +119,7 @@ class BasisConfig(BaseConfig):
             return pi_real.BasisAtom(ket.species, **qn_restrictions)
         return pi_complex.BasisAtom(ket.species, **qn_restrictions)
 
-    def get_quantum_number_deltas(self, atom: int = 0) -> "QuantumNumbers":
+    def get_quantum_number_deltas(self, atom: int = 0) -> QuantumNumbers:
         """Return the quantum number deltas for the basis of interest."""
         basis_widget = self.stacked_basis_list[atom].currentWidget()
         return {key: item.value() for key, item in basis_widget.items.items() if item.isChecked()}  # type: ignore [return-value]
@@ -194,14 +198,14 @@ class RestrictionsBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    items: dict[str, "_QnItem[Any]"]
+    items: dict[str, _QnItem[Any]]
 
     def postSetupWidget(self) -> None:
         for _key, item in self.items.items():
             self.layout().addWidget(item)
 
     @classmethod
-    def from_species(cls, species: str, parent: Optional[QWidget] = None) -> "RestrictionsBase":
+    def from_species(cls, species: str, parent: QWidget | None = None) -> RestrictionsBase:
         """Create a quantum number restriction configuration from the species name."""
         species_type = get_species_type(species)
         if species_type == "sqdt_duplet":
@@ -223,7 +227,7 @@ class RestrictionsSQDT(RestrictionsBase):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
         s_type: Literal["int", "halfint"],
         s: float,
@@ -249,7 +253,7 @@ class RestrictionsMQDT(RestrictionsBase):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
         f_type: Literal["int", "halfint"],
         i: float,

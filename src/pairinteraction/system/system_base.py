@@ -1,15 +1,15 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, overload
 
 import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction.diagonalization import Diagonalizer, diagonalize
-from pairinteraction.enums import FloatType
+from pairinteraction.diagonalization import diagonalize
 from pairinteraction.units import QuantityArray, QuantitySparse
 
 if TYPE_CHECKING:
@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.basis import BasisBase
+    from pairinteraction.diagonalization import Diagonalizer
+    from pairinteraction.enums import FloatType
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
     Quantity = TypeVar("Quantity", float, "PintFloat")
@@ -62,10 +64,10 @@ class SystemBase(ABC, Generic[BasisType]):
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
         sort_by_energy: bool = True,
-        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
-        energy_range_unit: Optional[str] = None,
-        m0: Optional[int] = None,
-    ) -> "Self": ...
+        energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
+        energy_range_unit: str | None = None,
+        m0: int | None = None,
+    ) -> Self: ...
 
     @overload
     @deprecated("Use energy_range_unit=... instead of energy_unit=...")
@@ -75,11 +77,11 @@ class SystemBase(ABC, Generic[BasisType]):
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
         sort_by_energy: bool = True,
-        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+        energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         *,
-        energy_unit: Optional[str],
-        m0: Optional[int] = None,
-    ) -> "Self": ...
+        energy_unit: str | None,
+        m0: int | None = None,
+    ) -> Self: ...
 
     def diagonalize(
         self,
@@ -87,12 +89,12 @@ class SystemBase(ABC, Generic[BasisType]):
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
         sort_by_energy: bool = True,
-        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
-        energy_range_unit: Optional[str] = None,
-        m0: Optional[int] = None,
+        energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
+        energy_range_unit: str | None = None,
+        m0: int | None = None,
         *,
-        energy_unit: Optional[str] = None,
-    ) -> "Self":
+        energy_unit: str | None = None,
+    ) -> Self:
         """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
 
         This method diagonalizes the Hamiltonian of the system and updates the basis of the system accordingly.
@@ -138,7 +140,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._basis
 
     @property
-    def matrix(self) -> "csr_matrix":
+    def matrix(self) -> csr_matrix:
         return self._cpp.get_matrix()
 
     def get_eigenbasis(self) -> BasisType:
@@ -146,21 +148,21 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._basis_class._from_cpp_object(cpp_eigenbasis)
 
     @overload
-    def get_eigenenergies(self, unit: None = None) -> "PintArray": ...
+    def get_eigenenergies(self, unit: None = None) -> PintArray: ...
 
     @overload
-    def get_eigenenergies(self, unit: str) -> "NDArray": ...
+    def get_eigenenergies(self, unit: str) -> NDArray: ...
 
-    def get_eigenenergies(self, unit: Optional[str] = None) -> Union["NDArray", "PintArray"]:
+    def get_eigenenergies(self, unit: str | None = None) -> NDArray | PintArray:
         eigenenergies_au: NDArray = np.array(self._cpp.get_eigenenergies())
         return QuantityArray.convert_au_to_user(eigenenergies_au, "energy", unit)
 
     @overload
-    def get_hamiltonian(self, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
+    def get_hamiltonian(self, unit: None = None) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
 
     @overload
-    def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
+    def get_hamiltonian(self, unit: str) -> csr_matrix: ...
 
-    def get_hamiltonian(self, unit: Optional[str] = None) -> Union["csr_matrix", "PintSparse"]:
+    def get_hamiltonian(self, unit: str | None = None) -> csr_matrix | PintSparse:
         hamiltonian_au = self._cpp.get_matrix()
         return QuantitySparse.convert_au_to_user(hamiltonian_au, "energy", unit)

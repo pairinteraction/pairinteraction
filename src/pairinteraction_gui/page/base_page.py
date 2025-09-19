@@ -1,14 +1,14 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 import time
 from pathlib import Path
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import nbformat
 from nbconvert import PythonExporter
-from PySide6.QtGui import QHideEvent, QShowEvent
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -19,12 +19,17 @@ from PySide6.QtWidgets import (
 )
 
 import pairinteraction
-from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.config import BaseConfig
-from pairinteraction_gui.config.ket_config import KetConfig
-from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies, PlotWidget
+from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QHideEvent, QShowEvent
+
+    from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+    from pairinteraction_gui.config.ket_config import KetConfig
+    from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +42,7 @@ class BasePage(WidgetV):
 
     title: str
     tooltip: str
-    icon_path: Optional[Path] = None
+    icon_path: Path | None = None
 
     def showEvent(self, event: QShowEvent) -> None:
         """Show event."""

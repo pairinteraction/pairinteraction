@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from collections.abc import Collection, Sequence
-from typing import TYPE_CHECKING, Any, Optional, Union, overload
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Union, overload
 
 import numpy as np
 from typing_extensions import TypeGuard
@@ -10,14 +11,17 @@ from typing_extensions import TypeGuard
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom
 from pairinteraction.basis.basis_base import BasisBase
-from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction.enums import get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.state import StatePair, StatePairReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from scipy.sparse import csr_matrix
 
+    from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # required for sphinx for KetPairLike
         KetPairLike,
@@ -32,7 +36,7 @@ def is_basis_pair_like(obj: Any) -> TypeGuard[BasisPairLike]:
     return isinstance(obj, BasisPair) or is_basis_atom_tuple(obj)
 
 
-def is_basis_atom_tuple(obj: Any) -> TypeGuard[tuple["BasisAtom", "BasisAtom"]]:
+def is_basis_atom_tuple(obj: Any) -> TypeGuard[tuple[BasisAtom, BasisAtom]]:
     return hasattr(obj, "__len__") and len(obj) == 2 and all(isinstance(x, BasisAtom) for x in obj)
 
 
@@ -71,11 +75,11 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     def __init__(
         self,
-        systems: Collection["SystemAtom"],
-        m: Optional[tuple[float, float]] = None,
-        product_of_parities: Optional[Parity] = None,
-        energy: Union[tuple[float, float], tuple["PintFloat", "PintFloat"], None] = None,
-        energy_unit: Optional[str] = None,
+        systems: Collection[SystemAtom],
+        m: tuple[float, float] | None = None,
+        product_of_parities: Parity | None = None,
+        energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
+        energy_unit: str | None = None,
     ) -> None:
         """Create a basis for a pair of atoms.
 
@@ -112,12 +116,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         self._cpp = creator.create()
 
     @overload
-    def get_amplitudes(self, other: "KetPairLike") -> "NDArray": ...
+    def get_amplitudes(self, other: KetPairLike) -> NDArray: ...
 
     @overload
-    def get_amplitudes(self, other: BasisPairLike) -> "csr_matrix": ...
+    def get_amplitudes(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
+    def get_amplitudes(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_amplitudes(other._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
@@ -135,12 +139,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         raise TypeError(f"Unknown type: {type(other)=}")
 
     @overload
-    def get_overlaps(self, other: "KetPairLike") -> "NDArray": ...
+    def get_overlaps(self, other: KetPairLike) -> NDArray: ...
 
     @overload
-    def get_overlaps(self, other: BasisPairLike) -> "csr_matrix": ...
+    def get_overlaps(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_overlaps(self, other: Union["KetPairLike", BasisPairLike]) -> Union["NDArray", "csr_matrix"]:
+    def get_overlaps(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_overlaps(other._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
@@ -160,16 +164,16 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     @overload
     def get_matrix_elements(
         self,
-        other: "KetPairLike",
+        other: KetPairLike,
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> "PintArray": ...
+    ) -> PintArray: ...
 
     @overload
     def get_matrix_elements(
-        self, other: "KetPairLike", operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
-    ) -> "NDArray": ...
+        self, other: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
+    ) -> NDArray: ...
 
     @overload
     def get_matrix_elements(
@@ -178,7 +182,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
+    ) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
 
     @overload
     def get_matrix_elements(
@@ -187,15 +191,15 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: str,
-    ) -> "csr_matrix": ...
+    ) -> csr_matrix: ...
 
     def get_matrix_elements(
         self,
-        other: Union["KetPairLike", BasisPairLike],
+        other: KetPairLike | BasisPairLike,
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
-        unit: Optional[str] = None,
-    ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
+        unit: str | None = None,
+    ) -> NDArray | PintArray | csr_matrix | PintSparse:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
 
         # KetPair like

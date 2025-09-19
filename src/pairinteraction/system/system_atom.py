@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
@@ -62,10 +63,10 @@ class SystemAtom(SystemBase[BasisAtom]):
         self._basis = basis
 
     def set_electric_field(
-        self: "Self",
-        electric_field: Union["PintArrayLike", "ArrayLike"],
-        unit: Optional[str] = None,
-    ) -> "Self":
+        self: Self,
+        electric_field: PintArrayLike | ArrayLike,
+        unit: str | None = None,
+    ) -> Self:
         """Set the electric field for the system.
 
         Args:
@@ -79,10 +80,10 @@ class SystemAtom(SystemBase[BasisAtom]):
         return self
 
     def set_magnetic_field(
-        self: "Self",
-        magnetic_field: Union["PintArrayLike", "ArrayLike"],
-        unit: Optional[str] = None,
-    ) -> "Self":
+        self: Self,
+        magnetic_field: PintArrayLike | ArrayLike,
+        unit: str | None = None,
+    ) -> Self:
         """Set the magnetic field for the system.
 
         Args:
@@ -95,7 +96,7 @@ class SystemAtom(SystemBase[BasisAtom]):
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
-    def set_diamagnetism_enabled(self: "Self", enable: bool = True) -> "Self":
+    def set_diamagnetism_enabled(self: Self, enable: bool = True) -> Self:
         """Enable or disable diamagnetism for the system.
 
         Args:
@@ -106,36 +107,36 @@ class SystemAtom(SystemBase[BasisAtom]):
         return self
 
     def set_distance_to_ion(
-        self: "Self", distance: Union[float, "PintFloat"], angle_degree: float = 0, unit: Optional[str] = None
-    ) -> "Self":
+        self: Self, distance: float | PintFloat, angle_degree: float = 0, unit: str | None = None
+    ) -> Self:
         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
         return self.set_ion_distance_vector(distance_vector, unit)
 
     def set_ion_distance_vector(
-        self: "Self",
-        distance: Union["PintArrayLike", "ArrayLike"],
-        unit: Optional[str] = None,
-    ) -> "Self":
+        self: Self,
+        distance: PintArrayLike | ArrayLike,
+        unit: str | None = None,
+    ) -> Self:
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_ion_distance_vector(distance_au)
         return self
 
-    def set_ion_charge(self: "Self", charge: Union[float, "PintFloat"], unit: Optional[str] = None) -> "Self":
+    def set_ion_charge(self: Self, charge: float | PintFloat, unit: str | None = None) -> Self:
         charge_au = QuantityScalar.convert_user_to_au(charge, unit, "charge")
         self._cpp.set_ion_charge(charge_au)
         return self
 
-    def set_ion_interaction_order(self: "Self", order: int) -> "Self":
+    def set_ion_interaction_order(self: Self, order: int) -> Self:
         self._cpp.set_ion_interaction_order(order)
         return self
 
     @overload
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: None = None) -> "PintFloat": ...
+    def get_corresponding_energy(self: Self, ket: KetAtom, unit: None = None) -> PintFloat: ...
 
     @overload
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: str) -> float: ...
+    def get_corresponding_energy(self: Self, ket: KetAtom, unit: str) -> float: ...
 
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None) -> Union[float, "PintFloat"]:
+    def get_corresponding_energy(self: Self, ket: KetAtom, unit: str | None = None) -> float | PintFloat:
         overlaps = self.get_eigenbasis().get_overlaps(ket)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:

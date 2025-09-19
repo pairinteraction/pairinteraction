@@ -1,15 +1,17 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import contextlib
 import logging
-from collections.abc import Iterator
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from pairinteraction.units import NDArray
 
 
@@ -21,10 +23,10 @@ REFERENCE_PATHS = {
 
 def compare_eigensystem_to_reference(
     reference_path: Path,
-    eigenenergies: "NDArray",
-    overlaps: Optional["NDArray"] = None,
-    eigenvectors: Optional["NDArray"] = None,
-    kets: Optional[list[str]] = None,
+    eigenenergies: NDArray,
+    overlaps: NDArray | None = None,
+    eigenvectors: NDArray | None = None,
+    kets: list[str] | None = None,
 ) -> None:
     n_systems, n_kets = eigenenergies.shape
     np.testing.assert_allclose(eigenenergies, np.loadtxt(reference_path / "eigenenergies.txt"))
@@ -45,7 +47,7 @@ def compare_eigensystem_to_reference(
 
 
 @contextlib.contextmanager
-def no_log_propagation(logger: Union[logging.Logger, str]) -> Iterator[None]:
+def no_log_propagation(logger: logging.Logger | str) -> Iterator[None]:
     """Context manager to temporarily disable log propagation for a given logger."""
     if isinstance(logger, str):
         logger = logging.getLogger(logger)

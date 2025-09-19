@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, ClassVar
 
 from pairinteraction import _backend
 from pairinteraction.custom_logging import _flush_pending_logs
@@ -27,13 +28,13 @@ class Database:
 
     """
 
-    _global_database: ClassVar[Optional["Database"]] = None
+    _global_database: ClassVar[Database | None] = None
 
     def __init__(
         self,
         download_missing: bool = False,
         use_cache: bool = True,
-        database_dir: Union[str, "os.PathLike[str]"] = "",
+        database_dir: str | os.PathLike[str] = "",
     ) -> None:
         """Create a new database instance with the given parameters.
 
@@ -51,7 +52,7 @@ class Database:
         self.database_dir = database_dir
 
     @classmethod
-    def get_global_database(cls) -> "Database":
+    def get_global_database(cls) -> Database:
         """Return the global database instance if it was initialized, otherwise None."""
         return cls._global_database  # type: ignore [return-value]
 
@@ -60,7 +61,7 @@ class Database:
         cls,
         download_missing: bool = False,
         use_cache: bool = True,
-        database_dir: Union[str, "os.PathLike[str]"] = "",
+        database_dir: str | os.PathLike[str] = "",
     ) -> None:
         """Initialize the global database with the given parameters.
 

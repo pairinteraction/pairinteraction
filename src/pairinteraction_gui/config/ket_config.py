@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QLabel, QWidget
+from PySide6.QtWidgets import QComboBox, QLabel
 
 import pairinteraction as pi
 from pairinteraction_gui.app import Application
@@ -28,6 +29,8 @@ from pairinteraction_gui.utils import (
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
     from pairinteraction_gui.qobjects.item import _QnItem
 
@@ -102,7 +105,7 @@ class KetConfig(BaseConfig):
         qn_widget = self.stacked_qn_list[atom].currentWidget()
         return {key: item.value() for key, item in qn_widget.items.items() if item.isChecked()}  # type: ignore [return-value]
 
-    def get_ket_atom(self, atom: int, *, ask_download: bool = False) -> "pi.KetAtom":
+    def get_ket_atom(self, atom: int, *, ask_download: bool = False) -> pi.KetAtom:
         """Return the ket of interest of the ... atom."""
         species = self.get_species(atom)
         qns = self.get_quantum_numbers(atom)
@@ -151,10 +154,10 @@ class KetConfigOneAtom(KetConfig):
 
 
 class KetConfigLifetimes(KetConfig):
-    worker_label: Optional[MultiThreadWorker] = None
-    worker_plot: Optional[MultiThreadWorker] = None
+    worker_label: MultiThreadWorker | None = None
+    worker_plot: MultiThreadWorker | None = None
 
-    page: "LifetimesPage"
+    page: LifetimesPage
 
     def setupWidget(self) -> None:
         super().setupWidget()
@@ -239,14 +242,14 @@ class QnBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
-    items: dict[str, "_QnItem[Any]"]
+    items: dict[str, _QnItem[Any]]
 
     def postSetupWidget(self) -> None:
         for item in self.items.values():
             self.layout().addWidget(item)
 
     @classmethod
-    def from_species(cls, species: str, parent: Optional[QWidget] = None) -> "QnBase":
+    def from_species(cls, species: str, parent: QWidget | None = None) -> QnBase:
         """Create a quantum number configuration from the species name."""
         species_type = get_species_type(species)
         if species_type == "sqdt_duplet":
@@ -272,7 +275,7 @@ class QnSQDT(QnBase):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
         s_type: Literal["int", "halfint"],
         s: float,
@@ -304,7 +307,7 @@ class QnMQDT(QnBase):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         *,
         f_type: Literal["int", "halfint"],
         i: float,

@@ -1,10 +1,13 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from collections.abc import Generator
 from contextlib import contextmanager
 from time import perf_counter_ns
-from typing import Callable
+from typing import TYPE_CHECKING, Callable
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 @contextmanager

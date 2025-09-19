@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pytest
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def base_window(qtbot: "QtBot") -> MainWindow:
+def base_window(qtbot: QtBot) -> MainWindow:
     window = MainWindow()
     window.show()
     qtbot.addWidget(window)
@@ -71,7 +72,7 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
     return base_window
 
 
-def test_main_window_basic(qtbot: "QtBot", window_starkmap: "MainWindow") -> None:
+def test_main_window_basic(qtbot: QtBot, window_starkmap: MainWindow) -> None:
     """Test basic main window functionality."""
     one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
     qn_item = one_atom_page.ket_config.stacked_qn_list[0].currentWidget().items["n"]
@@ -99,11 +100,11 @@ def test_main_window_basic(qtbot: "QtBot", window_starkmap: "MainWindow") -> Non
     window_starkmap.close()
 
 
-def test_one_atom_page(window_starkmap: "MainWindow") -> None:
+def test_one_atom_page(window_starkmap: MainWindow) -> None:
     _test_calculate_page(window_starkmap, "OneAtomPage", "stark_map")
 
 
-def test_two_atoms_page(window_pair_potential: "MainWindow") -> None:
+def test_two_atoms_page(window_pair_potential: MainWindow) -> None:
     _test_calculate_page(window_pair_potential, "TwoAtomsPage", "pair_potential")
 
 
@@ -112,7 +113,7 @@ def _test_calculate_page(
     page_name: Literal["OneAtomPage", "TwoAtomsPage"],
     reference_name: str,
 ) -> None:
-    page: Union[OneAtomPage, TwoAtomsPage] = window.stacked_pages.getNamedWidget(page_name)  # type: ignore [assignment]
+    page: OneAtomPage | TwoAtomsPage = window.stacked_pages.getNamedWidget(page_name)  # type: ignore [assignment]
     ket_energy_0 = sum(page.ket_config.get_ket_atom(i).get_energy("GHz") for i in range(page.ket_config.n_atoms))
 
     # Test calculation with fast mode off

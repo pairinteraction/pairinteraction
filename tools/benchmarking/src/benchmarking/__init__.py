@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import argparse
 import json
@@ -11,8 +12,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
-from types import ModuleType
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,6 +25,9 @@ import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from benchmarking.benchmark_timer import timer
 from pairinteraction import __version__, configure_logging
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 configure_logging("INFO")
 

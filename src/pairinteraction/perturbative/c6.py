@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair, EffectiveSystemPairReal
 from pairinteraction.units import QuantityScalar
@@ -35,7 +36,7 @@ class C6(EffectiveSystemPair):
 
     """
 
-    def __init__(self, ket1: "KetAtom", ket2: "KetAtom") -> None:
+    def __init__(self, ket1: KetAtom, ket2: KetAtom) -> None:
         if ket1.species == ket2.species and ket1 != ket2:
             raise ValueError(
                 "If you want to calculate 2nd order perturbations of two different states a and b "
@@ -51,12 +52,12 @@ class C6(EffectiveSystemPair):
         self.set_distance(100, unit="micrometer")
 
     @overload
-    def get(self, unit: None = None) -> "PintFloat": ...
+    def get(self, unit: None = None) -> PintFloat: ...
 
     @overload
     def get(self, unit: str) -> float: ...
 
-    def get(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
+    def get(self, unit: str | None = None) -> float | PintFloat:
         """Get the C6 coefficient of the pair interaction between the specified ket1 and ket2.
 
         Args:

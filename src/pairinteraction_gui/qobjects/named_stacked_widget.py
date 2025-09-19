@@ -1,11 +1,14 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from collections.abc import ItemsView
-from typing import Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from PySide6.QtWidgets import QStackedWidget, QWidget
+
+if TYPE_CHECKING:
+    from collections.abc import ItemsView
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +17,7 @@ WidgetType = TypeVar("WidgetType", bound=QWidget)
 
 
 class NamedStackedWidget(QStackedWidget, Generic[WidgetType]):
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._widgets: dict[str, WidgetType] = {}
 

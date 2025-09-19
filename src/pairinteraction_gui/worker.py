@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 import os
@@ -7,13 +8,14 @@ from functools import wraps
 from multiprocessing.pool import Pool
 from pathlib import Path
 from threading import Thread
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, TypeVar
 
 from PySide6.QtCore import QObject, QSize, Qt, QThread, Signal
 from PySide6.QtGui import QMovie
-from PySide6.QtWidgets import QApplication, QLabel, QWidget
+from PySide6.QtWidgets import QApplication, QLabel
 
 if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
     from typing_extensions import ParamSpec
 
     P = ParamSpec("P")
@@ -41,7 +43,7 @@ class MultiThreadWorker(QThread):
 
     """
 
-    all_threads: ClassVar[set["MultiThreadWorker"]] = set()
+    all_threads: ClassVar[set[MultiThreadWorker]] = set()
 
     def __init__(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         super().__init__(QApplication.instance())
@@ -55,7 +57,7 @@ class MultiThreadWorker(QThread):
         self.signals = WorkerSignals()
         self.finished.connect(self.finish_up)
 
-    def enable_busy_indicator(self, widget: "QWidget") -> None:
+    def enable_busy_indicator(self, widget: QWidget) -> None:
         """Run a loading gif while the worker is running."""
         self.busy_label = QLabel(widget)
         gif_path = Path(__file__).parent / "images" / "loading.gif"
@@ -117,8 +119,8 @@ class MultiThreadWorker(QThread):
 
 class MultiProcessWorker:
     _mp_functions_dict: ClassVar[dict[str, Callable[..., Any]]] = {}
-    _pool: ClassVar[Optional[Pool]] = None
-    _async_worker: ClassVar[Optional[Thread]] = None
+    _pool: ClassVar[Pool | None] = None
+    _async_worker: ClassVar[Thread | None] = None
 
     def __init__(self, fn_name: str, *args: Any, **kwargs: Any) -> None:
         if fn_name not in self._mp_functions_dict:
@@ -156,7 +158,7 @@ class MultiProcessWorker:
         return
 
     @classmethod
-    def register(cls, func: Callable[..., Any], name: Optional[str] = None) -> None:
+    def register(cls, func: Callable[..., Any], name: str | None = None) -> None:
         name = name if name is not None else func.__name__
         if name in cls._mp_functions_dict:
             raise ValueError(f"Function {name} is already registered.")
@@ -199,11 +201,11 @@ class MultiProcessWorker:
             cls.create_pool()
 
 
-def run_in_other_process(func: Callable["P", "R"]) -> Callable["P", "R"]:
+def run_in_other_process(func: Callable[P, R]) -> Callable[P, R]:
     MultiProcessWorker.register(func)
 
     @wraps(func)
-    def wrapper(*args: "P.args", **kwargs: "P.kwargs") -> "R":
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         return MultiProcessWorker(func.__name__, *args, **kwargs).start()  # type: ignore [no-any-return]
 
     return wrapper

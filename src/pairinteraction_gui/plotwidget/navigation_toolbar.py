@@ -1,11 +1,14 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from PySide6.QtWidgets import QWidget
+
+if TYPE_CHECKING:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+    from PySide6.QtWidgets import QWidget
 
 
 class CustomNavigationToolbar(NavigationToolbar):
@@ -22,6 +25,6 @@ class CustomNavigationToolbar(NavigationToolbar):
         ("Home", "Reset original view", "home", "home"),
     )  # type: ignore [assignment]
 
-    def __init__(self, canvas: FigureCanvasQTAgg, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, canvas: FigureCanvasQTAgg, parent: QWidget | None = None) -> None:
         """Initialize the custom navigation toolbar."""
         super().__init__(canvas, parent, coordinates=False)

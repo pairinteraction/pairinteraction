@@ -1,16 +1,19 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 import os
 import signal
-from types import FrameType
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QObject, QSocketNotifier, QTimer, Signal
 from PySide6.QtWidgets import QApplication
 
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
+
+if TYPE_CHECKING:
+    from types import FrameType
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ class Application(QApplication):
     signals = MainSignals()
 
     @classmethod
-    def instance(cls) -> "Application":
+    def instance(cls) -> Application:
         """Return the current instance of the application."""
         return super().instance()  # type: ignore [return-value]
 
@@ -40,7 +43,7 @@ class Application(QApplication):
         # Create a pipe to communicate between the signal handler and the Qt event loop
         pipe_r, pipe_w = os.pipe()
 
-        def signal_handler(signal: int, frame: Optional[FrameType]) -> None:
+        def signal_handler(signal: int, frame: FrameType | None) -> None:
             os.write(pipe_w, b"x")  # Write a single byte to the pipe
 
         signal.signal(signal.SIGINT, signal_handler)

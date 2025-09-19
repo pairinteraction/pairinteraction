@@ -1,16 +1,18 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Literal, Optional, Union, overload
+from typing import TYPE_CHECKING, Literal, Union, overload
 
 from pairinteraction import _backend
-from pairinteraction.enums import Parity, get_python_parity
+from pairinteraction.enums import get_python_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.enums import Parity
     from pairinteraction.units import PintFloat
 
 UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex]
@@ -34,7 +36,7 @@ class KetBase(ABC):
     _cpp: UnionCPPKet
 
     @classmethod
-    def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPKet) -> "Self":
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPKet) -> Self:
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
@@ -91,12 +93,12 @@ class KetBase(ABC):
         raise ValueError(f"Unknown fmt {fmt}")
 
     @overload
-    def get_energy(self, unit: None = None) -> "PintFloat": ...
+    def get_energy(self, unit: None = None) -> PintFloat: ...
 
     @overload
     def get_energy(self, unit: str) -> float: ...
 
-    def get_energy(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
+    def get_energy(self, unit: str | None = None) -> float | PintFloat:
         """Get the energy of the ket in the given unit.
 
         Args:

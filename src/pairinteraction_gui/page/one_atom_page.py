@@ -1,10 +1,11 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, ResultsOneAtom, calculate_one_atom
+from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
     BasisConfigOneAtom,
     CalculationConfig,
@@ -12,6 +13,9 @@ from pairinteraction_gui.config import (
     SystemConfigOneAtom,
 )
 from pairinteraction_gui.page.base_page import CalculationPage
+
+if TYPE_CHECKING:
+    from pairinteraction_gui.calculate.calculate_one_atom import ResultsOneAtom
 
 logger = logging.getLogger(__name__)
 

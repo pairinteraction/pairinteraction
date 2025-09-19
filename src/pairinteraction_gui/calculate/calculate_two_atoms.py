@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
 import numpy as np
 from attr import dataclass
@@ -25,11 +26,11 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     """Parameters for the two atoms calculation."""
 
     pair_delta_energy: float = np.inf
-    pair_m_range: Optional[tuple[float, float]] = None
+    pair_m_range: tuple[float, float] | None = None
     order: int = 3
 
     @classmethod
-    def from_page(cls, page: "TwoAtomsPage") -> "Self":
+    def from_page(cls, page: TwoAtomsPage) -> Self:
         obj = super().from_page(page)
         obj.pair_delta_energy = page.basis_config.pair_delta_energy.value(np.inf)
         obj.pair_m_range = (
@@ -50,7 +51,7 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
 
 @dataclass
 class ResultsTwoAtoms(Results):
-    basis_0_label: Optional[str] = None
+    basis_0_label: str | None = None
 
 
 @run_in_other_process
@@ -74,7 +75,7 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
 
     fields = {k: v for k, v in parameters.ranges.items() if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz"]}
 
-    basis_pair_list: Union[list[pi_real.BasisPair], list[pi_complex.BasisPair]]
+    basis_pair_list: list[pi_real.BasisPair] | list[pi_complex.BasisPair]
     if all(v[0] == v[-1] for v in fields.values()):
         # If all fields are constant, we can only have to diagonalize one SystemAtom per atom
         # and can construct one BasisPair, which we can use for all steps
@@ -130,7 +131,7 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             basis_pair_list.append(basis_pair)
         ket_pair_energy_0 = sum(systems_list[-1][i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
 
-    system_pair_list: Union[list[pi_real.SystemPair], list[pi_complex.SystemPair]] = []
+    system_pair_list: list[pi_real.SystemPair] | list[pi_complex.SystemPair] = []
     for step in range(parameters.steps):
         system = pi.SystemPair(basis_pair_list[step])
         system.set_interaction_order(parameters.order)

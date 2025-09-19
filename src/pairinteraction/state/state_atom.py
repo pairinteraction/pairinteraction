@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
@@ -40,10 +41,10 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
     """
 
-    _basis: "BasisAtom"
+    _basis: BasisAtom
     _ket_class = KetAtom
 
-    def __init__(self, ket: KetAtom, basis: "BasisAtom") -> None:
+    def __init__(self, ket: KetAtom, basis: BasisAtom) -> None:
         """Initialize a state object representing a ket in a given basis.
 
         Args:
@@ -58,7 +59,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         new_basis._cpp.set_coefficients(coeffs)
         self._basis = new_basis
 
-    def __add__(self, other: "Self") -> "Self":
+    def __add__(self, other: Self) -> Self:
         """Add two states together.
 
         Args:
@@ -78,7 +79,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         new_basis._cpp.set_coefficients(coeffs)
         return type(self)._from_basis_object(new_basis)
 
-    def __sub__(self, other: "Self") -> "Self":
+    def __sub__(self, other: Self) -> Self:
         """Subtract two states.
 
         Args:
@@ -90,7 +91,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         """
         return self.__add__(-1 * other)
 
-    def __mul__(self, factor: complex) -> "Self":
+    def __mul__(self, factor: complex) -> Self:
         """Multiply the state with a scalar.
 
         Args:
@@ -107,7 +108,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         new_basis._cpp.set_coefficients(coeffs)
         return type(self)._from_basis_object(new_basis)
 
-    def __truediv__(self, factor: complex) -> "Self":
+    def __truediv__(self, factor: complex) -> Self:
         """Divide the state by a scalar.
 
         Args:
@@ -121,7 +122,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
     __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * state will use state.__rmul__
 
-    def normalize(self) -> "Self":
+    def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
         coeffs = self._basis.get_coefficients()
         self._basis._cpp.set_coefficients(coeffs / self.norm)
@@ -140,7 +141,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         return abs(self.norm - 1) < tol  # type: ignore [return-value] # numpy
 
     @property
-    def database(self) -> "Database":
+    def database(self) -> Database:
         """The database used for this object."""
         return self._basis.database
 
@@ -153,7 +154,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
     def is_canonical(self) -> bool:
         return np.count_nonzero(self.get_coefficients()) == 1  # type: ignore [no-any-return]
 
-    def get_amplitude(self, other: Union["Self", KetAtom]) -> Union[float, complex]:
+    def get_amplitude(self, other: Self | KetAtom) -> float | complex:
         """Calculate the amplitude of the state with respect to another state or ket.
 
         This means the inner product <self|other>.
@@ -169,7 +170,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
             logger.warning("WARNING: get_amplitude is called with a non-normalized state.")
         return self._basis.get_amplitudes(other)[0]  # type: ignore [no-any-return]
 
-    def get_overlap(self, other: Union["Self", KetAtom]) -> float:
+    def get_overlap(self, other: Self | KetAtom) -> float:
         r"""Calculate the overlap of the state with respect to another state or ket.
 
         This means calculate :math:`|\langle \mathrm{self} | \mathrm{other} \rangle|^2`.
@@ -187,17 +188,17 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
     @overload
     def get_matrix_element(
-        self, other: Union["KetAtom", "Self"], operator: "OperatorType", q: int, unit: None = None
-    ) -> Union["PintFloat", "PintComplex"]: ...  # type: ignore [type-var] # see "PintComplex"
+        self, other: KetAtom | Self, operator: OperatorType, q: int, unit: None = None
+    ) -> PintFloat | PintComplex: ...  # type: ignore [type-var] # see "PintComplex"
 
     @overload
     def get_matrix_element(
-        self, other: Union["KetAtom", "Self"], operator: "OperatorType", q: int, unit: str
-    ) -> Union[float, complex]: ...
+        self, other: KetAtom | Self, operator: OperatorType, q: int, unit: str
+    ) -> float | complex: ...
 
     def get_matrix_element(
-        self, other: Union["KetAtom", "Self"], operator: "OperatorType", q: int, unit: Optional[str] = None
-    ) -> Union["PintFloat", "PintComplex", float, complex]:
+        self, other: KetAtom | Self, operator: OperatorType, q: int, unit: str | None = None
+    ) -> PintFloat | PintComplex | float | complex:
         """Calculate the matrix element of the operator with respect to the state and another state or ket.
 
         This means the inner product <self|operator|other>.
@@ -219,5 +220,5 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
 
 class StateAtomReal(StateAtom):
-    _basis: "BasisAtom"
+    _basis: BasisAtom
     _ket_class = KetAtom

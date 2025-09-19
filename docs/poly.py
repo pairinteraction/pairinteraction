@@ -2,26 +2,32 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 # ruff: noqa: INP001
+from __future__ import annotations
 
-import json
 import logging
 import os
 import shutil
 from functools import partial
 from pathlib import Path, PurePath
 from subprocess import CalledProcessError
-from typing import Any, Union
+from typing import TYPE_CHECKING, Any
 
 # mypy: disable-error-code="import-untyped"
 from sphinx_polyversion.builder import Builder, BuildError
 from sphinx_polyversion.driver import DefaultDriver
 from sphinx_polyversion.environment import Environment
-from sphinx_polyversion.git import Git, GitRef, closest_tag, refs_by_type
-from sphinx_polyversion.json import GLOBAL_ENCODER, JSONable
+from sphinx_polyversion.git import Git, closest_tag, refs_by_type
+from sphinx_polyversion.json import GLOBAL_ENCODER
 from sphinx_polyversion.pyvenv import VirtualPythonEnvironment
 from sphinx_polyversion.sphinx import SphinxBuilder
 
 import pairinteraction
+
+if TYPE_CHECKING:
+    import json
+
+    from sphinx_polyversion.git import GitRef
+    from sphinx_polyversion.json import JSONable
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +66,7 @@ def data_factory(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict
 
 
 # Define factory method for data passed to templates, important for the main index.html (see docs/templates/index.html)
-def root_data_factory(driver: DefaultDriver) -> dict[str, Union[list[GitRef], GitRef, None]]:
+def root_data_factory(driver: DefaultDriver) -> dict[str, list[GitRef] | GitRef | None]:
     revisions: list[GitRef] = driver.builds
     branches, _tags = refs_by_type(revisions)
     latest = next((b for b in branches if b.name == LATEST_BRANCH), None)

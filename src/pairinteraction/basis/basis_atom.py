@@ -1,14 +1,15 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.database import Database
-from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction.enums import get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetAtom
 from pairinteraction.state import StateAtom, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
+    from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
 
@@ -46,21 +48,21 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def __init__(  # noqa: C901, PLR0912, PLR0915
         self,
         species: str,
-        n: Optional[tuple[int, int]] = None,
-        nu: Optional[tuple[float, float]] = None,
-        nui: Optional[tuple[float, float]] = None,
-        l: Optional[tuple[float, float]] = None,
-        s: Optional[tuple[float, float]] = None,
-        j: Optional[tuple[float, float]] = None,
-        l_ryd: Optional[tuple[float, float]] = None,
-        j_ryd: Optional[tuple[float, float]] = None,
-        f: Optional[tuple[float, float]] = None,
-        m: Optional[tuple[float, float]] = None,
-        energy: Union[tuple[float, float], tuple["PintFloat", "PintFloat"], None] = None,
-        energy_unit: Optional[str] = None,
-        parity: Optional[Parity] = None,
-        database: Optional[Database] = None,
-        additional_kets: Optional[list[KetAtom]] = None,
+        n: tuple[int, int] | None = None,
+        nu: tuple[float, float] | None = None,
+        nui: tuple[float, float] | None = None,
+        l: tuple[float, float] | None = None,
+        s: tuple[float, float] | None = None,
+        j: tuple[float, float] | None = None,
+        l_ryd: tuple[float, float] | None = None,
+        j_ryd: tuple[float, float] | None = None,
+        f: tuple[float, float] | None = None,
+        m: tuple[float, float] | None = None,
+        energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
+        energy_unit: str | None = None,
+        parity: Parity | None = None,
+        database: Database | None = None,
+        additional_kets: list[KetAtom] | None = None,
     ) -> None:
         """Create a basis for a single atom.
 
@@ -159,12 +161,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         return self._database
 
     @overload
-    def get_amplitudes(self, other: Union[KetAtom, StateAtom]) -> "NDArray": ...
+    def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_amplitudes(self, other: "Self") -> "csr_matrix": ...
+    def get_amplitudes(self, other: Self) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: Union[KetAtom, StateAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
+    def get_amplitudes(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if isinstance(other, StateAtom):
@@ -174,12 +176,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     @overload
-    def get_overlaps(self, other: Union[KetAtom, StateAtom]) -> "NDArray": ...
+    def get_overlaps(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_overlaps(self, other: "Self") -> "csr_matrix": ...
+    def get_overlaps(self, other: Self) -> csr_matrix: ...
 
-    def get_overlaps(self, other: Union[KetAtom, StateAtom, "Self"]) -> Union["NDArray", "csr_matrix"]:
+    def get_overlaps(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if isinstance(other, StateAtom):
@@ -190,23 +192,21 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
     @overload
     def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom], operator: OperatorType, q: int, unit: None = None
-    ) -> "PintArray": ...
+        self, other: KetAtom | StateAtom, operator: OperatorType, q: int, unit: None = None
+    ) -> PintArray: ...
 
     @overload
-    def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom], operator: OperatorType, q: int, unit: str
-    ) -> "NDArray": ...
+    def get_matrix_elements(self, other: KetAtom | StateAtom, operator: OperatorType, q: int, unit: str) -> NDArray: ...
 
     @overload
-    def get_matrix_elements(self, other: "Self", operator: OperatorType, q: int, unit: None = None) -> "PintSparse": ...  # type: ignore [type-var] # see PintSparse
+    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: None = None) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
 
     @overload
-    def get_matrix_elements(self, other: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
+    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: str) -> csr_matrix: ...
 
     def get_matrix_elements(
-        self, other: Union[KetAtom, StateAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
-    ) -> Union["NDArray", "PintArray", "csr_matrix", "PintSparse"]:
+        self, other: KetAtom | StateAtom | Self, operator: OperatorType, q: int, unit: str | None = None
+    ) -> NDArray | PintArray | csr_matrix | PintSparse:
         cpp_op = get_cpp_operator_type(operator)
 
         matrix_elements_au: NDArray

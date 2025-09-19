@@ -1,12 +1,13 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from PySide6.QtWidgets import QHBoxLayout, QMenu, QPushButton, QStyle
 
-from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, ResultsTwoAtoms, calculate_two_atoms
+from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, calculate_two_atoms
 from pairinteraction_gui.config import (
     BasisConfigTwoAtoms,
     CalculationConfig,
@@ -14,6 +15,9 @@ from pairinteraction_gui.config import (
     SystemConfigTwoAtoms,
 )
 from pairinteraction_gui.page.base_page import CalculationPage
+
+if TYPE_CHECKING:
+    from pairinteraction_gui.calculate.calculate_two_atoms import ResultsTwoAtoms
 
 logger = logging.getLogger(__name__)
 

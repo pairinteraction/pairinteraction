@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable, Optional
+from typing import TYPE_CHECKING, Any, Callable
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -14,15 +14,17 @@ from PySide6.QtWidgets import QHBoxLayout
 from scipy.optimize import curve_fit
 
 from pairinteraction.visualization.colormaps import alphamagma
-from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.theme import plot_widget_theme
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from numpy.typing import NDArray
 
+    from pairinteraction_gui.calculate.calculate_base import Parameters, Results
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
@@ -34,7 +36,7 @@ class PlotWidget(WidgetV):
     margin = (0, 0, 0, 0)
     spacing = 15
 
-    def __init__(self, parent: "SimulationPage") -> None:
+    def __init__(self, parent: SimulationPage) -> None:
         """Initialize the base section."""
         mpl.use("Qt5Agg")
 
@@ -62,8 +64,8 @@ class PlotWidget(WidgetV):
 class PlotEnergies(PlotWidget):
     """Plotwidget for plotting energy levels."""
 
-    parameters: Optional[Parameters[Any]] = None
-    results: Optional[Results] = None
+    parameters: Parameters[Any] | None = None
+    results: Results | None = None
 
     fit_idx: int = 0
     fit_type: str = ""

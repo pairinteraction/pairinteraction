@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
 
-def _check_sparse_matrices_equal(matrix_a: "csr_matrix", matrix_b: "csr_matrix") -> bool:
+def _check_sparse_matrices_equal(matrix_a: csr_matrix, matrix_b: csr_matrix) -> bool:
     """Check for equality of sparse matrices efficiently.
 
     This functions compares two sparse matrices in compressed sparse row format on their equality.

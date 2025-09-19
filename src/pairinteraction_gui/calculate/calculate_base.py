@@ -1,24 +1,26 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 from abc import ABC
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import numpy as np
 from attr import dataclass
 
 import pairinteraction as pi
-from pairinteraction_gui.config.system_config import RangesKeys
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from typing_extensions import Self
 
     from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
     from pairinteraction.units import NDArray
     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
     from pairinteraction_gui.config.ket_config import QuantumNumbers
+    from pairinteraction_gui.config.system_config import RangesKeys
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
@@ -51,12 +53,12 @@ PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
 @dataclass
 class Parameters(ABC, Generic[PageType]):
     species: tuple[str, ...]
-    quantum_numbers: tuple["QuantumNumbers", ...]
-    quantum_number_restrictions: tuple["QuantumNumberRestrictions", ...]
+    quantum_numbers: tuple[QuantumNumbers, ...]
+    quantum_number_restrictions: tuple[QuantumNumberRestrictions, ...]
     ranges: dict[RangesKeys, list[float]]
     diamagnetism_enabled: bool
     diagonalize_kwargs: dict[str, str]
-    diagonalize_relative_energy_range: Union[tuple[float, float], None]
+    diagonalize_relative_energy_range: tuple[float, float] | None
     number_state_labels: int
 
     def __post_init__(self) -> None:
@@ -72,7 +74,7 @@ class Parameters(ABC, Generic[PageType]):
             raise ValueError("All tuples must have the same length as the number of atoms")
 
     @classmethod
-    def from_page(cls, page: PageType) -> "Self":
+    def from_page(cls, page: PageType) -> Self:
         """Create Parameters object from page."""
         n_atoms = page.ket_config.n_atoms
 
@@ -131,23 +133,23 @@ class Parameters(ABC, Generic[PageType]):
         bfield_keys: list[RangesKeys] = ["Bx", "By", "Bz"]
         return [self.ranges[key][step] if key in self.ranges else 0 for key in bfield_keys]
 
-    def get_species(self, atom: Optional[int] = None) -> str:
+    def get_species(self, atom: int | None = None) -> str:
         """Return the species for the given ket."""
         return self.species[self._check_atom(atom)]
 
-    def get_quantum_numbers(self, atom: Optional[int] = None) -> "QuantumNumbers":
+    def get_quantum_numbers(self, atom: int | None = None) -> QuantumNumbers:
         """Return the quantum numbers for the given ket."""
         return self.quantum_numbers[self._check_atom(atom)]
 
-    def get_ket_atom(self, atom: Optional[int] = None) -> pi.KetAtom:
+    def get_ket_atom(self, atom: int | None = None) -> pi.KetAtom:
         """Return the ket atom for the given atom index."""
         return pi.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))
 
-    def get_quantum_number_restrictions(self, atom: Optional[int] = None) -> "QuantumNumberRestrictions":
+    def get_quantum_number_restrictions(self, atom: int | None = None) -> QuantumNumberRestrictions:
         """Return the quantum number restrictions."""
         return self.quantum_number_restrictions[self._check_atom(atom)]
 
-    def _check_atom(self, atom: Optional[int] = None) -> int:
+    def _check_atom(self, atom: int | None = None) -> int:
         """Check if the atom is valid."""
         if atom is not None:
             return atom
@@ -226,19 +228,19 @@ class Parameters(ABC, Generic[PageType]):
 
 @dataclass
 class Results(ABC):
-    energies: list["NDArray"]
+    energies: list[NDArray]
     energy_offset: float
-    ket_overlaps: list["NDArray"]
+    ket_overlaps: list[NDArray]
     state_labels: dict[int, list[str]]
 
     @classmethod
     def from_calculate(
         cls,
         parameters: Parameters[Any],
-        system_list: Union[list["SystemPairReal"], list["SystemPair"], list["SystemAtomReal"], list["SystemAtom"]],
-        ket: Union[pi.KetAtom, tuple[pi.KetAtom, ...]],
+        system_list: list[SystemPairReal] | list[SystemPair] | list[SystemAtomReal] | list[SystemAtom],
+        ket: pi.KetAtom | tuple[pi.KetAtom, ...],
         energy_offset: float,
-    ) -> "Self":
+    ) -> Self:
         """Create Results object from ket, basis, and diagonalized systems."""
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]

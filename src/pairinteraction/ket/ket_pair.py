@@ -1,16 +1,17 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Literal, Union
 
 from typing_extensions import TypeGuard
 
-from pairinteraction import _backend
 from pairinteraction.ket.ket_atom import KetAtom
 from pairinteraction.ket.ket_base import KetBase
 
 if TYPE_CHECKING:
+    from pairinteraction import _backend
     from pairinteraction.state import StateAtom
 
 
@@ -61,7 +62,7 @@ class KetPair(KetBase):
         return super().get_label(fmt)
 
     @property
-    def state_atoms(self) -> tuple["StateAtom", "StateAtom"]:
+    def state_atoms(self) -> tuple[StateAtom, StateAtom]:
         """Return the state atoms of the ket pair."""
         from pairinteraction.basis import BasisAtom, BasisAtomReal
         from pairinteraction.state import StateAtom, StateAtomReal

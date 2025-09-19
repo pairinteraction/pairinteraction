@@ -1,8 +1,9 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
@@ -91,7 +92,7 @@ class SystemPair(SystemBase[BasisPair]):
         super()._update_basis()
         self._basis.system_atoms = system_atoms
 
-    def set_interaction_order(self: "Self", order: int) -> "Self":
+    def set_interaction_order(self: Self, order: int) -> Self:
         """Set the interaction order of the pair system.
 
         Args:
@@ -104,11 +105,11 @@ class SystemPair(SystemBase[BasisPair]):
         return self
 
     def set_distance(
-        self: "Self",
-        distance: Union[float, "PintFloat"],
+        self: Self,
+        distance: float | PintFloat,
         angle_degree: float = 0,
-        unit: Optional[str] = None,
-    ) -> "Self":
+        unit: str | None = None,
+    ) -> Self:
         """Set the distance between the atoms using the specified distance and angle.
 
         Args:
@@ -124,10 +125,10 @@ class SystemPair(SystemBase[BasisPair]):
         return self.set_distance_vector(distance_vector, unit)
 
     def set_distance_vector(
-        self: "Self",
-        distance: Union["ArrayLike", "PintArrayLike"],
-        unit: Optional[str] = None,
-    ) -> "Self":
+        self: Self,
+        distance: ArrayLike | PintArrayLike,
+        unit: str | None = None,
+    ) -> Self:
         """Set the distance vector between the atoms.
 
         Args:
@@ -142,25 +143,25 @@ class SystemPair(SystemBase[BasisPair]):
         return self
 
     @overload
-    def get_distance_vector(self, unit: None = None) -> list["PintFloat"]: ...
+    def get_distance_vector(self, unit: None = None) -> list[PintFloat]: ...
 
     @overload
     def get_distance_vector(self, unit: str) -> list[float]: ...
 
-    def get_distance_vector(self, unit: Optional[str] = None) -> Union[list[float], list["PintFloat"]]:
+    def get_distance_vector(self, unit: str | None = None) -> list[float] | list[PintFloat]:
         return [QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
 
     @overload
-    def get_distance(self, unit: None = None) -> "PintFloat": ...
+    def get_distance(self, unit: None = None) -> PintFloat: ...
 
     @overload
     def get_distance(self, unit: str) -> float: ...
 
-    def get_distance(self, unit: Optional[str] = None) -> Union[float, "PintFloat"]:
+    def get_distance(self, unit: str | None = None) -> float | PintFloat:
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor(self, green_tensor: "GreenTensor") -> "Self":
+    def set_green_tensor(self, green_tensor: GreenTensor) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
@@ -171,14 +172,12 @@ class SystemPair(SystemBase[BasisPair]):
         return self
 
     @overload
-    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: None = None) -> "PintFloat": ...
+    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: None = None) -> PintFloat: ...
 
     @overload
-    def get_corresponding_energy(self: "Self", ket_tuple: "KetAtomTuple", unit: str) -> float: ...
+    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: str) -> float: ...
 
-    def get_corresponding_energy(
-        self: "Self", ket_tuple: "KetAtomTuple", unit: Optional[str] = None
-    ) -> Union[float, "PintFloat"]:
+    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: str | None = None) -> float | PintFloat:
         overlaps = self.get_eigenbasis().get_overlaps(ket_tuple)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:

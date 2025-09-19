@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
@@ -14,7 +15,7 @@ class BaseConfig(WidgetV):
 
     title: str
 
-    def __init__(self, parent: "SimulationPage") -> None:
+    def __init__(self, parent: SimulationPage) -> None:
         """Initialize the base section."""
         self.page = parent
         super().__init__(parent)

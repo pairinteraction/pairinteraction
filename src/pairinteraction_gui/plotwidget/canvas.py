@@ -1,20 +1,23 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QWheelEvent
-from PySide6.QtWidgets import QWidget
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QWheelEvent
+    from PySide6.QtWidgets import QWidget
 
 
 class MatplotlibCanvas(FigureCanvasQTAgg):
     """Canvas for matplotlib figures."""
 
-    def __init__(self, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, parent: QWidget | None = None) -> None:
         """Initialize the canvas with a figure."""
         self.fig, self.ax = plt.subplots()
         super().__init__(self.fig)

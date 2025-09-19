@@ -3,9 +3,10 @@
 
 """Test receiving matrix elements from the databases."""
 
-from collections.abc import Generator
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING
 
 import duckdb
 import numpy as np
@@ -16,10 +17,11 @@ from sympy.physics.wigner import wigner_3j
 
 from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN, SUPPORTED_SPECIES
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
-def fetch_id(
-    n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: Union[str, Path]
-) -> int:
+
+def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: str | Path) -> int:
     result = connection.execute(
         f"SELECT id FROM '{table}' WHERE n = {n} AND f = {f} ORDER BY (exp_s - {s})^2+(exp_l - {l})^2 LIMIT 1"  # noqa: S608
     ).fetchone()
@@ -34,7 +36,7 @@ def fetch_wigner_element(
     kappa: int,
     q: int,
     connection: duckdb.DuckDBPyConnection,
-    table: Union[str, Path],
+    table: str | Path,
 ) -> float:
     result = connection.execute(
         f"SELECT val FROM '{table}' WHERE f_initial = {f_initial} AND f_final = {f_final} AND "  # noqa: S608
@@ -44,7 +46,7 @@ def fetch_wigner_element(
 
 
 def fetch_reduced_matrix_element(
-    id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: Union[str, Path]
+    id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: str | Path
 ) -> float:
     result = connection.execute(
         f"SELECT val FROM '{table}' WHERE id_initial = {id_initial} AND id_final = {id_final}"  # noqa: S608

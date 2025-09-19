@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import multiprocessing
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import pytest
 from pint import UnitRegistry
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.app import Application
 
 
-def pytest_addoption(parser: "Parser") -> None:
+def pytest_addoption(parser: Parser) -> None:
     parser.addoption("--generate-reference", action="store_true", default=False, help="Generate reference data")
     parser.addoption(
         "--database-dir",
@@ -26,7 +27,7 @@ def pytest_addoption(parser: "Parser") -> None:
 
 
 @pytest.fixture(scope="session")
-def generate_reference(pytestconfig: "Config") -> bool:
+def generate_reference(pytestconfig: Config) -> bool:
     return pytestconfig.getoption("--generate-reference")  # type: ignore [no-any-return]
 
 
@@ -39,7 +40,7 @@ def ureg() -> UnitRegistry:
 def pytest_sessionstart(session: pytest.Session) -> None:
     """Initialize everything before the tests are run."""
     download_missing: bool = session.config.getoption("--download-missing")
-    database_dir: Optional[str] = session.config.getoption("--database-dir")
+    database_dir: str | None = session.config.getoption("--database-dir")
 
     # Disable the test mode of PairInteraction that would call _setup_test_mode
     # automatically. This would be necessary for testing the jupyter notebooks
@@ -63,7 +64,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
 
 @pytest.fixture(scope="session")
-def qapp_cls() -> type["Application"]:
+def qapp_cls() -> type[Application]:
     """Let the qapp and qtbot fixtures use our custom Application class."""
     from pairinteraction_gui.app import Application
 

@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
@@ -44,7 +45,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         )
 
     @classmethod
-    def _from_basis_object(cls: "type[Self]", basis_obj: "BasisBase[Any, Any]") -> "Self":
+    def _from_basis_object(cls: type[Self], basis_obj: BasisBase[Any, Any]) -> Self:
         obj = cls.__new__(cls)
         obj._basis = basis_obj  # type: ignore [assignment]
         return obj
@@ -95,7 +96,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         """Return the norm of the state."""
         return np.linalg.norm(self.get_coefficients())
 
-    def get_coefficients(self) -> "NDArray":
+    def get_coefficients(self) -> NDArray:
         """Return the coefficients of the state as a 1d-array.
 
         The coefficients are stored in a numpy.array with shape (number_of_kets,).

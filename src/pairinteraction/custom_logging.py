@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import datetime
 import inspect
@@ -55,9 +56,9 @@ def _flush_pending_logs() -> None:
         _log_cpp_backend_record(entry.level, entry.message.decode("utf-8", errors="replace"))
 
 
-def _flush_logs_after(func: Callable["P", "R"]) -> Callable["P", "R"]:
+def _flush_logs_after(func: Callable[P, R]) -> Callable[P, R]:
     @wraps(func)
-    def wrapper(*args: "P.args", **kwargs: "P.kwargs") -> "R":
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         result = func(*args, **kwargs)
         _flush_pending_logs()
         return result

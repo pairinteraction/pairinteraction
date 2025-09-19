@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
     from matplotlib import colors
 
 
-def _colormap_add_transparency(cmap: "colors.Colormap", min_value: float = 1e-4) -> "colors.ListedColormap":
+def _colormap_add_transparency(cmap: colors.Colormap, min_value: float = 1e-4) -> colors.ListedColormap:
     """Add transparency to a colormap.
 
     This function returns a copy of the given colormap to include an alpha channel

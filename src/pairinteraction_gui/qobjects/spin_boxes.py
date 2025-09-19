@@ -1,13 +1,18 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import (
     QDoubleSpinBox,
     QSpinBox,
-    QWidget,
 )
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import (
+        QWidget,
+    )
 
 
 class IntSpinBox(QSpinBox):
@@ -15,13 +20,13 @@ class IntSpinBox(QSpinBox):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         vmin: int = 0,
         vmax: int = 999,
         vdefault: int = 0,
-        vstep: Optional[int] = None,
-        suffix: Optional[str] = None,
-        tooltip: Optional[str] = None,
+        vstep: int | None = None,
+        suffix: str | None = None,
+        tooltip: str | None = None,
     ) -> None:
         """Initialize the integer spin box."""
         super().__init__(parent)
@@ -41,13 +46,13 @@ class HalfIntSpinBox(QDoubleSpinBox):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         vmin: float = 0.5,
         vmax: float = 999.5,
         vdefault: float = 0.5,
-        vstep: Optional[int] = None,
-        suffix: Optional[str] = None,
-        tooltip: Optional[str] = None,
+        vstep: int | None = None,
+        suffix: str | None = None,
+        tooltip: str | None = None,
     ) -> None:
         """Initialize the double spin box."""
         super().__init__(parent)
@@ -77,14 +82,14 @@ class DoubleSpinBox(QDoubleSpinBox):
 
     def __init__(
         self,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
         vmin: float = 0,
         vmax: float = 999.9,
         vdefault: float = 0,
-        vstep: Optional[float] = None,
-        suffix: Optional[str] = None,
+        vstep: float | None = None,
+        suffix: str | None = None,
         decimals: int = 1,
-        tooltip: Optional[str] = None,
+        tooltip: str | None = None,
     ) -> None:
         """Initialize the double spin box."""
         super().__init__(parent)

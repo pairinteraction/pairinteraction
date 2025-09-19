@@ -3,6 +3,8 @@
 
 """Test calculating lifetimes."""
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -45,7 +47,7 @@ def test_lifetime() -> None:
 def test_lifetime_scaling() -> None:
     """Test the scaling of the lifetime with the principal quantum number."""
 
-    def fit_function(x: "NDArray", a: float, b: float) -> "NDArray":
+    def fit_function(x: NDArray, a: float, b: float) -> NDArray:
         return a * x + b
 
     n_list = list(range(60, 70, 1))

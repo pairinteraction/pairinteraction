@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, TypeVar, overload
 
 import numpy as np
 
@@ -10,6 +10,8 @@ from pairinteraction import _backend
 from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from typing_extensions import Self
 
     from pairinteraction.units import Dimension, NDArray, PintArray, PintFloat
@@ -53,41 +55,39 @@ class GreenTensor:
         return self.__repr__()
 
     @overload
-    def set_from_cartesian(
-        self, kappa1: int, kappa2: int, tensor: "NDArray", tensor_unit: Optional[str] = None
-    ) -> "Self": ...
+    def set_from_cartesian(self, kappa1: int, kappa2: int, tensor: NDArray, tensor_unit: str | None = None) -> Self: ...
 
     @overload
     def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: Sequence["NDArray"],
-        tensor_unit: Optional[str],
+        tensor: Sequence[NDArray],
+        tensor_unit: str | None,
         omegas: Sequence[float],
-        omegas_unit: Optional[str] = None,
-    ) -> "Self": ...
+        omegas_unit: str | None = None,
+    ) -> Self: ...
 
     @overload
     def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: Sequence["NDArray"],
+        tensor: Sequence[NDArray],
         *,
         omegas: Sequence[float],
-        omegas_unit: Optional[str] = None,
-    ) -> "Self": ...
+        omegas_unit: str | None = None,
+    ) -> Self: ...
 
     def set_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: Union["NDArray", Sequence["NDArray"]],
-        tensor_unit: Optional[str] = None,
-        omegas: Optional[Sequence[float]] = None,
-        omegas_unit: Optional[str] = None,
-    ) -> "Self":
+        tensor: NDArray | Sequence[NDArray],
+        tensor_unit: str | None = None,
+        omegas: Sequence[float] | None = None,
+        omegas_unit: str | None = None,
+    ) -> Self:
         """Set the entries of the Green tensor.
 
         Args:
@@ -128,24 +128,24 @@ class GreenTensor:
         self,
         kappa1: int,
         kappa2: int,
-        omega: Optional[float] = None,
-        omega_unit: Optional[str] = None,
+        omega: float | None = None,
+        omega_unit: str | None = None,
         unit: None = None,
-    ) -> "PintArray": ...
+    ) -> PintArray: ...
 
     @overload
     def get_spherical(
-        self, kappa1: int, kappa2: int, omega: Optional[float] = None, omega_unit: Optional[str] = None, *, unit: str
-    ) -> "NDArray": ...
+        self, kappa1: int, kappa2: int, omega: float | None = None, omega_unit: str | None = None, *, unit: str
+    ) -> NDArray: ...
 
     def get_spherical(
         self,
         kappa1: int,
         kappa2: int,
-        omega: Optional[float] = None,
-        omega_unit: Optional[str] = None,
-        unit: Optional[str] = None,
-    ) -> Union["PintArray", "NDArray"]:
+        omega: float | None = None,
+        omega_unit: str | None = None,
+        unit: str | None = None,
+    ) -> PintArray | NDArray:
         """Get the Green tensor in spherical coordinates for the given indices kappa1 and kappa2.
 
         For kappa == 1 the spherical basis is [p_{1,-1}, p_{1,0}, p_{1,1}].
@@ -183,7 +183,7 @@ class GreenTensor:
 
         return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 
-    def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list["Dimension"]:
+    def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list[Dimension]:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2 + 1)]]  # type: ignore [list-item]
 
 

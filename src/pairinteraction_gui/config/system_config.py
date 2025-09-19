@@ -1,7 +1,8 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 from PySide6.QtWidgets import (
@@ -25,7 +26,7 @@ class SystemConfig(BaseConfig):
     spacing = 10
 
     title = "System"
-    page: Union["OneAtomPage", "TwoAtomsPage"]
+    page: OneAtomPage | TwoAtomsPage
 
     def setupEField(self) -> None:
         efield_label = QLabel("<b>Electric field</b>")
@@ -74,7 +75,7 @@ class SystemConfig(BaseConfig):
 
 
 class SystemConfigOneAtom(SystemConfig):
-    page: "OneAtomPage"
+    page: OneAtomPage
 
     def setupWidget(self) -> None:
         self.setupEField()
@@ -83,7 +84,7 @@ class SystemConfigOneAtom(SystemConfig):
 
 
 class SystemConfigTwoAtoms(SystemConfig):
-    page: "TwoAtomsPage"
+    page: TwoAtomsPage
 
     def setupWidget(self) -> None:
         self.setupEField()

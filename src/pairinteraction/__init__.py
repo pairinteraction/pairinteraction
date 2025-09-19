@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 # ruff: noqa: E402
+from __future__ import annotations
 
 import os
-from typing import Optional
 
 
 def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
@@ -144,7 +144,7 @@ _setup_dynamic_libaries()
 # ---------------------------------------------------------------------------------------
 # Configure PairInteraction for running tests with a local database if requested
 # ---------------------------------------------------------------------------------------
-def _setup_test_mode(download_missing: bool = False, database_dir: Optional[str] = None) -> None:
+def _setup_test_mode(download_missing: bool = False, database_dir: str | None = None) -> None:
     from pathlib import Path
 
     from pairinteraction.database import Database

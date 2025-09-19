@@ -1,17 +1,20 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import warnings
-from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, Any, Literal, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, Union, overload
 
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
-from pairinteraction.enums import FloatType, get_cpp_float_type
+from pairinteraction.enums import get_cpp_float_type
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
+
+    from pairinteraction.enums import FloatType
     from pairinteraction.system import SystemBase
     from pairinteraction.units import PintFloat
 
@@ -40,43 +43,43 @@ _DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
 
 @overload
 def diagonalize(
-    systems: Sequence["SystemBase[Any]"],
+    systems: Sequence[SystemBase[Any]],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
     sort_by_energy: bool = True,
-    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
-    energy_range_unit: Optional[str] = None,
-    m0: Optional[int] = None,
+    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
+    energy_range_unit: str | None = None,
+    m0: int | None = None,
 ) -> None: ...
 
 
 @overload
 @deprecated("Use energy_range_unit=... instead of energy_unit=...")
 def diagonalize(
-    systems: Sequence["SystemBase[Any]"],
+    systems: Sequence[SystemBase[Any]],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
     sort_by_energy: bool = True,
-    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
+    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     *,
-    energy_unit: Optional[str],
-    m0: Optional[int] = None,
+    energy_unit: str | None,
+    m0: int | None = None,
 ) -> None: ...
 
 
 def diagonalize(
-    systems: Sequence["SystemBase[Any]"],
+    systems: Sequence[SystemBase[Any]],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
     sort_by_energy: bool = True,
-    energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
-    energy_range_unit: Optional[str] = None,
-    m0: Optional[int] = None,
+    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
+    energy_range_unit: str | None = None,
+    m0: int | None = None,
     *,
-    energy_unit: Optional[str] = None,
+    energy_unit: str | None = None,
 ) -> None:
     """Diagonalize a list of systems in parallel using the C++ backend.
 
@@ -124,7 +127,7 @@ def diagonalize(
     cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
 
-    energy_range_au: list[Optional[float]] = [None, None]
+    energy_range_au: list[float | None] = [None, None]
     for i, energy in enumerate(energy_range):
         if energy is not None:
             energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_range_unit, "energy")
@@ -138,7 +141,7 @@ def diagonalize(
         system._update_basis()
 
 
-def get_cpp_diagonalize_function(system: "SystemBase[Any]") -> Callable[..., None]:
+def get_cpp_diagonalize_function(system: SystemBase[Any]) -> Callable[..., None]:
     if isinstance(system._cpp, _backend.SystemAtomReal):
         return _backend.diagonalizeSystemAtomReal
     if isinstance(system._cpp, _backend.SystemAtomComplex):
@@ -155,9 +158,9 @@ def get_cpp_diagonalize_function(system: "SystemBase[Any]") -> Callable[..., Non
 
 def get_cpp_diagonalizer(
     diagonalizer: Diagonalizer,
-    system: "SystemBase[Any]",
+    system: SystemBase[Any],
     float_type: FloatType,
-    m0: Optional[int] = None,
+    m0: int | None = None,
 ) -> UnionCPPDiagonalizer:
     if diagonalizer == "feast" and m0 is None:
         raise ValueError("m0 must be specified for the 'feast' diagonalizer")
