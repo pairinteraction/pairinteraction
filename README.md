@@ -19,9 +19,9 @@
 [gh-workflow-link]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml
 [sonarcloud-svg]: https://sonarcloud.io/api/project_badges/measure?project=pairinteraction_pairinteraction&metric=alert_status
 [sonarcloud-link]: https://sonarcloud.io/dashboard?id=pairinteraction_pairinteraction
-[coverage-cpp-pytest-svg]: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
+[coverage-cpp-pytest-svg]: https://pairinteraction.github.io/pairinteraction/coverage/cpp-pytest/badge.svg
 [coverage-cpp-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/cpp-pytest/index.html
-[coverage-python-pytest-svg]: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
+[coverage-python-pytest-svg]: https://pairinteraction.github.io/pairinteraction/coverage/python-pytest/badge.svg
 [coverage-python-pytest-link]: https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/index.html
 [docs-svg]: https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat
 [docs-link]: https://www.pairinteraction.org/pairinteraction/

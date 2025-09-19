@@ -36,6 +36,7 @@ dist/
 .coverage
 coverage.lcov
 coverage.info
+coverage.xml
 docs/coverage/
 
 # Ignore lockfiles as the software should work for different dependency versions

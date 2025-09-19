@@ -74,11 +74,17 @@ jobs:
     - name: Run pytest
       run: uv run --no-project pytest
     - name: Generate Code Coverage HTML report
+      working-directory: build/
       run: |
         lcov --directory . --capture --output-file coverage.info;
         lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' '*/.venv/*' '*/.local/*' --output-file coverage.info;
         genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75
+    - name: Generate Code Coverage Badge
       working-directory: build/
+      run: |
+        uv pip install genbadge[all]
+        uv run --no-project coverage xml -o coverage.xml
+        uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "Python coverage"
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -105,6 +111,11 @@ jobs:
       run: |
         uv run --no-project coverage lcov -o coverage.info
         genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75
+    - name: Generate Code Coverage Badge
+      run: |
+        uv pip install genbadge[all]
+        uv run --no-project coverage xml -o coverage.xml
+        uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "Python coverage"
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
