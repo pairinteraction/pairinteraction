@@ -9,6 +9,7 @@ import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
+from pairinteraction.basis.basis_pair import BasisPair
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.units import QuantityArray, QuantitySparse
 
@@ -135,10 +136,10 @@ class SystemBase(ABC, Generic[BasisType]):
     @property
     def basis(self) -> BasisType:
         """The basis object of the system."""
-        _basis: BasisType | None = getattr(self, "_basis", None)
         cpp_basis = self._cpp.get_basis()
-        if _basis is None or _basis._cpp != cpp_basis:
-            self._basis = self._basis_class._from_cpp_object(cpp_basis)
+        if self._basis._cpp != cpp_basis:
+            kwargs = {"system_atoms": self._basis.system_atoms} if isinstance(self._basis, BasisPair) else {}
+            self._basis = self._basis_class._from_cpp_object(cpp_basis, **kwargs)
         return self._basis
 
     @property
@@ -149,7 +150,8 @@ class SystemBase(ABC, Generic[BasisType]):
         _eigenbasis: BasisType | None = getattr(self, "_eigenbasis", None)
         cpp_eigenbasis = self._cpp.get_eigenbasis()
         if _eigenbasis is None or _eigenbasis._cpp != cpp_eigenbasis:
-            self._eigenbasis = self._basis_class._from_cpp_object(cpp_eigenbasis)
+            kwargs = {"system_atoms": self._basis.system_atoms} if isinstance(self._basis, BasisPair) else {}
+            self._eigenbasis = self._basis_class._from_cpp_object(cpp_eigenbasis, **kwargs)
         return self._eigenbasis
 
     @overload
