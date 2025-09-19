@@ -40,7 +40,8 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     @classmethod
-    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis) -> Self:
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, *args: Any, **kwargs: Any) -> Self:
+        assert len(kwargs) == len(args) == 0, "No additional arguments expected."
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj

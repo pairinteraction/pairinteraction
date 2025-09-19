@@ -9,7 +9,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import get_cpp_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.enums import OperatorType, Parity
+    from pairinteraction.ket.ket_base import UnionCPPKet
     from pairinteraction.units import NDArray, PintArray, PintComplex, PintFloat
 
 
@@ -65,6 +66,9 @@ class KetAtom(KetBase):
     """
 
     _cpp: _backend.KetAtom
+
+    database: Database
+    """The database used for this object."""
 
     def __init__(  # noqa: C901, PLR0912
         self,
@@ -139,12 +143,14 @@ class KetAtom(KetBase):
                 Database.initialize_global_database()
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)
-        self._database = database
 
-    @property
-    def database(self) -> Database:
-        """The database used for this object."""
-        return self._database
+        self.database = database
+
+    @classmethod
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPKet, database: Database) -> Self:
+        obj = super()._from_cpp_object(cpp_obj)
+        obj.database = database
+        return obj
 
     @property
     def species(self) -> str:
