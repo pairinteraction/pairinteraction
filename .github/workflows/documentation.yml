@@ -82,9 +82,9 @@ jobs:
     - name: Generate Code Coverage Badge
       working-directory: build/
       run: |
-        uv pip install genbadge[all]
-        uv run --no-project coverage xml -o coverage.xml
-        uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "Python coverage"
+        uv pip install genbadge[all] lcov_cobertura
+        uv run --no-project lcov_cobertura coverage.info -o coverage.xml
+        uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "C++ coverage"
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
