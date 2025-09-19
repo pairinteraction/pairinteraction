@@ -54,9 +54,6 @@ class SystemBase(ABC, Generic[BasisType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def _update_basis(self) -> None:
-        self._basis = self._basis_class._from_cpp_object(self._cpp.get_basis())
-
     @overload
     def diagonalize(
         self,
@@ -137,6 +134,11 @@ class SystemBase(ABC, Generic[BasisType]):
 
     @property
     def basis(self) -> BasisType:
+        """The basis object of the system."""
+        _basis: BasisType | None = getattr(self, "_basis", None)
+        cpp_basis = self._cpp.get_basis()
+        if _basis is None or _basis._cpp != cpp_basis:
+            self._basis = self._basis_class._from_cpp_object(cpp_basis)
         return self._basis
 
     @property
@@ -144,8 +146,11 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._cpp.get_matrix()
 
     def get_eigenbasis(self) -> BasisType:
+        _eigenbasis: BasisType | None = getattr(self, "_eigenbasis", None)
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._basis_class._from_cpp_object(cpp_eigenbasis)
+        if _eigenbasis is None or _eigenbasis._cpp != cpp_eigenbasis:
+            self._eigenbasis = self._basis_class._from_cpp_object(cpp_eigenbasis)
+        return self._eigenbasis
 
     @overload
     def get_eigenenergies(self, unit: None = None) -> PintArray: ...
