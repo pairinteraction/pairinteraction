@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Any, overload
 
 import numpy as np
 
@@ -44,6 +44,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     _cpp_creator = _backend.BasisAtomCreatorComplex
     _ket_class = KetAtom
     _state_class = StateAtom
+
+    _parameters_creator: dict[str, Any] | None = None
 
     def __init__(  # noqa: C901, PLR0912, PLR0915
         self,
@@ -89,48 +91,48 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         creator = self._cpp_creator()
         creator.set_species(species)
 
-        self._qns: dict[str, tuple[float, float]] = {}
+        self._parameters_creator = {"qns": {}}
         if n is not None:
             if not all(isinstance(x, int) or x.is_integer() for x in n):
                 raise ValueError("Quantum numbers n must be integers.")
             n = (int(n[0]), int(n[1]))
             creator.restrict_quantum_number_n(*n)
-            self._qns["n"] = n
+            self._parameters_creator["qns"]["n"] = n
         if nu is not None:
             creator.restrict_quantum_number_nu(*nu)
-            self._qns["nu"] = nu
+            self._parameters_creator["qns"]["nu"] = nu
         if nui is not None:
             creator.restrict_quantum_number_nui(*nui)
-            self._qns["nui"] = nui
+            self._parameters_creator["qns"]["nui"] = nui
         if s is not None:
             creator.restrict_quantum_number_s(*s)
-            self._qns["s"] = s
+            self._parameters_creator["qns"]["s"] = s
         if l is not None:
             creator.restrict_quantum_number_l(*l)
-            self._qns["l"] = l
+            self._parameters_creator["qns"]["l"] = l
         if j is not None:
-            self._qns["j"] = j
+            self._parameters_creator["qns"]["j"] = j
             creator.restrict_quantum_number_j(*j)
         if l_ryd is not None:
             creator.restrict_quantum_number_l_ryd(*l_ryd)
-            self._qns["l_ryd"] = l_ryd
+            self._parameters_creator["qns"]["l_ryd"] = l_ryd
         if j_ryd is not None:
-            self._qns["j_ryd"] = j_ryd
+            self._parameters_creator["qns"]["j_ryd"] = j_ryd
             creator.restrict_quantum_number_j_ryd(*j_ryd)
         if f is not None:
             creator.restrict_quantum_number_f(*f)
-            self._qns["f"] = f
+            self._parameters_creator["qns"]["f"] = f
         if m is not None:
             creator.restrict_quantum_number_m(*m)
-            self._qns["m"] = m
+            self._parameters_creator["qns"]["m"] = m
         if parity is not None:
             creator.restrict_parity(get_cpp_parity(parity))
         if energy is not None:
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
-            self._energy = energy
-            self._energy_unit = energy_unit
+            self._parameters_creator["energy"] = energy
+            self._parameters_creator["energy_unit"] = energy_unit
         if database is None:
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
@@ -138,19 +140,22 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         if additional_kets is not None:
             for ket in additional_kets:
                 creator.append_ket(ket._cpp)
-            self._additional_kets = additional_kets
+            self._parameters_creator["additional_kets"] = additional_kets
         self._cpp = creator.create(database._cpp)
 
     def __repr__(self) -> str:
-        args = ""
-        if hasattr(self, "_qns"):
-            args += ", ".join(f"{k}={v}" for k, v in self._qns.items())
-        if hasattr(self, "_energy"):
-            args += f", energy=({self._energy[0]:.4f}, {self._energy[1]:.4f}), energy_unit={self._energy_unit}"
-        if hasattr(self, "_additional_kets"):
-            args += f", additional_kets={self._additional_kets}"
-        if len(args) == 0:
+        if self._parameters_creator is None:
             return super().__repr__()
+
+        args = ""
+        if qns := self._parameters_creator.get("qns", None):
+            args += ", ".join(f"{k}={v}" for k, v in qns.items())
+        if (energy := self._parameters_creator.get("energy", None)) and (
+            energy_unit := self._parameters_creator.get("energy_unit", None)
+        ):
+            args += f", energy=({energy[0]:.4f}, {energy[1]:.4f}), energy_unit={energy_unit}"
+        if additional_kets := self._parameters_creator.get("additional_kets", None):
+            args += f", additional_kets={additional_kets}"
         return f"{type(self).__name__}({args})"
 
     @property
