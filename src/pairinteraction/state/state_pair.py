@@ -4,7 +4,7 @@
 from typing import TYPE_CHECKING, Any
 
 from pairinteraction.ket import KetPair, KetPairReal
-from pairinteraction.state.state import StateBase
+from pairinteraction.state.state_base import StateBase
 
 if TYPE_CHECKING:
     from pairinteraction.basis import BasisPair, BasisPairReal

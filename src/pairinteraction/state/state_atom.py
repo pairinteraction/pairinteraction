@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 import numpy as np
 
 from pairinteraction.ket import KetAtom
-from pairinteraction.state.state import StateBase
+from pairinteraction.state.state_base import StateBase
 
 if TYPE_CHECKING:
     from typing_extensions import Self

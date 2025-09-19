@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any, Literal, Union
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction.ket.ket import KetBase
 from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.ket.ket_base import KetBase
 
 if TYPE_CHECKING:
     from pairinteraction.state import StateAtom

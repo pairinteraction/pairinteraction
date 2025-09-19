@@ -8,7 +8,7 @@ import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.basis import BasisAtom, BasisAtomReal
-from pairinteraction.system.system import SystemBase
+from pairinteraction.system.system_base import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
