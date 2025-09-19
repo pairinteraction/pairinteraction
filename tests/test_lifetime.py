@@ -1,14 +1,11 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test calculating lifetimes."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
 from pairinteraction import ureg
 from scipy.optimize import curve_fit
@@ -16,15 +13,17 @@ from scipy.optimize import curve_fit
 if TYPE_CHECKING:
     from pairinteraction.units import NDArray
 
+    from .utils import PairinteractionModule
+
 
 @pytest.mark.skip("The Yb174_mqdt database currently does not have low lying states.")
-def test_lifetime() -> None:
+def test_lifetime(pi_module: PairinteractionModule) -> None:
     """Test calculating the lifetime of a state.
 
     Note that obtaining a reasonable value for the lifetime requires the full database and is not possible with the
     reduced database that is included in the repository!
     """
-    ket = pi.KetAtom("Yb174_mqdt", n=64, l=0, j=0, m=0)
+    ket = pi_module.KetAtom("Yb174_mqdt", n=64, l=0, j=0, m=0)
 
     # We use n=64 here, because this corresponds to nu~60 and we include
     # states with 50<nu<70 in the limited database that comes with the repository. In
@@ -44,7 +43,7 @@ def test_lifetime() -> None:
     assert pytest.approx(lifetime4, rel=0.15) == 494.1653414977515  # NOSONAR
 
 
-def test_lifetime_scaling() -> None:
+def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
     """Test the scaling of the lifetime with the principal quantum number."""
 
     def fit_function(x: NDArray, a: float, b: float) -> NDArray:
@@ -53,7 +52,7 @@ def test_lifetime_scaling() -> None:
     n_list = list(range(60, 70, 1))
 
     # S states
-    kets = [pi.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
+    kets = [pi_module.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
     nu = [ket.nu for ket in kets]
     lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
     popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
@@ -61,7 +60,7 @@ def test_lifetime_scaling() -> None:
 
     # Circular states
     try:
-        kets = [pi.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
+        kets = [pi_module.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
     except ValueError as err:
         # If the limited database which comes with the repository is used, creating the
         # kets will fail because the circular states are not included in the database.
@@ -75,13 +74,13 @@ def test_lifetime_scaling() -> None:
         assert np.isclose(popt[0], 5, atol=0.02)
 
 
-def test_transition_rates() -> None:
+def test_transition_rates(pi_module: PairinteractionModule) -> None:
     """Test calculating transition rates to other states.
 
     Note that obtaining a reasonable value for the transition rates requires the full database and is not possible
     with the reduced database that is included in the repository!
     """
-    ket = pi.KetAtom("Yb174_mqdt", n=60, l=0, j=0, m=0)
+    ket = pi_module.KetAtom("Yb174_mqdt", n=60, l=0, j=0, m=0)
 
     lifetime = ket.get_lifetime(temperature=300, temperature_unit="K", unit="us")
     kets_sp, rates_sp = ket.get_spontaneous_transition_rates(unit="MHz")

@@ -1,20 +1,23 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from scipy import sparse
 
-from .compare_utils import no_log_propagation
+from .utils import no_log_propagation
 
 if TYPE_CHECKING:
+    from pairinteraction import SystemPair
     from scipy.sparse import csr_matrix
+
+    from .utils import PairinteractionModule
 
 
 def _check_sparse_matrices_equal(matrix_a: csr_matrix, matrix_b: csr_matrix) -> bool:
@@ -49,20 +52,20 @@ def _check_sparse_matrices_equal(matrix_a: csr_matrix, matrix_b: csr_matrix) -> 
 
 
 @pytest.fixture
-def system_pair_sample() -> pi.SystemPair:
-    basis = pi.BasisAtom(
+def system_pair_sample(pi_module: PairinteractionModule) -> SystemPair:
+    basis = pi_module.BasisAtom(
         species="Rb",
         n=(59, 63),
         l=(0, 1),
         m=(-1.5, 1.5),
     )
-    system = pi.SystemAtom(basis=basis)
+    system = pi_module.SystemAtom(basis=basis)
     system.set_diamagnetism_enabled(False)
     system.set_magnetic_field([0, 0, 1e-3], "gauss")
     if not system.is_diagonal:
-        pi.diagonalize([system], diagonalizer="eigen", sort_by_energy=False)
-    basis_pair = pi.BasisPair([system, system])
-    system_pair = pi.SystemPair(basis_pair)
+        pi_module.diagonalize([system], diagonalizer="eigen", sort_by_energy=False)
+    basis_pair = pi_module.BasisPair([system, system])
+    system_pair = pi_module.SystemPair(basis_pair)
     theta = 0
     r = 12
     system_pair.set_distance_vector(r * np.array([np.sin(theta), 0, np.cos(theta)]), "micrometer")
@@ -145,11 +148,11 @@ def test_perturbative_calculation1(caplog: pytest.LogCaptureFixture) -> None:
     assert _check_sparse_matrices_equal(eig_perturb, sparse.csr_matrix(sparse.vstack([v0, v1])))
 
 
-def test_c3_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
+def test_c3_with_sample_system(pi_module: PairinteractionModule, system_pair_sample: SystemPair) -> None:
     """Test whether the C3 coefficient with a given system is calculated correctly."""
-    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    c3_obj = pi.C3(ket1, ket2)
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    c3_obj = pi_module.C3(ket1, ket2)
     c3_obj._distance_vector = None  # avoid warning due when setting system pair
     c3_obj.system_pair = system_pair_sample
 
@@ -157,11 +160,11 @@ def test_c3_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     assert np.isclose(-0.5 * c3, 3.1515)
 
 
-def test_c3() -> None:
+def test_c3(pi_module: PairinteractionModule) -> None:
     """Test whether the C3 coefficient with automatically constructed system is calculated correctly."""
-    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    c3_obj = pi.C3(ket1, ket2)
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    c3_obj = pi_module.C3(ket1, ket2)
 
     c3_obj.set_electric_field([0, 0, 0], "volt/cm")
     c3_obj.set_magnetic_field([0, 0, 10], "gauss")
@@ -170,10 +173,10 @@ def test_c3() -> None:
     assert np.isclose(-0.5 * c3, 3.2188)
 
 
-def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
+def test_c6_with_sample_system(pi_module: PairinteractionModule, system_pair_sample: SystemPair) -> None:
     """Test whether the C6 coefficient with a given system is calculated correctly."""
-    ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
-    c6_obj = pi.C6(ket, ket)
+    ket = pi_module.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    c6_obj = pi_module.C6(ket, ket)
     c6_obj._distance_vector = None  # avoid warning due when setting system pair
     c6_obj.system_pair = system_pair_sample
 
@@ -181,10 +184,10 @@ def test_c6_with_sample_system(system_pair_sample: pi.SystemPair) -> None:
     assert np.isclose(c6, 167.880)
 
 
-def test_c6() -> None:
+def test_c6(pi_module: PairinteractionModule) -> None:
     """Test whether the C6 coefficient with automatically constructed system is calculated correctly."""
-    ket = pi.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
-    c6_obj = pi.C6(ket, ket)
+    ket = pi_module.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
+    c6_obj = pi_module.C6(ket, ket)
 
     c6_obj.set_electric_field([0, 0, 0], "volt/cm")
     c6_obj.set_magnetic_field([0, 0, 10], "gauss")
@@ -193,11 +196,13 @@ def test_c6() -> None:
     assert np.isclose(c6, 169.149)
 
 
-def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: pytest.CaptureFixture[str]) -> None:
+def test_exact_resonance_detection(
+    pi_module: PairinteractionModule, system_pair_sample: SystemPair, capsys: pytest.CaptureFixture[str]
+) -> None:
     """Test whether resonance with infinite admixture is correctly detected."""
-    ket1 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    ket2 = pi.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
-    eff_system = pi.EffectiveSystemPair([(ket1, ket2)])
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2)])
     eff_system.system_pair = system_pair_sample
 
     # workaround to test for errors, without showing them in the std output
@@ -208,11 +213,11 @@ def test_exact_resonance_detection(system_pair_sample: pi.SystemPair, capsys: py
     assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
 
 
-def test_near_resonance_detection(capsys: pytest.CaptureFixture[str]) -> None:
+def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pytest.CaptureFixture[str]) -> None:
     """Test whether a near resonance is correctly detected."""
-    ket1 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    ket2 = pi.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
-    eff_system = pi.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
     eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")

@@ -1,39 +1,43 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test multipole interaction."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
+
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
 
 @pytest.mark.parametrize("species", ["Yb171_mqdt", "Rb"])
-def test_pair_potential(species: str) -> None:
+def test_pair_potential(pi_module: PairinteractionModule, species: str) -> None:
     """Test multipole interaction."""
-    ket = pi.KetAtom(species, nu=55.7, l=0, m=0.5)
+    ket = pi_module.KetAtom(species, nu=55.7, l=0, m=0.5)
 
     # Create a single-atom system
-    basis = pi.BasisAtom(ket.species, nu=(ket.nu - 2, ket.nu + 2), l=(0, 3))
+    basis = pi_module.BasisAtom(ket.species, nu=(ket.nu - 2, ket.nu + 2), l=(0, 3))
     print(f"Number of single-atom basis states: {basis.number_of_states}")
 
-    system = pi.SystemAtom(basis)
+    system = pi_module.SystemAtom(basis)
 
     # Create two-atom systems for different interatomic distances and multipole orders
     delta_energy = 3  # GHz
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
 
-    basis_pair = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
     print(f"Number of two-atom basis states: {basis_pair.number_of_states}")
 
     distances = np.linspace(0.2, 5, 5)
-    system_pairs_0 = [pi.SystemPair(basis_pair) for d in distances]
+    system_pairs_0 = [pi_module.SystemPair(basis_pair) for d in distances]
     system_pairs_3 = [
-        pi.SystemPair(basis_pair).set_interaction_order(3).set_distance(d, unit="micrometer") for d in distances
+        pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(d, unit="micrometer") for d in distances
     ]
     system_pairs_4 = [
-        pi.SystemPair(basis_pair).set_interaction_order(4).set_distance(d, unit="micrometer") for d in distances
+        pi_module.SystemPair(basis_pair).set_interaction_order(4).set_distance(d, unit="micrometer") for d in distances
     ]
 
     # Separate the contributions of the different multipole orders

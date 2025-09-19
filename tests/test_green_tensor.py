@@ -1,29 +1,33 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test user-defined green tensors."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
+
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
 
 @pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_static_green_tensor(distance_mum: float) -> None:
+def test_static_green_tensor(pi_module: PairinteractionModule, distance_mum: float) -> None:
     """Test calculating a pair potential using a user-defined static green tensor."""
     # Create a single-atom system
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
-    system = pi.SystemAtom(basis)
+    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+    system = pi_module.SystemAtom(basis)
 
     # Create two-atom basis
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+    ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
     delta_energy = 3  # GHz
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
-    basis_pair = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
 
     # Create a system using a user-defined green tensor for dipole-dipole interaction
-    gt = pi.GreenTensor()
+    gt = pi_module.GreenTensor()
     tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
     tensor_unit = "hartree / (e^2 micrometer^3)"
     gt.set_from_cartesian(1, 1, tensor, tensor_unit)
@@ -32,11 +36,11 @@ def test_static_green_tensor(distance_mum: float) -> None:
     np.testing.assert_allclose(gt.get_spherical(1, 1, unit=tensor_unit), tensor_spherical)
     np.testing.assert_allclose(gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
 
-    system_pairs = pi.SystemPair(basis_pair).set_green_tensor(gt)
+    system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor(gt)
 
     # Create a reference system using the build in dipole-dipole interaction
     system_pairs_reference = (
-        pi.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance_mum, unit="micrometer")
+        pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance_mum, unit="micrometer")
     )
 
     # Check that the two systems are equivalent
@@ -46,11 +50,11 @@ def test_static_green_tensor(distance_mum: float) -> None:
 
 
 @pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_omega_dependent_green_tensor(distance_mum: float) -> None:
+def test_omega_dependent_green_tensor(pi_module: PairinteractionModule, distance_mum: float) -> None:
     """Test the interpolation for different values of omega."""
     # Define an simple linear omega-dependent green tensor
     # note that at least four entries are needed for the applied spline interpolation.
-    gt = pi.GreenTensor()
+    gt = pi_module.GreenTensor()
     omegas = [1, 2, 3, 4]  # GHz
     tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
     tensor_unit = "hartree / (e^2 micrometer^3)"
