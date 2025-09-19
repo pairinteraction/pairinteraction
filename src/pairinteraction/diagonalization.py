@@ -138,7 +138,6 @@ def diagonalize(
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             cpp_system.transform(sorter)
         system._cpp = cpp_system
-        system._update_basis()
 
 
 def get_cpp_diagonalize_function(system: SystemBase[Any]) -> Callable[..., None]:
