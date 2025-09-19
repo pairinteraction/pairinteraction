@@ -1,8 +1,8 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from pairinteraction.ket.ket import KetBase
 from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.ket.ket_pair import (
     KetAtomTuple,
     KetPair,

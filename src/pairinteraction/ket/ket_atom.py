@@ -9,7 +9,7 @@ from scipy.special import exprel
 from pairinteraction import _backend
 from pairinteraction.database import Database
 from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
-from pairinteraction.ket.ket import KetBase
+from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:

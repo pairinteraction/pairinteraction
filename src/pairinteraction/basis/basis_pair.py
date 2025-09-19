@@ -8,8 +8,8 @@ import numpy as np
 from typing_extensions import TypeGuard
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis import BasisBase
 from pairinteraction.basis.basis_atom import BasisAtom
+from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.state import StatePair, StatePairReal

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Optional, Union, overload
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis import BasisBase
+from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.database import Database
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetAtom
