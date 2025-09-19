@@ -41,7 +41,7 @@ def main() -> int:
 
     # Test command
     test_parser = subparsers.add_parser("test", help="run module tests")
-    test_parser.set_defaults(func=lambda _args: run_module_tests())
+    test_parser.set_defaults(func=lambda _args: run_unit_tests())
 
     # Download command
     download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
@@ -75,12 +75,12 @@ def start_gui() -> int:
     return 0
 
 
-def run_module_tests() -> int:
-    """Run the module tests."""
-    from pairinteraction import run_module_tests
+def run_unit_tests() -> int:
+    """Run the C++ module unit tests."""
+    from pairinteraction import run_unit_tests
 
-    print("Running module tests...")
-    exit_code = run_module_tests(download_missing=True)
+    print("Running the C++ module unit tests...")
+    exit_code = run_unit_tests(download_missing=True)
     if exit_code:
         print(Fore.RED + "Tests failed." + Style.RESET_ALL)
     else:

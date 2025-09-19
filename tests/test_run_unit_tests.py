@@ -4,10 +4,10 @@
 """Execute the module tests."""
 
 import pairinteraction as pi
-from pairinteraction import run_module_tests
+from pairinteraction import run_unit_tests
 
 
 def test_module_tests() -> None:
     """Execute the module tests."""
     database = pi.Database.get_global_database()
-    assert run_module_tests(database.download_missing, database.database_dir) == 0
+    assert run_unit_tests(database.download_missing, database_dir=database.database_dir) == 0
