@@ -15,15 +15,13 @@ PairInteraction repository:
   Hamiltonians of systems of Rydberg atoms. Python bindings are created using nanobind_.
 - :github:`src/pairinteraction <tree/master/src/pairinteraction>` - A Python library that wraps the Python bindings,
   providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library
-  adds functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The Python
-  classes that wrap the Python bindings are defined inside the corresponding submodules ``pairinteraction.ket``,
-  ``pairinteraction.basis``, etc. . This classes are defined for the general case of complex-valued data types (and thus
-  also use the complex C++ bindings). This classes can be accessed via the ``pairinteraction`` and
-  ``pairinteraction.complex`` namespaces. To also make the C++ classes with only real valued data types available, we
-  also define e.g. classes like ``BasisAtomReal`` and make them available via the ``pairinteraction.real`` namespace
-  directly via ``pairinteraction.real.BasisAtom``. This allows a user to simply switch between real and complex data
-  types by changing the import statement from ``import pairinteraction.complex as pi`` to ``import pairinteraction.real
-  as pi``, without changing any other code.
+  adds functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The python
+  classes like ``pairinteraction.BasisAtom`` and ``pairinteraction.SystemAtom`` are defined for the general case of
+  complex-valued data types (and thus also use the complex C++ bindings). To use only real-valued data types (which can
+  accelerate the calculations) one can use the classes from the ``pairinteraction.real`` submodule, e.g.
+  ``pairinteraction.real.BasisAtom`` and ``pairinteraction.real.SystemAtom``. To easily switch between complex and real
+  data types one can simply change the import statement from ``import pairinteraction as pi`` to ``import
+  pairinteraction.real as pi``.
 - :github:`src/pairinteraction_gui <tree/master/src/pairinteraction_gui>` - A graphical user interface (GUI) that allows
   users to perform common calculations without writing any code. The GUI is built on top of the Python library.
 
