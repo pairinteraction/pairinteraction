@@ -228,12 +228,11 @@ extend-exclude = ["src/pairinteraction_gui/export_templates/"]
 select = ["ALL"]
 extend-ignore = [
   # FIXME: we want to fix these in the future
+  "PLC0415",  # `import` should be at the top-level of a file
   "EM",  # Exceptions ...
   "TRY003",  # Avoid specifying long messages outside the exception class
-  "FA",  # from __future__ ...
   "FBT",  # Boolean arguments ...
   "BLE",  # Blind Except
-  "PLC0105",  # covariant variable names
   "SLF001",  # Private member accessed
   "PLR0913",  # Too many arguments in function definition (... > 5)
   "PLR2004",  # FIXME: Magic value used in comparison
@@ -251,6 +250,7 @@ extend-ignore = [
   "TD",  # Linting TODOs; we dont need this
   "E741",  # Ambiguous variable name, does not like quantum number 'l'
 ]
+future-annotations = true
 flake8-tidy-imports.ban-relative-imports = "all"
 mccabe.max-complexity = 10
 
