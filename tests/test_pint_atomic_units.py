@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Tests for atomic unit conversions using pint."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
