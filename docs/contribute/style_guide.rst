@@ -66,8 +66,12 @@ Python
 - Always use ``snake_case`` for folders and files. It is common to have multiple classes in one file if they are closely
   related.
 - The code that wraps the C++ backend is located in the modules ``src/pairinteraction/ket/``,
-  ``src/pairinteraction/basis/``, etc. and made available to the user via the public modules
-  ``src/pairinteraction/real.py`` and ``src/pairinteraction/complex.py``.
+  ``src/pairinteraction/basis/``, etc. and first purely written for the complex _backend and made available to the user
+  in the ``pairinteraction`` namespace. The real-data-type version of the classes is created by subclassing the complex
+  version and overwriting only the necessary class variables (see e.g. ``BasisAtomReal`` in
+  ``src/pairinteraction/basis/basis_atom.py`` for an example). These real-valued classes are then made available to the
+  user via the submodule ``pairinteraction.real``, where the classes are aliased to the class name without the ``Real``
+  suffix to make it easy for the user to switch between complex and real data types.
 - If you want to add a new feature purely in Python, add a new file to ``src/pairinteraction/`` (if the feature does not
   require much code) or create a new folder in ``src/pairinteraction/`` with multiple files (if the feature is more
   complex).
