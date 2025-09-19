@@ -64,17 +64,13 @@ class KetPair(KetBase):
     @property
     def state_atoms(self) -> tuple[StateAtom, StateAtom]:
         """Return the state atoms of the ket pair."""
-        from pairinteraction.basis import BasisAtom, BasisAtomReal
         from pairinteraction.state import StateAtom, StateAtomReal
 
-        _state_atom_class, _basis_atom_class = StateAtom, BasisAtom
-        if isinstance(self, KetPairReal):
-            _state_atom_class, _basis_atom_class = StateAtomReal, BasisAtomReal
+        _state_atom_class = StateAtomReal if isinstance(self, KetPairReal) else StateAtom
 
         state_atoms = []
         for atomic_state in self._cpp.get_atomic_states():
-            basis = _basis_atom_class._from_cpp_object(atomic_state)
-            state = _state_atom_class._from_basis_object(basis)
+            state = _state_atom_class._from_cpp_object(atomic_state)
             state_atoms.append(state)
         return tuple(state_atoms)  # type: ignore [return-value]
 

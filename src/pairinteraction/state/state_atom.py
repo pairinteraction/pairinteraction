@@ -7,12 +7,15 @@ from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
+from pairinteraction.enums import get_cpp_operator_type
 from pairinteraction.ket import KetAtom
 from pairinteraction.state.state_base import StateBase
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.basis import BasisAtom
     from pairinteraction.database import Database
     from pairinteraction.enums import OperatorType
@@ -21,7 +24,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class StateAtom(StateBase["BasisAtom", KetAtom]):
+class StateAtom(StateBase[KetAtom]):
     """State of a single atom.
 
     A coefficient vector and a list of kets are used to represent an arbitrary single-atom state.
@@ -41,7 +44,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
     """
 
-    _basis: BasisAtom
+    _cpp: _backend.BasisAtomComplex
     _ket_class = KetAtom
 
     def __init__(self, ket: KetAtom, basis: BasisAtom) -> None:
@@ -52,12 +55,12 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
             basis: The basis to which the state belongs.
 
         """
-        new_basis: BasisAtom = basis.get_corresponding_state(ket)._basis
-        ket_idx = new_basis.kets.index(ket)
-        coeffs = new_basis._cpp.get_coefficients() * 0  # type: ignore [operator]
+        state = basis.get_corresponding_state(ket)
+        ket_idx = state.kets.index(ket)
+        coeffs = state._cpp.get_coefficients() * 0  # type: ignore [operator]
         coeffs[ket_idx, 0] = 1.0
-        new_basis._cpp.set_coefficients(coeffs)
-        self._basis = new_basis
+        state._cpp.set_coefficients(coeffs)
+        self._cpp = state._cpp
 
     def __add__(self, other: Self) -> Self:
         """Add two states together.
@@ -72,12 +75,12 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         if not isinstance(other, type(self)):
             raise TypeError(f"Cannot add {type(self)} and {type(other)}.")
         if not all(ket_self == ket_other for ket_self, ket_other in zip(self.kets, other.kets)):
-            raise ValueError("Cannot add states with different kets as basis.")
+            raise ValueError("Cannot add states where the basis does not consist of exactly the same kets.")
 
-        coeffs = self._basis.get_coefficients() + other._basis.get_coefficients()
-        new_basis = self._basis.copy()
-        new_basis._cpp.set_coefficients(coeffs)
-        return type(self)._from_basis_object(new_basis)
+        coeffs = self._cpp.get_coefficients() + other._cpp.get_coefficients()
+        new_cpp = self._cpp.copy()
+        new_cpp.set_coefficients(coeffs)
+        return type(self)._from_cpp_object(new_cpp)
 
     def __sub__(self, other: Self) -> Self:
         """Subtract two states.
@@ -103,10 +106,10 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         """
         if not isinstance(factor, (int, float, complex)):
             raise TypeError(f"Cannot multiply {type(self)} with {type(factor)}.")
-        coeffs = factor * self._basis.get_coefficients()
-        new_basis = self._basis.copy()
-        new_basis._cpp.set_coefficients(coeffs)
-        return type(self)._from_basis_object(new_basis)
+        coeffs = factor * self._cpp.get_coefficients()  # type: ignore [operator]
+        new_cpp = self._cpp.copy()
+        new_cpp.set_coefficients(coeffs)
+        return type(self)._from_cpp_object(new_cpp)
 
     def __truediv__(self, factor: complex) -> Self:
         """Divide the state by a scalar.
@@ -124,8 +127,8 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
 
     def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
-        coeffs = self._basis.get_coefficients()
-        self._basis._cpp.set_coefficients(coeffs / self.norm)
+        coeffs = self._cpp.get_coefficients()
+        self._cpp.set_coefficients(coeffs / self.norm)  # type: ignore [operator]
         return self
 
     def is_normalized(self, tol: float = 1e-10) -> bool:
@@ -143,7 +146,7 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
     @property
     def database(self) -> Database:
         """The database used for this object."""
-        return self._basis.database
+        return self.kets[0].database
 
     @property
     def species(self) -> str:
@@ -168,7 +171,12 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         """
         if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
             logger.warning("WARNING: get_amplitude is called with a non-normalized state.")
-        return self._basis.get_amplitudes(other)[0]  # type: ignore [no-any-return]
+
+        if isinstance(other, KetAtom):
+            return np.array(self._cpp.get_amplitudes(other._cpp))[0]  # type: ignore [no-any-return]
+        if isinstance(other, StateAtom):
+            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()[0]  # type: ignore [no-any-return]
+        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     def get_overlap(self, other: Self | KetAtom) -> float:
         r"""Calculate the overlap of the state with respect to another state or ket.
@@ -184,7 +192,12 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         """
         if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
             logger.warning("WARNING: get_overlap is called with a non-normalized state.")
-        return self._basis.get_overlaps(other)[0]  # type: ignore [no-any-return]
+
+        if isinstance(other, KetAtom):
+            return np.array(self._cpp.get_overlaps(other._cpp))[0]  # type: ignore [no-any-return]
+        if isinstance(other, StateAtom):
+            return self._cpp.get_overlaps(other._cpp).toarray().flatten()[0]  # type: ignore [no-any-return]
+        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     @overload
     def get_matrix_element(
@@ -216,9 +229,18 @@ class StateAtom(StateBase["BasisAtom", KetAtom]):
         """
         if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
             logger.warning("WARNING: get_matrix_element is called with a non-normalized state.")
-        return self._basis.get_matrix_elements(other, operator, q, unit=unit)[0]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+
+        cpp_op = get_cpp_operator_type(operator)
+
+        if isinstance(other, KetAtom):
+            matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))[0]
+            return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
+        if isinstance(other, StateAtom):
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().flatten()[0]
+            return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
+        raise TypeError(f"Unknown type: {type(other)=}")
 
 
 class StateAtomReal(StateAtom):
-    _basis: BasisAtom
+    _cpp: _backend.BasisAtomReal  # type: ignore [assignment]
     _ket_class = KetAtom

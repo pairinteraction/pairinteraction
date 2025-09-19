@@ -3,22 +3,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
 
 import numpy as np
+
+from pairinteraction import _backend
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.basis import BasisBase
     from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
 
 KetType = TypeVar("KetType", bound="KetBase")
-BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]")
+UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
 
 
-class StateBase(ABC, Generic[BasisType, KetType]):
+class StateBase(ABC, Generic[KetType]):
     """Base class for all State objects.
 
     The state objects are meant to represent a set of kets, that span a Hilbert space
@@ -35,7 +36,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         - ...
     """
 
-    _basis: BasisType
+    _cpp: UnionCPPBasis
     _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -45,9 +46,9 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         )
 
     @classmethod
-    def _from_basis_object(cls: type[Self], basis_obj: BasisBase[Any, Any]) -> Self:
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis) -> Self:
         obj = cls.__new__(cls)
-        obj._basis = basis_obj  # type: ignore [assignment]
+        obj._cpp = cpp_obj
         return obj
 
     def __repr__(self) -> str:
@@ -84,12 +85,12 @@ class StateBase(ABC, Generic[BasisType, KetType]):
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return self._basis.kets
+        return [self._ket_class._from_cpp_object(ket) for ket in self._cpp.get_kets()]
 
     @property
     def number_of_kets(self) -> int:
         """Return the number of kets in the basis."""
-        return self._basis.number_of_kets
+        return self._cpp.get_number_of_kets()
 
     @property
     def norm(self) -> np.floating:
@@ -104,7 +105,7 @@ class StateBase(ABC, Generic[BasisType, KetType]):
         The coefficients are normalized, i.e. the sum of the absolute values of the coefficients is equal to 1.
 
         """
-        return self._basis.get_coefficients().toarray().flatten()
+        return self._cpp.get_coefficients().toarray().flatten()
 
     def get_corresponding_ket(self) -> KetType:
         """Return the ket corresponding to the state (i.e. the ket with the maximal overlap)."""

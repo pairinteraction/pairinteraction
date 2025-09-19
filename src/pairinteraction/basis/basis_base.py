@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from pairinteraction.state import StateBase
 
 KetType = TypeVar("KetType", bound="KetBase")
-StateType = TypeVar("StateType", bound="StateBase[Any, Any]")
+StateType = TypeVar("StateType", bound="StateBase[Any]")
 UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
 
 
@@ -52,11 +52,6 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def copy(self: Self) -> Self:
-        """Return a copy of the basis object."""
-        cpp_copy = self._cpp.copy()
-        return type(self)._from_cpp_object(cpp_copy)
-
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
@@ -68,8 +63,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         states: list[StateType] = []
         for i in range(self.number_of_states):
             state_cpp = self._cpp.get_state(i)
-            state_basis = type(self)._from_cpp_object(state_cpp)
-            states.append(self._state_class._from_basis_object(state_basis))
+            states.append(self._state_class._from_cpp_object(state_cpp))
         return states
 
     @property
@@ -104,8 +98,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
         state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
-        state_basis = type(self)._from_cpp_object(state_cpp)
-        return self._state_class._from_basis_object(state_basis)
+        return self._state_class._from_cpp_object(state_cpp)
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
