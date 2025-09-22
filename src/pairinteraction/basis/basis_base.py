@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
 
 from pairinteraction import _backend
@@ -53,12 +54,12 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    @property
+    @cached_property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
         return [self._ket_class._from_cpp_object(ket_cpp) for ket_cpp in self._cpp.get_kets()]
 
-    @property
+    @property  # not cached_property since State objects are mutable
     def states(self) -> list[StateType]:
         """Return a list containing the states of the basis."""
         states: list[StateType] = []
