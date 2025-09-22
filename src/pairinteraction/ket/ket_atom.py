@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.enums import OperatorType, Parity
-    from pairinteraction.ket.ket_base import UnionCPPKet
     from pairinteraction.units import NDArray, PintArray, PintComplex, PintFloat
 
 
@@ -66,9 +65,6 @@ class KetAtom(KetBase):
     """
 
     _cpp: _backend.KetAtom
-
-    database: Database
-    """The database used for this object."""
 
     def __init__(  # noqa: C901, PLR0912
         self,
@@ -144,13 +140,11 @@ class KetAtom(KetBase):
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)
 
-        self.database = database
-
-    @classmethod
-    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPKet, database: Database) -> Self:
-        obj = super()._from_cpp_object(cpp_obj)
-        obj.database = database
-        return obj
+    @property
+    def database(self) -> Database:
+        """The database from which the KetAtom was loaded."""
+        database_cpp = self._cpp.get_database()
+        return Database._from_cpp_object(database_cpp)
 
     @property
     def species(self) -> str:
