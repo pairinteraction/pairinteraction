@@ -18,7 +18,10 @@ static void declare_database(nb::module_ &m) {
         .def(nb::init<bool>(), "download_missing"_a)
         .def(nb::init<std::filesystem::path>(), "database_dir"_a)
         .def(nb::init<bool, bool, std::filesystem::path>(), "download_missing"_a, "use_cache"_a,
-             "database_dir"_a);
+             "database_dir"_a)
+        .def("get_download_missing", &Database::get_download_missing)
+        .def("get_use_cache", &Database::get_use_cache)
+        .def("get_database_dir", &Database::get_database_dir);
 }
 
 void bind_database(nb::module_ &m) { declare_database(m); }

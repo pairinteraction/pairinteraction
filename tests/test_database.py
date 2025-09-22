@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -16,6 +15,7 @@ from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NU
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+    from pathlib import Path
 
     from .utils import PairinteractionModule
 
@@ -97,7 +97,7 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
     # Get the latest parquet files from the database directory
     parquet_files: dict[str, Path] = {}
     parquet_versions: dict[str, Version] = {}
-    for path in Path(database.database_dir).rglob("*.parquet"):
+    for path in (database.database_dir / "tables").glob("*/*.parquet"):
         species, version_str = path.parent.name.rsplit("_v", 1)
         table = path.stem
         name = f"{species}_{table}"
@@ -113,10 +113,8 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
 
     # Obtain the ids of the initial and final states
     id_initial = fetch_id(n_initial, l_initial, f_initial, s_initial, connection, parquet_files["Yb174_mqdt_states"])
-    assert id_initial == 362 if swap_states else 363
-
     id_final = fetch_id(n_final, l_final, f_final, s_final, connection, parquet_files["Yb174_mqdt_states"])
-    assert id_final == 363 if swap_states else 362
+    assert id_initial == id_final + (-1 if swap_states else +1), f"Got {id_initial=} {id_final=}"
 
     # Obtain a matrix element of the magnetic dipole operator (for the chosen kets, it is non-zero iff initial != final)
     kappa, q = 1, 0
