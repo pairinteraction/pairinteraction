@@ -85,7 +85,7 @@ class StateBase(ABC, Generic[KetType]):
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return [self._ket_class._from_cpp_object(ket) for ket in self._cpp.get_kets()]
+        return [self._ket_class._from_cpp_object(ket_cpp) for ket_cpp in self._cpp.get_kets()]
 
     @property
     def number_of_kets(self) -> int:
