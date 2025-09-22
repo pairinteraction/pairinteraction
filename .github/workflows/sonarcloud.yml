@@ -30,7 +30,7 @@ jobs:
           apt-get install -y zip gcovr curl
 
       - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5.3.1
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v6.0.0
 
       - name: Setup uv build virtual environment
         uses: ./.github/actions/setup-uv-build-venv
@@ -49,7 +49,7 @@ jobs:
 
       - name: SonarQube Scan
         if: false # skip since we are using sonarcloud's automatic analysis for now
-        uses: SonarSource/sonarqube-scan-action@v5.3.1
+        uses: SonarSource/sonarqube-scan-action@v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
