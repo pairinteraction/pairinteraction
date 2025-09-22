@@ -12,6 +12,7 @@
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/tensor.hpp"
 
+#include <cassert>
 #include <memory>
 #include <oneapi/tbb.h>
 #include <vector>

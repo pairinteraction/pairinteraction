@@ -12,6 +12,7 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <limits>
 #include <memory>
 

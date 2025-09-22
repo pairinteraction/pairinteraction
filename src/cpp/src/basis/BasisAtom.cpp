@@ -6,6 +6,8 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
+#include <cassert>
+
 namespace pairinteraction {
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
