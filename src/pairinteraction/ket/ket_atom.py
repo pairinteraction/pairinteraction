@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Literal, overload
 
 import numpy as np
@@ -140,7 +141,7 @@ class KetAtom(KetBase):
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)
 
-    @property
+    @cached_property
     def database(self) -> Database:
         """The database from which the KetAtom was loaded."""
         database_cpp = self._cpp.get_database()
