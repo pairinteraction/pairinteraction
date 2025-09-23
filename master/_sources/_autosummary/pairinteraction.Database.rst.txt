@@ -1,0 +1,19 @@
+﻿Database
+========
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~Database.__init__
+      ~Database.get_global_database
+      ~Database.initialize_global_database
+
+
+
+
+
+.. autoclass:: pairinteraction.Database
