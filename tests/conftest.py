@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+
 from __future__ import annotations
 
 import multiprocessing
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.config.argparsing import Parser
     from pairinteraction_gui.app import Application
+
+    from .utils import PairinteractionModule
 
 
 def pytest_addoption(parser: Parser) -> None:
@@ -69,3 +72,17 @@ def qapp_cls() -> type[Application]:
     from pairinteraction_gui.app import Application
 
     return Application
+
+
+@pytest.fixture(params=["real", "complex"])
+def pi_module(request: pytest.FixtureRequest) -> PairinteractionModule:
+    """Import and return the pairinteraction module, either real or complex version."""
+    use_real = request.param == "real"
+    if use_real:
+        import pairinteraction.real as pi_real
+
+        return pi_real  # type: ignore [return-value]
+
+    import pairinteraction as pi_complex
+
+    return pi_complex

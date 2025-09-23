@@ -1,16 +1,20 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test the conversion from AtomicUnits used in the backend and the units input and output to the user."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 from pairinteraction.units import AtomicUnits, QuantityScalar, ureg
 
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
-def test_magnetic() -> None:
+
+def test_magnetic(pi_module: PairinteractionModule) -> None:
     """Test magnetic units."""
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+    ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
 
     mu = ket.get_matrix_element(ket, "magnetic_dipole", q=0)
     mu = mu.to("bohr_magneton")
@@ -27,18 +31,18 @@ def test_magnetic() -> None:
     assert zeeman_energy.dimensionality == AtomicUnits["energy"].dimensionality
 
     # check against constructed Hamiltonian
-    basis = pi.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])
-    system = pi.SystemAtom(basis)
+    basis = pi_module.BasisAtom("Rb", n=(1, 1), additional_kets=[ket])
+    system = pi_module.SystemAtom(basis)
     system.set_diamagnetism_enabled(False).set_magnetic_field([0, 0, magnetic_field_pint])
     zeeman_energy_from_hamiltonian = system.get_hamiltonian("MHz")[0, 0] - ket.get_energy("MHz")
     assert np.isclose(zeeman_energy_from_hamiltonian, zeeman_energy.to("MHz", "spectroscopy").magnitude)
 
 
-def test_electric_dipole() -> None:
+def test_electric_dipole(pi_module: PairinteractionModule) -> None:
     """Test electric dipole units."""
-    ket_a = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-    ket_b = pi.KetAtom("Rb", n=61, l=0, m=0.5)
-    ket_c = pi.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
+    ket_a = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
+    ket_b = pi_module.KetAtom("Rb", n=61, l=0, m=0.5)
+    ket_c = pi_module.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
 
     dipole_a_c = ket_a.get_matrix_element(ket_c, "electric_dipole", q=0)
     dipole_b_c = ket_b.get_matrix_element(ket_c, "electric_dipole", q=0)
@@ -51,10 +55,10 @@ def test_electric_dipole() -> None:
     assert c3.magnitude == QuantityScalar.from_pint(kappa * dipole_a_c * dipole_b_c, "c3").to_unit("GHz micrometer^3")
 
     distance = ureg.Quantity(10, "micrometer")
-    basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
-    system = pi.SystemAtom(basis)
-    basis_pair = pi.BasisPair([system, system])
-    system_pair = pi.SystemPair(basis_pair)
+    basis = pi_module.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
+    system = pi_module.SystemAtom(basis)
+    basis_pair = pi_module.BasisPair([system, system])
+    system_pair = pi_module.SystemPair(basis_pair)
     system_pair.set_interaction_order(3)
     system_pair.set_distance(distance)
     system.get_hamiltonian()

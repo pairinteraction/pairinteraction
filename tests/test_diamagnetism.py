@@ -1,22 +1,26 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test diamagnetic interactions."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
+
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
 
-def test_diamagnetism() -> None:
+def test_diamagnetism(pi_module: PairinteractionModule) -> None:
     """Test calculating diamagnetic interactions."""
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    basis = pi.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2))
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2))
     print(f"Number of basis states: {basis.number_of_states}")
 
     # Create system for a magnetic field of 1000 G
     bfield = 1000
-    system = pi.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
+    system = pi_module.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
 
     # Diagonalize the system
     system = system.diagonalize(diagonalizer="eigen", sort_by_energy=True)
@@ -42,17 +46,19 @@ def test_diamagnetism() -> None:
 
 def test_diamagnetism_angle_dependence() -> None:
     """Test calculating diamagnetic interactions for differently aligned magnetic fields."""
+    import pairinteraction as pi_module  # only test with complex due to y component
+
     # Create a basis
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
 
     # Create systems for fields in different directions
     bfield = 1000
-    system_x = pi.SystemAtom(basis).set_magnetic_field([bfield, 0, 0], unit="G").set_diamagnetism_enabled(True)
-    system_y = pi.SystemAtom(basis).set_magnetic_field([0, bfield, 0], unit="G").set_diamagnetism_enabled(True)
-    system_z = pi.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
+    system_x = pi_module.SystemAtom(basis).set_magnetic_field([bfield, 0, 0], unit="G").set_diamagnetism_enabled(True)
+    system_y = pi_module.SystemAtom(basis).set_magnetic_field([0, bfield, 0], unit="G").set_diamagnetism_enabled(True)
+    system_z = pi_module.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
 
     # Diagonalize the systems in parallel
-    pi.diagonalize([system_x, system_y, system_z], diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize([system_x, system_y, system_z], diagonalizer="eigen", sort_by_energy=True)
 
     # Ensure that all eigenenergies are the same
     np.testing.assert_allclose(system_x.get_eigenenergies(unit="GHz"), system_y.get_eigenenergies(unit="GHz"))

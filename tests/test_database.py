@@ -1,8 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test receiving matrix elements from the databases."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -10,7 +8,6 @@ from typing import TYPE_CHECKING
 
 import duckdb
 import numpy as np
-import pairinteraction as pi
 import pytest
 from packaging.version import Version
 from sympy.physics.wigner import wigner_3j
@@ -19,6 +16,8 @@ from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NU
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+    from .utils import PairinteractionModule
 
 
 def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: str | Path) -> int:
@@ -61,9 +60,9 @@ def connection() -> Generator[duckdb.DuckDBPyConnection]:
 
 
 @pytest.mark.parametrize("swap_states", [False, True])
-def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> None:  # noqa: PLR0915
+def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyConnection, swap_states: bool) -> None:  # noqa: PLR0915
     """Test receiving matrix elements from the databases."""
-    database = pi.Database.get_global_database()
+    database = pi_module.Database.get_global_database()
     bfield_in_gauss = 1500
 
     # Define initial and final quantum states
@@ -82,11 +81,11 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
         s_initial, s_final = s_final, s_initial
 
     # Get the Zeeman interaction operator from the database using pairinteraction
-    ket_initial = pi.KetAtom("Yb174_mqdt", n=n_initial, l=l_initial, f=f_initial, m=m_initial, s=s_initial)
-    ket_final = pi.KetAtom("Yb174_mqdt", n=n_final, l=l_final, f=f_final, m=m_final, s=s_final)
-    basis = pi.BasisAtom("Yb174_mqdt", additional_kets=[ket_initial, ket_final])
+    ket_initial = pi_module.KetAtom("Yb174_mqdt", n=n_initial, l=l_initial, f=f_initial, m=m_initial, s=s_initial)
+    ket_final = pi_module.KetAtom("Yb174_mqdt", n=n_final, l=l_final, f=f_final, m=m_final, s=s_final)
+    basis = pi_module.BasisAtom("Yb174_mqdt", additional_kets=[ket_initial, ket_final])
     operator = (
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_magnetic_field([0, 0, bfield_in_gauss], unit="G")
         .set_diamagnetism_enabled(True)
         .get_hamiltonian(unit="GHz")
@@ -98,7 +97,7 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
     # Get the latest parquet files from the database directory
     parquet_files: dict[str, Path] = {}
     parquet_versions: dict[str, Version] = {}
-    for path in list(Path(database.database_dir).rglob("*.parquet")):
+    for path in Path(database.database_dir).rglob("*.parquet"):
         species, version_str = path.parent.name.rsplit("_v", 1)
         table = path.stem
         name = f"{species}_{table}"
@@ -172,7 +171,7 @@ def test_database(connection: duckdb.DuckDBPyConnection, swap_states: bool) -> N
 
 
 @pytest.mark.parametrize("species", SUPPORTED_SPECIES)
-def test_obtaining_kets(species: str) -> None:
+def test_obtaining_kets(pi_module: PairinteractionModule, species: str) -> None:
     """Test obtaining kets from the database."""
     is_mqdt = species.endswith("_mqdt")
     is_single_valence_electron = species in ["Rb"]
@@ -184,7 +183,7 @@ def test_obtaining_kets(species: str) -> None:
     quantum_number_m = quantum_number_i + quantum_number_s
 
     # Obtain a ket from the database
-    ket = pi.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)
+    ket = pi_module.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)
 
     # Check the result
     assert ket.species == species

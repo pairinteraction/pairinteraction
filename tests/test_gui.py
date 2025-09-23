@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
@@ -8,7 +9,7 @@ import numpy as np
 import pytest
 from pairinteraction_gui.main_window import MainWindow
 
-from .compare_utils import REFERENCE_PATHS, compare_eigensystem_to_reference
+from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage

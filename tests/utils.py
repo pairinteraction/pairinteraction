@@ -1,17 +1,19 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+
 from __future__ import annotations
 
 import contextlib
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, Protocol
 
 import numpy as np
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
+    import pairinteraction as pi
     from pairinteraction.units import NDArray
 
 
@@ -57,3 +59,18 @@ def no_log_propagation(logger: logging.Logger | str) -> Iterator[None]:
         yield
     finally:
         logger.propagate = old_value
+
+
+class PairinteractionModule(Protocol):
+    Database: type[pi.Database]
+    KetAtom: type[pi.KetAtom]
+    BasisAtom: type[pi.BasisAtom]
+    SystemAtom: type[pi.SystemAtom]
+    KetPair: type[pi.KetPair]
+    BasisPair: type[pi.BasisPair]
+    SystemPair: type[pi.SystemPair]
+    GreenTensor: type[pi.GreenTensor]
+    EffectiveSystemPair: type[pi.EffectiveSystemPair]
+    C3: type[pi.C3]
+    C6: type[pi.C6]
+    diagonalize: Callable[..., None]

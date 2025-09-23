@@ -1,28 +1,36 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import numpy as np
-import pairinteraction as pi
 import pytest
 
+if TYPE_CHECKING:
+    from pairinteraction import BasisAtom, StateAtom
+
+    from .utils import PairinteractionModule
+
 
 @pytest.fixture
-def basis() -> pi.BasisAtom:
+def basis(pi_module: PairinteractionModule) -> BasisAtom:
     """Create a test basis with a few states around Rb 60S."""
-    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     energy_min = ket.get_energy(unit="GHz") - 100
     energy_max = ket.get_energy(unit="GHz") + 100
-    return pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
+    return pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
 
 
 @pytest.fixture
-def state(basis: pi.BasisAtom) -> pi.StateAtom:
+def state(pi_module: PairinteractionModule, basis: BasisAtom) -> StateAtom:
     """Create a test state."""
-    ket = pi.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
+    ket = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
     return basis.get_corresponding_state(ket)
 
 
-def test_state_creation(state: pi.StateAtom) -> None:
+def test_state_creation(state: StateAtom) -> None:
     """Test basic properties of created state."""
     assert state.species == "Rb"
     assert state.number_of_kets == 80
@@ -31,7 +39,7 @@ def test_state_creation(state: pi.StateAtom) -> None:
     assert state.is_canonical
 
 
-def test_coefficients(state: pi.StateAtom) -> None:
+def test_coefficients(state: StateAtom) -> None:
     """Test coefficient matrix properties."""
     coeffs = state.get_coefficients()
     assert coeffs.shape == (state.number_of_kets,)
@@ -39,7 +47,7 @@ def test_coefficients(state: pi.StateAtom) -> None:
     assert pytest.approx(coeffs.sum()) == 1.0  # NOSONAR
 
 
-def test_get_amplitude_and_overlap(state: pi.StateAtom) -> None:
+def test_get_amplitude_and_overlap(state: StateAtom) -> None:
     """Test amplitude and overlap calculations."""
     # Test with ket
     test_ket = state.get_corresponding_ket()
@@ -59,10 +67,10 @@ def test_get_amplitude_and_overlap(state: pi.StateAtom) -> None:
     assert pytest.approx(overlap) == 1.0  # NOSONAR
 
 
-def test_get_matrix_element(basis: pi.BasisAtom) -> None:
+def test_get_matrix_element(pi_module: PairinteractionModule, basis: BasisAtom) -> None:
     """Test matrix element calculations."""
-    ket1 = pi.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
-    ket2 = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket1 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     state1 = basis.get_corresponding_state(ket1)
     state2 = basis.get_corresponding_state(ket2)
 
@@ -79,7 +87,7 @@ def test_get_matrix_element(basis: pi.BasisAtom) -> None:
     assert state1.get_matrix_element(state2, "electric_dipole", q=0, unit="e * a0") == 0
 
 
-def test_error_handling(state: pi.StateAtom) -> None:
+def test_error_handling(state: StateAtom) -> None:
     """Test error cases."""
     with pytest.raises(TypeError):
         state.get_amplitude("not a ket")  # type: ignore [arg-type]

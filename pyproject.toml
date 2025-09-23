@@ -198,6 +198,7 @@ addopts = [
     "--doctest-modules",
     "--ignore=src/pairinteraction/pireal.py", # throws an import error to signal previous users of the old PairInteraction version breaking changes
     "--ignore=src/pairinteraction/picomplex.py", # throws an import error to signal previous users of the old PairInteraction version breaking changes
+    "--ignore=src/pairinteraction/complex.py", # throws a deprecation warning (use pairinteraction instead)
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",

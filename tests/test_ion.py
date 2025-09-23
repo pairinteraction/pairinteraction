@@ -1,23 +1,27 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test atom-ion interaction."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
 
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
-def test_ion_z() -> None:
+
+def test_ion_z(pi_module: PairinteractionModule) -> None:
     """Test the calculation of energy shifts in the field on an ion positioned along z."""
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    basis = pi.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2), m=(ket.m, ket.m))
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2), m=(ket.m, ket.m))
 
     # Create systems for different distances to the ion
     distance = 3
     system_z = (
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
         .set_ion_distance_vector([0, 0, distance], unit="um")
@@ -34,16 +38,16 @@ def test_ion_z() -> None:
     assert pytest.approx(eigenenergies[idx] - ket.get_energy(unit="GHz"), rel=1e-6) == -0.31554844  # NOSONAR
 
 
-def test_ion_x() -> None:
+def test_ion_x(pi_module: PairinteractionModule) -> None:
     """Test the calculation of energy shifts in the field on an ion positioned along x."""
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    basis = pi.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2))
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, ket.l + 2))
 
     # Create systems for different distances to the ion
     distance = 3
     system_x = (
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
         .set_ion_distance_vector([distance, 0, 0], unit="um")
@@ -66,27 +70,29 @@ def test_ion_x() -> None:
 
 def test_ion_angle_dependence() -> None:
     """Test the calculation of energy shifts in the field on an ion for different angles."""
+    import pairinteraction as pi_module  # only test with complex due to y component
+
     # Create a basis
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
 
     # Create systems for different distances to the ion
     distances = np.linspace(3, 10, 5)
     systems_x = [
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
         .set_ion_distance_vector([d, 0, 0], unit="um")
         for d in distances
     ]
     systems_y = [
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
         .set_ion_distance_vector([0, d, 0], unit="um")
         for d in distances
     ]
     systems_z = [
-        pi.SystemAtom(basis)
+        pi_module.SystemAtom(basis)
         .set_ion_interaction_order(3)
         .set_ion_charge(1, unit="e")
         .set_ion_distance_vector([0, 0, d], unit="um")
@@ -94,7 +100,7 @@ def test_ion_angle_dependence() -> None:
     ]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(systems_x + systems_y + systems_z, diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize(systems_x + systems_y + systems_z, diagonalizer="eigen", sort_by_energy=True)
 
     # Ensure that all eigenenergies are the same
     for system_x, system_y, system_z in zip(systems_x, systems_y, systems_z):

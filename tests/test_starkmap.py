@@ -1,28 +1,32 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-"""Test the Stark map calculation."""
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pairinteraction as pi
 import pytest
 
-from .compare_utils import REFERENCE_PATHS, compare_eigensystem_to_reference
+from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
+
+if TYPE_CHECKING:
+    from .utils import PairinteractionModule
 
 
-def test_starkmap(generate_reference: bool) -> None:
+def test_starkmap(pi_module: PairinteractionModule, generate_reference: bool) -> None:
     """Test calculating a Stark map."""
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+    ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
+    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     print(f"Number of basis states: {basis.number_of_states}")
 
     electric_fields = np.linspace(0, 10, 11)
     # Create systems for different values of the electric field
-    systems = [pi.SystemAtom(basis).set_electric_field([0, 0, e], unit="V/cm") for e in electric_fields]
+    systems = [pi_module.SystemAtom(basis).set_electric_field([0, 0, e], unit="V/cm") for e in electric_fields]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(systems, diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize(systems, diagonalizer="eigen", sort_by_energy=True)
 
     # Get the overlap with |ket>
     overlaps = np.array([system.basis.get_overlaps(ket) for system in systems])
