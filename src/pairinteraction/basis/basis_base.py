@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
 
 from pairinteraction import _backend
@@ -15,7 +16,7 @@ if TYPE_CHECKING:
     from pairinteraction.state import StateBase
 
 KetType = TypeVar("KetType", bound="KetBase")
-StateType = TypeVar("StateType", bound="StateBase[Any, Any]")
+StateType = TypeVar("StateType", bound="StateBase[Any]")
 UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
 
 
@@ -40,7 +41,8 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     @classmethod
-    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis) -> Self:
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, *args: Any, **kwargs: Any) -> Self:
+        assert len(kwargs) == len(args) == 0, "No additional arguments expected."
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
@@ -52,24 +54,18 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def copy(self: Self) -> Self:
-        """Return a copy of the basis object."""
-        cpp_copy = self._cpp.copy()
-        return type(self)._from_cpp_object(cpp_copy)
-
-    @property
+    @cached_property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return [self._ket_class._from_cpp_object(ket) for ket in self._cpp.get_kets()]
+        return [self._ket_class._from_cpp_object(ket_cpp) for ket_cpp in self._cpp.get_kets()]
 
-    @property
+    @property  # not cached_property since State objects are mutable
     def states(self) -> list[StateType]:
         """Return a list containing the states of the basis."""
         states: list[StateType] = []
         for i in range(self.number_of_states):
             state_cpp = self._cpp.get_state(i)
-            state_basis = type(self)._from_cpp_object(state_cpp)
-            states.append(self._state_class._from_basis_object(state_basis))
+            states.append(self._state_class._from_cpp_object(state_cpp))
         return states
 
     @property
@@ -104,8 +100,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
         state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
-        state_basis = type(self)._from_cpp_object(state_cpp)
-        return self._state_class._from_basis_object(state_basis)
+        return self._state_class._from_cpp_object(state_cpp)
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]

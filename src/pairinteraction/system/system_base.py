@@ -9,6 +9,7 @@ import numpy as np
 from typing_extensions import deprecated
 
 from pairinteraction import _backend
+from pairinteraction.basis.basis_pair import BasisPair
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.units import QuantityArray, QuantitySparse
 
@@ -53,9 +54,6 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def __str__(self) -> str:
         return self.__repr__()
-
-    def _update_basis(self) -> None:
-        self._basis = self._basis_class._from_cpp_object(self._cpp.get_basis())
 
     @overload
     def diagonalize(
@@ -137,6 +135,11 @@ class SystemBase(ABC, Generic[BasisType]):
 
     @property
     def basis(self) -> BasisType:
+        """The basis object of the system."""
+        cpp_basis = self._cpp.get_basis()
+        if self._basis._cpp != cpp_basis:
+            kwargs = {"system_atoms": self._basis.system_atoms} if isinstance(self._basis, BasisPair) else {}
+            self._basis = self._basis_class._from_cpp_object(cpp_basis, **kwargs)
         return self._basis
 
     @property
@@ -144,8 +147,12 @@ class SystemBase(ABC, Generic[BasisType]):
         return self._cpp.get_matrix()
 
     def get_eigenbasis(self) -> BasisType:
+        _eigenbasis: BasisType | None = getattr(self, "_eigenbasis", None)
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._basis_class._from_cpp_object(cpp_eigenbasis)
+        if _eigenbasis is None or _eigenbasis._cpp != cpp_eigenbasis:
+            kwargs = {"system_atoms": self._basis.system_atoms} if isinstance(self._basis, BasisPair) else {}
+            self._eigenbasis = self._basis_class._from_cpp_object(cpp_eigenbasis, **kwargs)
+        return self._eigenbasis
 
     @overload
     def get_eigenenergies(self, unit: None = None) -> PintArray: ...

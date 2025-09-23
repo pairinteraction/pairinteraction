@@ -10,11 +10,10 @@ from pairinteraction.custom_logging import _flush_pending_logs
 
 if TYPE_CHECKING:
     import os
+    from pathlib import Path
 
 
 logger = logging.getLogger(__name__)
-
-CPPDatabase = _backend.Database
 
 
 class Database:
@@ -45,11 +44,18 @@ class Database:
                 Default "", i.e. use the default directory (the user's cache directory).
 
         """
-        self._cpp = CPPDatabase(download_missing, use_cache, database_dir)
+        self._cpp = _backend.Database(download_missing, use_cache, database_dir)
         _flush_pending_logs()  # call it manually because constructors of classes from nanobind cannot be decorated
-        self.download_missing = download_missing
-        self.use_cache = use_cache
-        self.database_dir = database_dir
+
+    @classmethod
+    def _from_cpp_object(cls, cpp_obj: _backend.Database) -> Database:
+        """Create a Database instance from a C++ Database object.
+
+        This is used internally to convert C++ objects returned by the C++ API to Python objects.
+        """
+        obj = cls.__new__(cls)
+        obj._cpp = cpp_obj
+        return obj
 
     @classmethod
     def get_global_database(cls) -> Database:
@@ -67,12 +73,13 @@ class Database:
 
         The arguments are the same as for the constructor of this class.
         """
+        db = cls(download_missing, use_cache, database_dir)
         if cls._global_database is None:
-            cls._global_database = cls(download_missing, use_cache, database_dir)
+            cls._global_database = db
         elif (
-            cls._global_database.download_missing == download_missing
-            and cls._global_database.use_cache == use_cache
-            and cls._global_database.database_dir == database_dir
+            cls._global_database.download_missing == db.download_missing
+            and cls._global_database.use_cache == db.use_cache
+            and cls._global_database.database_dir == db.database_dir
         ):
             pass  # already initialized with the same parameters
         else:
@@ -81,3 +88,18 @@ class Database:
                 "The global database is automatically initialized when needed. "
                 "If you explicitly want to initialize the global database, do this at the beginning of your script."
             )
+
+    @property
+    def download_missing(self) -> bool:
+        """Whether to download missing databases if needed."""
+        return self._cpp.get_download_missing()
+
+    @property
+    def use_cache(self) -> bool:
+        """Whether to load the Wigner 3j symbols table into memory."""
+        return self._cpp.get_use_cache()
+
+    @property
+    def database_dir(self) -> Path:
+        """The directory where the databases are stored."""
+        return self._cpp.get_database_dir()

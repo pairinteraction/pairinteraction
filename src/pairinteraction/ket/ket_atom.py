@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+from functools import cached_property
 from typing import TYPE_CHECKING, Literal, overload
 
 import numpy as np
@@ -9,7 +10,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import get_cpp_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -139,12 +140,12 @@ class KetAtom(KetBase):
                 Database.initialize_global_database()
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)
-        self._database = database
 
-    @property
+    @cached_property
     def database(self) -> Database:
-        """The database used for this object."""
-        return self._database
+        """The database from which the KetAtom was loaded."""
+        database_cpp = self._cpp.get_database()
+        return Database._from_cpp_object(database_cpp)
 
     @property
     def species(self) -> str:

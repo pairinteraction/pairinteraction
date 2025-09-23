@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Union, overload
+from collections.abc import Collection, Sequence
+from typing import TYPE_CHECKING, Any, Self, Union, overload
 
 import numpy as np
 from typing_extensions import TypeGuard
@@ -11,7 +11,7 @@ from typing_extensions import TypeGuard
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom
 from pairinteraction.basis.basis_base import BasisBase
-from pairinteraction.enums import get_cpp_operator_type, get_cpp_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.state import StatePair, StatePairReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
     from scipy.sparse import csr_matrix
 
+    from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # required for sphinx for KetPairLike
@@ -73,6 +74,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     _ket_class = KetPair
     _state_class = StatePair
 
+    system_atoms: tuple[SystemAtom, SystemAtom]
+    """The two SystemAtom objects, from which the BasisPair is build."""
+
     def __init__(
         self,
         systems: Collection[SystemAtom],
@@ -97,7 +101,6 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         """
         assert len(systems) == 2, "BasisPair requires exactly two SystemAtom objects."
         creator = self._cpp_creator()
-        self.system_atoms: tuple[SystemAtom, SystemAtom] = tuple(systems)  # type: ignore [assignment]
         for system in systems:
             creator.add(system._cpp)
         if m is not None:
@@ -114,6 +117,14 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             max_energy_au = np.clip(max_energy_au, -1e10, 1e10)  # FIXME
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
+
+        self.system_atoms = tuple(systems)  # type: ignore [assignment]
+
+    @classmethod
+    def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, system_atoms: tuple[SystemAtom, SystemAtom]) -> Self:
+        obj = super()._from_cpp_object(cpp_obj)
+        obj.system_atoms = system_atoms
+        return obj
 
     @overload
     def get_amplitudes(self, other: KetPairLike) -> NDArray: ...
