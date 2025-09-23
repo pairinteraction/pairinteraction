@@ -15,8 +15,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-CPPDatabase = _backend.Database
-
 
 class Database:
     """Class for handling the databases for the PairInteraction package.
@@ -46,11 +44,11 @@ class Database:
                 Default "", i.e. use the default directory (the user's cache directory).
 
         """
-        self._cpp = CPPDatabase(download_missing, use_cache, database_dir)
+        self._cpp = _backend.Database(download_missing, use_cache, database_dir)
         _flush_pending_logs()  # call it manually because constructors of classes from nanobind cannot be decorated
 
     @classmethod
-    def _from_cpp_object(cls, cpp_obj: CPPDatabase) -> Database:
+    def _from_cpp_object(cls, cpp_obj: _backend.Database) -> Database:
         """Create a Database instance from a C++ Database object.
 
         This is used internally to convert C++ objects returned by the C++ API to Python objects.
