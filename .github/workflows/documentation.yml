@@ -49,7 +49,9 @@ jobs:
     - name: Install PairInteraction into virtual environment
       run: uv pip install .[docs]
     - name: Setup 2nd virtual environment for old PairInteraction versions
-      run: uv venv tmp_venv --python=python3.11
+      run: |
+        uv venv tmp_venv --python=python3.11
+        uv pip install --python tmp_venv/bin/python pip
     - name: Build documentation
       run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts

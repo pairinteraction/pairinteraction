@@ -104,7 +104,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         self.post_cmds = post_cmds
         self.apply_patch_if_exists = apply_patch_if_exists
 
-    async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:
+    async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:  # noqa: C901
         self.logger.info("Building documentation for revision %s", data["current_rev"])
 
         source_dir = str(environment.path.absolute() / self.source)
