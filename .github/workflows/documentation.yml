@@ -48,10 +48,10 @@ jobs:
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
       run: uv pip install .[docs]
-    - name: Setup 2nd virtual environment for PairInteraction v0.9.10
+    - name: Setup 2nd virtual environment for other PairInteraction versions
       run: |
-        uv venv venv_pairinteraction_v0.9.10 --python=python3.11
-        uv pip install --python venv_pairinteraction_v0.9.10/bin/python 'pairinteraction==0.9.10' sphinx nbsphinx 'sphinxcontrib-mermaid<1' sphinx_rtd_theme sphinx_polyversion
+        uv venv tmp_venv --python=python3.11
+        uv pip install --python tmp_venv/bin/python pip
     - name: Build documentation
       run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts
