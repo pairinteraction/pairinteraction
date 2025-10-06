@@ -133,6 +133,8 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 - [Publications] - Find out more about the theory behind PairInteraction and how to cite it and the quantum defects you use.
 
+- [FAQs] - Frequently asked questions.
+
 **Contributor Guide**
 
 - [Getting Started as a Contributor] - Discover the many ways you can help improve PairInteraction, from contributing to the repository to providing quantum defects.
@@ -153,6 +155,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 [Tutorials]: https://www.pairinteraction.org/pairinteraction/master/tutorials/tutorials.html
 [API Reference]: https://www.pairinteraction.org/pairinteraction/master/api_reference.html
 [Publications]: https://www.pairinteraction.org/pairinteraction/master/publications/publications.html
+[FAQs]: https://www.pairinteraction.org/pairinteraction/master/faqs.html
 [Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
 [Overview of PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/master/contribute/architecture.html
 [Style Guide]: https://www.pairinteraction.org/pairinteraction/master/contribute/style_guide.html

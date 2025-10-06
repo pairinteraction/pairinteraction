@@ -16,6 +16,7 @@
     tutorials/tutorials.rst
     api_reference.rst
     publications/publications.rst
+    faqs.rst
 
 .. toctree::
     :maxdepth: 2
