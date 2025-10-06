@@ -40,9 +40,9 @@ You can use the PairInteraction software as a Python library, see our [quick sta
 pairinteraction gui
 ```
 
-[about-link]: https://www.pairinteraction.org/pairinteraction/master/about.html
-[installation-link]: https://www.pairinteraction.org/pairinteraction/master/installation/installation.html
-[tutorial-link]: https://www.pairinteraction.org/pairinteraction/master/tutorials/examples_python/quick_start.html
+[about-link]: https://www.pairinteraction.org/pairinteraction/stable/about.html
+[installation-link]: https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html
+[tutorial-link]: https://www.pairinteraction.org/pairinteraction/stable/tutorials/examples_python/quick_start.html
 
 ## Highlights
 
@@ -151,15 +151,15 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 - [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
 
-[Installation]: https://www.pairinteraction.org/pairinteraction/master/installation/installation.html
-[Tutorials]: https://www.pairinteraction.org/pairinteraction/master/tutorials/tutorials.html
-[API Reference]: https://www.pairinteraction.org/pairinteraction/master/api_reference.html
-[Publications]: https://www.pairinteraction.org/pairinteraction/master/publications/publications.html
-[FAQs]: https://www.pairinteraction.org/pairinteraction/master/faqs.html
-[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
-[Overview of PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/master/contribute/architecture.html
-[Style Guide]: https://www.pairinteraction.org/pairinteraction/master/contribute/style_guide.html
-[Database Format]: https://www.pairinteraction.org/pairinteraction/master/contribute/database.html
+[Installation]: https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html
+[Tutorials]: https://www.pairinteraction.org/pairinteraction/stable/tutorials/tutorials.html
+[API Reference]: https://www.pairinteraction.org/pairinteraction/stable/api_reference.html
+[Publications]: https://www.pairinteraction.org/pairinteraction/stable/publications/publications.html
+[FAQs]: https://www.pairinteraction.org/pairinteraction/stable/faqs.html
+[Getting Started as a Contributor]: https://www.pairinteraction.org/pairinteraction/stable/contribute/getting_started.html
+[Overview of PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/stable/contribute/architecture.html
+[Style Guide]: https://www.pairinteraction.org/pairinteraction/stable/contribute/style_guide.html
+[Database Format]: https://www.pairinteraction.org/pairinteraction/stable/contribute/database.html
 [MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
 [ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
 
@@ -205,7 +205,7 @@ The development of the PairInteraction software has been supported by the [Insti
 [Nicolas Zuber]: https://github.com/tripiti
 [Johannes Block]: https://github.com/johblock
 [Simon Hollerith]: https://github.com/SimonHollerith
-[contributor-link]: https://www.pairinteraction.org/pairinteraction/master/contribute/getting_started.html
+[contributor-link]: https://www.pairinteraction.org/pairinteraction/stable/contribute/getting_started.html
 
 ## License
 

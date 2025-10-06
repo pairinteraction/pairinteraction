@@ -64,10 +64,11 @@ def data_factory(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict
     version_names = {  # naming convention: "<tag/branch> (<note>)"
         "master": "master (dev)",
         LATEST: f"{LATEST} (stable)",
+        "stable": f"{LATEST} (stable)",
         **{tag: tag for tag in WANTED_TAGS[::-1] if tag != LATEST},
         LEGACY_VERSION: f"{LEGACY_VERSION} (legacy)",
     }
-    version_tuples = [(name, f"../{key}/index.html") for key, name in version_names.items()]
+    version_tuples = [(name, f"../{key}/index.html") for key, name in version_names.items() if key != LATEST]
     current_version = version_names.get(rev.name, rev.name)
     return {
         "current_rev": rev.name,
@@ -78,7 +79,7 @@ def data_factory(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict
 
 # Define factory method for data passed to templates, important for the main index.html (see docs/templates/index.html)
 def root_data_factory(_driver: DefaultDriver) -> dict[str, str]:
-    return {"latest": LATEST}
+    return {}
 
 
 # Define a custom documentation Builder
@@ -209,3 +210,8 @@ driver = DefaultDriver(
     data_factory=data_factory,
 )
 driver.run(sequential=True)
+
+# rename latest "v2.x.x/" folder to "stable/"
+stable_dir = OUTPUT_DIR / LATEST
+if stable_dir.exists():
+    shutil.move(stable_dir, OUTPUT_DIR / "stable")

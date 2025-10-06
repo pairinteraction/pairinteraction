@@ -8,7 +8,7 @@ raise ImportError(
     "However, the new version of the package is not compatible with the old version."
     "To fix this, you need to update your code to use the new API."
     "You can find examples of using the new API in the following tutorials:\n"
-    "    https://www.pairinteraction.org/pairinteraction/master/tutorials/tutorials.html\n"
+    "    https://www.pairinteraction.org/pairinteraction/stable/tutorials/tutorials.html\n"
     "For the full documentation of the new version, please visit:\n"
     "    https://www.pairinteraction.org"
 )
