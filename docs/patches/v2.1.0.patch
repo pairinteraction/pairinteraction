@@ -1,0 +1,39 @@
+diff --git a/docs/_templates/versions.html b/docs/_templates/versions.html
+new file mode 100644
+index 000000000..ad6b2dd0d
+--- /dev/null
++++ b/docs/_templates/versions.html
+@@ -0,0 +1,16 @@
++<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
++  <span class="rst-current-version" data-toggle="rst-current-version">
++    Version: {{ current_version }}
++    <span class="fa fa-caret-down"></span>
++  </span>
++  <div class="rst-other-versions">
++    {% if version_tuples|length >= 1 %}
++    <dl>
++      <dt>{{ _('Versions') }}</dt>
++      {% for version, url in version_tuples %}
++        <dd><a href="{{ url }}">{{ version }}</a></dd>
++      {% endfor %}
++    </dl>
++    {% endif %}
++  </div>
++</div>
+\ No newline at end of file
+diff --git a/docs/conf.py b/docs/conf.py
+index 06d2f866a..3fe62ea57 100644
+--- a/docs/conf.py
++++ b/docs/conf.py
+@@ -9,6 +9,11 @@ from typing import Any
+
+ import pairinteraction
+
++from sphinx_polyversion.api import load  # type: ignore [import-untyped]
++# This adds html_context = {"revisions": [GitRef('main', ...), GitRef('v6.8.9', ...), ...], "current": ...}
++html_context: dict[str, Any] = load()
++
++
+ # -- Project information -----------------------------------------------------
+
+ project = "pairinteraction"

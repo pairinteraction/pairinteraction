@@ -4,6 +4,7 @@
 # ruff: noqa: INP001
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import shutil
@@ -18,10 +19,8 @@ from sphinx_polyversion.driver import DefaultDriver
 from sphinx_polyversion.environment import Environment
 from sphinx_polyversion.git import Git, closest_tag, refs_by_type
 from sphinx_polyversion.json import GLOBAL_ENCODER
-from sphinx_polyversion.pyvenv import VirtualPythonEnvironment
+from sphinx_polyversion.pyvenv import Pip, VirtualPythonEnvironment
 from sphinx_polyversion.sphinx import SphinxBuilder
-
-import pairinteraction
 
 if TYPE_CHECKING:
     import json
@@ -42,35 +41,44 @@ shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
 
 
 # Define all branches and tags to build documentation for (using regex expressions)
-LATEST_BRANCH = "master"
 LEGACY_VERSION = "v0.9.10"
 
+# for each minor version keep the latest patch version
+_git_tags = Git("", tag_regex="v2.*")
+_, _all_tags = refs_by_type(asyncio.run(_git_tags.retrieve(ROOT_DIR)))
+WANTED_TAGS: list[str] = []
+for t in sorted([t.name for t in _all_tags], reverse=True):
+    if any(w.startswith(f"v2.{t.split('.')[1]}") for w in WANTED_TAGS):
+        continue
+    WANTED_TAGS.append(t)
+WANTED_TAGS = sorted(WANTED_TAGS)
 
-# Define factory method for data passed to sphinx, important for the version selector (see _templates/versions.html)
+GIT_OBJ = Git(branch_regex="master", tag_regex="|".join([*WANTED_TAGS, LEGACY_VERSION]), buffer_size=1 * 10**9)
+ALL_TARGETS: list[GitRef] = asyncio.run(GIT_OBJ.retrieve(ROOT_DIR))
+LATEST = max(t for t in WANTED_TAGS)
+
+
+# Define factory method for data passed to sphinx,
+# important for the version selector (see _templates/versions.html) and the builder (see below)
 def data_factory(_driver: DefaultDriver, rev: GitRef, _env: Environment) -> dict[str, Any]:
-    version_names = {
-        LATEST_BRANCH: f"latest (v{pairinteraction.__version__})",
-        LEGACY_VERSION: f"legacy ({LEGACY_VERSION})",
+    version_names = {  # naming convention: "<tag/branch> (<note>)"
+        "master": "master (dev)",
+        LATEST: f"{LATEST} (stable)",
+        **{tag: tag for tag in WANTED_TAGS[::-1] if tag != LATEST},
+        LEGACY_VERSION: f"{LEGACY_VERSION} (legacy)",
     }
-    base_url = "../"
-    version_tuples = [
-        [version_names[LATEST_BRANCH], base_url + "index.html"],
-        [version_names[LEGACY_VERSION], base_url + f"{LEGACY_VERSION}/index.html"],
-    ]
-
+    version_tuples = [(name, f"../{key}/index.html") for key, name in version_names.items()]
     current_version = version_names.get(rev.name, rev.name)
     return {
+        "current_rev": rev.name,
         "current_version": current_version,
         "version_tuples": version_tuples,
     }
 
 
 # Define factory method for data passed to templates, important for the main index.html (see docs/templates/index.html)
-def root_data_factory(driver: DefaultDriver) -> dict[str, list[GitRef] | GitRef | None]:
-    revisions: list[GitRef] = driver.builds
-    branches, _tags = refs_by_type(revisions)
-    latest = next((b for b in branches if b.name == LATEST_BRANCH), None)
-    return {"revisions": revisions, "latest": latest}
+def root_data_factory(_driver: DefaultDriver) -> dict[str, str]:
+    return {"latest": LATEST}
 
 
 # Define a custom documentation Builder
@@ -83,6 +91,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         encoder: json.JSONEncoder | None = None,
         pre_cmds: list[tuple[str, ...]] | None = None,
         post_cmds: list[tuple[str, ...]] | None = None,
+        apply_patch_if_exists: bool = False,
     ) -> None:
         super().__init__()
         self.cmds = cmds
@@ -91,19 +100,27 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         self.encoder = encoder or GLOBAL_ENCODER
         self.pre_cmds = pre_cmds
         self.post_cmds = post_cmds
+        self.apply_patch_if_exists = apply_patch_if_exists
 
-    async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:
-        self.logger.info("Building...")
+    async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:  # noqa: C901
+        self.logger.info("Building documentation for revision %s", data["current_rev"])
 
         source_dir = str(environment.path.absolute() / self.source)
 
         def replace(v: str) -> str:
             if "Placeholder" in v:
-                v = v.replace("Placeholder.OUTPUT_DIR", str(output_dir))
+                v = v.replace("Placeholder.ROOT_DIR", str(environment.path.absolute()))
                 v = v.replace("Placeholder.SOURCE_DIR", str(source_dir))
+                v = v.replace("Placeholder.OUTPUT_DIR", str(output_dir))
             return v
 
+        patch_cmds: list[tuple[str, ...]] = []
+        patch_file = DOCS_DIR / "patches" / f"{data['current_rev']}.patch"
+        if self.apply_patch_if_exists and patch_file.exists():
+            patch_cmds = [("git", "-C", "Placeholder.ROOT_DIR", "apply", str(patch_file))]
+
         commands = {
+            "patch_cmds": patch_cmds,
             "pre_cmds": self.pre_cmds,
             "cmds": self.cmds,
             "post_cmds": self.post_cmds,
@@ -121,7 +138,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         # create output directory
         output_dir.mkdir(exist_ok=True, parents=True)
 
-        for key in ["pre_cmds", "cmds", "post_cmds"]:
+        for key in ["patch_cmds", "pre_cmds", "cmds", "post_cmds"]:
             cmds = commands[key]
             if cmds is None:
                 continue
@@ -139,29 +156,50 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
 BUILDER_MAPPING = {
     LEGACY_VERSION: CustomCommandBuilder(
         Path("doc/sphinx/"),
-        pre_cmds=[("git", "-C", "Placeholder.SOURCE_DIR/../..", "apply", f"{DOCS_DIR}/patches/{LEGACY_VERSION}.patch")],
-        cmds=[
-            ("sphinx-build", "--color", "-a", "-v", "--keep-going", "Placeholder.SOURCE_DIR", "Placeholder.OUTPUT_DIR")
-        ],
+        cmds=[("sphinx-build", "--color", "-av", "--keep-going", "Placeholder.SOURCE_DIR", "Placeholder.OUTPUT_DIR")],
+        apply_patch_if_exists=True,
     ),
-    "v2.0.0": SphinxBuilder(Path("docs/"), args=["-a", "-v", "-W", "--keep-going"]),
+    # apparently we need a separate builder instance for each tag, otherwise sphinx-polyversion will fail
+    **{
+        tag: CustomCommandBuilder(
+            Path("docs/"),
+            cmds=[
+                ("sphinx-build", "--color", "-avW", "--keep-going", "Placeholder.SOURCE_DIR", "Placeholder.OUTPUT_DIR")
+            ],
+            apply_patch_if_exists=True,
+        )
+        for tag in WANTED_TAGS
+    },
+    "master": SphinxBuilder(Path("docs/"), args=["-a", "-v", "-W", "--keep-going"]),
 }
 
 ENVIRONMENT_MAPPING = {
-    LEGACY_VERSION: VirtualPythonEnvironment.factory(venv=ROOT_DIR / "venv_pairinteraction_v0.9.10"),
-    "v2.0.0": VirtualPythonEnvironment.factory(venv=ROOT_DIR / ".venv"),
+    LEGACY_VERSION: Pip.factory(
+        venv=ROOT_DIR / "tmp_venv",
+        args=[
+            f"pairinteraction=={LEGACY_VERSION[1:]}",
+            "sphinx",
+            "nbsphinx",
+            "sphinxcontrib-mermaid<1",
+            "sphinx_rtd_theme",
+            "sphinx_polyversion",
+        ],
+    ),
+    **{
+        tag: Pip.factory(
+            venv=ROOT_DIR / "tmp_venv",
+            args=[f"pairinteraction[docs]=={tag[1:]}"],
+        )
+        for tag in WANTED_TAGS
+    },
+    "master": VirtualPythonEnvironment.factory(venv=ROOT_DIR / ".venv"),
 }
 
-
 # Create the actual driver instance and run it to build all wanted documentations
-DefaultDriver(
+driver = DefaultDriver(
     ROOT_DIR,
     output_dir=OUTPUT_DIR,
-    vcs=Git(
-        branch_regex=LATEST_BRANCH,
-        tag_regex=LEGACY_VERSION,
-        buffer_size=1 * 10**9,  # 1 GB
-    ),
+    vcs=GIT_OBJ,
     builder=BUILDER_MAPPING,
     env=ENVIRONMENT_MAPPING,
     selector=partial(closest_tag, ROOT_DIR),
@@ -169,4 +207,5 @@ DefaultDriver(
     static_dir=DOCS_DIR / "static",
     root_data_factory=root_data_factory,
     data_factory=data_factory,
-).run(sequential=True)
+)
+driver.run(sequential=True)
