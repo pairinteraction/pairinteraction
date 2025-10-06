@@ -1,6 +1,7 @@
 {
     "name": "pairinteraction",
     "version-string": "1",
+    "builtin-baseline": "f415cba6374936225962ef0fcd262ba09fdb84ce",
     "dependencies": [
         "cpptrace",
         "eigen3",

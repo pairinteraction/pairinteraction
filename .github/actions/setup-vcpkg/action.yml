@@ -1,34 +1,21 @@
-name: 'setup-vcpkg'
-inputs:
-  args:
-    description: 'Extra arguments for vcpkg install'
-    required: false
+name: setup-vcpkg
 
 runs:
   using: "composite"
   steps:
-    # https://learn.microsoft.com/en-us/vcpkg/users/binarycaching#gha
-    - name: Set up environment variables
-      uses: actions/github-script@v7
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
       with:
-        script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
-          const { join } = require('path');
-          const {
-            GITHUB_WORKSPACE,
-            VCPKG_BINARY_SOURCES = 'clear;x-gha,readwrite',
-            VCPKG_DEFAULT_TRIPLET = '${{ runner.arch }}-${{ runner.os }}'.toLowerCase(),
-            VCPKG_INSTALLATION_ROOT,
-          } = process.env;
-          core.exportVariable('VCPKG_BINARY_SOURCES', VCPKG_BINARY_SOURCES);
-          core.exportVariable('VCPKG_DEFAULT_TRIPLET', VCPKG_DEFAULT_TRIPLET);
-          core.exportVariable(
-            'CMAKE_TOOLCHAIN_FILE',
-            join(VCPKG_INSTALLATION_ROOT, 'scripts', 'buildsystems', 'vcpkg.cmake'),
-          );
-          core.addPath(join(GITHUB_WORKSPACE, 'vcpkg_installed', VCPKG_DEFAULT_TRIPLET, 'bin'));
+        runVcpkgInstall: false
 
-    - name: Run vcpkg install
+    - name: Export CMAKE_TOOLCHAIN_FILE
       shell: pwsh
-      run: vcpkg install ${{ inputs.args }}
+      run: echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
+
+    - name: Specify where DLLs will be installed
+      shell: pwsh
+      run: echo "VCPKG_INSTALLED_DIR=$env:GITHUB_WORKSPACE\vcpkg_installed" >> $env:GITHUB_ENV
+
+    - name: Make the installed DLLs visible
+      shell: pwsh
+      run: echo "PATH=$env:VCPKG_INSTALLED_DIR\x64-windows\bin;$env:PATH" >> $env:GITHUB_ENV

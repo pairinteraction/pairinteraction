@@ -76,6 +76,7 @@ jobs:
     - uses: pypa/cibuildwheel@v3.2
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
+        CIBW_ENVIRONMENT_WINDOWS: CMAKE_ARGS='-DVCPKG_INSTALLED_DIR="${{ env.VCPKG_INSTALLED_DIR }}"'
         MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-13' && '13.0' || '14.0' }}
 
     - name: Upload wheels
@@ -121,7 +122,7 @@ jobs:
 
     - name: Install the sdist  # Note, the tests dependencies are already automatically installed in setup-uv-all-deps
       shell: bash
-      run: uv pip install dist/*.tar.gz
+      run: uv pip install dist/*.tar.gz -C "cmake.define.VCPKG_INSTALLED_DIR=$VCPKG_INSTALLED_DIR"
 
     - name: Run python tests with shipped database
       if: runner.os != 'Linux'

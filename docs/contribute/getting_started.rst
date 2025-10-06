@@ -78,7 +78,7 @@ necessary steps:
   If you are using OS X, take a look at the ``brew install`` instructions in :github:`our GitHub workflow
   <tree/master/.github/workflows/cpp-backend.yml>`.
 
-  If you are using Windows, you can use ``vcpkg`` to install the dependencies. To set up vcpkg execute the following
+  If you are using Windows, you can use ``vcpkg`` to manage the dependencies. To set up vcpkg execute the following
   commands in the PowerShell:
 
   .. code-block:: bash
@@ -89,15 +89,11 @@ necessary steps:
       $env:PATH = "$env:VCPKG_ROOT;$env:PATH"
       $env:CMAKE_TOOLCHAIN_FILE = "$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake"
 
-  Then, to install the dependencies of the C++ backend from :github:`our configuration file <tree/master/vcpkg.json>`,
-  run the following command in the root directory of the PairInteraction repository:
+  Then, the C++ dependencies from :github:`our vcpkg configuration file <tree/master/vcpkg.json>` get installed
+  automatically when we build PairInteraction.
 
-  .. code-block:: bash
-
-      vcpkg install --triplet x64-windows
-
-- After installing the dependencies and activating a Python environment, you have two options to build the software. You
-  can either build the complete software using ``pip``:
+- After taking care of the dependencies, you have two options to build the software. You can either build the complete
+  software using ``pip``:
 
   .. code-block:: bash
 
