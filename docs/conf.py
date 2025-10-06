@@ -27,7 +27,7 @@ if os.getenv("POLYVERSION_DATA"):
     # This adds html_context = {"revisions": [GitRef('main', ...), GitRef('v6.8.9', ...), ...], "current": ...}
     html_context: dict[str, Any] = load()
 else:
-    html_context = {"current_version": pairinteraction.__version__}
+    html_context = {"current_version": f"dev (>= {pairinteraction.__version__})"}
 
 # -- General configuration ---------------------------------------------------
 extensions = [
