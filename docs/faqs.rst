@@ -11,7 +11,7 @@ database. To see documentation of all available commands, run the following comm
 
     pairinteraction --help
 
-This requires that the CLI can be found by the terminal, otherwise use ``python -m pairinteraction --help``.
+This requires that the CLI is found by the terminal, otherwise use ``python -m pairinteraction --help``.
 
 How to speed up calculations?
 -----------------------------
