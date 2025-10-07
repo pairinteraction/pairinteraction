@@ -31,8 +31,8 @@ lifetimes to calculations of pair potentials.
     examples_python/stark_map
     examples_python/pair_potentials
     examples_python/lifetimes
-    examples_python/perturbative_c3_c6
-    examples_python/state_object
+    examples_python/c3_c6_coefficients
+    examples_python/state_atom_object
 
 **Examples From Publications**
 
@@ -40,7 +40,7 @@ We show how PairInteraction's Python API can be applied to solve complex problem
 
 .. nbgallery::
 
-    examples_python/perturbative_eff_h
+    examples_python/effective_hamiltonian
     examples_python/pair_potential_efield_sensitivity
     examples_python/atom_ion_interaction
     examples_python/mqdt
