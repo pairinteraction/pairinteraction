@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections.abc import Collection, Sequence
-from typing import TYPE_CHECKING, Any, Self, Union, overload
+from typing import TYPE_CHECKING, Any, Union, overload
 
 import numpy as np
-from typing_extensions import TypeGuard
+from typing_extensions import Self, TypeGuard
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom
