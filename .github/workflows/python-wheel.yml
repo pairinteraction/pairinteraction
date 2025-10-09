@@ -113,6 +113,8 @@ jobs:
 
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
+      with:
+        python-version: 3.9
 
     - name: Download the sdist
       uses: actions/download-artifact@v5

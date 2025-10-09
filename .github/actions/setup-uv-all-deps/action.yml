@@ -1,5 +1,10 @@
 name: 'setup-uv-all-deps'
 
+inputs:
+  python-version:
+    description: "The Python version to use"
+    required: false  # if not provided, uv will default to the newest stable python version
+
 runs:
   using: "composite"
   steps:
@@ -7,7 +12,7 @@ runs:
       uses: astral-sh/setup-uv@v6
       with:
         version: "0.7"
-        python-version: 3.12
+        python-version: ${{ inputs.python-version }}
         enable-cache: true
         cache-dependency-glob: |
           ./pyproject.toml
