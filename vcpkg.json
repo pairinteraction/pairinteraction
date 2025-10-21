@@ -1,13 +1,18 @@
 {
     "name": "pairinteraction",
     "version-string": "1",
-    "builtin-baseline": "f415cba6374936225962ef0fcd262ba09fdb84ce",
+    "builtin-baseline": "079cbe8f5958b687f14650db09423f17bc3c214c",
     "dependencies": [
         "cpptrace",
         "eigen3",
         "fmt",
         "openssl",
         "nlohmann-json",
-        "spdlog"
+        "spdlog",
+        {
+            "name": "duckdb",
+            "default-features": false,
+            "features": ["icu"]
+        }
     ]
 }

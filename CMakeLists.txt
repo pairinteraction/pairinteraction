@@ -34,6 +34,8 @@ For more details and advanced options, please refer to installation \
 instructions in the documentation.")
 endif()
 
+include(FetchContent)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Default build type is "Release with debug info"
@@ -117,40 +119,34 @@ list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
 # Find duckdb  # keep the version used here in sync with pyproject.toml
-include(FetchContent)
-if(WIN32)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-windows-amd64.zip)
-  set(DUCKDB_LIBNAME duckdb.dll)
-  set(DUCKDB_MD5 422a6317ad652f995930828d457a715a)
-elseif(APPLE)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-osx-universal.zip)
-  set(DUCKDB_LIBNAME libduckdb.dylib)
-  set(DUCKDB_MD5 1430f9f3427a245f2d6d89ccd1a5196c)
-elseif(UNIX)
-  # Note that the latest binary release of DuckDB does not use the CXX11 ABI because it still uses gcc4 (see also
-  # https://stackoverflow.com/questions/77938452/duckdb-c-linking-error-undefined-reference and
-  # https://github.com/duckdb/duckdb/blob/51529635f58039f0caadce9bd3304ed53c6b0b5d/.github/workflows/LinuxRelease.yml).
-  # This is why we use v0.8.1 here. We recommend to manually compile a more recent version of DuckDB and use it by
-  # calling CMake with -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-linux-amd64.zip)
-  set(DUCKDB_LIBNAME libduckdb.so)
-  set(DUCKDB_MD5 249fad0221153fb99af58d4a150d5fb0)
-endif()
-FetchContent_Declare(
-  duckdb
-  URL ${DUCKDB_URL} CONFIGURE_COMMAND "" BUILD_COMMAND ""
-  URL_HASH MD5=${DUCKDB_MD5})
-FetchContent_GetProperties(duckdb)
-if(NOT duckdb_POPULATED)
-  FetchContent_Populate(duckdb)
-endif()
-add_library(duckdb SHARED IMPORTED)
-target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
-set_target_properties(
-  duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
-                    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
-if(WIN32)
-  set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
+find_package(DuckDB QUIET)
+if(NOT DuckDB_FOUND AND (APPLE OR UNIX))
+  if(APPLE)
+    set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.4.1/libduckdb-osx-universal.zip)
+    set(DUCKDB_LIBNAME libduckdb.dylib)
+    set(DUCKDB_SHA256 a82bde325dcbb6d1011e1014673eb288e8c1fd5f5b755d47fd245e8b37194817)
+  elseif(UNIX)
+    # You can manually compile DuckDB and use it by calling CMake with
+    # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
+    set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.4.1/libduckdb-linux-amd64.zip)
+    set(DUCKDB_LIBNAME libduckdb.so)
+    set(DUCKDB_SHA256 ce859962fe96ca952d53571964dafa0168644283a76a2c669b3f73120d710edb)
+  endif()
+  FetchContent_Declare(
+    duckdb
+    URL ${DUCKDB_URL} CONFIGURE_COMMAND "" BUILD_COMMAND ""
+    URL_HASH SHA256=${DUCKDB_SHA256})
+  FetchContent_GetProperties(duckdb)
+  if(NOT duckdb_POPULATED)
+    FetchContent_Populate(duckdb)
+  endif()
+  add_library(duckdb SHARED IMPORTED)
+  target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
+  set_target_properties(
+    duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
+                      INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
+elseif(NOT DuckDB_FOUND)
+    message(FATAL_ERROR "DuckDB not found and automatic fallback is only supported on macOS/Linux.")
 endif()
 
 # Doctest

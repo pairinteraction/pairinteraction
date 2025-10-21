@@ -3,6 +3,14 @@ name: setup-vcpkg
 runs:
   using: "composite"
   steps:
+    - name: Specify where DLLs will be installed
+      shell: pwsh
+      run: echo "VCPKG_INSTALLED_DIR=$env:GITHUB_WORKSPACE\vcpkg_installed" >> $env:GITHUB_ENV
+
+    - name: Specify the directory of our overlay triplet that tells vcpkg to build only the release versions
+      shell: pwsh
+      run: echo "VCPKG_OVERLAY_TRIPLETS=$env:GITHUB_WORKSPACE\cmake\triplets" >> $env:GITHUB_ENV
+
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
@@ -11,10 +19,6 @@ runs:
     - name: Export CMAKE_TOOLCHAIN_FILE
       shell: pwsh
       run: echo "CMAKE_TOOLCHAIN_FILE=$env:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake" >> $env:GITHUB_ENV
-
-    - name: Specify where DLLs will be installed
-      shell: pwsh
-      run: echo "VCPKG_INSTALLED_DIR=$env:GITHUB_WORKSPACE\vcpkg_installed" >> $env:GITHUB_ENV
 
     - name: Make the installed DLLs visible
       shell: pwsh
