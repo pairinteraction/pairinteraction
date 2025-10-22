@@ -96,7 +96,7 @@ def test_main_window_basic(qtbot: QtBot, window_starkmap: MainWindow) -> None:
     basis_qn.items["m"].setValue(0)
 
     one_atom_page.calculate_and_abort.getNamedWidget("Calculate").click()
-    qtbot.waitUntil(lambda: one_atom_page._calculation_finished, timeout=30_000)  # ci macOS-13 is very slow
+    qtbot.waitUntil(lambda: one_atom_page._calculation_finished, timeout=30_000)  # ci macOS-15-intel is very slow
     qtbot.waitUntil(lambda: one_atom_page._plot_finished, timeout=5_000)
     window_starkmap.close()
 
