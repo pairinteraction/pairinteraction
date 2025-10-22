@@ -41,7 +41,7 @@ jobs:
         include:
         - os: ubuntu-latest # runs in container anyway
         - os: windows-2022
-        - os: macos-13
+        - os: macos-15-intel
         - os: macos-14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -77,7 +77,7 @@ jobs:
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
         CIBW_ENVIRONMENT_WINDOWS: CMAKE_ARGS='-DVCPKG_INSTALLED_DIR="${{ env.VCPKG_INSTALLED_DIR }}"'
-        MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-13' && '13.0' || '14.0' }}
+        MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-15-intel' && '15.0' || '14.0' }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4
@@ -91,7 +91,7 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest  # runs in container anyway
-        - os: macos-13
+        - os: macos-15-intel
         - os: macos-14
         - os: windows-2022
     name: Test installing sdist on ${{ matrix.os }} ${{ matrix.os == 'ubuntu-latest' && '(with database download and notebooks)' || '' }}
