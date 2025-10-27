@@ -29,7 +29,7 @@ jobs:
     - name: Check metadata
       run: pipx run twine check dist/*
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v5
       with:
         name: dist-sdist
         path: dist/*.tar.gz
@@ -80,7 +80,7 @@ jobs:
         MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-15-intel' && '15.0' || '14.0' }}
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl
@@ -117,7 +117,7 @@ jobs:
         python-version: 3.9
 
     - name: Download the sdist
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: dist-sdist
         path: dist
@@ -153,7 +153,7 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         path: dist
         pattern: dist-*
