@@ -55,7 +55,7 @@ jobs:
     - name: Build documentation
       run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: pairinteraction-docs
         path: docs/_build_polyversion/
@@ -86,7 +86,7 @@ jobs:
         uv run --no-project lcov_cobertura coverage.info -o coverage.xml
         uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "C++ coverage"
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: pairinteraction-coverage-cpp-pytest
         path: build/docs/coverage
@@ -117,7 +117,7 @@ jobs:
         uv run --no-project coverage xml -o coverage.xml
         uv run --no-project genbadge coverage -i coverage.xml -o docs/coverage/badge.svg -n "Python coverage"
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: pairinteraction-coverage-python-pytest
         path: docs/coverage
@@ -130,19 +130,19 @@ jobs:
     - uses: actions/checkout@v5
 
     - name: Download artifacts docs
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: pairinteraction-docs
         path: public/
 
     - name: Download artifacts coverage-cpp-pytest
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: pairinteraction-coverage-cpp-pytest
         path: public/coverage/cpp-pytest
 
     - name: Download artifacts coverage-python-pytest
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: pairinteraction-coverage-python-pytest
         path: public/coverage/python-pytest

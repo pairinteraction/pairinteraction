@@ -18,7 +18,7 @@ jobs:
       - uses: pre-commit/action@v3.0.1
       - run: git diff --output=format.patch --exit-code || { cat format.patch; false; }
         if: failure()
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: format.patch
