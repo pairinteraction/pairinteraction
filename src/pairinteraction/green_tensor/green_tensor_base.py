@@ -1,0 +1,166 @@
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+from __future__ import annotations
+
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Callable, overload
+
+from pairinteraction.system.green_tensor_interpolator import GreenTensorInterpolator
+from pairinteraction.units import QuantityArray, QuantityScalar
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from pairinteraction.units import (
+        ArrayLike,
+        Dimension,
+        NDArray,
+        PintArray,  # needed for sphinx to recognize PintArrayLike
+        PintArrayLike,
+        PintFloat,
+    )
+
+
+class GreenTensorBase(ABC):
+    pos1_au: list[float] | None
+    pos2_au: list[float] | None
+    omega_min_au: float | None
+    omega_max_au: float | None
+    epsilon: float | Callable[[PintFloat], float]
+
+    def __init__(self) -> None:
+        self.pos1_au = None
+        self.pos2_au = None
+        self.omega_min_au = None
+        self.omega_max_au = None
+        self.epsilon = 1.0
+
+    def set_atom_positions(
+        self, pos1: ArrayLike | PintArrayLike, pos2: ArrayLike | PintArrayLike, unit: str | None = None
+    ) -> Self:
+        """Set the positions of the two interacting atoms.
+
+        Args:
+            pos1: Position of the first atom in the given unit.
+            pos2: Position of the second atom in the given unit.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
+
+        """
+        self.pos1_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1]
+        self.pos2_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2]
+
+        if self.pos1_au[1] != self.pos2_au[1] or self.pos1_au[2] != self.pos2_au[2]:
+            raise NotImplementedError("Green tensors are currently only implemented for atoms in the same y-z plane")
+
+        return self
+
+    def set_electric_permitivity(self, epsilon: float | Callable[[PintFloat], float]) -> Self:
+        """Set the electric permittivity for the space between the two atoms.
+
+        By default, the electric permittivity is set to 1 (vacuum).
+
+        Args:
+            epsilon: The electric permittivity (dimensionless).
+
+        """
+        self.epsilon = epsilon
+        return self
+
+    @overload
+    def get(
+        self,
+        kappa1: int,
+        kappa2: int,
+        omega: float = 0,
+        omega_unit: str | None = None,
+        unit: None = None,
+    ) -> PintArray: ...
+
+    @overload
+    def get(
+        self, kappa1: int, kappa2: int, omega: float = 0, omega_unit: str | None = None, *, unit: str
+    ) -> NDArray: ...
+
+    def get(
+        self,
+        kappa1: int,
+        kappa2: int,
+        omega: float = 0,
+        omega_unit: str | None = None,
+        unit: str | None = None,
+    ) -> PintArray | NDArray:
+        """Calculate the Green tensor in cartesian coordinates for the given indices kappa1 and kappa2.
+
+        kappa == 1 corresponds to dipole operator (-> the basis is [x, y, z]),
+
+        Args:
+            kappa1: The rank of the first multipole operator.
+            kappa2: The rank of the second multipole operator.
+            omega: The frequency at which to evaluate the Green tensor.
+                Only needed if the Green tensor is frequency dependent.
+            omega_unit: The unit of the frequency.
+                Default None, which means that the frequency must be given as pint object.
+            unit: The unit to which to convert the result.
+                Default None, which means that the result is returned as pint object.
+
+        Returns:
+            The Green tensor as a 2D array.
+
+        """
+        if kappa1 == 1 and kappa2 == 1:
+            return self.get_dipole_dipole(omega, omega_unit, unit=unit)
+        raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
+
+    @overload
+    def get_dipole_dipole(self, omega: float = 0, omega_unit: str | None = None, unit: None = None) -> PintArray: ...
+
+    @overload
+    def get_dipole_dipole(self, omega: float = 0, omega_unit: str | None = None, *, unit: str) -> NDArray: ...
+
+    def get_dipole_dipole(
+        self, omega: float = 0, omega_unit: str | None = None, unit: str | None = None
+    ) -> PintArray | NDArray:
+        """Calculate the dipole dipole Green tensor in cartesian coordinates.
+
+        This is a 3x3 matrix in the basis [x1, y1, z1] x [x2, y2, z2].
+
+        Args:
+            omega: The frequency at which to evaluate the Green tensor.
+                Only needed if the Green tensor is frequency dependent.
+            omega_unit: The unit of the frequency.
+                Default None, which means that the frequency must be given as pint object.
+            unit: The unit to which to convert the result.
+                Default None, which means that the result is returned as pint object.
+
+        Returns:
+            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array.
+
+        """
+        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+        gt_au = self._get_dipole_dipole_au(omega_au)
+
+        dimension: list[Dimension] = ["green_tensor_00"] + 3 * ["inverse_distance"]  # type: ignore [assignment]
+        return QuantityArray.convert_au_to_user(gt_au, dimension, unit)
+
+    @abstractmethod
+    def _get_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
+
+    def get_green_tensor_interpolator(
+        self, omegas: list[float], omega_unit: str | None = None
+    ) -> GreenTensorInterpolator:
+        """Get a GreenTensorInterpolator from this Green tensor.
+
+        The GreenTensorInterpolator can be used for the interaction of a SystemPair.
+
+        Returns:
+            A GreenTensorInterpolator that interpolates this Green tensor at given frequency points.
+
+        """
+        gt_list: list[PintArray] = [self.get_dipole_dipole(omega, omega_unit) for omega in omegas]
+
+        gti = GreenTensorInterpolator()
+        gti.set_from_cartesian(1, 1, gt_list, omegas=omegas, omegas_unit=omega_unit)  # type: ignore [arg-type]  # TODO GreenTensorInterpolator wrong type hints
+
+        return gti

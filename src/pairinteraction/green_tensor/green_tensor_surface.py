@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2024 PairInteraction Developers
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Callable
+
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
+from pairinteraction.units import QuantityScalar
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from pairinteraction.units import NDArray, PintFloat
+
+
+class GreenTensorSurface(GreenTensorBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self.surface_z_au = 0.0
+
+    def set_surface_position(self, z: float, unit: str | None = None) -> Self:
+        """Set the position of the surface along the z-axis.
+
+        The surface is assumed to be infinite in the x-y plane.
+        By default (i.e. if this method was not called), the surface is located at z=0.
+
+        Args:
+            z: The z-position of the surface in the given unit.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
+
+        """
+        self.surface_z_au = QuantityScalar.convert_user_to_au(z, unit, "distance")
+        return self
+
+    def set_electric_permitivity_surface(self, epsilon: float | Callable[[PintFloat], float]) -> Self:
+        """Set the electric permittivity for the surface.
+
+        Args:
+            epsilon: The electric permittivity (dimensionless).
+
+        """
+        self.surface_epsilon = epsilon
+        return self
+
+    def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
+        """Calculate the dipole dipole Green tensor in cartesian coordinates for a single surface in atomic units.
+
+        Args:
+            omega_au: The frequency in atomic units at which to evaluate the Green tensor.
+
+        Returns:
+            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units.
+
+        """
+        raise NotImplementedError("GreenTensorSurface is not yet implemented yet.")
+
+        # TODO
