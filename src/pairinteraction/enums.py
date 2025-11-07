@@ -19,6 +19,7 @@ OperatorType = Literal[
     "electric_quadrupole_zero",
     "electric_octupole",
     "magnetic_dipole",
+    "identity",
     "arbitrary",
 ]
 _OperatorTypeDict: dict[OperatorType, _backend.OperatorType] = {
@@ -29,6 +30,7 @@ _OperatorTypeDict: dict[OperatorType, _backend.OperatorType] = {
     "electric_quadrupole_zero": _backend.OperatorType.ELECTRIC_QUADRUPOLE_ZERO,
     "electric_octupole": _backend.OperatorType.ELECTRIC_OCTUPOLE,
     "magnetic_dipole": _backend.OperatorType.MAGNETIC_DIPOLE,
+    "identity": _backend.OperatorType.IDENTITY,
     "arbitrary": _backend.OperatorType.ARBITRARY,
 }
 
