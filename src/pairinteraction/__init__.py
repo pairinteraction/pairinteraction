@@ -209,7 +209,7 @@ from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import KetAtom, KetPair
 from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
 from pairinteraction.state import StateAtom, StatePair
-from pairinteraction.system import GreenTensor, SystemAtom, SystemPair
+from pairinteraction.system import GreenTensorInterpolator, SystemAtom, SystemPair
 from pairinteraction.units import ureg
 
 __all__ = [
@@ -219,7 +219,7 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
+    "GreenTensorInterpolator",
     "KetAtom",
     "KetPair",
     "StateAtom",

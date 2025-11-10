@@ -45,7 +45,7 @@ documented below:
        StatePair
        BasisPair
        SystemPair
-       GreenTensor
+       GreenTensorInterpolator
 
 **Convenience Functions**
 
