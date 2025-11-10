@@ -19,7 +19,7 @@ if TYPE_CHECKING:
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
         KetAtomTuple,
     )
-    from pairinteraction.system.green_tensor import GreenTensor
+    from pairinteraction.system.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
@@ -156,14 +156,14 @@ class SystemPair(SystemBase[BasisPair]):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor(self, green_tensor: GreenTensor) -> Self:
-        """Set the Green tensor for the pair system.
+    def set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
+        """Set the Green tensor interpolator for the pair system.
 
         Args:
-            green_tensor: The Green tensor to set for the system.
+            green_tensor_interpolator: The Green tensor interpolator to set for the system.
 
         """
-        self._cpp.set_green_tensor(green_tensor._cpp)
+        self._cpp.set_green_tensor(green_tensor_interpolator._cpp)
         return self
 
     @overload
