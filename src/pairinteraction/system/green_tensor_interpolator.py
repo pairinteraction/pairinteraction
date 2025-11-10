@@ -19,20 +19,21 @@ if TYPE_CHECKING:
     Quantity = TypeVar("Quantity", float, "PintFloat")
 
 
-class GreenTensor:
-    """Green tensor for the multipole pair interactions.
+class GreenTensorInterpolator:
+    """Green tensor interpolator for the multipole pair interactions.
 
-    This class allows to define custom constant or frequency-dependent Green tensors,
-    which can then be used for the interaction of a :class:`SystemPair` (see :meth:`SystemPair.set_green_tensor`).
+    This class allows to define constant or frequency-dependent Green tensor interpolators,
+    which can then be used for the interaction of a :class:`SystemPair`
+    (see :meth:`SystemPair.set_green_tensor_interpolator`).
 
     Examples:
         >>> import pairinteraction as pi
-        >>> gt = pi.GreenTensor()
+        >>> gt = pi.GreenTensorInterpolator()
         >>> distance_mum = 5
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
         >>> tensor_unit = "hartree / (e^2 micrometer^3)"
         >>> gt.set_from_cartesian(1, 1, tensor, tensor_unit)
-        GreenTensor(...)
+        GreenTensorInterpolator(...)
         >>> print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())
         [ 0.008 -0.016  0.008]
 
@@ -42,7 +43,7 @@ class GreenTensor:
     _cpp_type = _backend.GreenTensorComplex
 
     def __init__(self) -> None:
-        """Initialize a new Green tensor object.
+        """Initialize a new Green tensor interpolator object.
 
         The actual tensor can be set afterwards via the :meth:`set_from_cartesian` method.
         """
@@ -88,7 +89,7 @@ class GreenTensor:
         omegas: Sequence[float] | None = None,
         omegas_unit: str | None = None,
     ) -> Self:
-        """Set the entries of the Green tensor.
+        """Set the entries of the Green tensor for specified omegas.
 
         Args:
             kappa1: The rank of the first multipole operator.
@@ -146,7 +147,7 @@ class GreenTensor:
         omega_unit: str | None = None,
         unit: str | None = None,
     ) -> PintArray | NDArray:
-        """Get the Green tensor in spherical coordinates for the given indices kappa1 and kappa2.
+        """Get the Green tensor in spherical coordinates for the given indices kappa1, kappa2 and frequency omega.
 
         For kappa == 1 the spherical basis is [p_{1,-1}, p_{1,0}, p_{1,1}].
         For kappa == 2 the spherical basis is [p_{2,-2}, p_{2,-1}, p_{2,0}, p_{2,1}, p_{2,2}, p_{0,0}].
@@ -187,6 +188,6 @@ class GreenTensor:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2 + 1)]]  # type: ignore [list-item]
 
 
-class GreenTensorReal(GreenTensor):
+class GreenTensorInterpolatorReal(GreenTensorInterpolator):
     _cpp: _backend.GreenTensorReal  # type: ignore [assignment]
     _cpp_type = _backend.GreenTensorReal  # type: ignore [assignment]
