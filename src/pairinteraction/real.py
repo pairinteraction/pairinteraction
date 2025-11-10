@@ -21,7 +21,7 @@ from pairinteraction.state import (
     StatePairReal as StatePair,
 )
 from pairinteraction.system import (
-    GreenTensorReal as GreenTensor,
+    GreenTensorInterpolatorReal as GreenTensorInterpolator,
     SystemAtomReal as SystemAtom,
     SystemPairReal as SystemPair,
 )
@@ -33,7 +33,7 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
+    "GreenTensorInterpolator",
     "KetAtom",
     "KetPair",
     "StateAtom",
