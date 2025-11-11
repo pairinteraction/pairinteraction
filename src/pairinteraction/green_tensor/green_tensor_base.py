@@ -66,15 +66,6 @@ class GreenTensorBase(ABC):
         self.epsilon = epsilon
         return self
 
-    def is_constant(self) -> bool:
-        """Check if the Green tensor is constant (i.e. frequency independent).
-
-        Returns:
-            True if the Green tensor is constant, False otherwise.
-
-        """
-        return np.isscalar(self.epsilon)
-
     @overload
     def get(
         self,

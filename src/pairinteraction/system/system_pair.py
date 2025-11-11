@@ -167,26 +167,24 @@ class SystemPair(SystemBase[BasisPair]):
         self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
         return self
 
-    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int | None = None) -> Self:
+    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
             omega_steps: The number of omega steps to use for non-constant Green tensors.
-                If None and the Green tensor is not constant, an error is raised.
+                If 1, a constant Green tensor (with omega=0) is assumed.
 
         """
-        if green_tensor.is_constant():
-            if omega_steps is not None:
-                raise ValueError("omega_steps should not be provided for constant Green tensors.")
+        if omega_steps <= 0:
+            raise ValueError("omega_steps must be a positive integer.")
+
+        if omega_steps == 1:
             gt_au = green_tensor.get_dipole_dipole(omega=0, unit="hartree")
             gti = GreenTensorInterpolator()
             gti.set_from_cartesian(1, 1, gt_au, tensor_unit="hartree")
             self.set_green_tensor_interpolator(gti)
             return self
-
-        if omega_steps is None:
-            raise ValueError("omega_steps must be provided for non-constant Green tensors.")
 
         # TODO optimize how to choose omegas, for now we just use linear spacing
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]

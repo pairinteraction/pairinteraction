@@ -47,15 +47,6 @@ class GreenTensorCavity(GreenTensorBase):
         self.surface2_epsilon = epsilon2
         return self
 
-    def is_constant(self) -> bool:
-        """Check if the Green tensor is constant (i.e. frequency independent).
-
-        Returns:
-            True if the Green tensor is constant, False otherwise.
-
-        """
-        return np.isscalar(self.surface1_epsilon) and np.isscalar(self.surface2_epsilon) and super().is_constant()
-
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a cavity in atomic units.
 
