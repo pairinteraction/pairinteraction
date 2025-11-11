@@ -6,7 +6,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, overload
 
-from pairinteraction.system.green_tensor_interpolator import GreenTensorInterpolator
+from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
