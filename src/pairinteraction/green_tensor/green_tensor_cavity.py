@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import numpy as np
+
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
 from pairinteraction.units import QuantityScalar
 
@@ -32,7 +34,7 @@ class GreenTensorCavity(GreenTensorBase):
         return self
 
     def set_electric_permitivity_surfaces(
-        self, epsilon1: float | Callable[[PintFloat], float], epsilon2: float | Callable[[PintFloat], float]
+        self, epsilon1: complex | Callable[[PintFloat], complex], epsilon2: complex | Callable[[PintFloat], complex]
     ) -> Self:
         """Set the electric permittivity for the surfaces.
 
