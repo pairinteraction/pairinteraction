@@ -39,8 +39,8 @@ class GreenTensorInterpolator:
 
     """
 
-    _cpp: _backend.GreenTensorComplex
-    _cpp_type = _backend.GreenTensorComplex
+    _cpp: _backend.GreenTensorInterpolatorComplex
+    _cpp_type = _backend.GreenTensorInterpolatorComplex
 
     def __init__(self) -> None:
         """Initialize a new Green tensor interpolator object.
@@ -189,5 +189,5 @@ class GreenTensorInterpolator:
 
 
 class GreenTensorInterpolatorReal(GreenTensorInterpolator):
-    _cpp: _backend.GreenTensorReal  # type: ignore [assignment]
-    _cpp_type = _backend.GreenTensorReal  # type: ignore [assignment]
+    _cpp: _backend.GreenTensorInterpolatorReal  # type: ignore [assignment]
+    _cpp_type = _backend.GreenTensorInterpolatorReal  # type: ignore [assignment]

@@ -6,7 +6,7 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
-#include "pairinteraction/system/GreenTensor.hpp"
+#include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
@@ -77,18 +77,18 @@ static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
         .def("set_interaction_order", &S::set_interaction_order)
         .def("set_distance_vector", &S::set_distance_vector)
-        .def("set_green_tensor", &S::set_green_tensor);
+        .def("set_green_tensor_interpolator", &S::set_green_tensor_interpolator);
 }
 
 template <typename T>
-static void declare_green_tensor(nb::module_ &m, std::string const &type_name) {
-    using CE = typename GreenTensor<T>::ConstantEntry;
-    using OE = typename GreenTensor<T>::OmegaDependentEntry;
-    using GT = GreenTensor<T>;
+static void declare_green_tensor_interpolator(nb::module_ &m, std::string const &type_name) {
+    using CE = typename GreenTensorInterpolator<T>::ConstantEntry;
+    using OE = typename GreenTensorInterpolator<T>::OmegaDependentEntry;
+    using GT = GreenTensorInterpolator<T>;
 
     std::string ce_name = "ConstantEntry" + type_name;
     std::string oe_name = "OmegaDependentEntry" + type_name;
-    std::string gt_name = "GreenTensor" + type_name;
+    std::string gt_name = "GreenTensorInterpolator" + type_name;
 
     nb::class_<CE>(m, ce_name.c_str())
         .def("row", &CE::row)
@@ -123,6 +123,6 @@ void bind_system(nb::module_ &m) {
     declare_system_pair<double>(m, "Real");
     declare_system_pair<std::complex<double>>(m, "Complex");
 
-    declare_green_tensor<double>(m, "Real");
-    declare_green_tensor<std::complex<double>>(m, "Complex");
+    declare_green_tensor_interpolator<double>(m, "Real");
+    declare_green_tensor_interpolator<std::complex<double>>(m, "Complex");
 }
