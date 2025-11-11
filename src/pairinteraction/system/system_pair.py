@@ -163,7 +163,7 @@ class SystemPair(SystemBase[BasisPair]):
             green_tensor_interpolator: The Green tensor interpolator to set for the system.
 
         """
-        self._cpp.set_green_tensor(green_tensor_interpolator._cpp)
+        self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
         return self
 
     @overload
