@@ -33,6 +33,7 @@ lifetimes to calculations of pair potentials.
     examples_python/lifetimes
     examples_python/c3_c6_coefficients
     examples_python/state_atom_object
+    examples_python/green_tensor
 
 **Examples From Publications**
 
