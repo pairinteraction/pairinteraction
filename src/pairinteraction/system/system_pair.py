@@ -15,11 +15,11 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.green_tensor import GreenTensorInterpolator
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
         KetAtomTuple,
     )
-    from pairinteraction.system.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
