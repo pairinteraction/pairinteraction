@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 PairInteraction Developers
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "pairinteraction/system/GreenTensor.hpp"
+#include "pairinteraction/system/GreenTensorInterpolator.hpp"
 
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -17,33 +17,32 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-GreenTensor<Scalar>::ConstantEntry::ConstantEntry(int row, int col, Scalar val)
+GreenTensorInterpolator<Scalar>::ConstantEntry::ConstantEntry(int row, int col, Scalar val)
     : row_(row), col_(col), val_(val) {}
 
 template <typename Scalar>
-Scalar GreenTensor<Scalar>::ConstantEntry::val() const {
+Scalar GreenTensorInterpolator<Scalar>::ConstantEntry::val() const {
     return val_;
 }
 
 template <typename Scalar>
-int GreenTensor<Scalar>::ConstantEntry::row() const noexcept {
+int GreenTensorInterpolator<Scalar>::ConstantEntry::row() const noexcept {
     return row_;
 }
 
 template <typename Scalar>
-int GreenTensor<Scalar>::ConstantEntry::col() const noexcept {
+int GreenTensorInterpolator<Scalar>::ConstantEntry::col() const noexcept {
     return col_;
 }
 
 template <typename Scalar>
-GreenTensor<Scalar>::OmegaDependentEntry::OmegaDependentEntry(int row, int col,
-                                                              Eigen::Spline<real_t, 1> real_spline,
-                                                              Eigen::Spline<real_t, 1> imag_spline)
+GreenTensorInterpolator<Scalar>::OmegaDependentEntry::OmegaDependentEntry(
+    int row, int col, Eigen::Spline<real_t, 1> real_spline, Eigen::Spline<real_t, 1> imag_spline)
     : row_(row), col_(col), real_spline(std::move(real_spline)),
       imag_spline(std::move(imag_spline)) {}
 
 template <typename Scalar>
-Scalar GreenTensor<Scalar>::OmegaDependentEntry::val(double omega) const {
+Scalar GreenTensorInterpolator<Scalar>::OmegaDependentEntry::val(double omega) const {
     if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
         return {real_spline(omega)(0), imag_spline(omega)(0)};
     } else {
@@ -52,17 +51,17 @@ Scalar GreenTensor<Scalar>::OmegaDependentEntry::val(double omega) const {
 }
 
 template <typename Scalar>
-int GreenTensor<Scalar>::OmegaDependentEntry::row() const noexcept {
+int GreenTensorInterpolator<Scalar>::OmegaDependentEntry::row() const noexcept {
     return row_;
 }
 
 template <typename Scalar>
-int GreenTensor<Scalar>::OmegaDependentEntry::col() const noexcept {
+int GreenTensorInterpolator<Scalar>::OmegaDependentEntry::col() const noexcept {
     return col_;
 }
 
 template <typename Scalar>
-void GreenTensor<Scalar>::create_entries_from_cartesian(
+void GreenTensorInterpolator<Scalar>::create_entries_from_cartesian(
     int kappa1, int kappa2, const Eigen::MatrixX<Scalar> &tensor_in_cartesian_coordinates) {
 
     const real_t scale = tensor_in_cartesian_coordinates.norm();
@@ -88,7 +87,7 @@ void GreenTensor<Scalar>::create_entries_from_cartesian(
 }
 
 template <typename Scalar>
-void GreenTensor<Scalar>::create_entries_from_cartesian(
+void GreenTensorInterpolator<Scalar>::create_entries_from_cartesian(
     int kappa1, int kappa2,
     const std::vector<Eigen::MatrixX<Scalar>> &tensors_in_cartesian_coordinates,
     const std::vector<double> &omegas) {
@@ -162,8 +161,8 @@ void GreenTensor<Scalar>::create_entries_from_cartesian(
 }
 
 template <typename Scalar>
-const std::vector<typename GreenTensor<Scalar>::Entry> &
-GreenTensor<Scalar>::get_spherical_entries(int kappa1, int kappa2) const {
+const std::vector<typename GreenTensorInterpolator<Scalar>::Entry> &
+GreenTensorInterpolator<Scalar>::get_spherical_entries(int kappa1, int kappa2) const {
     if (auto it = entries_map.find({kappa1, kappa2}); it != entries_map.end()) {
         return it->second;
     }
@@ -172,6 +171,6 @@ GreenTensor<Scalar>::get_spherical_entries(int kappa1, int kappa2) const {
 }
 
 // Explicit instantiations
-template class GreenTensor<double>;
-template class GreenTensor<std::complex<double>>;
+template class GreenTensorInterpolator<double>;
+template class GreenTensorInterpolator<std::complex<double>>;
 } // namespace pairinteraction
