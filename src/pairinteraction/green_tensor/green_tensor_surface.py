@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import numpy as np
+
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
 from pairinteraction.units import QuantityScalar
 
@@ -34,7 +36,7 @@ class GreenTensorSurface(GreenTensorBase):
         self.surface_z_au = QuantityScalar.convert_user_to_au(z, unit, "distance")
         return self
 
-    def set_electric_permitivity_surface(self, epsilon: float | Callable[[PintFloat], float]) -> Self:
+    def set_electric_permitivity_surface(self, epsilon: complex | Callable[[PintFloat], complex]) -> Self:
         """Set the electric permittivity for the surface.
 
         Args:
@@ -43,6 +45,7 @@ class GreenTensorSurface(GreenTensorBase):
         """
         self.surface_epsilon = epsilon
         return self
+
 
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a single surface in atomic units.

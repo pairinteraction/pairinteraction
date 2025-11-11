@@ -6,6 +6,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, overload
 
+import numpy as np
+
 from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 from pairinteraction.units import QuantityArray, QuantityScalar
 
@@ -25,15 +27,11 @@ if TYPE_CHECKING:
 class GreenTensorBase(ABC):
     pos1_au: list[float] | None
     pos2_au: list[float] | None
-    omega_min_au: float | None
-    omega_max_au: float | None
-    epsilon: float | Callable[[PintFloat], float]
+    epsilon: complex | Callable[[PintFloat], complex]
 
     def __init__(self) -> None:
         self.pos1_au = None
         self.pos2_au = None
-        self.omega_min_au = None
-        self.omega_max_au = None
         self.epsilon = 1.0
 
     def set_atom_positions(
@@ -56,7 +54,7 @@ class GreenTensorBase(ABC):
 
         return self
 
-    def set_electric_permitivity(self, epsilon: float | Callable[[PintFloat], float]) -> Self:
+    def set_electric_permitivity(self, epsilon: complex | Callable[[PintFloat], complex]) -> Self:
         """Set the electric permittivity for the space between the two atoms.
 
         By default, the electric permittivity is set to 1 (vacuum).
@@ -148,19 +146,20 @@ class GreenTensorBase(ABC):
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
 
     def get_green_tensor_interpolator(
-        self, omegas: list[float], omega_unit: str | None = None
+        self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str | None = None
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
         The GreenTensorInterpolator can be used for the interaction of a SystemPair.
 
         Returns:
-            A GreenTensorInterpolator that interpolates this Green tensor at given frequency points.
+            A GreenTensorInterpolator that interpolates the Green tensor at given frequency points.
 
         """
-        gt_list: list[PintArray] = [self.get_dipole_dipole(omega, omega_unit) for omega in omegas]
+        omega_list = list(np.linspace(omega_min, omega_max, omega_steps))
+        gt_list = [self.get_dipole_dipole(omega, omega_unit, unit="hartree") for omega in omega_list]
 
         gti = GreenTensorInterpolator()
-        gti.set_from_cartesian(1, 1, gt_list, omegas=omegas, omegas_unit=omega_unit)  # type: ignore [arg-type]  # TODO GreenTensorInterpolator wrong type hints
+        gti.set_from_cartesian(1, 1, gt_list, tensor_unit="hartree", omegas=omega_list, omegas_unit=omega_unit)
 
         return gti
