@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -57,6 +57,22 @@ class GreenTensorCavity(GreenTensorBase):
             The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units.
 
         """
-        raise NotImplementedError("GreenTensorCavity is not yet implemented yet.")
+        if self.pos1_au is None or self.pos2_au is None:
+            raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
 
-        # TODO
+        gt = np.zeros((3, 3), dtype=complex)
+
+        au_to_meter = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
+        pos1 = np.array(self.pos1_au) * au_to_meter
+        pos2 = np.array(self.pos2_au) * au_to_meter
+        epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
+
+        surface1_z = self.surface1_z_au * au_to_meter
+        surface1_epsilon = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
+        surface2_z = self.surface2_z_au * au_to_meter
+        surface2_epsilon = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+
+        # TODO calculate Green tensor
+        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+
+        return gt
