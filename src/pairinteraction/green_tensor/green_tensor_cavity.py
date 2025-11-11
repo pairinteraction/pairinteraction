@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Callable
 
+import numpy as np
+
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
 from pairinteraction.units import QuantityScalar
 
@@ -32,7 +34,7 @@ class GreenTensorCavity(GreenTensorBase):
         return self
 
     def set_electric_permitivity_surfaces(
-        self, epsilon1: float | Callable[[PintFloat], float], epsilon2: float | Callable[[PintFloat], float]
+        self, epsilon1: complex | Callable[[PintFloat], complex], epsilon2: complex | Callable[[PintFloat], complex]
     ) -> Self:
         """Set the electric permittivity for the surfaces.
 
@@ -44,6 +46,15 @@ class GreenTensorCavity(GreenTensorBase):
         self.surface1_epsilon = epsilon1
         self.surface2_epsilon = epsilon2
         return self
+
+    def is_constant(self) -> bool:
+        """Check if the Green tensor is constant (i.e. frequency independent).
+
+        Returns:
+            True if the Green tensor is constant, False otherwise.
+
+        """
+        return np.isscalar(self.surface1_epsilon) and np.isscalar(self.surface2_epsilon) and super().is_constant()
 
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a cavity in atomic units.
