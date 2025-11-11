@@ -34,4 +34,4 @@
     :hidden:
 
     MQDT.jl <https://github.com/pairinteraction/MQDT.jl>
-    ryd-numerov <https://github.com/pairinteraction/ryd-numerov/>
+    RydState <https://github.com/pairinteraction/rydstate>

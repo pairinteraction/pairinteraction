@@ -149,7 +149,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 - [MQDT.jl] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 
-- [ryd-numerov] - Learn how to calculate states and matrix elements using single quantum defect theory with our tool written in Python.
+- [RydState] - Learn how to calculate Rydberg states and matrix elements using single quantum defect theory with our tool written in Python.
 
 [Installation]: https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html
 [Tutorials]: https://www.pairinteraction.org/pairinteraction/stable/tutorials/tutorials.html
@@ -161,7 +161,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 [Style Guide]: https://www.pairinteraction.org/pairinteraction/stable/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/stable/contribute/database.html
 [MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
-[ryd-numerov]: https://github.com/pairinteraction/ryd-numerov/
+[RydState]: https://github.com/pairinteraction/rydstate
 
 ## Contributors
 

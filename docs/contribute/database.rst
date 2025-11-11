@@ -11,7 +11,7 @@ The currently available databases are hosted on GitHub and are downloaded by Pai
 database repositories:
 
 - database-sqdt_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool
-  ryd-numerov_.
+  RydState_.
 - database-mqdt_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool
   MQDT.jl_.
 
@@ -21,7 +21,7 @@ database repositories:
 
 .. _mqdt.jl: https://github.com/pairinteraction/MQDT.jl
 
-.. _ryd-numerov: https://github.com/pairinteraction/ryd-numerov
+.. _rydstate: https://github.com/pairinteraction/rydstate
 
 You can also manually download the databases from database-sqdt_ and database-mqdt_. Simply download the zip file of the
 species you are interested in and extract it. Alternatively, you can create your own custom database (see
