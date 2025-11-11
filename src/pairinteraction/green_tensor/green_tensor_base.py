@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Callable, overload
 import numpy as np
 
 from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -25,8 +25,8 @@ if TYPE_CHECKING:
 
 
 class GreenTensorBase(ABC):
-    pos1_au: list[float] | None
-    pos2_au: list[float] | None
+    pos1_au: NDArray | None
+    pos2_au: NDArray | None
     epsilon: complex | Callable[[PintFloat], complex]
 
     def __init__(self) -> None:
@@ -46,8 +46,8 @@ class GreenTensorBase(ABC):
                 Default None expects a `pint.Quantity`.
 
         """
-        self.pos1_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1]
-        self.pos2_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2]
+        self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
+        self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
 
         if self.pos1_au[1] != self.pos2_au[1] or self.pos1_au[2] != self.pos2_au[2]:
             raise NotImplementedError("Green tensors are currently only implemented for atoms in the same y-z plane")
@@ -163,3 +163,27 @@ class GreenTensorBase(ABC):
         gti.set_from_cartesian(1, 1, gt_list, tensor_unit="hartree", omegas=omega_list, omegas_unit=omega_unit)
 
         return gti
+
+
+def get_electric_permitivity(
+    epsilon: complex | Callable[[PintFloat], complex], omega: float, omega_unit: str | None = None
+) -> complex:
+    """Get the electric permittivity for the given frequency.
+
+    Args:
+        epsilon: The electric permittivity (dimensionless) or a callable function that returns it.
+        omega: The frequency at which to evaluate the permittivity.
+            Only needed if the permittivity is frequency dependent.
+        omega_unit: The unit of the frequency.
+            Default None, which means that the frequency must be given as pint object.
+
+    Returns:
+        The electric permittivity at the given frequency.
+
+    """
+    omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+    if np.isscalar(epsilon):
+        return epsilon  # type: ignore [return-value]
+    if callable(epsilon):
+        return epsilon(ureg.Quantity(omega_au, "hartree"))
+    raise TypeError("epsilon must be either a complex number or a callable function.")
