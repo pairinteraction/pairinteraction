@@ -52,7 +52,7 @@ dependencies = [
   "typing_extensions >= 4.7",
   "numpy >= 1.24",
   "scipy >= 1.10",
-  "pint >= 0.21.1",
+  "pint < 0.25.1",  # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also .pre-commit-config.yaml)
   "colorama >= 0.3.4",
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
