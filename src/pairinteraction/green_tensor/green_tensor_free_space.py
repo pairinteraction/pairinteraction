@@ -35,6 +35,8 @@ class GreenTensorFreeSpace(GreenTensorBase):
         pos2 = np.array(self.pos2_au) * au_to_meter
 
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
+        omega = 2 * np.pi * ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+
 
         # TODO calculate Green tensor
         raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
