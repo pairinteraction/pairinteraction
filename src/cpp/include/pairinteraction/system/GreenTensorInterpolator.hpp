@@ -16,7 +16,7 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class GreenTensor {
+class GreenTensorInterpolator {
 public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
@@ -24,7 +24,7 @@ public:
     using complex_t = std::complex<real_t>;
 
     class ConstantEntry {
-        friend class GreenTensor;
+        friend class GreenTensorInterpolator;
 
     public:
         Scalar val() const;
@@ -39,7 +39,7 @@ public:
     };
 
     class OmegaDependentEntry {
-        friend class GreenTensor;
+        friend class GreenTensorInterpolator;
 
     public:
         Scalar val(double omega) const;
@@ -70,6 +70,6 @@ private:
     std::map<std::pair<int, int>, std::vector<Entry>> entries_map;
 };
 
-extern template class GreenTensor<double>;
-extern template class GreenTensor<std::complex<double>>;
+extern template class GreenTensorInterpolator<double>;
+extern template class GreenTensorInterpolator<std::complex<double>>;
 } // namespace pairinteraction

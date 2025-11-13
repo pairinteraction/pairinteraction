@@ -7,6 +7,12 @@ from pairinteraction.basis import (
 )
 from pairinteraction.database import Database
 from pairinteraction.diagonalization import diagonalize
+from pairinteraction.green_tensor import (
+    GreenTensorCavity,
+    GreenTensorFreeSpace,
+    GreenTensorInterpolatorReal as GreenTensorInterpolator,
+    GreenTensorSurface,
+)
 from pairinteraction.ket import (
     KetAtom,
     KetPairReal as KetPair,
@@ -21,7 +27,6 @@ from pairinteraction.state import (
     StatePairReal as StatePair,
 )
 from pairinteraction.system import (
-    GreenTensorReal as GreenTensor,
     SystemAtomReal as SystemAtom,
     SystemPairReal as SystemPair,
 )
@@ -33,7 +38,10 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
+    "GreenTensorCavity",
+    "GreenTensorFreeSpace",
+    "GreenTensorInterpolator",
+    "GreenTensorSurface",
     "KetAtom",
     "KetPair",
     "StateAtom",
