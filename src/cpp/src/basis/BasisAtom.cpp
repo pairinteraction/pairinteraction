@@ -31,7 +31,7 @@ const std::string &BasisAtom<Scalar>::get_species() const {
 
 template <typename Scalar>
 int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
-    if (ket_id_to_ket_index.count(ket_id) == 0) {
+    if (!ket_id_to_ket_index.contains(ket_id)) {
         return -1;
     }
     return ket_id_to_ket_index.at(ket_id);
