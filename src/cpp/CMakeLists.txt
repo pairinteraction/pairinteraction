@@ -143,4 +143,4 @@ target_compile_options(
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>
          $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra
          -Wpedantic>)
-target_compile_features(pairinteraction PUBLIC cxx_std_17)
+target_compile_features(pairinteraction PUBLIC cxx_std_23)
