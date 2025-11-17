@@ -49,7 +49,7 @@ void Basis<Derived>::perform_blocks_checks(
 
     // Throw a meaningful error if getting the blocks by energy is requested as this might be a
     // common mistake
-    if (unique_labels.count(TransformationType::SORT_BY_ENERGY) > 0) {
+    if (unique_labels.contains(TransformationType::SORT_BY_ENERGY)) {
         throw std::invalid_argument("States do not store the energy and thus no energy blocks can "
                                     "be obtained. Use an energy operator instead.");
     }
@@ -155,7 +155,7 @@ void Basis<Derived>::set_coefficients(
 
 template <typename Derived>
 int Basis<Derived>::get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const {
-    if (ket_to_ket_index.count(ket) == 0) {
+    if (!ket_to_ket_index.contains(ket)) {
         return -1;
     }
     return ket_to_ket_index.at(ket);
