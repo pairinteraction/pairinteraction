@@ -22,7 +22,7 @@ jobs:
     env:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
