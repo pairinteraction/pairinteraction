@@ -61,7 +61,7 @@ jobs:
       image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-{0}:docker', matrix.distro) || null }}
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
