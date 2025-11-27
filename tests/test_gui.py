@@ -123,9 +123,11 @@ def _test_calculate_page(
     energies = np.array(results.energies) + ket_energy_0
     compare_eigensystem_to_reference(REFERENCE_PATHS[reference_name], energies, np.array(results.ket_overlaps))
 
-    # Test calculation with fast mode on
+    # Test calculation with fast mode on and diagonalze energy_range
     # NOTE: with fast mode, the overlaps are different, so we don't compare them
     page.calculation_config.fast_mode.setChecked(True)
+    page.calculation_config.energy_range.setChecked(True)
+    page.calculation_config.energy_range.setValues(-200, 200)
     _parameters, results = page.calculate()
     energies = np.array(results.energies) + ket_energy_0
     compare_eigensystem_to_reference(REFERENCE_PATHS[reference_name], energies)
