@@ -215,13 +215,20 @@ class Parameters(ABC, Generic[PageType]):
 
         replacements["$DIAGONALIZE_KWARGS"] = dict_to_repl(self.diagonalize_kwargs)
 
-        if self.diagonalize_relative_energy_range is not None:
+        if self.diagonalize_relative_energy_range is None:
+            replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = ""
+        elif self.n_atoms == 1:
             r_energy = self.diagonalize_relative_energy_range
             replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = (
                 f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_range_unit="GHz"'
             )
+        elif self.n_atoms == 2:
+            r_energy = self.diagonalize_relative_energy_range
+            replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = (
+                f', energy_range=(pair_energy + {r_energy[0]}, pair_energy - {-r_energy[1]}), energy_range_unit="GHz"'
+            )
         else:
-            replacements["$DIAGONALIZE_ENERGY_RANGE_KWARGS"] = ""
+            raise RuntimeError("Energy range kwargs not implemented for more than two atoms")
 
         return replacements
 
