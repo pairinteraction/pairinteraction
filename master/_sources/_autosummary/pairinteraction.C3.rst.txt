@@ -1,0 +1,54 @@
+﻿C3
+==
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~C3.__init__
+      ~C3.check_for_resonances
+      ~C3.copy
+      ~C3.get
+      ~C3.get_effective_basis
+      ~C3.get_effective_basisvectors
+      ~C3.get_effective_hamiltonian
+      ~C3.get_pair_energies
+      ~C3.set_angle
+      ~C3.set_delta_l
+      ~C3.set_delta_m
+      ~C3.set_delta_n
+      ~C3.set_diamagnetism_enabled
+      ~C3.set_distance
+      ~C3.set_distance_vector
+      ~C3.set_electric_field
+      ~C3.set_interaction_order
+      ~C3.set_magnetic_field
+      ~C3.set_maximum_number_of_ket_pairs
+      ~C3.set_minimum_number_of_ket_pairs
+      ~C3.set_perturbation_order
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~C3.basis_atoms
+   ~C3.basis_pair
+   ~C3.diamagnetism_enabled
+   ~C3.distance_vector
+   ~C3.electric_field
+   ~C3.interaction_order
+   ~C3.ket_tuples
+   ~C3.magnetic_field
+   ~C3.model_inds
+   ~C3.perturbation_order
+   ~C3.system_atoms
+   ~C3.system_pair
+
+
+
+.. autoclass:: pairinteraction.C3
