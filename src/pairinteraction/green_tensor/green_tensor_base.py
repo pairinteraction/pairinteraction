@@ -11,9 +11,9 @@ import numpy as np
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
+    from green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from typing_extensions import Self
 
-    from green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
         Dimension,
