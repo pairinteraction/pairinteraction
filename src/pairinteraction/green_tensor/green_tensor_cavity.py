@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 from pairinteraction.units import QuantityScalar, ureg
+import green_tensor.utils as utils
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -72,7 +73,21 @@ class GreenTensorCavity(GreenTensorBase):
         surface2_z = self.surface2_z_au * au_to_meter
         surface2_epsilon = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
 
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+
         # TODO calculate Green tensor
-        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+#        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+
+        ''' Assumption for the system: The atoms are located at positions pos1 and pos2 at z_A=z_B=h/2. '''
+
+        # If lower surface of the system surface2_z =/ 0, we need to shift the positions accordingly
+        pos1_shifted = pos1 - np.array([0, 0, surface2_z])
+        pos2_shifted = pos2 - np.array([0, 0, surface2_z])
+
+        # Set height h
+        h = surface1_z - surface2_z
+
+        gt = utils.green_tensor_total(pos1_shifted, pos2_shifted, omega, epsilon, surface1_epsilon, surface2_epsilon, h)
+
 
         return gt

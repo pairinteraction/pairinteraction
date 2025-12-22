@@ -7,8 +7,9 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 from pairinteraction.units import QuantityScalar, ureg
+import green_tensor.utils as utils
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -70,7 +71,26 @@ class GreenTensorSurface(GreenTensorBase):
         surface_z = self.surface_z_au * au_to_meter
         surface_epsilon = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
 
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+
         # TODO calculate Green tensor
-        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+#        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+
+        ''' Assumption for the system: The atoms are located at positions pos1 and pos2 above a single surface at z=surface_z.
+            It should be pos1[2], pos2[2] > surface_z for this to be valid.'''
+
+        # If z_surface =/ 0, we need to shift the positions accordingly
+        pos1_shifted = pos1 - np.array([0, 0, surface_z])
+        pos2_shifted = pos2 - np.array([0, 0, surface_z])
+
+        # Set height h to 2 * z_A
+        h = 2 * pos1_shifted[2]
+
+        # Set the permittivities of the system
+        epsilon0 = epsilon  # permittivity of the medium above the surface
+        epsilon1 = 1.0 # upper layer is vacuum, since we only have one surface
+        epsilon2 = surface_epsilon  # permittivity of the surface
+
+        gt = utils.green_tensor_total(pos1_shifted, pos2_shifted, omega, epsilon0, epsilon1, epsilon2, h)
 
         return gt
