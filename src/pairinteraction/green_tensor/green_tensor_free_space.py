@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+import green_tensor.utils as utils
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
@@ -35,10 +36,13 @@ class GreenTensorFreeSpace(GreenTensorBase):
         pos2 = np.array(self.pos2_au) * au_to_meter
 
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
-        omega = 2 * np.pi * ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
 
 
         # TODO calculate Green tensor
-        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
-
+        # started impleneting this
+#        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+        gt = utils.green_tensor_homogeneous(pos1, pos2, omega, epsilon)
         return gt
+
+

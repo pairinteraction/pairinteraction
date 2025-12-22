@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING, Callable, overload
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
         Dimension,
