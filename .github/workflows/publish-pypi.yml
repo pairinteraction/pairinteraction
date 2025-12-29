@@ -27,7 +27,7 @@ jobs:
     steps:
     - name: Download artifact
       id: download-artifact
-      uses: dawidd6/action-download-artifact@v11
+      uses: dawidd6/action-download-artifact@v12
       with:
         run_id: ${{ github.event.inputs.python_wheel_workflow_run_id }}
         name: dist-*
