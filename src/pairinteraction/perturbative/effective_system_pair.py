@@ -137,6 +137,8 @@ class EffectiveSystemPair:
         self._eff_h_dict_au = None
         self._eff_vecs = None
         self._eff_basis = None
+        with contextlib.suppress(AttributeError):
+            del self.model_inds
 
         parts_order: list[BasisSystemLiteral] = ["system_pair", "basis_pair", "system_atoms", "basis_atoms"]
         for part in parts_order:
