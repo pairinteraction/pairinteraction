@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
 
 
-Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
+Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast", "spectra"]
 UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
 UnionCPPDiagonalizerType = Union[type[_backend.DiagonalizerInterfaceReal], type[_backend.DiagonalizerInterfaceComplex]]
 
@@ -31,12 +31,14 @@ _DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
         "lapacke_evd": _backend.DiagonalizerLapackeEvdReal,
         "lapacke_evr": _backend.DiagonalizerLapackeEvrReal,
         "feast": _backend.DiagonalizerFeastReal,
+        "spectra": _backend.DiagonalizerSpectraReal,
     },
     "complex": {
         "eigen": _backend.DiagonalizerEigenComplex,
         "lapacke_evd": _backend.DiagonalizerLapackeEvdComplex,
         "lapacke_evr": _backend.DiagonalizerLapackeEvrComplex,
         "feast": _backend.DiagonalizerFeastComplex,
+        "spectra": _backend.DiagonalizerSpectraComplex,
     },
 }
 

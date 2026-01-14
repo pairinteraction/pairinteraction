@@ -36,6 +36,9 @@ public:
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       std::optional<real_t> min_eigenvalue,
                                       std::optional<real_t> max_eigenvalue, double rtol) const;
+    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                      std::optional<Eigen::Index> nev,
+                                      std::optional<Eigen::Index> ncv, double rtol) const;
 
 protected:
     FloatType float_type;

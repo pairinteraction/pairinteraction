@@ -10,6 +10,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerSpectra.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -158,6 +159,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 #ifdef WITH_MKL
         diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
+        diagonalizers.push_back(std::make_unique<DiagonalizerSpectra<std::complex<double>>>());
         rtols = {1e-1, 1e-6, 1e-14};
         eps = std::numeric_limits<double>::epsilon();
     }
@@ -175,6 +177,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
         diagonalizers.push_back(
             std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FloatType::FLOAT32));
 #endif
+        diagonalizers.push_back(
+            std::make_unique<DiagonalizerSpectra<std::complex<double>>>(FloatType::FLOAT32));
         rtols = {1e-1, 1e-6};
         eps = std::numeric_limits<float>::epsilon();
     }
@@ -249,6 +253,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 #ifdef WITH_MKL
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(10, FloatType::FLOAT64));
 #endif
+    diagonalizers.push_back(std::make_unique<DiagonalizerSpectra<double>>(FloatType::FLOAT64));
 
     // Diagonalize using pairinteraction
     for (const auto &diagonalizer : diagonalizers) {

@@ -7,6 +7,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerSpectra.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -69,6 +70,16 @@ static void declare_diagonalizer_lapacke_evr(nb::module_ &m, std::string const &
 }
 
 template <typename T>
+static void declare_diagonalizer_spectra(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "DiagonalizerSpectra" + type_name;
+    nb::class_<DiagonalizerSpectra<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
+    pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
+                 &DiagonalizerSpectra<T>::eigh, nb::const_));
+}
+
+template <typename T>
 static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "diagonalize" + type_name;
     using real_t = typename T::real_t;
@@ -99,6 +110,8 @@ void bind_diagonalizer(nb::module_ &m) {
     declare_diagonalizer_lapacke_evd<std::complex<double>>(m, "Complex");
     declare_diagonalizer_lapacke_evr<double>(m, "Real");
     declare_diagonalizer_lapacke_evr<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_spectra<double>(m, "Real");
+    declare_diagonalizer_spectra<std::complex<double>>(m, "Complex");
 
     declare_diagonalize<SystemAtom<double>>(m, "SystemAtomReal");
     declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplex");

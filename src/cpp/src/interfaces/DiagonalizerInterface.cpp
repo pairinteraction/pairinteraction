@@ -118,6 +118,24 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
     return eigensys;
 }
 
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                    std::optional<Eigen::Index> nev,
+                                    std::optional<Eigen::Index> /* ncv */, double rtol) const {
+    // default to half the spectrum
+    const int dim = matrix.rows();
+    const int half = std::max(dim / 2, 1);
+
+    auto eigensys = eigh(matrix, rtol);
+
+    // Retrieve the first nev eigenvalues and eigenvectors
+    eigensys.eigenvectors = eigensys.eigenvectors.block(0, 0, dim, nev.value_or(half)).eval();
+    eigensys.eigenvalues = eigensys.eigenvalues.segment(0, nev.value_or(half)).eval();
+
+    return eigensys;
+}
+
 // Explicit instantiations
 template class DiagonalizerInterface<double>;
 template class DiagonalizerInterface<std::complex<double>>;
