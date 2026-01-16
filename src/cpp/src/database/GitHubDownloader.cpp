@@ -43,48 +43,12 @@ void log(const httplib::Request &req, const httplib::Response &res) {
 }
 
 GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClient>(host)) {
-    std::filesystem::path configdir = paths::get_config_directory();
-    if (!std::filesystem::exists(configdir)) {
-        std::filesystem::create_directories(configdir);
-    } else if (!std::filesystem::is_directory(configdir)) {
-        throw std::filesystem::filesystem_error("Cannot access config directory ",
-                                                configdir.string(),
-                                                std::make_error_code(std::errc::not_a_directory));
-    }
-
-    std::filesystem::path cert_path = configdir / "ca-bundle.crt";
-    bool needs_write = true;
-
-    if (std::filesystem::exists(cert_path)) {
-        std::ifstream in(cert_path, std::ios::binary);
-        if (!in) {
-            throw std::runtime_error("Failed to open certificate file at " + cert_path.string());
-        }
-        std::ostringstream oss;
-        oss << in.rdbuf();
-        needs_write = (oss.str() != cert);
-    }
-
-    if (needs_write) {
-        SPDLOG_DEBUG("[httplib] Write certificate file at {}", cert_path.string());
-        std::ofstream out(cert_path, std::ios::binary | std::ios::trunc);
-        if (!out) {
-            throw std::runtime_error("Failed to write certificate file at " + cert_path.string());
-        }
-        out << cert;
-        out.flush();
-        if (!out) {
-            throw std::runtime_error("Failed while writing certificate file at " +
-                                     cert_path.string());
-        }
-    }
-
     client->set_follow_location(true);
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
-    client->set_ca_cert_path(cert_path.string());
     client->set_logger(log);
+    client->load_ca_cert_store(cert.data(), cert.size());
 }
 
 GitHubDownloader::~GitHubDownloader() = default;
