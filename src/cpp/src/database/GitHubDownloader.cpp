@@ -53,21 +53,37 @@ GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClien
     }
 
     std::filesystem::path cert_path = configdir / "ca-bundle.crt";
-    if (!std::filesystem::exists(cert_path)) {
-        std::ofstream out(cert_path);
+    bool needs_write = true;
+
+    if (std::filesystem::exists(cert_path)) {
+        std::ifstream in(cert_path, std::ios::binary);
+        if (!in) {
+            throw std::runtime_error("Failed to open certificate file at " + cert_path.string());
+        }
+        std::ostringstream oss;
+        oss << in.rdbuf();
+        needs_write = (oss.str() != cert);
+    }
+
+    if (needs_write) {
+        SPDLOG_DEBUG("[httplib] Write certificate file at {}", cert_path.string());
+        std::ofstream out(cert_path, std::ios::binary | std::ios::trunc);
         if (!out) {
-            throw std::runtime_error("Failed to create certificate file at " + cert_path.string());
+            throw std::runtime_error("Failed to write certificate file at " + cert_path.string());
         }
         out << cert;
-        out.close();
+        out.flush();
+        if (!out) {
+            throw std::runtime_error("Failed while writing certificate file at " +
+                                     cert_path.string());
+        }
     }
-    cert_path_str = cert_path.string();
 
     client->set_follow_location(true);
     client->set_connection_timeout(5, 0); // seconds
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
-    client->set_ca_cert_path(cert_path_str);
+    client->set_ca_cert_path(cert_path.string());
     client->set_logger(log);
 }
 

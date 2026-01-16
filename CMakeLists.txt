@@ -168,11 +168,12 @@ FetchContent_MakeAvailable(doctest)
 set(HTTPLIB_REQUIRE_OPENSSL ON)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
+set(HTTPLIB_USE_ZSTD_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_NON_BLOCKING_GETADDRINFO OFF)
 FetchContent_Declare(
   httplib
   GIT_REPOSITORY https://github.com/yhirose/cpp-httplib
-  GIT_TAG 3f44c80fd345e859d6f61b2dda566aa3329ce35e # v0.25.0
+  GIT_TAG bd95e67c234930cd6d6bb11309588c5462c63cec # v0.30.1
 )
 # Add the EXCLUDE_FROM_ALL option to avoid adding files of httplib to the wheel. In the future, with cmake 3.28, we
 # can add this argument directly to FetchContent_Declare.
