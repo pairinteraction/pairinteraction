@@ -9,9 +9,9 @@ runs:
   using: "composite"
   steps:
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v7
       with:
-        version: "0.7"
+        version: "0.9"
         python-version: ${{ inputs.python-version }}
         enable-cache: true
         cache-dependency-glob: |
@@ -19,4 +19,4 @@ runs:
 
     - name: Install all Python dependencies into a virtual environment
       shell: bash
-      run: uv sync --no-install-project --all-extras  # always install all dependencies, this simplifies caching
+      run: uv sync --no-install-project --group dev  # always install all development dependencies, this simplifies caching

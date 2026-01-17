@@ -46,7 +46,7 @@ If in addition you want to install all dependencies from the `pyproject.toml` fi
 
 .. code-block:: bash
 
-    uv pip compile pyproject.toml --all-extras > requirements.txt
+    uv pip compile pyproject.toml --group dev > requirements.txt
     uv pip install -r requirements.txt
 
 .. _uv: https://docs.astral.sh/uv/
@@ -78,7 +78,7 @@ commands:
 
 .. code-block:: bash
 
-    pip-compile pyproject.toml --all-extras --output-file=requirements.txt
+    pip-compile pyproject.toml --group dev --output-file=requirements.txt
     pip install -r requirements.txt
 
 .. _conda: https://anaconda.org/anaconda/conda

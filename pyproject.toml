@@ -6,7 +6,7 @@ requires = [  # keep this in sync with .build_requirements.txt
   "scikit-build-core >=0.9.0",
   "nanobind >=1.9.0",
   "typing_extensions >= 4.7", # required by nanobind/stubgen.py
-  "numpy >= 1.24", # required by the cpp backend
+  "numpy >= 2.0.2", # required by the cpp backend
   "tbb-devel == 2022.0.0; sys_platform != 'darwin'", # required by the cpp backend
   "mkl-devel == 2025.0.1; sys_platform != 'darwin'", # required by the cpp backend
 ]
@@ -50,10 +50,10 @@ classifiers = [
 requires-python = ">=3.9"
 dependencies = [
   "typing_extensions >= 4.7",
-  "numpy >= 1.24",
+  "numpy >= 2.0.2",
   "scipy >= 1.10",
-  "pint < 0.25.1",  # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also .pre-commit-config.yaml)
-  "colorama >= 0.3.4",
+  "pint >= 0.24.4, < 0.25.1", # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also .pre-commit-config.yaml)
+  "colorama >= 0.4.6",
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
   "mplcursors >= 0.6",
@@ -64,11 +64,11 @@ dependencies = [
   "mkl == 2025.0.1; sys_platform != 'darwin'",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 docs = [
   "sphinx > 7",
   "sphinx-rtd-theme >= 2.0",
-  "sphinx-tabs >= 3.4.7",
+  "sphinx-tabs @ git+https://github.com/executablebooks/sphinx-tabs.git@143083f922aab49e26638611dce4754d43b29310", # FIXME: install from pypi once https://github.com/executablebooks/sphinx-tabs/pull/207 is included
   "nbsphinx >= 0.9",
   "jupyter >= 1.1",
   "sphinx_autodoc_typehints >= 1.24",
@@ -90,9 +90,11 @@ mypy = [
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
 ]
-
-[dependency-groups]
-dev = ["pairinteraction[docs,tests,mypy]"]
+dev = [
+  { include-group = "docs" },
+  { include-group = "tests" },
+  { include-group = "mypy" },
+]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
@@ -145,7 +147,7 @@ build = [  # for python >= 3.12 only one stable abi wheel is built, which is the
 ]
 build-frontend = "build[uv]"
 build-verbosity = 1
-test-extras = ["tests"]
+test-groups = ["tests"]
 test-requires = ["check-wheel-contents>=0.6"]
 test-command = [
   "cd {project}",

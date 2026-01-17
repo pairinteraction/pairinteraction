@@ -26,7 +26,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
-      run: uv pip install .[mypy]
+      run: uv pip install . --group mypy
     - name: Install the benchmarking tool
       run: uv pip install tools/benchmarking[mypy]
     - name: Install the dbmanager tool
