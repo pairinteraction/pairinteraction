@@ -52,7 +52,7 @@ repos:
     rev: v1.15.0
     hooks:
       - id: mypy
-        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint < 0.25.1", "attrs >= 24.0"]  # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also pyproject.toml)
+        additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint >= 0.24.4, < 0.25.1", "attrs >= 24.0"]  # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also pyproject.toml)
         args: ["--ignore-missing-imports"]
 
   - repo: https://github.com/fsfe/reuse-tool

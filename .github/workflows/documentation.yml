@@ -27,7 +27,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
-      run: uv pip install .[docs]
+      run: uv pip install . --group docs
     - name: Build documentation
       working-directory: docs/
       run: uv run --no-project make html SPHINXOPTS="-W --keep-going"  # TODO also use -n in the future
@@ -47,7 +47,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
-      run: uv pip install .[docs]
+      run: uv pip install . --group docs
     - name: Setup 2nd virtual environment for other PairInteraction versions
       run: |
         uv venv tmp_venv --python=python3.11
@@ -70,7 +70,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
-      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[tests]
+      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON . --group tests
     - name: Run pytest
       run: uv run --no-project pytest
     - name: Generate Code Coverage HTML report
@@ -101,7 +101,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
-      run: uv pip install -e .[tests]  # -e is needed for coverage to work
+      run: uv pip install -e . --group tests  # -e is needed for coverage to work
     - name: Run pytest with coverage
       run: |  # also run with --generate-reference to get 100% tests coverage and test the reference generation
         uv run --no-project coverage run --source=src,tests -m pytest

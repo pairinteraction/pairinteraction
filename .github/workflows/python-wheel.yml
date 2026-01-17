@@ -67,11 +67,10 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
-        version: "0.7"
+        version: "0.9"
         enable-cache: true
         cache-dependency-glob: |
           ./pyproject.toml
-          ./.build_requirements.txt
 
     - uses: pypa/cibuildwheel@v3.3
       env:
@@ -84,6 +83,26 @@ jobs:
       with:
         name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl
+
+  test-min-deps:
+    name: Test with minimum dependency versions
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        version: "0.9"
+        python-version: "3.12"
+        enable-cache: true
+        cache-dependency-glob: |
+          ./pyproject.toml
+
+    - run: uv sync --group tests --resolution lowest-direct
+    - run: uv run --no-sync pytest
 
   test-install-from-sdist:
     strategy:

@@ -15,7 +15,7 @@ not produce the desired result. If you are a user trying to install \
 this package, consider using the following install command inside \
 the root directory of the repository:
 =====================================================================
-  $ pip install .[tests,docs]
+  $ pip install . --group tests --group docs
 =====================================================================
 Where the arguments 'tests' (installs dependencies for running tests) \
 and 'docs' (installs dependencies for building the documentation) \
