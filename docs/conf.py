@@ -41,6 +41,7 @@ extensions = [
     "sphinx_autodoc_typehints",
     "myst_parser",
     "sphinx_tabs.tabs",
+    "sphinx_copybutton",
 ]
 templates_path = ["_templates"]
 exclude_patterns = [
@@ -69,6 +70,9 @@ html_static_path = ["_static"]
 
 htmlhelp_basename = "pairinteractiondoc"
 
+# -- Options for the copy button -------------------------------------------------
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
 
 # -- Options for jupyter notebooks -------------------------------------------------
 nbsphinx_prolog = """
@@ -80,6 +84,15 @@ nbsphinx_prolog = """
       .nbinput .prompt,
       .nboutput .prompt {
         display: none;
+      }
+
+      .rst-content p {
+        margin-bottom: 15px;
+      }
+
+      .rst-content div.nbinput.nblast.docutils.container + p,
+      .rst-content div.nboutput.nblast.docutils.container + p {
+        margin-top: 15px;
       }
     </style>
 

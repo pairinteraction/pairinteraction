@@ -69,6 +69,7 @@ docs = [
   "sphinx > 7",
   "sphinx-rtd-theme >= 2.0",
   "sphinx-tabs @ git+https://github.com/executablebooks/sphinx-tabs.git@143083f922aab49e26638611dce4754d43b29310", # FIXME: install from pypi once https://github.com/executablebooks/sphinx-tabs/pull/207 is included
+  "sphinx-copybutton>=0.5.2",
   "nbsphinx >= 0.9",
   "jupyter >= 1.1",
   "sphinx_autodoc_typehints >= 1.24",
