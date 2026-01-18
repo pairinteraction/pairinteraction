@@ -7,8 +7,8 @@ requires = [  # keep this in sync with .build_requirements.txt
   "nanobind >=1.9.0",
   "typing_extensions >= 4.7", # required by nanobind/stubgen.py
   "numpy >= 2.0.2", # required by the cpp backend
-  "tbb-devel == 2022.0.0; sys_platform != 'darwin'", # required by the cpp backend
-  "mkl-devel == 2025.0.1; sys_platform != 'darwin'", # required by the cpp backend
+  "tbb-devel == 2022.3.0; sys_platform != 'darwin'", # required by the cpp backend
+  "mkl-devel == 2025.3.0; sys_platform != 'darwin'", # required by the cpp backend
 ]
 build-backend = "scikit_build_core.build"
 
@@ -61,7 +61,7 @@ dependencies = [
   "nbconvert >= 7.8",
   "nbformat >= 5.10",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
-  "mkl == 2025.0.1; sys_platform != 'darwin'",
+  "mkl == 2025.3.0; sys_platform != 'darwin'",
 ]
 
 [dependency-groups]
