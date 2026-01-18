@@ -122,15 +122,15 @@ find_package(nanobind CONFIG REQUIRED)
 find_package(DuckDB QUIET)
 if(NOT DuckDB_FOUND AND (APPLE OR UNIX))
   if(APPLE)
-    set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.4.1/libduckdb-osx-universal.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-osx-universal.zip)
     set(DUCKDB_LIBNAME libduckdb.dylib)
-    set(DUCKDB_SHA256 a82bde325dcbb6d1011e1014673eb288e8c1fd5f5b755d47fd245e8b37194817)
+    set(DUCKDB_SHA256 efd0c2424589f0d5743ffdc0de22ce84b99bf307c330752f44277cffa3406e43)
   elseif(UNIX)
     # You can manually compile DuckDB and use it by calling CMake with
     # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
-    set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.4.1/libduckdb-linux-amd64.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-linux-amd64.zip)
     set(DUCKDB_LIBNAME libduckdb.so)
-    set(DUCKDB_SHA256 ce859962fe96ca952d53571964dafa0168644283a76a2c669b3f73120d710edb)
+    set(DUCKDB_SHA256 3c7bb8d586d39ccce56442c3f6bafa97f53d7b6bb5405dac827442fcb31494aa)
   endif()
   FetchContent_Declare(
     duckdb
