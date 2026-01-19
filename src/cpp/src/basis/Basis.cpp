@@ -16,6 +16,7 @@
 #include <cassert>
 #include <numeric>
 #include <set>
+#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 
@@ -805,7 +806,9 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 break;
             }
         }
-        assert(num_used == transformed->coefficients.matrix.cols());
+        if (num_used != transformed->coefficients.matrix.cols()) {
+            SPDLOG_WARN("A bijective map between states and kets could not be found.");
+        }
     }
 
     return transformed;

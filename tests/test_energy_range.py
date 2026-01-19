@@ -15,7 +15,7 @@ def test_energy_range(pi_module: PairinteractionModule) -> None:
     """Test restricting the energy range in the diagonalization."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
     pair_energy = 2 * ket.get_energy(unit="GHz")
-    distances = np.linspace(1, 4, 10)
+    distances = np.linspace(1, 4, 100)
 
     # Create a single-atom system
     basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 1))
