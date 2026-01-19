@@ -32,7 +32,7 @@ class C6(EffectiveSystemPair):
         >>> c6_obj = pi.C6(ket, ket)
         >>> c6 = c6_obj.get(unit="planck_constant * GHz * micrometer^6")
         >>> print(f"{c6:.1f}")
-        138.9
+        -138.9
 
     """
 
@@ -58,7 +58,12 @@ class C6(EffectiveSystemPair):
     def get(self, unit: str) -> float: ...
 
     def get(self, unit: str | None = None) -> float | PintFloat:
-        """Get the C6 coefficient of the pair interaction between the specified ket1 and ket2.
+        r"""Get the C6 coefficient of the interaction between the specified ket1 and ket2.
+
+        The C6 coefficient is defined such that the van der Waals interaction potential is given by
+        :math:`V(r) = -C_6/r^6`.
+        Note, the entry in the effective Hamiltonian matrix (see :meth:`get_effective_hamiltonian`)
+        has the opposite sign as the C6 coefficient.
 
         Args:
             unit: The unit in which to return the C6 coefficient.
@@ -67,7 +72,7 @@ class C6(EffectiveSystemPair):
         """
         h_eff_pint = self.get_effective_hamiltonian(return_order=2)
         distance = self.system_pair.get_distance()
-        c6_pint = h_eff_pint[0, 0] * distance**6  # type: ignore [index]  # pint does not know it can be indexed
+        c6_pint = -h_eff_pint[0, 0] * distance**6  # type: ignore [index]  # pint does not know it can be indexed
         return QuantityScalar.convert_pint_to_user(c6_pint, "c6", unit)
 
 

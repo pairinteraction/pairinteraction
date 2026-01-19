@@ -181,7 +181,7 @@ def test_c6_with_sample_system(pi_module: PairinteractionModule, system_pair_sam
     c6_obj.system_pair = system_pair_sample
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
-    assert np.isclose(c6, 167.880)
+    assert np.isclose(c6, -167.880)
 
 
 def test_c6(pi_module: PairinteractionModule) -> None:
@@ -193,7 +193,7 @@ def test_c6(pi_module: PairinteractionModule) -> None:
     c6_obj.set_magnetic_field([0, 0, 10], "gauss")
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
-    assert np.isclose(c6, 169.149)
+    assert np.isclose(c6, -169.149)
 
 
 def test_exact_resonance_detection(
