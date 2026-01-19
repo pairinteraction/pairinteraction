@@ -135,14 +135,14 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     def get_amplitudes(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
-            return np.array(self._cpp.get_amplitudes(other._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            return np.array(self._cpp.get_amplitudes(other._cpp))
         if is_ket_atom_tuple(other):
             ket_cpp = (other[0]._cpp, other[1]._cpp)
             return np.array(self._cpp.get_amplitudes(*ket_cpp))
 
         # BasisPair like
         if isinstance(other, BasisPair):
-            return self._cpp.get_amplitudes(other._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            return self._cpp.get_amplitudes(other._cpp)
         if is_basis_atom_tuple(other):
             basis_cpp = (other[0]._cpp, other[1]._cpp)
             return self._cpp.get_amplitudes(*basis_cpp)
@@ -158,14 +158,14 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     def get_overlaps(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
-            return np.array(self._cpp.get_overlaps(other._cpp))  # type: ignore [call-overload] # _backend.pyi is incorrect
+            return np.array(self._cpp.get_overlaps(other._cpp))
         if is_ket_atom_tuple(other):
             ket_cpp = (other[0]._cpp, other[1]._cpp)
             return np.array(self._cpp.get_overlaps(*ket_cpp))
 
         # BasisPair like
         if isinstance(other, BasisPair):
-            return self._cpp.get_overlaps(other._cpp)  # type: ignore [call-overload,no-any-return] # _backend.pyi is incorrect
+            return self._cpp.get_overlaps(other._cpp)
         if is_basis_atom_tuple(other):
             basis_cpp = (other[0]._cpp, other[1]._cpp)
             return self._cpp.get_overlaps(*basis_cpp)
