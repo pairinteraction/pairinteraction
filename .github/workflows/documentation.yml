@@ -72,7 +72,7 @@ jobs:
     - name: Install PairInteraction into virtual environment
       run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON . --group tests
     - name: Run pytest
-      run: uv run --no-project pytest
+      run: uv run --no-project pytest -s
     - name: Generate Code Coverage HTML report
       working-directory: build/
       run: |
