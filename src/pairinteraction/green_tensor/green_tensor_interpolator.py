@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeVar, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
@@ -14,9 +14,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 
-    from pairinteraction.units import Dimension, NDArray, PintArray, PintFloat
-
-    Quantity = TypeVar("Quantity", float, "PintFloat")
+    from pairinteraction.units import Dimension, NDArray, PintArray
 
 
 class GreenTensorInterpolator:
