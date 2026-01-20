@@ -1,11 +1,11 @@
 # SPDX-FileCopyrightText: 2024 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-# ruff: noqa: N802, N806, ARG001
+# ruff: noqa: N802, N806
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import scipy.constants as const
@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from pairinteraction.units import NDArray
 
     def bessel_function(v: float, z: complex) -> complex: ...  # type: ignore [misc]
+
+    Entries = Literal["xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz"]
 
 
 def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex) -> NDArray:
@@ -191,7 +193,7 @@ def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     ) / D(r_plus, r_minus, kz, h)
 
 
-def Gs_xx(
+def Gs(
     kz: complex,
     h: float,
     k_rho: complex,
@@ -199,208 +201,77 @@ def Gs_xx(
     phi: float,
     rs_plus: complex,
     rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
     z_ges: float,
     z_ab: float,
+    entry: Entries,
 ) -> complex:
-    """Calculate the Gs_{xx} matrix element of the scattering Green's Tensor."""
-    J0 = bessel_function(0, k_rho * rho)
-    J2 = bessel_function(2, k_rho * rho)
-    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-    return As_plus / 2 * (J0 + J2 * np.cos(2 * phi))
+    """Calculate the Gs part of the scattering Green Tensor."""
+    if entry in ["xz", "yz", "zx", "zy", "zz"]:
+        return 0
+    if entry == "xx":
+        J0 = bessel_function(0, k_rho * rho)
+        J2 = bessel_function(2, k_rho * rho)
+        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
+        return As_plus / 2 * (J0 + J2 * np.cos(2 * phi))
+    if entry == "yy":
+        J0 = bessel_function(0, k_rho * rho)
+        J2 = bessel_function(2, k_rho * rho)
+        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
+        return As_plus / 2 * (J0 - J2 * np.cos(2 * phi))
+    if entry in ["xy", "yx"]:
+        J2 = bessel_function(2, k_rho * rho)
+        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
+        return -As_plus / 2 * J2 * np.sin(2 * phi)
+
+    raise ValueError(f"Invalid entry '{entry}' for Gs function.")
 
 
-def Gs_yy(
+def Gp(  # noqa: PLR0911
     kz: complex,
     h: float,
     k_rho: complex,
     rho: float,
     phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
     rp_plus: complex,
     rp_minus: complex,
     z_ges: float,
     z_ab: float,
+    entry: Entries,
 ) -> complex:
-    """Calculate the Gs_{yy} matrix element of the scattering Green's Tensor."""
-    J0 = bessel_function(0, k_rho * rho)
-    J2 = bessel_function(2, k_rho * rho)
-    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-    return As_plus / 2 * (J0 - J2 * np.cos(2 * phi))
+    """Calculate the Gp part of the scattering Green Tensor."""
+    if entry == "xx":
+        J0 = bessel_function(0, k_rho * rho)
+        J2 = bessel_function(2, k_rho * rho)
+        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return Ap_minus / 2 * (J0 - J2 * np.cos(2 * phi))
+    if entry == "yy":
+        J0 = bessel_function(0, k_rho * rho)
+        J2 = bessel_function(2, k_rho * rho)
+        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return Ap_minus / 2 * (J0 + J2 * np.cos(2 * phi))
+    if entry == "zz":
+        J0 = bessel_function(0, k_rho * rho)
+        Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return -(k_rho**2 / kz**2) * Ap_plus * J0
+    if entry in ["xy", "yx"]:
+        J2 = bessel_function(2, k_rho * rho)
+        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return Ap_minus / 2 * J2 * np.sin(2 * phi)
+    if entry == "xz":
+        J1 = bessel_function(1, k_rho * rho)
+        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return 1j * (k_rho / kz) * Bp_plus * J1 * np.cos(phi)
+    if entry == "zx":
+        J1 = bessel_function(1, k_rho * rho)
+        Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        return -1j * (k_rho / kz) * Bp_minus * J1 * np.cos(phi)
+    if entry in ["yz", "zy"]:
+        J1 = bessel_function(1, k_rho * rho)
+        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        prefactor = +1 if entry == "yz" else -1
+        return prefactor * 1j * (k_rho / kz) * Bp_plus * J1 * np.sin(phi)
 
-
-def Gp_xx(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    """Calculate the Gp_{xx} matrix element of the scattering Green's Tensor."""
-    J0 = bessel_function(0, k_rho * rho)
-    J2 = bessel_function(2, k_rho * rho)
-    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return Ap_minus / 2 * (J0 - J2 * np.cos(2 * phi))
-
-
-def Gp_yy(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    """Calculate the Gp_{yy} matrix element of the scattering Green's Tensor."""
-    J0 = bessel_function(0, k_rho * rho)
-    J2 = bessel_function(2, k_rho * rho)
-    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return Ap_minus / 2 * (J0 + J2 * np.cos(2 * phi))
-
-
-def Gp_zz(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    """Calculate the Gp_{zz} matrix element of the scattering Green's Tensor."""
-    J0 = bessel_function(0, k_rho * rho)
-    Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return -(k_rho**2 / kz**2) * Ap_plus * J0
-
-
-def Gs_xy(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    """Calculate the Gs_{xy} matrix element of the scattering Green's Tensor."""
-    J2 = bessel_function(2, k_rho * rho)
-    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-    return -As_plus / 2 * J2 * np.sin(2 * phi)
-
-
-def Gp_xy(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    J2 = bessel_function(2, k_rho * rho)
-    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return Ap_minus / 2 * J2 * np.sin(2 * phi)
-
-
-def Gp_xz(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    J1 = bessel_function(1, k_rho * rho)
-    Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return 1j * (k_rho / kz) * Bp_plus * J1 * np.cos(phi)
-
-
-def Gp_zx(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    J1 = bessel_function(1, k_rho * rho)
-    Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return -1j * (k_rho / kz) * Bp_minus * J1 * np.cos(phi)
-
-
-def Gp_yz(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    J1 = bessel_function(1, k_rho * rho)
-    Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return 1j * (k_rho / kz) * Bp_plus * J1 * np.sin(phi)
-
-
-def Gp_zy(
-    kz: complex,
-    h: float,
-    k_rho: complex,
-    rho: float,
-    phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
-    rp_plus: complex,
-    rp_minus: complex,
-    z_ges: float,
-    z_ab: float,
-) -> complex:
-    J1 = bessel_function(1, k_rho * rho)
-    Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-    return -1j * (k_rho / kz) * Bp_plus * J1 * np.sin(phi)
-
-
-def zero(*_args: complex, **_kwargs: complex) -> complex:
-    return 0
+    raise ValueError(f"Invalid entry '{entry}' for Gp function.")
 
 
 """ The integrals for the scattering Green Tensor are evaluated in two parts:
@@ -424,8 +295,7 @@ def elliptic_integral(
     epsilon2: complex,
     z_ges: float,
     z_ab: float,
-    gs: Callable[..., complex],
-    gp: Callable[..., complex],
+    entry: Entries,
 ) -> complex:
     """Evaluate the elliptic part of the integral.
 
@@ -439,8 +309,7 @@ def elliptic_integral(
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         z_ges: Sum of the z-positions of the two atoms in meters
         z_ab: Difference of the z-positions of the two atoms in meters
-        gs: Function to calculate the s-polarized contribution to the Green tensor
-        gp: Function to calculate the p-polarized contribution to the Green tensor.
+        entry: Entry of the Green tensor to calculate
 
     Returns: The value of the integral along the elliptical path as a complex number (1/m)
 
@@ -476,8 +345,8 @@ def elliptic_integral(
             1j
             / (4 * np.pi)
             * (
-                gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, rp_plus, rp_minus, z_ges, z_ab)
-                - (kz**2 / k0**2) * gp(kz, h, k_rho, rho, phi, rs_plus, rs_minus, rp_plus, rp_minus, z_ges, z_ab)
+                Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+                - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
             )
             * (k_rho / kz)
             * np.exp(1j * kz * h)
@@ -506,8 +375,7 @@ def real_axis_integral(
     epsilon2: complex,
     z_ges: float,
     z_ab: float,
-    gs: Callable[..., complex],
-    gp: Callable[..., complex],
+    entry: Entries,
     upper_limit: float,
 ) -> complex:
     """Evaluate the real axis part of the integral.
@@ -522,8 +390,7 @@ def real_axis_integral(
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         z_ges: Sum of the z-positions of the two atoms in meters
         z_ab: Difference of the z-positions of the two atoms in meters
-        gs: Function to calculate the s-polarized contribution to the Green tensor
-        gp: Function to calculate the p-polarized contribution to the Green tensor
+        entry: Entry of the Green tensor to calculate
         upper_limit: Upper limit for the real axis integral (1/m)
 
     Returns: The value of the integral along the real axis as a complex number (1/m)
@@ -552,8 +419,8 @@ def real_axis_integral(
             1j
             / (4 * np.pi)
             * (
-                gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, rp_plus, rp_minus, z_ges, z_ab)
-                - (kz**2 / k0**2) * gp(kz, h, k_rho, rho, phi, rs_plus, rs_minus, rp_plus, rp_minus, z_ges, z_ab)
+                Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+                - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
             )
             * (k_rho / kz)
             * np.exp(1j * kz * h)
@@ -601,21 +468,13 @@ def green_tensor_scattered(
     k0 = k_vac * np.sqrt(epsilon0 + 0j)
     upper_limit_real_integral = np.sqrt((745 / (np.real(k0) * h)) ** 2 + 1)
 
-    # Matrices of scattered Green's functions for s- and p-polarized light
-    gs_matrix = np.array([[Gs_xx, Gs_xy, zero], [Gs_xy, Gs_yy, zero], [zero, zero, zero]])
-    gp_matrix = np.array([[Gp_xx, Gp_xy, Gp_xz], [Gp_xy, Gp_yy, Gp_yz], [Gp_zx, Gp_zy, Gp_zz]])
-
     gt_total = np.zeros((3, 3), dtype=complex)
-
-    for i in range(3):
-        for j in range(3):
-            gs_ij = gs_matrix[i][j]
-            gp_ij = gp_matrix[i][j]
-            g_ij_elliptic = elliptic_integral(
-                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, gs_ij, gp_ij
-            )
+    for i, ix in enumerate(["x", "y", "z"]):
+        for j, jx in enumerate(["x", "y", "z"]):
+            entry: Entries = ix + jx  # type: ignore [assignment]
+            g_ij_elliptic = elliptic_integral(omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry)
             g_ij_real = real_axis_integral(
-                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, gs_ij, gp_ij, upper_limit_real_integral
+                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry, upper_limit_real_integral
             )
             gt_total[i][j] = g_ij_elliptic + g_ij_real
 
