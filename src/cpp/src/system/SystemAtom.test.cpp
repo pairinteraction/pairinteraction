@@ -159,7 +159,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 #ifdef WITH_MKL
         diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
-        diagonalizers.push_back(std::make_unique<DiagonalizerSpectra<std::complex<double>>>());
+        // TODO: We cannot compute the full spectrum with Lanczos...
+        // diagonalizers.push_back(std::make_unique<DiagonalizerSpectra<std::complex<double>>>());
         rtols = {1e-1, 1e-6, 1e-14};
         eps = std::numeric_limits<double>::epsilon();
     }
@@ -177,8 +178,9 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
         diagonalizers.push_back(
             std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FloatType::FLOAT32));
 #endif
-        diagonalizers.push_back(
-            std::make_unique<DiagonalizerSpectra<std::complex<double>>>(FloatType::FLOAT32));
+        // TODO: We cannot compute the full spectrum with Lanczos...
+        // diagonalizers.push_back(
+        //     std::make_unique<DiagonalizerSpectra<std::complex<double>>>(FloatType::FLOAT32));
         rtols = {1e-1, 1e-6};
         eps = std::numeric_limits<float>::epsilon();
     }

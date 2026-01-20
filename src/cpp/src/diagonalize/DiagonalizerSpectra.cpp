@@ -49,7 +49,10 @@ EigenSystemH<Scalar> DiagonalizerSpectra<Scalar>::dispatch_eigh(
     OpType op(shifted_matrix);
     SolType eigensolver(op, nev.value_or(half), ncv.value_or(full));
     eigensolver.init();
-    eigensolver.compute(Spectra::SortRule::SmallestMagn);
+    eigensolver.compute(/* selection */ Spectra::SortRule::SmallestMagn,
+                        /* maxit */ 1000,
+                        /* tol */ 1e-10,
+                        /* sorting */ Spectra::SortRule::SmallestAlge);
     assert(eigensolver.info() == Spectra::CompInfo::Successful);
 
     return {eigensolver.eigenvectors()
