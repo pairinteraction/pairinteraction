@@ -70,8 +70,8 @@ class GreenTensorCavity(GreenTensorBase):
         surface1_epsilon = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
         surface2_z = self.surface2_z_au * au_to_meter
         surface2_epsilon = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
-
-        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+        omega_freq = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
+        omega_hz = omega_freq.magnitude
 
         """ Assumption for the system: The atoms are located at positions pos1 and pos2 at z_A=z_B=h/2. """
 
@@ -82,6 +82,9 @@ class GreenTensorCavity(GreenTensorBase):
         # Set height h
         h = surface1_z - surface2_z
 
-        return utils.green_tensor_total(
-            pos1_shifted, pos2_shifted, omega, epsilon, surface1_epsilon, surface2_epsilon, h
+        gt = utils.green_tensor_total(
+            pos1_shifted, pos2_shifted, omega_hz, epsilon, surface1_epsilon, surface2_epsilon, h
         )
+        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
+        # see green_tensor_free_space for details on the prefactors
+        return np.real(gt)
