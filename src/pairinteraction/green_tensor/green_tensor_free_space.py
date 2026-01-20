@@ -6,10 +6,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-from green_tensor import utils
-from green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
-from pairinteraction.constants import meter_to_au
 
+from pairinteraction.green_tensor import utils
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
@@ -40,4 +39,5 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
 
         gt = utils.green_tensor_homogeneous(pos1, pos2, omega, epsilon)
+        meter_to_au = ureg.Quantity(1, "meter").to("atomic_unit_of_length").magnitude
         return gt * 1 / (meter_to_au)

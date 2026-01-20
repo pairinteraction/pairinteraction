@@ -6,9 +6,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 import numpy as np
-from green_tensor import utils
-from green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 
+from pairinteraction.green_tensor import utils
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -61,8 +61,6 @@ class GreenTensorCavity(GreenTensorBase):
         if self.pos1_au is None or self.pos2_au is None:
             raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
 
-        gt = np.zeros((3, 3), dtype=complex)
-
         au_to_meter = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1 = np.array(self.pos1_au) * au_to_meter
         pos2 = np.array(self.pos2_au) * au_to_meter
@@ -84,6 +82,6 @@ class GreenTensorCavity(GreenTensorBase):
         # Set height h
         h = surface1_z - surface2_z
 
-        gt = utils.green_tensor_total(pos1_shifted, pos2_shifted, omega, epsilon, surface1_epsilon, surface2_epsilon, h)
-
-        return gt
+        return utils.green_tensor_total(
+            pos1_shifted, pos2_shifted, omega, epsilon, surface1_epsilon, surface2_epsilon, h
+        )
