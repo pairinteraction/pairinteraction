@@ -183,7 +183,7 @@ class GreenTensorInterpolator:
         return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 
     def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list[Dimension]:
-        return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2 + 1)]]  # type: ignore [list-item]
+        return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2)]]  # type: ignore [list-item]
 
 
 class GreenTensorInterpolatorReal(GreenTensorInterpolator):
