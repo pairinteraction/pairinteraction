@@ -100,11 +100,13 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
 
     auto eigensys = eigh(matrix, rtol);
 
+    const int nev = eigensys.eigenvalues.rows();
+
     auto *it_begin =
-        std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+        std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + nev,
                          min_eigenvalue.value_or(std::numeric_limits<real_t>::lowest() / 2));
     auto *it_end =
-        std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+        std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + nev,
                          max_eigenvalue.value_or(std::numeric_limits<real_t>::max() / 2));
     eigensys.eigenvectors = eigensys.eigenvectors
                                 .block(0, std::distance(eigensys.eigenvalues.data(), it_begin), dim,
