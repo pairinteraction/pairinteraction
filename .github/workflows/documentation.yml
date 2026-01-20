@@ -108,8 +108,9 @@ jobs:
         uv run --no-project coverage run --append --source=src,tests -m pytest --generate-reference
         uv run --no-project coverage run --append --source=src,tests -m pytest
     - name: Generate Code Coverage HTML report
-      run: |
-        uv run --no-project coverage lcov -o coverage.info
+      run: |  # sed is a workaround, since genhtml does not support "FN:" lines with end column information
+        uv run --no-project coverage lcov -o coverage-orig.info
+        sed -E 's/^(FN:)([0-9]+),([0-9]+),(.*)/\1\2,\4/' coverage-orig.info > coverage.info
         genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75
     - name: Generate Code Coverage Badge
       run: |
