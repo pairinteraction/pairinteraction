@@ -185,9 +185,9 @@ class SystemPair(SystemBase[BasisPair]):
             raise ValueError("omega_steps must be a positive integer.")
 
         if omega_steps == 1:
-            gt_au = green_tensor.get_dipole_dipole(omega=0, unit="hartree")
+            gt = green_tensor.get_dipole_dipole(omega=1e-10, omega_unit="Hz")
             gti = GreenTensorInterpolator()
-            gti.set_from_cartesian(1, 1, gt_au, tensor_unit="hartree")
+            gti.set_from_cartesian(1, 1, gt.magnitude, tensor_unit=str(gt.units))
             self.set_green_tensor_interpolator(gti)
             return self
 
@@ -195,7 +195,7 @@ class SystemPair(SystemBase[BasisPair]):
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
         omega_max = max(energies_au) - min(energies_au)
 
-        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
+        gti = green_tensor.get_green_tensor_interpolator(1e-10, omega_max, omega_steps, omega_unit="hartree")
         self.set_green_tensor_interpolator(gti)
         return self
 

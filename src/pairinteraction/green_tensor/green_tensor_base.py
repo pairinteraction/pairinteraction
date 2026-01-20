@@ -139,7 +139,7 @@ class GreenTensorBase(ABC):
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
         gt_au = self._get_dipole_dipole_au(omega_au)
 
-        dimension: list[Dimension] = ["green_tensor_00"] + 3 * ["inverse_distance"]  # type: ignore [assignment]
+        dimension: list[Dimension] = ["green_tensor_00"] + 2 * ["inverse_distance"]  # type: ignore [assignment]
         return QuantityArray.convert_au_to_user(gt_au, dimension, unit)
 
     @abstractmethod

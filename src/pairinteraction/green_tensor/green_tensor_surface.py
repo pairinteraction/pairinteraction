@@ -67,8 +67,8 @@ class GreenTensorSurface(GreenTensorBase):
 
         surface_z = self.surface_z_au * au_to_meter
         surface_epsilon = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
-
-        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy").magnitude  # this is the angular frequency
+        omega_freq = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
+        omega_hz = omega_freq.magnitude
 
         # Assumption for the system: The atoms are located at positions pos1 and pos2
         # above a single surface at z=surface_z
@@ -86,4 +86,7 @@ class GreenTensorSurface(GreenTensorBase):
         epsilon1 = 1.0  # upper layer is vacuum, since we only have one surface
         epsilon2 = surface_epsilon  # permittivity of the surface
 
-        return utils.green_tensor_total(pos1_shifted, pos2_shifted, omega, epsilon0, epsilon1, epsilon2, h)
+        gt = utils.green_tensor_total(pos1_shifted, pos2_shifted, omega_hz, epsilon0, epsilon1, epsilon2, h)
+        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
+        # see green_tensor_free_space for details on the prefactors
+        return np.real(gt)
