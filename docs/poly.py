@@ -188,7 +188,7 @@ ENVIRONMENT_MAPPING = {
         venv=ROOT_DIR / "tmp_venv",
         args=[
             f"pairinteraction=={LEGACY_VERSION[1:]}",
-            "sphinx",
+            "sphinx<9",
             "nbsphinx",
             "sphinxcontrib-mermaid<1",
             "sphinx_rtd_theme",
