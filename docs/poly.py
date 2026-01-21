@@ -8,6 +8,7 @@ import asyncio
 import logging
 import os
 import shutil
+import sys
 from functools import partial
 from pathlib import Path, PurePath
 from subprocess import CalledProcessError
@@ -24,6 +25,7 @@ from sphinx_polyversion.sphinx import SphinxBuilder
 
 if TYPE_CHECKING:
     import json
+    from types import TracebackType
 
     from sphinx_polyversion.git import GitRef
     from sphinx_polyversion.json import JSONable
@@ -104,7 +106,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         self.apply_patch_if_exists = apply_patch_if_exists
 
     async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:  # noqa: C901
-        self.logger.info("Building documentation for revision %s", data["current_rev"])
+        print(f"Building documentation for revision {data['current_rev']}")
 
         source_dir = str(environment.path.absolute() / self.source)
 
@@ -149,6 +151,13 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
                 self.logger.debug("Output:\n %s", out)
                 if rc:
                     raise BuildError from CalledProcessError(rc, " ".join(cmd), out, err)
+
+
+class CustomDriver(DefaultDriver):  # type: ignore [misc]
+    def build_failed(self, rev: JSONable, exc_info: tuple[type[BaseException], BaseException, TracebackType]) -> None:
+        """Override to exit with error code 1 on build failure."""
+        super().build_failed(rev, exc_info)
+        sys.exit(1)
 
 
 # Mapping of versions/revisions to builders and environments, which is used for building the documentation
@@ -197,7 +206,7 @@ ENVIRONMENT_MAPPING = {
 }
 
 # Create the actual driver instance and run it to build all wanted documentations
-driver = DefaultDriver(
+driver = CustomDriver(
     ROOT_DIR,
     output_dir=OUTPUT_DIR,
     vcs=GIT_OBJ,
