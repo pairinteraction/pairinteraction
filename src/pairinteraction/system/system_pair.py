@@ -176,6 +176,10 @@ class SystemPair(SystemBase[BasisPair]):
                 If 1, a constant Green tensor (with omega=0) is assumed.
 
         """
+        if green_tensor.pos1_au is None or green_tensor.pos2_au is None:
+            raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
+        self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
+
         if omega_steps <= 0:
             raise ValueError("omega_steps must be a positive integer.")
 
