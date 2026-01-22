@@ -8,15 +8,44 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
-#include <Spectra/HermEigsSolver.h>
-#include <Spectra/MatOp/DenseHermMatProd.h>
-#include <Spectra/MatOp/DenseSymMatProd.h>
-#include <Spectra/SymEigsSolver.h>
+#include <Spectra/HermEigsBase.h>
+#include <Spectra/MatOp/SparseSymShiftSolve.h>
+#include <Spectra/Util/SelectionRule.h>
 #include <cassert>
 #include <optional>
 #include <type_traits>
 
 namespace pairinteraction {
+
+namespace {
+using namespace Spectra;
+template <typename OpType>
+class HermEigsShiftSolver : public HermEigsBase<OpType, IdentityBOp> {
+private:
+    using Scalar = typename OpType::Scalar;
+    using RealScalar = typename Eigen::NumTraits<Scalar>::Real;
+    using Index = Eigen::Index;
+    using Array = Eigen::Array<Scalar, Eigen::Dynamic, 1>;
+
+    using Base = HermEigsBase<OpType, IdentityBOp>;
+    using Base::m_nev;
+    using Base::m_ritz_val;
+
+    const RealScalar m_sigma;
+
+    void sort_ritzpair(SortRule sort_rule) override {
+        m_ritz_val.head(m_nev).array() = RealScalar(1) / m_ritz_val.head(m_nev).array() + m_sigma;
+        Base::sort_ritzpair(sort_rule);
+    }
+
+public:
+    HermEigsShiftSolver(OpType &op, Index nev, Index ncv, const RealScalar &sigma)
+        : Base(op, IdentityBOp(), nev, ncv), m_sigma(sigma) {
+        op.set_shift(m_sigma);
+    }
+};
+
+} // namespace
 
 template <typename Scalar>
 DiagonalizerSpectra<Scalar>::DiagonalizerSpectra(FloatType float_type)
@@ -26,30 +55,23 @@ template <typename Scalar>
 template <typename ScalarLim>
 EigenSystemH<Scalar> DiagonalizerSpectra<Scalar>::dispatch_eigh(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, std::optional<Eigen::Index> nev,
-    std::optional<Eigen::Index> ncv, double rtol) const {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
+    std::optional<Eigen::Index> ncv, std::optional<real_t> sigma, double rtol) const {
     const int dim = matrix.rows();
 
     // Subtract the mean of the diagonal elements from the diagonal
-    real_t shift{};
-    Eigen::MatrixX<ScalarLim> shifted_matrix =
-        this->template subtract_mean<ScalarLim>(matrix, shift, rtol);
+    Eigen::SparseMatrix<ScalarLim> shifted_matrix = matrix.template cast<ScalarLim>();
 
     // default to half the spectrum
     const int half = std::max(dim / 2, 1);
     const int full = std::min(2 * half, dim);
 
     // Diagonalize the shifted matrix
-    using OpType = std::conditional_t<traits::NumTraits<Scalar>::is_complex_v,
-                                      Spectra::DenseHermMatProd<ScalarLim>,
-                                      Spectra::DenseSymMatProd<ScalarLim>>;
-    using SolType =
-        std::conditional_t<traits::NumTraits<Scalar>::is_complex_v, Spectra::HermEigsSolver<OpType>,
-                           Spectra::SymEigsSolver<OpType>>;
+    using OpType = Spectra::SparseSymShiftSolve<ScalarLim>;
+    using SolType = HermEigsShiftSolver<OpType>;
     OpType op(shifted_matrix);
-    SolType eigensolver(op, nev.value_or(half), ncv.value_or(full));
+    SolType eigensolver(op, nev.value_or(half), ncv.value_or(full), sigma.value_or(0.0));
     eigensolver.init();
-    eigensolver.compute(/* selection */ Spectra::SortRule::SmallestMagn,
+    eigensolver.compute(/* selection */ Spectra::SortRule::LargestMagn,
                         /* maxit */ 1000,
                         /* tol */ 1e-10,
                         /* sorting */ Spectra::SortRule::SmallestAlge);
@@ -58,28 +80,59 @@ EigenSystemH<Scalar> DiagonalizerSpectra<Scalar>::dispatch_eigh(
     return {eigensolver.eigenvectors()
                 .sparseView(1, 0.5 * rtol / std::sqrt(dim))
                 .template cast<Scalar>(),
-            this->add_mean(eigensolver.eigenvalues(), shift)};
+            eigensolver.eigenvalues().template cast<real_t>()};
 }
 
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerSpectra<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                   double rtol) const {
-    return this->eigh(matrix, std::nullopt, std::nullopt, rtol);
+    return this->eigh(matrix, std::nullopt, std::nullopt, std::nullopt, rtol);
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerSpectra<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                  std::optional<real_t> min_eigenvalue,
+                                  std::optional<real_t> max_eigenvalue, double rtol) const {
+    if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
+        throw std::invalid_argument("The Spectra routine requires a search interval.");
+    }
+    real_t sigma = .5 * (min_eigenvalue.value() + max_eigenvalue.value());
+
+    auto eigensys = this->eigh(matrix, std::nullopt, std::nullopt, sigma, rtol);
+
+    const int dim = matrix.rows();
+    const int nev = eigensys.eigenvalues.rows();
+
+    auto *it_begin = std::lower_bound(eigensys.eigenvalues.data(),
+                                      eigensys.eigenvalues.data() + nev, min_eigenvalue.value());
+    auto *it_end = std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + nev,
+                                    max_eigenvalue.value());
+    eigensys.eigenvectors = eigensys.eigenvectors
+                                .block(0, std::distance(eigensys.eigenvalues.data(), it_begin), dim,
+                                       std::distance(it_begin, it_end))
+                                .eval();
+    eigensys.eigenvalues = eigensys.eigenvalues
+                               .segment(std::distance(eigensys.eigenvalues.data(), it_begin),
+                                        std::distance(it_begin, it_end))
+                               .eval();
+
+    return eigensys;
 }
 
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerSpectra<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                   std::optional<Eigen::Index> nev, std::optional<Eigen::Index> ncv,
-                                  double rtol) const {
+                                  std::optional<real_t> sigma, double rtol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, nev, ncv,
-                                                                               rtol);
+                                                                               sigma, rtol);
     case FloatType::FLOAT64:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(matrix, nev, ncv,
-                                                                               rtol);
+                                                                               sigma, rtol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }

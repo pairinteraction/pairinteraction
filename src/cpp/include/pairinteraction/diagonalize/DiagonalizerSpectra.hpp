@@ -21,14 +21,18 @@ public:
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               double rtol) const override;
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                              std::optional<real_t> min_eigenvalue,
+                              std::optional<real_t> max_eigenvalue, double rtol) const override;
+    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               std::optional<Eigen::Index> nev, std::optional<Eigen::Index> ncv,
-                              double rtol) const override;
+                              std::optional<real_t> sigma, double rtol) const override;
 
 private:
     template <typename ScalarLim>
     EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                        std::optional<Eigen::Index> nev,
-                                       std::optional<Eigen::Index> ncv, double rtol) const;
+                                       std::optional<Eigen::Index> ncv, std::optional<real_t> sigma,
+                                       double rtol) const;
 };
 
 extern template class DiagonalizerSpectra<double>;

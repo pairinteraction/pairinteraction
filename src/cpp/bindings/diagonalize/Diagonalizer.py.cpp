@@ -72,11 +72,21 @@ static void declare_diagonalizer_lapacke_evr(nb::module_ &m, std::string const &
 template <typename T>
 static void declare_diagonalizer_spectra(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "DiagonalizerSpectra" + type_name;
+    using real_t = typename DiagonalizerSpectra<T>::real_t;
     nb::class_<DiagonalizerSpectra<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerSpectra<T>::eigh, nb::const_));
+                 &DiagonalizerSpectra<T>::eigh, nb::const_))
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
+                               std::optional<real_t>, std::optional<real_t>, double>(
+                 &DiagonalizerSpectra<T>::eigh, nb::const_))
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
+                               std::optional<Eigen::Index>, std::optional<Eigen::Index>,
+                               std::optional<real_t>, double>(&DiagonalizerSpectra<T>::eigh,
+                                                              nb::const_));
 }
 
 template <typename T>

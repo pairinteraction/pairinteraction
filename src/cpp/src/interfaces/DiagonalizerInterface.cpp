@@ -121,10 +121,9 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                    std::optional<Eigen::Index> nev,
-                                    std::optional<Eigen::Index> /* ncv */, double rtol) const {
+EigenSystemH<Scalar> DiagonalizerInterface<Scalar>::eigh(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, std::optional<Eigen::Index> nev,
+    std::optional<Eigen::Index> /* ncv */, std::optional<real_t> /* sigma */, double rtol) const {
     // default to half the spectrum
     const int dim = matrix.rows();
     const int half = std::max(dim / 2, 1);
