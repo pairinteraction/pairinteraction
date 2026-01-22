@@ -23,7 +23,8 @@ if TYPE_CHECKING:
     )
     from pairinteraction.units import (
         ArrayLike,
-        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
+        NDArray,
+        PintArray,  # needed for sphinx to recognize PintArrayLike
         PintArrayLike,
         PintFloat,
     )
@@ -72,7 +73,7 @@ class SystemPair(SystemBase[BasisPair]):
         """
         self._cpp = self._cpp_type(basis._cpp)
         self._basis = basis
-        self._distance_vector_au = [0, 0, np.inf]
+        self._distance_vector_au = np.array([0, 0, np.inf])
         self._interaction_order = 3
 
     def get_eigenbasis(self) -> BasisPair:
@@ -135,17 +136,17 @@ class SystemPair(SystemBase[BasisPair]):
         """
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
-        self._distance_vector_au = distance_au
+        self._distance_vector_au = np.array(distance_au)
         return self
 
     @overload
-    def get_distance_vector(self, unit: None = None) -> list[PintFloat]: ...
+    def get_distance_vector(self, unit: None = None) -> PintArray: ...
 
     @overload
-    def get_distance_vector(self, unit: str) -> list[float]: ...
+    def get_distance_vector(self, unit: str) -> NDArray: ...
 
-    def get_distance_vector(self, unit: str | None = None) -> list[float] | list[PintFloat]:
-        return [QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
+    def get_distance_vector(self, unit: str | None = None) -> NDArray | PintArray:
+        return np.array([QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au])  # type: ignore [return-value]
 
     @overload
     def get_distance(self, unit: None = None) -> PintFloat: ...
