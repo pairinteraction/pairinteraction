@@ -85,6 +85,6 @@ class GreenTensorCavity(GreenTensorBase):
         gt = utils.green_tensor_total(
             pos1_shifted, pos2_shifted, omega_hz, epsilon, surface1_epsilon, surface2_epsilon, h
         )
-        gt *= 8 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
+        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
         # see green_tensor_free_space for details on the prefactors
         return np.real(gt)

@@ -39,7 +39,6 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega_hz = omega_freq.magnitude
 
         gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon)  # 1/m
-        gt *= 2  # TODO not sure why this is needed
         gt *= 4 * np.pi  # Planck units to SI units
         gt *= au_to_meter  # 1/bohr
         gt *= (omega_freq / ureg.speed_of_light).to_base_units().m ** 2  # gt: 1/bohr^3
