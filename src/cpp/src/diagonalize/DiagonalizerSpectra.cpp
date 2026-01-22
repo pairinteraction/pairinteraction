@@ -12,6 +12,8 @@
 #include <Spectra/MatOp/SparseSymShiftSolve.h>
 #include <Spectra/Util/SelectionRule.h>
 #include <cassert>
+#include <cmath>
+#include <limits>
 #include <optional>
 #include <type_traits>
 
@@ -56,14 +58,14 @@ template <typename ScalarLim>
 EigenSystemH<Scalar> DiagonalizerSpectra<Scalar>::dispatch_eigh(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, std::optional<Eigen::Index> nev,
     std::optional<Eigen::Index> ncv, std::optional<real_t> sigma, double rtol) const {
-    const int dim = matrix.rows();
 
     // Subtract the mean of the diagonal elements from the diagonal
     Eigen::SparseMatrix<ScalarLim> shifted_matrix = matrix.template cast<ScalarLim>();
 
     // default to half the spectrum
-    const int half = std::max(dim / 2, 1);
-    const int full = std::min(2 * half, dim);
+    const Eigen::Index dim = matrix.rows();
+    const Eigen::Index half = std::max(dim / 2, Eigen::Index{1});
+    const Eigen::Index full = std::min(2 * nev.value_or(half), dim);
 
     // Diagonalize the shifted matrix
     using OpType = Spectra::SparseSymShiftSolve<ScalarLim>;
@@ -98,9 +100,11 @@ DiagonalizerSpectra<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
     if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
         throw std::invalid_argument("The Spectra routine requires a search interval.");
     }
-    real_t sigma = .5 * (min_eigenvalue.value() + max_eigenvalue.value());
+    const real_t sigma = .5 * (min_eigenvalue.value() + max_eigenvalue.value());
+    const auto [global_lower, global_upper, lower_count, upper_count] =
+        this->gershgorin_bounds(matrix, min_eigenvalue.value(), max_eigenvalue.value());
 
-    auto eigensys = this->eigh(matrix, std::nullopt, std::nullopt, sigma, rtol);
+    auto eigensys = this->eigh(matrix, upper_count, std::nullopt, sigma, rtol);
 
     const int dim = matrix.rows();
     const int nev = eigensys.eigenvalues.rows();

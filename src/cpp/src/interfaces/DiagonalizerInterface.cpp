@@ -9,6 +9,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
+#include <cassert>
+#include <limits>
 #include <optional>
 #include <spdlog/spdlog.h>
 
@@ -89,6 +91,74 @@ DiagonalizerInterface<Scalar>::add_mean(const Eigen::VectorX<RealLim> &shifted_e
     Eigen::VectorX<real_t> eigenvalues = shifted_eigenvalues.template cast<real_t>();
     eigenvalues.array() += shift;
     return eigenvalues;
+}
+
+/// @brief Gershgorin-based spectral enclosure and eigenvalue count bounds.
+///
+/// Computes global lower and upper bounds enclosing the entire eigenvalue
+/// spectrum using Gershgorin intervals, and estimates how many eigenvalues
+/// lie within a specified interval [`lower_bound`, `upper_bound`].
+///
+/// The eigenvalue counts are rigorous bounds:
+/// - `lower_count` is a guaranteed minimum number of eigenvalues in the interval
+/// - `upper_count` is a maximum possible number of eigenvalues in the interval
+///
+/// No eigenvalues are computed; the algorithm runs in O(nnz).
+///
+/// @note The matrix is assumed to be symmetric (real) or Hermitian (complex).
+///       For non-Hermitian matrices, the bounds apply to the spectrum in the
+///       complex plane and the counting interpretation is no longer valid.
+///
+/// @param A Symmetric (or Hermitian) sparse matrix (row-major).
+/// @param lower_bound Lower bound of the interval of interest.
+/// @param upper_bound Upper bound of the interval of interest.
+/// @return Tuple (global_lower, global_upper, lower_count, upper_count).
+template <typename Scalar>
+std::tuple<typename DiagonalizerInterface<Scalar>::real_t,
+           typename DiagonalizerInterface<Scalar>::real_t, Eigen::Index, Eigen::Index>
+DiagonalizerInterface<Scalar>::gershgorin_bounds(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &A, const real_t lower_bound,
+    const real_t upper_bound) const {
+    using InnerIterator = typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator;
+
+    assert(lower_bound < upper_bound);
+
+    Eigen::Index lower_count = 0;
+    Eigen::Index upper_count = 0;
+
+    real_t global_lower = std::numeric_limits<real_t>::infinity();
+    real_t global_upper = -std::numeric_limits<real_t>::infinity();
+
+    for (Eigen::Index i = 0; i < A.rows(); ++i) {
+        real_t diag = 0;
+        real_t row_sum = 0;
+
+        for (InnerIterator it(A, i); it; ++it) {
+            if (it.col() == i) {
+                diag = std::real(it.value());
+            } else {
+                row_sum += std::abs(it.value());
+            }
+        }
+
+        real_t row_lower = diag - row_sum;
+        real_t row_upper = diag + row_sum;
+
+        // Fully contained -> guaranteed eigenvalue
+        if (row_lower >= lower_bound && row_upper <= upper_bound) {
+            ++lower_count;
+        }
+
+        // Intersects -> possible eigenvalue
+        if (!(row_upper < lower_bound || row_lower > upper_bound)) {
+            ++upper_count;
+        }
+
+        global_lower = std::min(global_lower, row_lower);
+        global_upper = std::max(global_upper, row_upper);
+    }
+
+    return {global_lower, global_upper, lower_count, upper_count};
 }
 
 template <typename Scalar>

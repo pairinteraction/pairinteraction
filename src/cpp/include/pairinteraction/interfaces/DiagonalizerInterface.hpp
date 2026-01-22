@@ -12,6 +12,7 @@
 #include <Eigen/SparseCore>
 #include <complex>
 #include <optional>
+#include <tuple>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -48,6 +49,10 @@ protected:
                                             double rtol) const;
     template <typename RealLim>
     Eigen::VectorX<real_t> add_mean(const Eigen::VectorX<RealLim> &eigenvalues, real_t shift) const;
+
+    std::tuple<real_t, real_t, Eigen::Index, Eigen::Index>
+    gershgorin_bounds(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &A,
+                      const real_t lower_bound, const real_t upper_bound) const;
 };
 
 extern template class DiagonalizerInterface<double>;
