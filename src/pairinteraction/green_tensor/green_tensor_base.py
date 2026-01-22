@@ -48,10 +48,6 @@ class GreenTensorBase(ABC):
         """
         self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
         self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
-
-        if self.pos1_au[1] != self.pos2_au[1] or self.pos1_au[2] != self.pos2_au[2]:
-            raise NotImplementedError("Green tensors are currently only implemented for atoms in the same y-z plane")
-
         return self
 
     def set_electric_permitivity(self, epsilon: complex | Callable[[PintFloat], complex]) -> Self:
