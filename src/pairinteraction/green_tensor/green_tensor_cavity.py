@@ -67,24 +67,28 @@ class GreenTensorCavity(GreenTensorBase):
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
 
         surface1_z = self.surface1_z_au * au_to_meter
-        surface1_epsilon = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
         surface2_z = self.surface2_z_au * au_to_meter
-        surface2_epsilon = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
         omega_freq = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
         omega_hz = omega_freq.magnitude
 
-        """ Assumption for the system: The atoms are located at positions pos1 and pos2 at z_A=z_B=h/2. """
+        height = abs(surface1_z - surface2_z)
+        pos1_shifted = pos1 - np.array([0, 0, min(surface1_z, surface2_z)])
+        pos2_shifted = pos2 - np.array([0, 0, min(surface1_z, surface2_z)])
 
-        # If lower surface of the system surface2_z =/ 0, we need to shift the positions accordingly
-        pos1_shifted = pos1 - np.array([0, 0, surface2_z])
-        pos2_shifted = pos2 - np.array([0, 0, surface2_z])
+        if not 0 < pos1_shifted[2] < height or not 0 < pos2_shifted[2] < height:
+            raise ValueError("Both atoms must be located inside the cavity between the two surfaces.")
 
-        # Set height h
-        h = surface1_z - surface2_z
+        if surface2_z < surface1_z:
+            epsilon_top = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+        else:
+            epsilon_top = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
 
         gt = utils.green_tensor_total(
-            pos1_shifted, pos2_shifted, omega_hz, epsilon, surface1_epsilon, surface2_epsilon, h
+            pos1_shifted, pos2_shifted, omega_hz, epsilon, epsilon_top, epsilon_bottom, height
         )
-        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
+
         # see green_tensor_free_space for details on the prefactors
+        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
         return np.real(gt)
