@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import scipy.constants as const
+from numba import njit
 from scipy.integrate import quad
 from scipy.special import jv as bessel_function
 
@@ -36,7 +37,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)  # magnitude of wave vector in medium with permittivity epsilon0
+    k0 = k_vac * np.sqrt(epsilon0)  # magnitude of wave vector in medium with permittivity epsilon0
     r = r_a - r_b
     r_norm = np.linalg.norm(r)
 
@@ -47,6 +48,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
     )
 
 
+@njit(cache=True)
 def branch(epsilon: complex, k: float, k_rho: float) -> complex:
     """Calculate the perpendicular wave vector component with positive imaginary part.
 
@@ -67,6 +69,7 @@ and are needed to calculate the scattering Green Tensor for two atoms between tw
 """
 
 
+@njit(cache=True)
 def rs(kz: complex, k1z: complex) -> complex:
     """Calculate the Fresnel reflection coefficient for s-polarized light.
 
@@ -80,6 +83,7 @@ def rs(kz: complex, k1z: complex) -> complex:
     return (kz - k1z) / (kz + k1z)
 
 
+@njit(cache=True)
 def rp(kz: complex, k1z: complex, epsilon: complex) -> complex:
     """Calculate the Fresnel reflection coefficient for p-polarized light.
 
@@ -94,6 +98,7 @@ def rp(kz: complex, k1z: complex, epsilon: complex) -> complex:
     return (epsilon * kz - k1z) / (epsilon * kz + k1z)
 
 
+@njit(cache=True)
 def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
     """Calculate the denominator term D used in the scattering Green Tensor matrix elements.
 
@@ -109,6 +114,7 @@ def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
     return 1 - r_plus * r_minus * np.exp(2j * kz * h)
 
 
+@njit(cache=True)
 def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
     """Calculate the numerator term A_plus used in the scattering Green Tensor matrix elements.
 
@@ -130,6 +136,7 @@ def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
     """Calculate the numerator term A_minus used in the scattering Green Tensor matrix elements.
 
@@ -151,6 +158,7 @@ def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
     """Calculate the numerator term B_plus used in the scattering Green Tensor matrix elements.
 
@@ -172,6 +180,7 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
     """Calculate the numerator term B_minus used in the scattering Green Tensor matrix elements.
 
@@ -315,11 +324,11 @@ def elliptic_integral(
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0)
 
     # Elliptical path in complex plane to avoid singularities (Integral from 0 to 2k_maj)
-    k1 = k_vac * np.sqrt(epsilon1 + 0j)
-    k2 = k_vac * np.sqrt(epsilon2 + 0j)
+    k1 = k_vac * np.sqrt(epsilon1)
+    k2 = k_vac * np.sqrt(epsilon2)
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
 
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
@@ -397,9 +406,9 @@ def real_axis_integral(
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
-    k1 = k_vac * np.sqrt(epsilon1 + 0j)
-    k2 = k_vac * np.sqrt(epsilon2 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0)
+    k1 = k_vac * np.sqrt(epsilon1)
+    k2 = k_vac * np.sqrt(epsilon2)
 
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
@@ -465,7 +474,7 @@ def green_tensor_scattered(
 
     # Estimate the upper limit for the real axis integral
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0)
     upper_limit_real_integral = np.sqrt((745 / (np.real(k0) * h)) ** 2 + 1)
 
     gt_total = np.zeros((3, 3), dtype=complex)
