@@ -66,27 +66,32 @@ class GreenTensorSurface(GreenTensorBase):
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
 
         surface_z = self.surface_z_au * au_to_meter
-        surface_epsilon = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
         omega_freq = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
         omega_hz = omega_freq.magnitude
 
-        # Assumption for the system: The atoms are located at positions pos1 and pos2
-        # above a single surface at z=surface_z
-        # It should be pos1[2], pos2[2] > surface_z for this to be valid
+        # Assume two surfaces, but the second surface has the same permittivity as the inbetween medium
+        height = 2 * abs(surface_z - pos1[2])
+        if pos1[2] < surface_z and pos2[2] < surface_z:
+            surface2_z = surface_z - height
+        elif pos1[2] > surface_z and pos2[2] > surface_z:
+            surface2_z = surface_z + height
+        else:
+            raise ValueError("Both atoms must be located either above or below the surface.")
 
-        # If z_surface =/ 0, we need to shift the positions accordingly
-        pos1_shifted = pos1 - np.array([0, 0, surface_z])
-        pos2_shifted = pos2 - np.array([0, 0, surface_z])
+        pos1_shifted = pos1 - np.array([0, 0, min(surface_z, surface2_z)])
+        pos2_shifted = pos2 - np.array([0, 0, min(surface_z, surface2_z)])
 
-        # Set height h to 2 * z_A
-        h = 2 * pos1_shifted[2]
+        if surface2_z < surface_z:
+            epsilon_top = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
+            epsilon_bottom = epsilon
+        else:
+            epsilon_top = epsilon
+            epsilon_bottom = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
 
-        # Set the permittivities of the system
-        epsilon0 = epsilon  # permittivity of the medium above the surface
-        epsilon1 = 1.0  # upper layer is vacuum, since we only have one surface
-        epsilon2 = surface_epsilon  # permittivity of the surface
+        gt = utils.green_tensor_total(
+            pos1_shifted, pos2_shifted, omega_hz, epsilon, epsilon_top, epsilon_bottom, height
+        )
 
-        gt = utils.green_tensor_total(pos1_shifted, pos2_shifted, omega_hz, epsilon0, epsilon1, epsilon2, h)
-        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
         # see green_tensor_free_space for details on the prefactors
+        gt *= 4 * np.pi * (omega_freq / ureg.speed_of_light).to_base_units().m ** 2 * au_to_meter**3
         return np.real(gt)
