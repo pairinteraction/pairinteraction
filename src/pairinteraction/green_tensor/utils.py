@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 import numpy as np
 import scipy.constants as const
@@ -15,9 +15,10 @@ from scipy.special import jv as bessel_function
 if TYPE_CHECKING:
     from pairinteraction.units import NDArray
 
-    def bessel_function(v: float, z: complex) -> complex: ...  # type: ignore [misc]
-
     Entries = Literal["xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz"]
+    FloatOrNDArray = TypeVar("FloatOrNDArray", complex, NDArray)
+
+    def bessel_function(v: float, z: FloatOrNDArray) -> FloatOrNDArray: ...  # type: ignore [misc]
 
 
 def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex) -> NDArray:
@@ -47,7 +48,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
     )
 
 
-def branch(epsilon: complex, k: float, k_rho: float) -> complex:
+def branch(epsilon: complex, k: FloatOrNDArray, k_rho: FloatOrNDArray) -> FloatOrNDArray:
     """Calculate the perpendicular wave vector component with positive imaginary part.
 
     Args:
@@ -67,7 +68,7 @@ and are needed to calculate the scattering Green Tensor for two atoms between tw
 """
 
 
-def rs(kz: complex, k1z: complex) -> complex:
+def rs(kz: FloatOrNDArray, k1z: FloatOrNDArray) -> FloatOrNDArray:
     """Calculate the Fresnel reflection coefficient for s-polarized light.
 
     Args:
@@ -80,7 +81,7 @@ def rs(kz: complex, k1z: complex) -> complex:
     return (kz - k1z) / (kz + k1z)
 
 
-def rp(kz: complex, k1z: complex, epsilon: complex) -> complex:
+def rp(kz: FloatOrNDArray, k1z: FloatOrNDArray, epsilon: complex) -> FloatOrNDArray:
     """Calculate the Fresnel reflection coefficient for p-polarized light.
 
     Args:
@@ -94,7 +95,7 @@ def rp(kz: complex, k1z: complex, epsilon: complex) -> complex:
     return (epsilon * kz - k1z) / (epsilon * kz + k1z)
 
 
-def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
+def D(r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float) -> FloatOrNDArray:
     """Calculate the denominator term D used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -109,7 +110,9 @@ def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
     return 1 - r_plus * r_minus * np.exp(2j * kz * h)
 
 
-def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def A_plus(
+    r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
+) -> FloatOrNDArray:
     """Calculate the numerator term A_plus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -130,7 +133,9 @@ def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     ) / D(r_plus, r_minus, kz, h)
 
 
-def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def A_minus(
+    r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
+) -> FloatOrNDArray:
     """Calculate the numerator term A_minus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -151,7 +156,9 @@ def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     ) / D(r_plus, r_minus, kz, h)
 
 
-def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def B_plus(
+    r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
+) -> FloatOrNDArray:
     """Calculate the numerator term B_plus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -172,7 +179,9 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     ) / D(r_plus, r_minus, kz, h)
 
 
-def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def B_minus(
+    r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
+) -> FloatOrNDArray:
     """Calculate the numerator term B_minus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -194,20 +203,20 @@ def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
 
 
 def Gs(
-    kz: complex,
+    kz: FloatOrNDArray,
     h: float,
-    k_rho: complex,
+    k_rho: FloatOrNDArray,
     rho: float,
     phi: float,
-    rs_plus: complex,
-    rs_minus: complex,
+    rs_plus: FloatOrNDArray,
+    rs_minus: FloatOrNDArray,
     z_ges: float,
     z_ab: float,
     entry: Entries,
-) -> complex:
+) -> FloatOrNDArray:
     """Calculate the Gs part of the scattering Green Tensor."""
     if entry in ["xz", "yz", "zx", "zy", "zz"]:
-        return 0
+        return np.zeros_like(k_rho)  # type: ignore [return-value]
     if entry == "xx":
         J0 = bessel_function(0, k_rho * rho)
         J2 = bessel_function(2, k_rho * rho)
@@ -227,17 +236,17 @@ def Gs(
 
 
 def Gp(  # noqa: PLR0911
-    kz: complex,
+    kz: FloatOrNDArray,
     h: float,
-    k_rho: complex,
+    k_rho: FloatOrNDArray,
     rho: float,
     phi: float,
-    rp_plus: complex,
-    rp_minus: complex,
+    rp_plus: FloatOrNDArray,
+    rp_minus: FloatOrNDArray,
     z_ges: float,
     z_ab: float,
     entry: Entries,
-) -> complex:
+) -> FloatOrNDArray:
     """Calculate the Gp part of the scattering Green Tensor."""
     if entry == "xx":
         J0 = bessel_function(0, k_rho * rho)
@@ -325,7 +334,7 @@ def elliptic_integral(
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
     k_min = min(k_vac, 1 / rho) if rho != 0 else k_vac
 
-    def integrand_ellipse(t: float) -> complex:
+    def integrand_ellipse(t: FloatOrNDArray) -> FloatOrNDArray:
         # elliptical path, substitution
         k_rho = k_maj * (1 + np.cos(t)) - 1j * k_min * np.sin(t)
         dk_rho = -k_maj * np.sin(t) - 1j * k_min * np.cos(t)
@@ -404,7 +413,7 @@ def real_axis_integral(
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
 
-    def integrand_real(k_rho: float) -> complex:
+    def integrand_real(k_rho: FloatOrNDArray) -> FloatOrNDArray:
         kz = branch(1, k0, k_rho)
         k1z = branch(epsilon1, k0, k_rho)
         k2z = branch(epsilon2, k0, k_rho)
@@ -439,8 +448,8 @@ def real_axis_integral(
 
 
 def green_tensor_scattered(
-    r_a: np.ndarray, r_b: np.ndarray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
-) -> np.ndarray:
+    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
+) -> NDArray:
     """Assemble the total scattering Green tensor.
 
     Args:
@@ -482,8 +491,8 @@ def green_tensor_scattered(
 
 
 def green_tensor_total(
-    r_a: np.ndarray, r_b: np.ndarray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
-) -> np.ndarray:
+    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
+) -> NDArray:
     """Assemble the total Green tensor.
 
     Args:
