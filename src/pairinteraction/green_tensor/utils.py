@@ -36,7 +36,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)  # magnitude of wave vector in medium with permittivity epsilon0
+    k0 = k_vac * np.sqrt(epsilon0, dtype=complex)  # magnitude of wave vector in medium with permittivity epsilon0
     r = r_a - r_b
     r_norm = np.linalg.norm(r)
 
@@ -58,7 +58,7 @@ def branch(epsilon: complex, k: float, k_rho: float) -> complex:
     Returns: The perpendicular wave vector component (1/m)
 
     """
-    return np.sqrt(epsilon * k**2 - k_rho**2 + 0j)
+    return np.sqrt(epsilon * k**2 - k_rho**2, dtype=complex)
 
 
 """The following functions are used from Appendix B of the paper:
@@ -315,11 +315,11 @@ def elliptic_integral(
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0, dtype=complex)
 
     # Elliptical path in complex plane to avoid singularities (Integral from 0 to 2k_maj)
-    k1 = k_vac * np.sqrt(epsilon1 + 0j)
-    k2 = k_vac * np.sqrt(epsilon2 + 0j)
+    k1 = k_vac * np.sqrt(epsilon1, dtype=complex)
+    k2 = k_vac * np.sqrt(epsilon2, dtype=complex)
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
 
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
@@ -397,9 +397,9 @@ def real_axis_integral(
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
-    k1 = k_vac * np.sqrt(epsilon1 + 0j)
-    k2 = k_vac * np.sqrt(epsilon2 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0, dtype=complex)
+    k1 = k_vac * np.sqrt(epsilon1, dtype=complex)
+    k2 = k_vac * np.sqrt(epsilon2, dtype=complex)
 
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
@@ -465,7 +465,7 @@ def green_tensor_scattered(
 
     # Estimate the upper limit for the real axis integral
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0 + 0j)
+    k0 = k_vac * np.sqrt(epsilon0, dtype=complex)
     upper_limit_real_integral = np.sqrt((745 / (np.real(k0) * h)) ** 2 + 1)
 
     gt_total = np.zeros((3, 3), dtype=complex)
