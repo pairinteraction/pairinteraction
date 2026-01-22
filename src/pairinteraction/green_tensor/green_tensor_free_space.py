@@ -29,18 +29,17 @@ class GreenTensorFreeSpace(GreenTensorBase):
         if self.pos1_au is None or self.pos2_au is None:
             raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
 
-        gt = np.zeros((3, 3), dtype=complex)
-
-        epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
         au_to_meter = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        omega_freq = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
-        omega_hz = omega_freq.magnitude
+        epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
+
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
+        omega_hz = omega.magnitude
 
         gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon)  # 1/m
         gt *= 4 * np.pi  # Planck units to SI units
         gt *= au_to_meter  # 1/bohr
-        gt *= (omega_freq / ureg.speed_of_light).to_base_units().m ** 2  # gt: 1/bohr^3
+        gt *= (omega / ureg.speed_of_light).to_base_units().m ** 2  # gt: 1/bohr^3
         # now d * gt * d has the dimension of energy
         return np.real(gt)
