@@ -47,6 +47,7 @@ Dimension = Literal[
     "c3",
     "c6",
     "green_tensor_00",
+    "green_tensor_dd",
     "identity",
     "arbitrary",
     "zero",
@@ -72,7 +73,8 @@ _CommonUnits: dict[Dimension, str] = {
     "magnetic_dipole": "hbar e / m_e",  # 1 hbar e / m_e = 1 au_current * bohr ** 2
     "c3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
     "c6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
-    "green_tensor_00": "hartree / e^2",  # unit for green tensor with kappa1 = kappa2 = 0
+    "green_tensor_00": "meter",  # unit for green tensor with kappa1 = kappa2 = 0
+    "green_tensor_dd": "1 / meter",  # unit for green tensor with kappa1 = kappa2 = 1
     "identity": "",  # 1 dimensionless
     "arbitrary": "",  # 1 dimensionless
     "zero": "",  # 1 dimensionless
