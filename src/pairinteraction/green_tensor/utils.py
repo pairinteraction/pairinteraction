@@ -232,7 +232,7 @@ def Gs(
 ) -> FloatOrNDArray:
     """Calculate the Gs part of the scattering Green Tensor."""
     if entry in ["xz", "yz", "zx", "zy", "zz"]:
-        return np.zeros_like(k_rho)  # type: ignore [return-value]
+        return 0
     if entry == "xx":
         J0 = bessel_function(0, k_rho * rho)
         J2 = bessel_function(2, k_rho * rho)
