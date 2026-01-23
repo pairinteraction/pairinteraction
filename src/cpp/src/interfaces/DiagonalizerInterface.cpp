@@ -193,16 +193,42 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
 template <typename Scalar>
 EigenSystemH<Scalar> DiagonalizerInterface<Scalar>::eigh(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, std::optional<Eigen::Index> nev,
-    std::optional<Eigen::Index> /* ncv */, std::optional<real_t> /* sigma */, double rtol) const {
+    std::optional<Eigen::Index> /* ncv */, std::optional<real_t> sigma, double rtol) const {
     // default to half the spectrum
-    const int dim = matrix.rows();
-    const int half = std::max(dim / 2, 1);
+    const Eigen::Index dim = matrix.rows();
+    const Eigen::Index half = std::max(dim / 2, Eigen::Index{1});
 
     auto eigensys = eigh(matrix, rtol);
 
-    // Retrieve the first nev eigenvalues and eigenvectors
-    eigensys.eigenvectors = eigensys.eigenvectors.block(0, 0, dim, nev.value_or(half)).eval();
-    eigensys.eigenvalues = eigensys.eigenvalues.segment(0, nev.value_or(half)).eval();
+    const Eigen::Index nev_ = nev.value_or(half);
+    const real_t sigma_ = sigma.value_or(eigensys.eigenvalues[0]);
+    assert(0 < nev_ && nev_ < dim);
+
+    // Find insertion point for sigma
+    const real_t *data = eigensys.eigenvalues.data();
+    const Eigen::Index size = eigensys.eigenvalues.size();
+    const Eigen::Index it = std::distance(data, std::lower_bound(data, data + size, sigma_));
+
+    // Expand window until it contains nev elements
+    Eigen::Index left = std::min(it, size - 1);
+    Eigen::Index right = std::min(it, size - 1);
+    while (right - left < nev_) {
+        if (left == 0) {
+            ++right;
+        } else if (right == size - 1) {
+            --left;
+        } else {
+            if (std::abs(data[left - 1] - sigma_) <= std::abs(data[right] - sigma_)) {
+                --left;
+            } else {
+                ++right;
+            }
+        }
+    }
+
+    // Retrieve the nev eigenvalues and eigenvectors closest to sigma
+    eigensys.eigenvectors = eigensys.eigenvectors.block(0, left, dim, right - left).eval();
+    eigensys.eigenvalues = eigensys.eigenvalues.segment(left, right - left).eval();
 
     return eigensys;
 }

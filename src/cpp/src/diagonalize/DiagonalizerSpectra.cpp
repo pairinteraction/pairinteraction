@@ -103,11 +103,11 @@ DiagonalizerSpectra<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
     const real_t sigma = .5 * (min_eigenvalue.value() + max_eigenvalue.value());
     const auto [global_lower, global_upper, lower_count, upper_count] =
         this->gershgorin_bounds(matrix, min_eigenvalue.value(), max_eigenvalue.value());
+    const Eigen::Index dim = matrix.rows();
 
-    auto eigensys = this->eigh(matrix, upper_count, std::nullopt, sigma, rtol);
+    auto eigensys = this->eigh(matrix, std::min(upper_count, dim - 1), std::nullopt, sigma, rtol);
 
-    const int dim = matrix.rows();
-    const int nev = eigensys.eigenvalues.rows();
+    const Eigen::Index nev = eigensys.eigenvalues.rows();
 
     auto *it_begin = std::lower_bound(eigensys.eigenvalues.data(),
                                       eigensys.eigenvalues.data() + nev, min_eigenvalue.value());
