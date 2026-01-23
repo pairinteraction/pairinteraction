@@ -90,7 +90,7 @@ class GreenTensorSurface(GreenTensorBase):
             epsilon_bottom = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
 
         gt = utils.green_tensor_total(
-            pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height
+            pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
         )
 
         # see green_tensor_free_space for details on the prefactors
