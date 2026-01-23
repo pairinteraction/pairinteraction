@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Literal, TypeVar
 
 import numpy as np
 import scipy.constants as const
+from numba import njit
 from scipy.integrate import quad
 from scipy.special import jv as bessel_function
 
@@ -48,6 +49,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
     )
 
 
+@njit(cache=True)
 def branch(epsilon: complex, k: FloatOrNDArray, k_rho: FloatOrNDArray) -> FloatOrNDArray:
     """Calculate the perpendicular wave vector component with positive imaginary part.
 
@@ -59,7 +61,7 @@ def branch(epsilon: complex, k: FloatOrNDArray, k_rho: FloatOrNDArray) -> FloatO
     Returns: The perpendicular wave vector component (1/m)
 
     """
-    return np.sqrt(epsilon * k**2 - k_rho**2, dtype=complex)
+    return np.sqrt(epsilon * k**2 - k_rho**2 + 0j)
 
 
 """The following functions are used from Appendix B of the paper:
@@ -68,6 +70,7 @@ and are needed to calculate the scattering Green Tensor for two atoms between tw
 """
 
 
+@njit(cache=True)
 def rs(kz: FloatOrNDArray, k1z: FloatOrNDArray) -> FloatOrNDArray:
     """Calculate the Fresnel reflection coefficient for s-polarized light.
 
@@ -81,6 +84,7 @@ def rs(kz: FloatOrNDArray, k1z: FloatOrNDArray) -> FloatOrNDArray:
     return (kz - k1z) / (kz + k1z)
 
 
+@njit(cache=True)
 def rp(kz: FloatOrNDArray, k1z: FloatOrNDArray, epsilon: complex) -> FloatOrNDArray:
     """Calculate the Fresnel reflection coefficient for p-polarized light.
 
@@ -95,6 +99,7 @@ def rp(kz: FloatOrNDArray, k1z: FloatOrNDArray, epsilon: complex) -> FloatOrNDAr
     return (epsilon * kz - k1z) / (epsilon * kz + k1z)
 
 
+@njit(cache=True)
 def D(r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float) -> FloatOrNDArray:
     """Calculate the denominator term D used in the scattering Green Tensor matrix elements.
 
@@ -110,6 +115,7 @@ def D(r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: fl
     return 1 - r_plus * r_minus * np.exp(2j * kz * h)
 
 
+@njit(cache=True)
 def A_plus(
     r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
 ) -> FloatOrNDArray:
@@ -133,6 +139,7 @@ def A_plus(
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def A_minus(
     r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
 ) -> FloatOrNDArray:
@@ -156,6 +163,7 @@ def A_minus(
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def B_plus(
     r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
 ) -> FloatOrNDArray:
@@ -179,6 +187,7 @@ def B_plus(
     ) / D(r_plus, r_minus, kz, h)
 
 
+@njit(cache=True)
 def B_minus(
     r_plus: FloatOrNDArray, r_minus: FloatOrNDArray, kz: FloatOrNDArray, h: float, z_ges: float, z_ab: float
 ) -> FloatOrNDArray:
