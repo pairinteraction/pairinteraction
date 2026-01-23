@@ -22,7 +22,9 @@ if TYPE_CHECKING:
     def bessel_function(v: float, z: FloatOrNDArray) -> FloatOrNDArray: ...  # type: ignore [misc]
 
 
-def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex) -> NDArray:
+def green_tensor_homogeneous(
+    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, *, only_real_part: bool = False
+) -> NDArray:
     """Homogeneous Green Tensor for two atoms in cartesian coordinates in an infinite homogeneous medium.
 
     The function used is from equation 2 of the paper:
@@ -33,6 +35,7 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
         r_b: Position vector of atom B in meters
         omega: Angular frequency in 1/seconds
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
+        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
     Returns: The 3x3 Homogeneous Green Tensor (general complex values) (1/m)
 
@@ -43,10 +46,14 @@ def green_tensor_homogeneous(r_a: NDArray, r_b: NDArray, omega: float, epsilon0:
     r_norm = np.linalg.norm(r)
 
     prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * k0**2 * r_norm**3)
-    return prefactor * (
+    result = prefactor * (
         (k0**2 * r_norm**2 + 1j * k0 * r_norm - 1) * np.eye(3)
         + (-(k0**2) * r_norm**2 - 3j * k0 * r_norm + 3) * np.outer(r, r) / r_norm**2
     )
+
+    if only_real_part:
+        return np.real(result)
+    return result
 
 
 @njit(cache=True)
@@ -361,6 +368,8 @@ def elliptic_integral(
     z_ges: float,
     z_ab: float,
     entry: Entries,
+    *,
+    only_real_part: bool = False,
 ) -> complex:
     """Evaluate the elliptic part of the integral.
 
@@ -375,6 +384,7 @@ def elliptic_integral(
         z_ges: Sum of the z-positions of the two atoms in meters
         z_ab: Difference of the z-positions of the two atoms in meters
         entry: Entry of the Green tensor to calculate
+        only_real_part: If True, only the real part of the integral is calculated (default: False)
 
     Returns: The value of the integral along the elliptical path as a complex number (1/m)
 
@@ -393,6 +403,8 @@ def elliptic_integral(
     args = (k_maj, k_min, k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
     real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)
+    if only_real_part:
+        return real_ellipse
     imag_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "imag"), epsrel=1e-9, limit=1000)
     return real_ellipse + 1j * imag_ellipse
 
@@ -449,6 +461,8 @@ def real_axis_integral(
     z_ab: float,
     entry: Entries,
     upper_limit: float,
+    *,
+    only_real_part: bool = False,
 ) -> complex:
     """Evaluate the real axis part of the integral.
 
@@ -464,6 +478,7 @@ def real_axis_integral(
         z_ab: Difference of the z-positions of the two atoms in meters
         entry: Entry of the Green tensor to calculate
         upper_limit: Upper limit for the real axis integral (1/m)
+        only_real_part: If True, only the real part of the integral is calculated (default: False)
 
     Returns: The value of the integral along the real axis as a complex number (1/m)
 
@@ -481,6 +496,8 @@ def real_axis_integral(
     real_real, _ = quad(
         integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "real"), limit=1000, epsrel=1e-9
     )
+    if only_real_part:
+        return real_real
     imag_real, _ = quad(
         integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "imag"), limit=1000, epsrel=1e-9
     )
@@ -488,7 +505,15 @@ def real_axis_integral(
 
 
 def green_tensor_scattered(
-    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
+    r_a: NDArray,
+    r_b: NDArray,
+    omega: float,
+    epsilon0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    h: float,
+    *,
+    only_real_part: bool = False,
 ) -> NDArray:
     """Assemble the total scattering Green tensor.
 
@@ -500,6 +525,7 @@ def green_tensor_scattered(
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         h: Distance between the two surfaces (m)
+        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
     Returns: The 3x3 Scattering Green Tensor (general complex values) (1/m)
 
@@ -521,9 +547,22 @@ def green_tensor_scattered(
     for i, ix in enumerate(["x", "y", "z"]):
         for j, jx in enumerate(["x", "y", "z"]):
             entry: Entries = ix + jx  # type: ignore [assignment]
-            g_ij_elliptic = elliptic_integral(omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry)
+            g_ij_elliptic = elliptic_integral(
+                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry, only_real_part=only_real_part
+            )
             g_ij_real = real_axis_integral(
-                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry, upper_limit_real_integral
+                omega,
+                h,
+                rho,
+                phi,
+                epsilon0,
+                epsilon1,
+                epsilon2,
+                z_ges,
+                z_ab,
+                entry,
+                upper_limit_real_integral,
+                only_real_part=only_real_part,
             )
             gt_total[i][j] = g_ij_elliptic + g_ij_real
 
@@ -531,7 +570,15 @@ def green_tensor_scattered(
 
 
 def green_tensor_total(
-    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, epsilon1: complex, epsilon2: complex, h: float
+    r_a: NDArray,
+    r_b: NDArray,
+    omega: float,
+    epsilon0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    h: float,
+    *,
+    only_real_part: bool = False,
 ) -> NDArray:
     """Assemble the total Green tensor.
 
@@ -543,11 +590,12 @@ def green_tensor_total(
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         h: Distance between the two surfaces (m).
+        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
     Returns: The 3x3 Total Green Tensor (general complex values) (1/m)
 
     """
-    gt_scat = green_tensor_scattered(r_a, r_b, omega, epsilon0, epsilon1, epsilon2, h)
-    gt_hom = green_tensor_homogeneous(r_a, r_b, omega, epsilon0)
+    gt_scat = green_tensor_scattered(r_a, r_b, omega, epsilon0, epsilon1, epsilon2, h, only_real_part=only_real_part)
+    gt_hom = green_tensor_homogeneous(r_a, r_b, omega, epsilon0, only_real_part=only_real_part)
 
     return gt_scat + gt_hom
