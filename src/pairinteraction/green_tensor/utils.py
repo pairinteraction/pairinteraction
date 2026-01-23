@@ -294,6 +294,53 @@ def Gp(  # noqa: PLR0911
     """
 
 
+def integrand_ellipse(
+    t: complex,
+    k_maj: complex,
+    k_min: complex,
+    k0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    h: float,
+    rho: float,
+    phi: float,
+    z_ges: float,
+    z_ab: float,
+    entry: Entries,
+    real_or_imag: str,
+) -> complex:
+    # elliptical path, substitution
+    k_rho = k_maj * (1 + np.cos(t)) - 1j * k_min * np.sin(t)
+    dk_rho = -k_maj * np.sin(t) - 1j * k_min * np.cos(t)
+
+    # Wave vector components
+    kz = branch(1, k0, k_rho)
+    k1z = branch(epsilon1, k0, k_rho)
+    k2z = branch(epsilon2, k0, k_rho)
+
+    rs_plus = rs(kz, k1z)
+    rs_minus = rs(kz, k2z)
+    rp_plus = rp(kz, k1z, epsilon1)
+    rp_minus = rp(kz, k2z, epsilon2)
+
+    integrand = (
+        1j
+        / (4 * np.pi)
+        * (
+            Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+            - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+        )
+        * (k_rho / kz)
+        * np.exp(1j * kz * h)
+        * dk_rho
+    )
+    if real_or_imag == "real":
+        return np.real(integrand)
+    if real_or_imag == "imag":
+        return np.imag(integrand)
+    raise ValueError("real_or_imag must be 'real' or 'imag'")
+
+
 def elliptic_integral(
     omega: float,
     h: float,
@@ -334,44 +381,51 @@ def elliptic_integral(
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
     k_min = min(k_vac, 1 / rho) if rho != 0 else k_vac
 
-    def integrand_ellipse(t: float) -> complex:
-        # elliptical path, substitution
-        k_rho = k_maj * (1 + np.cos(t)) - 1j * k_min * np.sin(t)
-        dk_rho = -k_maj * np.sin(t) - 1j * k_min * np.cos(t)
+    args = (k_maj, k_min, k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
-        # Wave vector components
-        kz = branch(1, k0, k_rho)
-        k1z = branch(epsilon1, k0, k_rho)
-        k2z = branch(epsilon2, k0, k_rho)
-
-        rs_plus = rs(kz, k1z)
-        rs_minus = rs(kz, k2z)
-        rp_plus = rp(kz, k1z, epsilon1)
-        rp_minus = rp(kz, k2z, epsilon2)
-
-        # Integrand
-        return (
-            1j
-            / (4 * np.pi)
-            * (
-                Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-                - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
-            )
-            * (k_rho / kz)
-            * np.exp(1j * kz * h)
-            * dk_rho
-        )
-
-    def real_part_ellipse(t: float) -> float:
-        return np.real(integrand_ellipse(t))
-
-    def imag_part_ellipse(t: float) -> float:
-        return np.imag(integrand_ellipse(t))
-
-    real_ellipse, _ = quad(real_part_ellipse, np.pi, 0, epsrel=1e-9, limit=1000)
-    imag_ellipse, _ = quad(imag_part_ellipse, np.pi, 0, epsrel=1e-9, limit=1000)
-
+    real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)
+    imag_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "imag"), epsrel=1e-9, limit=1000)
     return real_ellipse + 1j * imag_ellipse
+
+
+def integrand_real(
+    k_rho: complex,
+    k0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    h: float,
+    rho: float,
+    phi: float,
+    z_ges: float,
+    z_ab: float,
+    entry: Entries,
+    real_or_imag: str,
+) -> complex:
+    kz = branch(1, k0, k_rho)
+    k1z = branch(epsilon1, k0, k_rho)
+    k2z = branch(epsilon2, k0, k_rho)
+
+    rs_plus = rs(kz, k1z)
+    rs_minus = rs(kz, k2z)
+    rp_plus = rp(kz, k1z, epsilon1)
+    rp_minus = rp(kz, k2z, epsilon2)
+
+    # Integrand
+    integrand = (
+        1j
+        / (4 * np.pi)
+        * (
+            Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+            - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+        )
+        * (k_rho / kz)
+        * np.exp(1j * kz * h)
+    )
+    if real_or_imag == "real":
+        return np.real(integrand)
+    if real_or_imag == "imag":
+        return np.imag(integrand)
+    raise ValueError("real_or_imag must be 'real' or 'imag'")
 
 
 def real_axis_integral(
@@ -413,37 +467,14 @@ def real_axis_integral(
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
 
-    def integrand_real(k_rho: float) -> complex:
-        kz = branch(1, k0, k_rho)
-        k1z = branch(epsilon1, k0, k_rho)
-        k2z = branch(epsilon2, k0, k_rho)
+    args = (k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
-        rs_plus = rs(kz, k1z)
-        rs_minus = rs(kz, k2z)
-        rp_plus = rp(kz, k1z, epsilon1)
-        rp_minus = rp(kz, k2z, epsilon2)
-
-        # Integrand
-        return (
-            1j
-            / (4 * np.pi)
-            * (
-                Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-                - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
-            )
-            * (k_rho / kz)
-            * np.exp(1j * kz * h)
-        )
-
-    def real_part_real(k_rho: float) -> float:
-        return np.real(integrand_real(k_rho))
-
-    def imag_part_real(k_rho: float) -> float:
-        return np.imag(integrand_real(k_rho))
-
-    real_real, _ = quad(real_part_real, 2 * k_maj, upper_limit * np.real(k0), limit=1000, epsrel=1e-9)
-    imag_real, _ = quad(imag_part_real, 2 * k_maj, upper_limit * np.real(k0), limit=1000, epsrel=1e-9)
-
+    real_real, _ = quad(
+        integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "real"), limit=1000, epsrel=1e-9
+    )
+    imag_real, _ = quad(
+        integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "imag"), limit=1000, epsrel=1e-9
+    )
     return real_real + 1j * imag_real
 
 
