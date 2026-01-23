@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 
 from pairinteraction import _backend
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from typing_extensions import Self
 
-    from pairinteraction.units import Dimension, NDArray, PintArray
+    from pairinteraction.units import Dimension, NDArray, PintArray, PintFloat
 
 
 class GreenTensorInterpolator:
@@ -28,9 +28,10 @@ class GreenTensorInterpolator:
         >>> import pairinteraction as pi
         >>> gt = pi.GreenTensorInterpolator()
         >>> distance_mum = 5
-        >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
+        >>> omega = 1
+        >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (omega**2 * distance_mum**3)
         >>> tensor_unit = "hartree / (e^2 micrometer^3)"
-        >>> gt.set_from_cartesian(1, 1, tensor, tensor_unit)
+        >>> gt.set_constant_from_cartesian(1, 1, tensor, omega, tensor_unit, omega_unit="Hz")
         GreenTensorInterpolator(...)
         >>> print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())
         [ 0.008 -0.016  0.008]
@@ -43,7 +44,8 @@ class GreenTensorInterpolator:
     def __init__(self) -> None:
         """Initialize a new Green tensor interpolator object.
 
-        The actual tensor can be set afterwards via the :meth:`set_from_cartesian` method.
+        The actual tensor can be set afterwards via the
+        :meth:`set_constant_from_cartesian` or :meth:`set_list_from_cartesian` method.
         """
         self._cpp = self._cpp_type()
 
@@ -54,72 +56,119 @@ class GreenTensorInterpolator:
         return self.__repr__()
 
     @overload
-    def set_from_cartesian(self, kappa1: int, kappa2: int, tensor: NDArray, tensor_unit: str | None = None) -> Self: ...
-
-    @overload
-    def set_from_cartesian(
+    def set_constant_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: Sequence[NDArray],
-        tensor_unit: str | None,
-        omegas: Sequence[float],
-        omegas_unit: str | None = None,
+        tensor: PintArray,
+        omega: PintFloat,
+        tensor_unit: None = None,
+        omega_unit: None = None,
     ) -> Self: ...
 
     @overload
-    def set_from_cartesian(
+    def set_constant_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: Sequence[NDArray],
-        *,
-        omegas: Sequence[float],
-        omegas_unit: str | None = None,
+        tensor: NDArray,
+        omega: float,
+        tensor_unit: str,
+        omega_unit: str,
     ) -> Self: ...
 
-    def set_from_cartesian(
+    def set_constant_from_cartesian(
         self,
         kappa1: int,
         kappa2: int,
-        tensor: NDArray | Sequence[NDArray],
+        tensor: NDArray | PintArray,
+        omega: float | PintFloat,
         tensor_unit: str | None = None,
-        omegas: Sequence[float] | None = None,
-        omegas_unit: str | None = None,
+        omega_unit: str | None = None,
     ) -> Self:
-        """Set the entries of the Green tensor for specified omegas.
+        r"""Set the constant entry of the Green tensor for specified omega.
+
+        Constant means, that :math:`\omega^2 G(\omega)` (which is the quantity that enters the interaction)
+        is constant and independent of omega.
 
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
             tensor: The green tensor in cartesian coordinates.
-                Either a single tensor to set a constant green tensor
-                or a list of tensors to set a frequency-dependent green tensor.
+            omega: The angular frequency at which the green tensor is defined.
             tensor_unit: The unit of the tensor.
                 Default None, which means that the tensor must be given as pint object.
-            omegas: Only needed if a list of tensors is given.
-                The frequencies of the tensors.
-            omegas_unit: The unit of the frequencies.
-                Default None, which means that the frequencies must be given as pint object.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
 
 
         """
         dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
-        if omegas is None:
-            tensor_au = QuantityArray.convert_user_to_au(np.array(tensor), tensor_unit, dimension)
-            if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
-                raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
-            self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensor_au)
-            return self
 
-        tensors_au = [QuantityArray.convert_user_to_au(np.array(t), tensor_unit, dimension) for t in tensor]
+        tensor_au = QuantityArray.convert_user_to_au(tensor, tensor_unit, dimension)
+        if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
+            raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
+
+        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+        prefactor = self._get_green_tensor_prefactor(omega_au)
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, prefactor * tensor_au)
+        return self
+
+    @overload
+    def set_list_from_cartesian(
+        self,
+        kappa1: int,
+        kappa2: int,
+        tensors: Sequence[PintArray],
+        omegas: Sequence[PintFloat],
+        tensors_unit: None = None,
+        omegas_unit: None = None,
+    ) -> Self: ...
+
+    @overload
+    def set_list_from_cartesian(
+        self,
+        kappa1: int,
+        kappa2: int,
+        tensors: Sequence[NDArray],
+        omegas: Sequence[float],
+        tensors_unit: str,
+        omegas_unit: str,
+    ) -> Self: ...
+
+    def set_list_from_cartesian(
+        self,
+        kappa1: int,
+        kappa2: int,
+        tensors: Sequence[PintArray] | Sequence[NDArray],
+        omegas: Sequence[PintFloat] | Sequence[float],
+        tensors_unit: str | None = None,
+        omegas_unit: str | None = None,
+    ) -> Self:
+        """Set the entries of the Green tensor for specified omega.
+
+        Args:
+            kappa1: The rank of the first multipole operator.
+            kappa2: The rank of the second multipole operator.
+            tensors: A list of frequency-dependent green tensors in cartesian coordinates.
+            omegas: A list of angular frequencies at which the green tensors are defined.
+            tensors_unit: The unit of the tensor.
+                Default None, which means that the tensor must be given as pint object.
+            omegas_unit: The unit of the angular frequencies.
+                Default None, which means that the angular frequencies must be given as pint object.
+
+        """
+        dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
+
+        tensors_au = np.array([QuantityArray.convert_user_to_au(np.array(t), tensors_unit, dimension) for t in tensors])
         if not all(t.ndim == 2 for t in tensors_au):
             raise ValueError("The tensor must be a list of 2D arrays.")
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors_au):
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
         omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omegas_unit, "energy")
-        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
+        prefactors = np.array([self._get_green_tensor_prefactor(omega) for omega in omegas_au])
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, list(prefactors * tensors_au), omegas_au.tolist())
         return self
 
     @overload
@@ -153,10 +202,9 @@ class GreenTensorInterpolator:
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega: The frequency at which to evaluate the Green tensor.
-                Only needed if the Green tensor is frequency dependent.
-            omega_unit: The unit of the frequency.
-                Default None, which means that the frequency must be given as pint object.
+            omega: The angular frequency at which to evaluate the Green tensor.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
 
@@ -184,6 +232,26 @@ class GreenTensorInterpolator:
 
     def _get_unit_dimension(self, kappa1: int, kappa2: int) -> list[Dimension]:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2)]]  # type: ignore [list-item]
+
+    def _get_green_tensor_prefactor(self, omega_au: float) -> float:
+        r"""Get the prefactor to get the interaction strength from the Green tensor.
+
+        The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)
+        .. math::
+            V_{\alpha\beta} = \frac{\omega^2}{\hbar \epsilon_0 c^2}
+                d_\alpha^T \mathrm{Re}\{G(r_\alpha, r_\beta, \omega)\} d_\beta
+
+        This functions returns the prefactor
+        .. math::
+            \frac{\omega^2}{\hbar \epsilon_0 c^2}
+
+        In C++ we use the convention that the Green tensor already contains this prefactor.
+        """
+        speed_of_light_au = ureg.Quantity(1, "speed_of_light").to_base_units().m
+        factor = (omega_au / speed_of_light_au) ** 2
+        factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+        factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
+        return factor
 
 
 class GreenTensorInterpolatorReal(GreenTensorInterpolator):
