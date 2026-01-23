@@ -11,7 +11,7 @@ from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
 from pairinteraction.green_tensor import GreenTensorInterpolator
 from pairinteraction.system.system_base import SystemBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -185,9 +185,10 @@ class SystemPair(SystemBase[BasisPair]):
             raise ValueError("omega_steps must be a positive integer.")
 
         if omega_steps == 1:
-            gt = green_tensor.get_dipole_dipole(omega=1e-10, omega_unit="Hz")
+            omega = ureg.Quantity(1e-10, "Hz")
+            gt = green_tensor.get_dipole_dipole(omega)
             gti = GreenTensorInterpolator()
-            gti.set_from_cartesian(1, 1, gt.magnitude, tensor_unit=str(gt.units))
+            gti.set_constant_from_cartesian(1, 1, gt, omega)
             self.set_green_tensor_interpolator(gti)
             return self
 

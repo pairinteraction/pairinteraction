@@ -23,7 +23,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
             omega_au: The frequency in atomic units at which to evaluate the Green tensor.
 
         Returns:
-            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units.
+            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units (i.e. 1/bohr).
 
         """
         if self.pos1_au is None or self.pos2_au is None:
@@ -38,8 +38,4 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega_hz = omega.magnitude
 
         gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)  # 1/m
-        gt *= 4 * np.pi  # Planck units to SI units
-        gt *= au_to_meter  # 1/bohr
-        gt *= (omega / ureg.speed_of_light).to_base_units().m ** 2  # gt: 1/bohr^3
-        # now d * gt * d has the dimension of energy
-        return np.real(gt)
+        return np.real(gt) * au_to_meter  # 1/bohr

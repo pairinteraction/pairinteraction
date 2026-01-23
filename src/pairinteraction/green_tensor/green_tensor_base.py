@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import (
         ArrayLike,
-        Dimension,
         NDArray,
         PintArray,  # needed for sphinx to recognize PintArrayLike
         PintArrayLike,
@@ -108,13 +107,15 @@ class GreenTensorBase(ABC):
         raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
 
     @overload
-    def get_dipole_dipole(self, omega: float = 0, omega_unit: str | None = None, unit: None = None) -> PintArray: ...
+    def get_dipole_dipole(
+        self, omega: float | PintFloat, omega_unit: str | None = None, unit: None = None
+    ) -> PintArray: ...
 
     @overload
-    def get_dipole_dipole(self, omega: float = 0, omega_unit: str | None = None, *, unit: str) -> NDArray: ...
+    def get_dipole_dipole(self, omega: float | PintFloat, omega_unit: str | None = None, *, unit: str) -> NDArray: ...
 
     def get_dipole_dipole(
-        self, omega: float = 0, omega_unit: str | None = None, unit: str | None = None
+        self, omega: float | PintFloat, omega_unit: str | None = None, unit: str | None = None
     ) -> PintArray | NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates.
 
@@ -125,7 +126,7 @@ class GreenTensorBase(ABC):
                 Only needed if the Green tensor is frequency dependent.
             omega_unit: The unit of the frequency.
                 Default None, which means that the frequency must be given as pint object.
-            unit: The unit to which to convert the result.
+            unit: The unit to which to convert the green tensor (e.g. "1/m").
                 Default None, which means that the result is returned as pint object.
 
         Returns:
@@ -134,9 +135,7 @@ class GreenTensorBase(ABC):
         """
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
         gt_au = self._get_dipole_dipole_au(omega_au)
-
-        dimension: list[Dimension] = ["green_tensor_00"] + 2 * ["inverse_distance"]  # type: ignore [assignment]
-        return QuantityArray.convert_au_to_user(gt_au, dimension, unit)
+        return QuantityArray.convert_au_to_user(gt_au, "green_tensor_dd", unit)
 
     @abstractmethod
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
@@ -156,7 +155,7 @@ class GreenTensorBase(ABC):
         gt_list = [self.get_dipole_dipole(omega, omega_unit, unit="hartree") for omega in omega_list]
 
         gti = GreenTensorInterpolator()
-        gti.set_from_cartesian(1, 1, gt_list, tensor_unit="hartree", omegas=omega_list, omegas_unit=omega_unit)
+        gti.set_list_from_cartesian(1, 1, gt_list, omega_list, tensors_unit="hartree", omegas_unit=omega_unit)
 
         return gti
 
