@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Literal
 
 import numpy as np
@@ -224,20 +225,15 @@ def Gs(
     """Calculate the Gs part of the scattering Green Tensor."""
     if entry in ["xz", "yz", "zx", "zy", "zz"]:
         return 0
-    if entry == "xx":
-        J0 = bessel_function(0, k_rho * rho)
-        J2 = bessel_function(2, k_rho * rho)
-        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-        return As_plus / 2 * (J0 + J2 * np.cos(2 * phi))
-    if entry == "yy":
-        J0 = bessel_function(0, k_rho * rho)
-        J2 = bessel_function(2, k_rho * rho)
-        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-        return As_plus / 2 * (J0 - J2 * np.cos(2 * phi))
+    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
+    J2 = bessel_function(2, k_rho * rho)
     if entry in ["xy", "yx"]:
-        J2 = bessel_function(2, k_rho * rho)
-        As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-        return -As_plus / 2 * J2 * np.sin(2 * phi)
+        return -As_plus / 2 * J2 * math.sin(2 * phi)
+    J0 = bessel_function(0, k_rho * rho)
+    if entry == "xx":
+        return As_plus / 2 * (J0 + J2 * math.cos(2 * phi))
+    if entry == "yy":
+        return As_plus / 2 * (J0 - J2 * math.cos(2 * phi))
 
     raise ValueError(f"Invalid entry '{entry}' for Gs function.")
 
@@ -255,37 +251,34 @@ def Gp(  # noqa: PLR0911
     entry: Entries,
 ) -> complex:
     """Calculate the Gp part of the scattering Green Tensor."""
-    if entry == "xx":
-        J0 = bessel_function(0, k_rho * rho)
-        J2 = bessel_function(2, k_rho * rho)
-        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        return Ap_minus / 2 * (J0 - J2 * np.cos(2 * phi))
-    if entry == "yy":
-        J0 = bessel_function(0, k_rho * rho)
-        J2 = bessel_function(2, k_rho * rho)
-        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        return Ap_minus / 2 * (J0 + J2 * np.cos(2 * phi))
+    if entry in ["xz", "zx", "yz", "zy"]:
+        J1 = bessel_function(1, k_rho * rho)
+        if entry == "zx":
+            Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+            return -1j * (k_rho / kz) * Bp_minus * J1 * math.cos(phi)
+        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        if entry == "xz":
+            return 1j * (k_rho / kz) * Bp_plus * J1 * math.cos(phi)
+        if entry == "yz":
+            return 1j * (k_rho / kz) * Bp_plus * J1 * math.sin(phi)
+        if entry == "zy":
+            return -1j * (k_rho / kz) * Bp_plus * J1 * math.sin(phi)
+
     if entry == "zz":
         J0 = bessel_function(0, k_rho * rho)
         Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
         return -(k_rho**2 / kz**2) * Ap_plus * J0
+
+    J2 = bessel_function(2, k_rho * rho)
+    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
     if entry in ["xy", "yx"]:
-        J2 = bessel_function(2, k_rho * rho)
-        Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        return Ap_minus / 2 * J2 * np.sin(2 * phi)
-    if entry == "xz":
-        J1 = bessel_function(1, k_rho * rho)
-        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        return 1j * (k_rho / kz) * Bp_plus * J1 * np.cos(phi)
-    if entry == "zx":
-        J1 = bessel_function(1, k_rho * rho)
-        Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        return -1j * (k_rho / kz) * Bp_minus * J1 * np.cos(phi)
-    if entry in ["yz", "zy"]:
-        J1 = bessel_function(1, k_rho * rho)
-        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
-        prefactor = +1 if entry == "yz" else -1
-        return prefactor * 1j * (k_rho / kz) * Bp_plus * J1 * np.sin(phi)
+        return Ap_minus / 2 * J2 * math.sin(2 * phi)
+
+    J0 = bessel_function(0, k_rho * rho)
+    if entry == "xx":
+        return Ap_minus / 2 * (J0 - J2 * math.cos(2 * phi))
+    if entry == "yy":
+        return Ap_minus / 2 * (J0 + J2 * math.cos(2 * phi))
 
     raise ValueError(f"Invalid entry '{entry}' for Gp function.")
 
