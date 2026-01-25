@@ -51,6 +51,26 @@ void save_json(const fs::path &file, const json &doc) {
 }
 
 namespace pairinteraction {
+void ParquetManager::react_on_exception(const std::string &context, const std::exception &e) {
+    repo_paths_.clear();
+    remote_asset_info.clear();
+    SPDLOG_ERROR("{}: {}. The download of database tables is disabled.", context, e.what());
+}
+
+void ParquetManager::react_on_error_code(const std::string &context, int error_code) {
+    repo_paths_.clear();
+    remote_asset_info.clear();
+    SPDLOG_ERROR("{}: status code {}. The download of database tables is disabled.", context,
+                 error_code);
+}
+
+void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
+    repo_paths_.clear();
+    remote_asset_info.clear();
+    SPDLOG_ERROR("Rate limit reached, resets at {}. The download of database tables is disabled.",
+                 format_time(reset_time));
+}
+
 ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDownloader &downloader,
                                std::vector<std::string> repo_paths, duckdb::Connection &con,
                                bool use_cache)
@@ -63,13 +83,23 @@ ParquetManager::ParquetManager(std::filesystem::path directory, const GitHubDown
 
     // If repo paths are provided, check the GitHub rate limit
     if (!repo_paths_.empty()) {
-        auto rate_limit = downloader.get_rate_limit();
-        if (rate_limit.remaining == 0) {
-            react_on_rate_limit_reached(rate_limit.reset_time);
-        } else {
-            SPDLOG_INFO("Remaining GitHub API requests: {}. Rate limit resets at {}.",
-                        rate_limit.remaining, format_time(rate_limit.reset_time));
+        GitHubDownloader::Result result;
+        try {
+            result = downloader.download("/rate_limit", "", false).get();
+        } catch (const std::exception &e) {
+            react_on_exception("Failed obtaining the rate limit", e);
+            return;
         }
+        if (result.status_code != 200) {
+            react_on_error_code("Failed obtaining the rate limit", result.status_code);
+            return;
+        }
+        if (result.rate_limit.remaining == 0) {
+            react_on_rate_limit_reached(result.rate_limit.reset_time);
+            return;
+        }
+        SPDLOG_INFO("Remaining GitHub API requests: {}. Rate limit resets at {}.",
+                    result.rate_limit.remaining, format_time(result.rate_limit.reset_time));
     }
 }
 
@@ -116,20 +146,35 @@ void ParquetManager::scan_remote() {
         }
 
         // Issue the asynchronous download using the cached last-modified value.
-        downloads.push_back(
-            {endpoint, cache_file, cached_doc, downloader.download(endpoint, last_modified)});
+        try {
+            downloads.push_back(
+                {endpoint, cache_file, cached_doc, downloader.download(endpoint, last_modified)});
+        } catch (const std::exception &e) {
+            react_on_exception(
+                fmt::format("Failed to download overview of available tables from {}",
+                            downloads.back().endpoint),
+                e);
+            return;
+        }
     }
 
     // Process downloads for each repo path
     for (auto &dl : downloads) {
         auto result = dl.future.get();
+        if ((result.status_code == 403 || result.status_code == 429) &&
+            result.rate_limit.remaining == 0) {
+            react_on_rate_limit_reached(result.rate_limit.reset_time);
+            return;
+        }
+        if (result.status_code != 200 && result.status_code != 304) {
+            react_on_error_code(
+                fmt::format("Failed to download overview of available tables from {}", dl.endpoint),
+                result.status_code);
+            return;
+        }
+
         json doc;
-        if (result.status_code == 200) {
-            doc = json::parse(result.body, nullptr, /*allow_exceptions=*/false);
-            doc["last-modified"] = result.last_modified;
-            save_json(dl.cache_file, doc);
-            SPDLOG_INFO("Using downloaded overview of available tables from {}.", dl.endpoint);
-        } else if (result.status_code == 304) {
+        if (result.status_code == 304) {
             if (dl.cached_doc.is_null() || dl.cached_doc.empty()) {
                 throw std::runtime_error(
                     fmt::format("Received 304 Not Modified but cached response {} does not exist.",
@@ -137,13 +182,11 @@ void ParquetManager::scan_remote() {
             }
             doc = dl.cached_doc;
             SPDLOG_INFO("Using cached overview of available tables from {}.", dl.endpoint);
-        } else if (result.status_code == 403 || result.status_code == 429) {
-            react_on_rate_limit_reached(result.rate_limit.reset_time);
-            return;
         } else {
-            throw std::runtime_error(fmt::format(
-                "Failed to download overview of available tables from {}: status code {}.",
-                dl.endpoint, result.status_code));
+            doc = json::parse(result.body, nullptr, /*allow_exceptions=*/false);
+            doc["last-modified"] = result.last_modified;
+            save_json(dl.cache_file, doc);
+            SPDLOG_INFO("Using downloaded overview of available tables from {}.", dl.endpoint);
         }
 
         // Validate the JSON response
@@ -216,13 +259,6 @@ void ParquetManager::scan_local() {
     }
 }
 
-void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
-    repo_paths_.clear();
-    remote_asset_info.clear();
-    SPDLOG_WARN("Rate limit reached, resets at {}. The download of database tables is disabled.",
-                format_time(reset_time));
-}
-
 void ParquetManager::update_local_asset(const std::string &key) {
     assert(remote_asset_info.empty() == repo_paths_.empty());
 
@@ -269,15 +305,22 @@ void ParquetManager::update_local_asset(const std::string &key) {
     SPDLOG_INFO("Downloading {}_v{}.{} from {}", key, COMPATIBLE_DATABASE_VERSION_MAJOR,
                 remote_version, endpoint);
 
-    auto result = downloader.download(endpoint, "", true).get();
+    GitHubDownloader::Result result;
+    try {
+        result = downloader.download(endpoint, "", true).get();
+    } catch (const std::exception &e) {
+        react_on_exception(fmt::format("Failed to download table {}", endpoint), e);
+        return;
+    }
     if ((result.status_code == 403 || result.status_code == 429) &&
         result.rate_limit.remaining == 0) {
         react_on_rate_limit_reached(result.rate_limit.reset_time);
         return;
     }
     if (result.status_code != 200) {
-        throw std::runtime_error(fmt::format("Failed to download table {}: status code {}.",
-                                             endpoint, result.status_code));
+        react_on_error_code(fmt::format("Failed to download table {}", endpoint),
+                            result.status_code);
+        return;
     }
 
     // Unzip the downloaded file

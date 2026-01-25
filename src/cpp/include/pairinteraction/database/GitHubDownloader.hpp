@@ -33,7 +33,6 @@ public:
     virtual std::future<Result> download(const std::string &remote_url,
                                          const std::string &if_modified_since = "",
                                          bool use_octet_stream = false) const;
-    RateLimit get_rate_limit() const;
     std::string get_host() const;
 
 private:

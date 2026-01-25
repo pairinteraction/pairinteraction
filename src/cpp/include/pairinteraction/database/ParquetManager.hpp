@@ -44,6 +44,8 @@ public:
 
 private:
     void react_on_rate_limit_reached(std::time_t reset_time);
+    void react_on_exception(const std::string &context, const std::exception &e);
+    void react_on_error_code(const std::string &context, int error_code);
     void update_local_asset(const std::string &key);
     void cache_table(std::unordered_map<std::string, PathInfo>::iterator table_it);
 

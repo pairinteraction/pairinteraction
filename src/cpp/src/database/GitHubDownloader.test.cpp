@@ -18,11 +18,12 @@ DOCTEST_TEST_CASE("Get rate limit with GitHubDownloader") {
     GitHubDownloader downloader;
     int current_time = static_cast<int>(std::time(nullptr));
 
-    auto rate_limit = downloader.get_rate_limit();
+    auto result = downloader.download("/rate_limit", "", false).get();
 
-    DOCTEST_CHECK(rate_limit.reset_time > current_time);
-    DOCTEST_CHECK(rate_limit.remaining >= 0);
-    DOCTEST_MESSAGE("Number of remaining requests: ", rate_limit.remaining);
+    DOCTEST_CHECK(result.status_code == 200);
+    DOCTEST_CHECK(result.rate_limit.reset_time > current_time);
+    DOCTEST_CHECK(result.rate_limit.remaining >= 0);
+    DOCTEST_MESSAGE("Number of remaining requests: ", result.rate_limit.remaining);
 }
 
 DOCTEST_TEST_CASE("Download content with GitHubDownloader" * doctest::skip(true)) {
