@@ -146,16 +146,6 @@ GitHubDownloader::download(const std::string &remote_url, const std::string &if_
         });
 }
 
-GitHubDownloader::RateLimit GitHubDownloader::get_rate_limit() const {
-    // This call now either returns valid rate limit data or throws an exception on error
-    Result result = download("/rate_limit", "", false).get();
-    if (result.status_code != 200) {
-        throw std::runtime_error(
-            fmt::format("Failed obtaining the rate limit: status code {}.", result.status_code));
-    }
-    return result.rate_limit;
-}
-
 std::string GitHubDownloader::get_host() const { return "https://" + host; }
 
 } // namespace pairinteraction
