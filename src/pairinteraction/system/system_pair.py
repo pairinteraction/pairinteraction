@@ -9,17 +9,18 @@ import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
+from pairinteraction.green_tensor import GreenTensorInterpolator
 from pairinteraction.system.system_base import SystemBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.green_tensor import GreenTensorBase
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
         KetAtomTuple,
     )
-    from pairinteraction.system.green_tensor import GreenTensor
     from pairinteraction.units import (
         ArrayLike,
         PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
@@ -156,14 +157,41 @@ class SystemPair(SystemBase[BasisPair]):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor(self, green_tensor: GreenTensor) -> Self:
+    def set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
+        """Set the Green tensor interpolator for the pair system.
+
+        Args:
+            green_tensor_interpolator: The Green tensor interpolator to set for the system.
+
+        """
+        self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
+        return self
+
+    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
+            omega_steps: The number of omega steps to use for non-constant Green tensors.
+                If 1, a constant Green tensor (with omega=0) is assumed.
 
         """
-        self._cpp.set_green_tensor(green_tensor._cpp)
+        if omega_steps <= 0:
+            raise ValueError("omega_steps must be a positive integer.")
+
+        if omega_steps == 1:
+            gt_au = green_tensor.get_dipole_dipole(omega=0, unit="hartree")
+            gti = GreenTensorInterpolator()
+            gti.set_from_cartesian(1, 1, gt_au, tensor_unit="hartree")
+            self.set_green_tensor_interpolator(gti)
+            return self
+
+        # TODO optimize how to choose omegas, for now we just use linear spacing
+        energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
+        omega_max = max(energies_au) - min(energies_au)
+
+        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
+        self.set_green_tensor_interpolator(gti)
         return self
 
     @overload

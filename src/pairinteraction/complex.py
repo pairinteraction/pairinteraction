@@ -6,10 +6,16 @@ import warnings
 from pairinteraction.basis import BasisAtom, BasisPair
 from pairinteraction.database import Database
 from pairinteraction.diagonalization import diagonalize
+from pairinteraction.green_tensor import (
+    GreenTensorCavity,
+    GreenTensorFreeSpace,
+    GreenTensorInterpolator,
+    GreenTensorSurface,
+)
 from pairinteraction.ket import KetAtom, KetPair
 from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
 from pairinteraction.state import StateAtom, StatePair
-from pairinteraction.system import GreenTensor, SystemAtom, SystemPair
+from pairinteraction.system import SystemAtom, SystemPair
 
 __all__ = [
     "C3",
@@ -18,7 +24,10 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
+    "GreenTensorCavity",
+    "GreenTensorFreeSpace",
+    "GreenTensorInterpolator",
+    "GreenTensorSurface",
     "KetAtom",
     "KetPair",
     "StateAtom",
