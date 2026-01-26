@@ -167,7 +167,7 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
         if unit is None:
             if isinstance(value, PlainQuantity):
                 return cls.from_pint(value, dimension)
-            if value == 0:
+            if np.all(value == 0):
                 return cls.from_au(value, dimension)
             raise ValueError("unit must be given if value is not a pint.Quantity")
         assert not isinstance(value, PlainQuantity)
