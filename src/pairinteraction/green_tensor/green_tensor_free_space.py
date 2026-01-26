@@ -20,7 +20,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         """Calculate the dipole dipole Green tensor in cartesian coordinates for free space in atomic units.
 
         Args:
-            omega_au: The frequency in atomic units at which to evaluate the Green tensor.
+            omega_au: The angular frequency in atomic units at which to evaluate the Green tensor.
 
         Returns:
             The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units (i.e. 1/bohr).
@@ -34,7 +34,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         pos2_m = np.array(self.pos2_au) * au_to_meter
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
 
-        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")  # this is the angular frequency
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
         omega_hz = omega.magnitude
 
         gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)  # 1/m

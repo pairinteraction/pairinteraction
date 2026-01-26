@@ -33,7 +33,7 @@ def green_tensor_homogeneous(
     Args:
         r_a: Position vector of atom A in meters
         r_b: Position vector of atom B in meters
-        omega: Angular frequency in 1/seconds
+        omega: Angular frequency in Hz
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
@@ -377,7 +377,7 @@ def elliptic_integral(
     """Evaluate the elliptic part of the integral.
 
     Args:
-        omega: Angular frequency in 1/seconds
+        omega: Angular frequency in Hz
         h: Distance between the two surfaces in meters
         rho: In-plane distance between the two atoms in meters
         phi: Angle between the in-plane distance vector and the x-axis in radians
@@ -470,7 +470,7 @@ def real_axis_integral(
     """Evaluate the real axis part of the integral.
 
     Args:
-        omega: Angular frequency in 1/seconds
+        omega: Angular frequency in Hz
         h: Distance between the two surfaces in meters
         rho: In-plane distance between the two atoms in meters
         phi: Angle between the in-plane distance vector and the x-axis in radians

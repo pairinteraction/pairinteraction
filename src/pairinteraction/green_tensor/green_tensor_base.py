@@ -91,10 +91,10 @@ class GreenTensorBase(ABC):
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega: The frequency at which to evaluate the Green tensor.
+            omega: The angular frequency at which to evaluate the Green tensor.
                 Only needed if the Green tensor is frequency dependent.
-            omega_unit: The unit of the frequency.
-                Default None, which means that the frequency must be given as pint object.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
 
@@ -122,10 +122,10 @@ class GreenTensorBase(ABC):
         This is a 3x3 matrix in the basis [x1, y1, z1] x [x2, y2, z2].
 
         Args:
-            omega: The frequency at which to evaluate the Green tensor.
+            omega: The angular frequency at which to evaluate the Green tensor.
                 Only needed if the Green tensor is frequency dependent.
-            omega_unit: The unit of the frequency.
-                Default None, which means that the frequency must be given as pint object.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the green tensor (e.g. "1/m").
                 Default None, which means that the result is returned as pint object.
 
@@ -167,13 +167,13 @@ def get_electric_permitivity(
 
     Args:
         epsilon: The electric permittivity (dimensionless) or a callable function that returns it.
-        omega: The frequency at which to evaluate the permittivity.
+        omega: The angular frequency at which to evaluate the permittivity.
             Only needed if the permittivity is frequency dependent.
-        omega_unit: The unit of the frequency.
-            Default None, which means that the frequency must be given as pint object.
+        omega_unit: The unit of the angular frequency.
+            Default None, which means that the angular frequency must be given as pint object.
 
     Returns:
-        The electric permittivity at the given frequency.
+        The electric permittivity at the given angular frequency.
 
     """
     omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")

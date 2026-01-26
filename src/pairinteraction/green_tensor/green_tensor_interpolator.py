@@ -91,11 +91,11 @@ class GreenTensorInterpolator:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
             tensor: The green tensor in cartesian coordinates.
-            omega: The frequency at which the green tensor is defined.
+            omega: The angular frequency at which the green tensor is defined.
             tensor_unit: The unit of the tensor.
                 Default None, which means that the tensor must be given as pint object.
-            omega_unit: The unit of the frequencies.
-                Default None, which means that the frequencies must be given as pint object.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
 
 
         """
@@ -147,11 +147,11 @@ class GreenTensorInterpolator:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
             tensors: A list of frequency-dependent green tensors in cartesian coordinates.
-            omegas: A list of frequencies at which the green tensors are defined.
+            omegas: A list of angular frequencies at which the green tensors are defined.
             tensors_unit: The unit of the tensor.
                 Default None, which means that the tensor must be given as pint object.
-            omegas_unit: The unit of the frequencies.
-                Default None, which means that the frequencies must be given as pint object.
+            omegas_unit: The unit of the angular frequencies.
+                Default None, which means that the angular frequencies must be given as pint object.
 
         """
         dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
@@ -201,9 +201,9 @@ class GreenTensorInterpolator:
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega: The frequency at which to evaluate the Green tensor.
-            omega_unit: The unit of the frequency.
-                Default None, which means that the frequency must be given as pint object.
+            omega: The angular frequency at which to evaluate the Green tensor.
+            omega_unit: The unit of the angular frequency.
+                Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
 
@@ -232,14 +232,23 @@ class GreenTensorInterpolator:
         return ["green_tensor_00", *["inverse_distance" for _ in range(kappa1 + kappa2)]]  # type: ignore [list-item]
 
     def _get_green_tensor_prefactor(self, omega_au: float) -> float:
-        """Get the prefactor to convert the Green tensor such that d * G * d has the dimension of energy.
+        r"""Get the prefactor to get the interaction strength from the Green tensor.
 
-        This is the convention used in C++.
+        The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)
+        .. math::
+            V_{\alpha\beta} = \frac{\omega^2}{\hbar \epsilon_0 c^2}
+                d_\alpha^T \mathrm{Re}\{G(r_\alpha, r_\beta, \omega)\} d_\beta
+
+        This functions returns the prefactor
+        .. math::
+            \frac{\omega^2}{\hbar \epsilon_0 c^2}
+
+        In C++ we use the convention that the Green tensor already contains this prefactor.
         """
         speed_of_light_au = ureg.Quantity(1, "speed_of_light").to_base_units().m
         factor = (omega_au / speed_of_light_au) ** 2
-        factor /= 0.5  # = ureg.Quantity(1, "planck_constant") * ureg.Quantity(1, "epsilon_0") in atomc units
-        factor /= 2 * np.pi  # TODO double check hbar or h, and omega angular or normal frequency
+        factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+        factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
         return factor
 
 
