@@ -1,0 +1,934 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction.perturbative.effective_system_pair &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction.perturbative.effective_system_pair</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction.perturbative.effective_system_pair</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">contextlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span><span class="p">,</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">sparse</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisAtom</span><span class="p">,</span> <span class="n">BasisAtomReal</span><span class="p">,</span> <span class="n">BasisPair</span><span class="p">,</span> <span class="n">BasisPairReal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.diagonalization</span><span class="w"> </span><span class="kn">import</span> <span class="n">diagonalize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.perturbative.perturbation_theory</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_perturbative_hamiltonian</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtomReal</span><span class="p">,</span> <span class="n">SystemPair</span><span class="p">,</span> <span class="n">SystemPairReal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityArray</span><span class="p">,</span> <span class="n">QuantityScalar</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csr_matrix</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.ket</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">KetAtom</span><span class="p">,</span>  <span class="c1"># noqa: F401  # needed for sphinx to recognize KetAtomTuple</span>
+        <span class="n">KetAtomTuple</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">PintArray</span><span class="p">,</span> <span class="n">PintFloat</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">BasisSystemLiteral</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;basis_atoms&quot;</span><span class="p">,</span> <span class="s2">&quot;system_atoms&quot;</span><span class="p">,</span> <span class="s2">&quot;basis_pair&quot;</span><span class="p">,</span> <span class="s2">&quot;system_pair&quot;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSystemPair</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for creating an effective SystemPair object and calculating the effective Hamiltonian.</span>
+
+<span class="sd">    Given a subspace spanned by tuples of `KetAtom` objects (ket_tuples),</span>
+<span class="sd">    this class automatically generates appropriate `BasisAtom`, `SystemAtom` objects as well as a `BasisPair` and</span>
+<span class="sd">    `SystemPair` object to calculate the effective Hamiltonian in the subspace via perturbation theory.</span>
+
+<span class="sd">    This class also allows to set magnetic and electric fields similar to the `SystemAtom` class,</span>
+<span class="sd">    as well as the angle and distance between the two atoms like in the `SystemPair` class.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction as pi</span>
+<span class="sd">        &gt;&gt;&gt; ket_atoms = {</span>
+<span class="sd">        ...     &quot;+&quot;: pi.KetAtom(&quot;Rb&quot;, n=59, l=0, j=0.5, m=0.5),</span>
+<span class="sd">        ...     &quot;0&quot;: pi.KetAtom(&quot;Rb&quot;, n=58, l=1, j=1.5, m=1.5),</span>
+<span class="sd">        ...     &quot;-&quot;: pi.KetAtom(&quot;Rb&quot;, n=58, l=0, j=0.5, m=0.5),</span>
+<span class="sd">        ... }</span>
+<span class="sd">        &gt;&gt;&gt; ket_tuples = [</span>
+<span class="sd">        ...     (ket_atoms[&quot;+&quot;], ket_atoms[&quot;-&quot;]),</span>
+<span class="sd">        ...     (ket_atoms[&quot;0&quot;], ket_atoms[&quot;0&quot;]),</span>
+<span class="sd">        ...     (ket_atoms[&quot;-&quot;], ket_atoms[&quot;+&quot;]),</span>
+<span class="sd">        ... ]</span>
+<span class="sd">        &gt;&gt;&gt; eff_system = pi.EffectiveSystemPair(ket_tuples)</span>
+<span class="sd">        &gt;&gt;&gt; eff_system = eff_system.set_distance(10, angle_degree=45, unit=&quot;micrometer&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; eff_h = eff_system.get_effective_hamiltonian(unit=&quot;MHz&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; eff_h -= np.eye(3) * eff_system.get_pair_energies(&quot;MHz&quot;)[1]</span>
+<span class="sd">        &gt;&gt;&gt; print(np.round(eff_h, 0), &quot;MHz&quot;)</span>
+<span class="sd">        [[292.   3.   0.]</span>
+<span class="sd">         [  3.   0.   3.]</span>
+<span class="sd">         [  0.   3. 292.]] MHz</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_basis_atom_class</span> <span class="o">=</span> <span class="n">BasisAtom</span>
+    <span class="n">_basis_pair_class</span> <span class="o">=</span> <span class="n">BasisPair</span>
+    <span class="n">_system_atom_class</span> <span class="o">=</span> <span class="n">SystemAtom</span>
+    <span class="n">_system_pair_class</span> <span class="o">=</span> <span class="n">SystemPair</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.__init__">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ket_tuples</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">KetAtomTuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="n">ket_tuples</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;All ket tuples must contain exactly two kets&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">species</span> <span class="o">==</span> <span class="n">ket_tuples</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">species</span> <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="n">ket_tuples</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;All kets for atom=</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> must have the same species&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Perturbation attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ket_tuples</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">kets</span><span class="p">)</span> <span class="k">for</span> <span class="n">kets</span> <span class="ow">in</span> <span class="n">ket_tuples</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_perturbation_order</span> <span class="o">=</span> <span class="mi">2</span>
+
+        <span class="c1"># BasisAtom and SystemAtom attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_m</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span><span class="p">:</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span><span class="p">:</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># BasisPair and SystemPair attributes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector</span><span class="p">:</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># misc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span><span class="p">:</span> <span class="n">csr_matrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># misc user set stuff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="n">BasisSystemLiteral</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.copy">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of the EffectiveSystemPair object (before it has been created).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="s2">&quot;basis_atoms&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Cannot copy the EffectiveSystemPair object after it has been created. &quot;</span>
+                <span class="s2">&quot;Please create a new object instead.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_is_created</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span> <span class="n">BasisSystemLiteral</span> <span class="o">=</span> <span class="s2">&quot;basis_atoms&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if some part of the effective Hamiltonian has already been created.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">what</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_not_created</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span> <span class="n">BasisSystemLiteral</span> <span class="o">=</span> <span class="s2">&quot;basis_atoms&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure that some part of the effective Hamiltonian has not been created yet.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="n">what</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Cannot change parameters for </span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> after it has already been created. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Please set all parameters before </span><span class="si">{</span><span class="n">what</span><span class="si">}</span><span class="s2"> before accessing it (or creating the effective Hamiltonian).&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_delete_created</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">what</span><span class="p">:</span> <span class="n">BasisSystemLiteral</span> <span class="o">=</span> <span class="s2">&quot;basis_atoms&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Delete the created part of the effective Hamiltonian.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            what: The part of the effective Hamiltonian to delete.</span>
+<span class="sd">                Default is &quot;basis_atoms&quot;, which means delete all parts that have been created.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_basis</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_inds</span>
+
+        <span class="n">parts_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasisSystemLiteral</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;system_pair&quot;</span><span class="p">,</span> <span class="s2">&quot;basis_pair&quot;</span><span class="p">,</span> <span class="s2">&quot;system_atoms&quot;</span><span class="p">,</span> <span class="s2">&quot;basis_atoms&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">parts_order</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Cannot delete </span><span class="si">{</span><span class="n">part</span><span class="si">}</span><span class="s2"> because it has been set by the user. &quot;</span>
+                    <span class="s2">&quot;Please create a new EffectiveSystemPair object instead.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">with</span> <span class="n">contextlib</span><span class="o">.</span><span class="n">suppress</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+                <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">part</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">part</span> <span class="o">==</span> <span class="n">what</span><span class="p">:</span>
+                <span class="k">break</span>
+
+    <span class="c1"># # # Perturbation methods and attributes # # #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ket_tuples</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">KetAtomTuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The tuples of kets, which form the model space for the effective Hamiltonian.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ket_tuples</span>  <span class="c1"># type: ignore [return-value]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">perturbation_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The perturbation order for the effective Hamiltonian.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_perturbation_order</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_perturbation_order">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_perturbation_order">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_perturbation_order</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the perturbation order for the effective Hamiltonian.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_perturbation_order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="c1"># # # BasisAtom methods and attributes # # #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BasisAtom</span><span class="p">,</span> <span class="n">BasisAtom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The basis objects for the single-atom systems.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="s2">&quot;basis_atoms&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_basis_atoms</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_atoms</span>  <span class="c1"># type: ignore [return-value]</span>
+
+    <span class="nd">@basis_atoms</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basis_atoms</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">BasisAtom</span><span class="p">,</span> <span class="n">BasisAtom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_not_created</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Setting basis_atoms will overwrite parameters defined for basis_atoms.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;basis_atoms&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_atoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">basis_atoms</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_delta_n">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_delta_n">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_delta_n</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">delta_n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the delta_n value for single-atom basis.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_n</span> <span class="o">=</span> <span class="n">delta_n</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_delta_l">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_delta_l">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_delta_l</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">delta_l</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the delta_l value for single-atom basis.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span> <span class="o">=</span> <span class="n">delta_l</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_delta_m">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_delta_m">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_delta_m</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">delta_m</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the delta_m value for single-atom basis.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delta_m</span> <span class="o">=</span> <span class="n">delta_m</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_basis_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">delta_n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_n</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_n</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">7</span>
+        <span class="n">delta_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span>
+        <span class="k">if</span> <span class="n">delta_l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">delta_l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_order</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interaction_order</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">delta_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_m</span>
+        <span class="k">if</span> <span class="n">delta_m</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_are_fields_along_z</span><span class="p">:</span>
+            <span class="n">delta_m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_order</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interaction_order</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">basis_atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">BasisAtom</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">use_real</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">EffectiveSystemPairReal</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">kets</span> <span class="o">=</span> <span class="p">[</span><span class="n">ket_tuple</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ket_tuples</span><span class="p">]</span>
+            <span class="n">nlfm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">([[</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">ket</span> <span class="ow">in</span> <span class="n">kets</span><span class="p">])</span>
+            <span class="n">n_range</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> <span class="n">delta_n</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="n">delta_n</span><span class="p">)</span>
+            <span class="n">l_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_l</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_l</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">is_calculated_with_mqdt</span> <span class="k">for</span> <span class="n">ket</span> <span class="ow">in</span> <span class="n">kets</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delta_l</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># for mqdt we increase the default delta_l by 1 to take into account the variance ...</span>
+                <span class="n">l_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">m_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_m</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_m</span><span class="p">)</span> <span class="k">if</span> <span class="n">delta_m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="n">get_basis_atom_with_cache</span><span class="p">(</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">species</span><span class="p">,</span> <span class="n">n_range</span><span class="p">,</span> <span class="n">l_range</span><span class="p">,</span> <span class="n">m_range</span><span class="p">,</span> <span class="n">use_real</span><span class="o">=</span><span class="n">use_real</span><span class="p">)</span>
+            <span class="n">basis_atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_atoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">basis_atoms</span><span class="p">)</span>
+
+    <span class="c1"># # # SystemAtom methods and attributes # # #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">system_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtom</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The system objects for the single-atom systems.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="s2">&quot;system_atoms&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_system_atoms</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_atoms</span>
+
+    <span class="nd">@system_atoms</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">system_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_atoms</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_not_created</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Setting system_atoms will overwrite parameters defined for system_atoms.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;system_atoms&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_system_atoms</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtom</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">system_atoms</span><span class="p">)</span>  <span class="c1"># type: ignore [assignment]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_atoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">basis</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">system_atoms</span><span class="p">)</span>  <span class="c1"># type: ignore [assignment]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">electric_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The electric field for the single-atom systems.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;V/cm&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_electric_field">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_electric_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_electric_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span>
+        <span class="n">electric_field</span><span class="p">:</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the electric field for the single-atom systems.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            electric_field: The electric field to set for the systems.</span>
+<span class="sd">            unit: The unit of the electric field, e.g. &quot;V/cm&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_electric_field</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_pint</span><span class="p">(</span><span class="n">electric_field</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;electric_field&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnetic_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The magnetic field for the single-atom systems.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_magnetic_field">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_magnetic_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_magnetic_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span>
+        <span class="n">magnetic_field</span><span class="p">:</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the magnetic field for the single-atom systems.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            magnetic_field: The magnetic field to set for the systems.</span>
+<span class="sd">            unit: The unit of the magnetic field, e.g. &quot;gauss&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_magnetic_field</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_pint</span><span class="p">(</span><span class="n">magnetic_field</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;magnetic_field&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_are_fields_along_z</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">electric_field</span><span class="p">[:</span><span class="mi">2</span><span class="p">]])</span>  <span class="c1"># type: ignore [index]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">diamagnetism_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether diamagnetism is enabled for the single-atom systems.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_diamagnetism_enabled">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_diamagnetism_enabled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_diamagnetism_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable diamagnetism for the system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enable: Whether to enable or disable diamagnetism.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">(</span><span class="s2">&quot;system_atoms&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_diamagnetism_enabled</span> <span class="o">=</span> <span class="n">enable</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_system_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">system_atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">basis_atom</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_atoms</span><span class="p">:</span>
+            <span class="n">system</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_atom_class</span><span class="p">(</span><span class="n">basis_atom</span><span class="p">)</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diamagnetism_enabled</span><span class="p">)</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">electric_field</span><span class="p">)</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">magnetic_field</span><span class="p">)</span>
+            <span class="n">system_atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+        <span class="n">diagonalize</span><span class="p">(</span><span class="n">system_atoms</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_system_atoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">system_atoms</span><span class="p">)</span>  <span class="c1"># type: ignore [assignment]</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pair_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">PintFloat</span><span class="p">]:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pair_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.get_pair_energies">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.get_pair_energies">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_pair_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">PintFloat</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the pair energies of the ket tuples for infinite distance (i.e. no interaction).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            unit: The unit to which to convert the energies to.</span>
+<span class="sd">                Default None will return a list of `pint.Quantity`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The energies as list of float if a unit was given, otherwise as list of `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span>  <span class="c1"># type: ignore [return-value]</span>
+            <span class="nb">sum</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span><span class="p">,</span> <span class="n">ket</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">system_atoms</span><span class="p">,</span> <span class="n">ket_tuple</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ket_tuples</span>
+        <span class="p">]</span></div>
+
+
+    <span class="c1"># # # BasisPair methods and attributes # # #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasisPair</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The basis pair object for the pair system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="s2">&quot;basis_pair&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_basis_pair</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_pair</span>
+
+    <span class="nd">@basis_pair</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basis_pair</span><span class="p">:</span> <span class="n">BasisPair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_not_created</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Setting basis_pair will overwrite parameters defined for basis_pair.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;basis_pair&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_pair</span> <span class="o">=</span> <span class="n">basis_pair</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_atoms</span> <span class="o">=</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">system_atoms</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_minimum_number_of_ket_pairs">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_minimum_number_of_ket_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_minimum_number_of_ket_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">number_of_kets</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the minimum number of ket pairs in the basis pair.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            number_of_kets: The minimum number of ket pairs to set in the basis pair, by default we use 2000.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">(</span><span class="s2">&quot;basis_pair&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">number_of_kets</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The minimum number of ket pairs cannot be larger than the maximum number of ket pairs.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span> <span class="o">=</span> <span class="n">number_of_kets</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_maximum_number_of_ket_pairs">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_maximum_number_of_ket_pairs">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_maximum_number_of_ket_pairs</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">number_of_kets</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the maximum number of ket pairs in the basis pair.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            number_of_kets: The maximum number of ket pairs to set in the basis pair.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">(</span><span class="s2">&quot;basis_pair&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">number_of_kets</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The maximum number of ket pairs cannot be smaller than the minimum number of ket pairs.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span> <span class="o">=</span> <span class="n">number_of_kets</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_basis_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">max_number_of_kets</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maximum_number_of_ket_pairs</span>
+        <span class="k">if</span> <span class="n">max_number_of_kets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">max_number_of_kets</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+        <span class="n">min_number_of_kets</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_minimum_number_of_ket_pairs</span>
+        <span class="k">if</span> <span class="n">min_number_of_kets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">min_number_of_kets</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2_000</span><span class="p">,</span> <span class="n">max_number_of_kets</span><span class="p">)</span>
+
+        <span class="n">pair_energies_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pair_energies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;hartree&quot;</span><span class="p">)</span>
+        <span class="n">min_energy_au</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pair_energies_au</span><span class="p">)</span>
+        <span class="n">max_energy_au</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pair_energies_au</span><span class="p">)</span>
+
+        <span class="n">mhz_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;MHz&quot;</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+        <span class="n">delta_energy_au</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">mhz_au</span>
+        <span class="n">min_delta</span><span class="p">,</span> <span class="n">max_delta</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">mhz_au</span><span class="p">,</span> <span class="mf">1.0</span>
+
+        <span class="c1"># make a bisect search to get a sensible basis size between:</span>
+        <span class="c1"># min_number_of_kets and max_number_of_kets</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">basis_pair</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_basis_pair_class</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">system_atoms</span><span class="p">,</span>
+                <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">min_energy_au</span> <span class="o">-</span> <span class="n">delta_energy_au</span><span class="p">,</span> <span class="n">max_energy_au</span> <span class="o">+</span> <span class="n">delta_energy_au</span><span class="p">),</span>
+                <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;hartree&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">max_delta</span> <span class="o">-</span> <span class="n">min_delta</span> <span class="o">&lt;</span> <span class="n">mhz_au</span><span class="p">:</span>
+                <span class="k">break</span>  <span class="c1"># stop condition if delta_energy_au does not change anymore</span>
+
+            <span class="k">if</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span> <span class="o">&lt;</span> <span class="n">min_number_of_kets</span><span class="p">:</span>
+                <span class="n">min_delta</span> <span class="o">=</span> <span class="n">delta_energy_au</span>
+                <span class="n">delta_energy_au</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">delta_energy_au</span><span class="p">,</span> <span class="p">(</span><span class="n">delta_energy_au</span> <span class="o">+</span> <span class="n">max_delta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span> <span class="o">&gt;</span> <span class="n">max_number_of_kets</span><span class="p">:</span>
+                <span class="n">max_delta</span> <span class="o">=</span> <span class="n">delta_energy_au</span>
+                <span class="n">min_delta</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">delta_energy_au</span><span class="p">,</span> <span class="p">(</span><span class="n">delta_energy_au</span> <span class="o">+</span> <span class="n">min_delta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis_pair</span> <span class="o">=</span> <span class="n">basis_pair</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;The pair basis for the perturbative calculations consists of </span><span class="si">%d</span><span class="s2"> kets.&quot;</span><span class="p">,</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span><span class="p">)</span>
+
+    <span class="c1"># # # SystemPair methods and attributes # # #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">system_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SystemPair</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The system pair object for the pair system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_created</span><span class="p">(</span><span class="s2">&quot;system_pair&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_system_pair</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_pair</span>
+
+    <span class="nd">@system_pair</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">system_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">:</span> <span class="n">SystemPair</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_not_created</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Setting system_pair will overwrite parameters defined for system_pair.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user_set_parts</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;system_pair&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_system_pair</span> <span class="o">=</span> <span class="n">system_pair</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis_pair</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">interaction_order</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The interaction order for the pair system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span>  <span class="c1"># type: ignore [return-value]</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_interaction_order">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_interaction_order">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_interaction_order</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the interaction order of the pair system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            order: The interaction order to set for the pair system.</span>
+<span class="sd">                The order must be 3, 4, or 5.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">distance_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The distance vector between the atoms in the pair system.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector</span>  <span class="c1"># type: ignore [return-value]</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_distance">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_distance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_distance</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">PintFloat</span><span class="p">,</span>
+        <span class="n">angle_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the distance between the atoms using the specified distance and angle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            distance: The distance to set between the atoms in the given unit.</span>
+<span class="sd">            angle_degree: The angle between the distance vector and the z-axis in degrees.</span>
+<span class="sd">                90 degrees corresponds to the x-axis.</span>
+<span class="sd">                Defaults to 0, which corresponds to the z-axis.</span>
+<span class="sd">            unit: The unit of the distance, e.g. &quot;micrometer&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distance_vector</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">distance_vector</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_distance_vector">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_distance_vector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_distance_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">|</span> <span class="n">PintArray</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the distance vector between the atoms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            distance: The distance vector to set between the atoms in the given unit.</span>
+<span class="sd">            unit: The unit of the distance, e.g. &quot;micrometer&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_delete_created</span><span class="p">(</span><span class="s2">&quot;system_pair&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_pint</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.set_angle">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.set_angle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_angle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="n">Self</span><span class="p">,</span>
+        <span class="n">angle</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;degree&quot;</span><span class="p">,</span> <span class="s2">&quot;radian&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;degree&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the angle between the atoms in degrees.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: The angle between the distance vector and the z-axis (by default in degrees).</span>
+<span class="sd">                90 degrees corresponds to the x-axis.</span>
+<span class="sd">                Defaults to 0, which corresponds to the z-axis.</span>
+<span class="sd">            unit: The unit of the angle, either &quot;degree&quot; or &quot;radian&quot;, by default &quot;degree&quot;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">unit</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;radian&quot;</span><span class="p">,</span> <span class="s2">&quot;degree&quot;</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;Unit </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2"> is not supported for angle.&quot;</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="o">==</span> <span class="s2">&quot;radian&quot;</span><span class="p">:</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+        <span class="n">distance_mum</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_vector</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">magnitude</span><span class="p">)</span>  <span class="c1"># type: ignore [assignment]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance_mum</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_system_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">system_pair</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_system_pair_class</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basis_pair</span><span class="p">)</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_vector</span><span class="p">)</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interaction_order</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_system_pair</span> <span class="o">=</span> <span class="n">system_pair</span>
+
+    <span class="c1"># # # Effective Hamiltonian methods and attributes # # #</span>
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">return_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="EffectiveSystemPair.get_effective_hamiltonian">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.get_effective_hamiltonian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">return_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="n">PintArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the effective Hamiltonian of the pair system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            return_order: The order of the perturbation to return.</span>
+<span class="sd">                Default None, returns the sum up to the perturbation order set in the class.</span>
+<span class="sd">            unit: The unit in which to return the effective Hamiltonian.</span>
+<span class="sd">                If None, returns a pint array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The effective Hamiltonian of the pair system in the given unit.</span>
+<span class="sd">            If unit is None, returns a pint array, otherwise returns a numpy array.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_effective_hamiltonian</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">return_order</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">h_eff_au</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>  <span class="c1"># type: ignore [assignment]</span>
+        <span class="k">elif</span> <span class="n">return_order</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span><span class="p">:</span>
+            <span class="n">h_eff_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span><span class="p">[</span><span class="n">return_order</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The perturbation order </span><span class="si">{</span><span class="n">return_order</span><span class="si">}</span><span class="s2"> is not available in the effective Hamiltonian &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;with the specified perturbation_order </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">perturbation_order</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real_if_close</span><span class="p">(</span><span class="n">h_eff_au</span><span class="p">),</span> <span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.get_effective_basisvectors">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.get_effective_basisvectors">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_basisvectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csr_matrix</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the eigenvectors of the perturbative Hamiltonian.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_order</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;For more than one state and perturbation_order &gt; 2 the effective basis might be wrong.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_effective_hamiltonian</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.get_effective_basis">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.get_effective_basis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_effective_basis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasisPair</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the effective basis of the pair system.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;The get effective basis method is not implemented yet.&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_effective_hamiltonian</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the perturbative Hamiltonian up to the given perturbation order.&quot;&quot;&quot;</span>
+        <span class="n">hamiltonian_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_pair</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;hartree&quot;</span><span class="p">)</span>
+        <span class="n">eff_h_dict_au</span><span class="p">,</span> <span class="n">eff_vecs</span> <span class="o">=</span> <span class="n">calculate_perturbative_hamiltonian</span><span class="p">(</span>
+            <span class="n">hamiltonian_au</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_inds</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">perturbation_order</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_h_dict_au</span> <span class="o">=</span> <span class="n">eff_h_dict_au</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="o">=</span> <span class="n">eff_vecs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_for_resonances</span><span class="p">()</span>
+
+    <span class="c1"># # # Other stuff # # #</span>
+<div class="viewcode-block" id="EffectiveSystemPair.model_inds">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.model_inds">[docs]</a>
+    <span class="nd">@cached_property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">model_inds</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The indices of the corresponding KetPairs of the given ket_tuples in the basis of the pair system.&quot;&quot;&quot;</span>
+        <span class="n">model_inds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">kets</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ket_tuples</span><span class="p">:</span>
+            <span class="n">overlap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis_pair</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">kets</span><span class="p">)</span>
+            <span class="n">inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">overlap</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">model_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+            <span class="k">if</span> <span class="n">overlap</span><span class="p">[</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">&gt;</span> <span class="mf">0.6</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">overlap</span><span class="p">[</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pairstate </span><span class="si">{</span><span class="n">kets</span><span class="si">}</span><span class="s2"> is not part of the basis of the pair system.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                <span class="s2">&quot;The ket_pair </span><span class="si">%s</span><span class="s2"> only has an overlap of </span><span class="si">%.3f</span><span class="s2"> with its corresponding pair_state.&quot;</span>
+                <span class="s2">&quot; The most perturbing states are:&quot;</span><span class="p">,</span>
+                <span class="n">kets</span><span class="p">,</span>
+                <span class="n">overlap</span><span class="p">[</span><span class="n">inds</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inds</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">5</span><span class="p">]:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> with overlap </span><span class="si">%.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">overlap</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">model_inds</span></div>
+
+
+<div class="viewcode-block" id="EffectiveSystemPair.check_for_resonances">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.EffectiveSystemPair.html#pairinteraction.EffectiveSystemPair.check_for_resonances">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">check_for_resonances</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">required_overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check if states of the model space have strong resonances with states outside the model space.&quot;&quot;&quot;</span>
+        <span class="c1"># Get the effective eigenvectors without potential warning</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_effective_hamiltonian</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="n">eff_vecs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_eff_vecs</span>
+
+        <span class="n">overlaps</span> <span class="o">=</span> <span class="p">(</span><span class="n">eff_vecs</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">eff_vecs</span><span class="o">.</span><span class="n">conj</span><span class="p">()))</span><span class="o">.</span><span class="n">real</span>  <span class="c1"># elementwise multiplication</span>
+
+        <span class="n">model_inds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_inds</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m_ind</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model_inds</span><span class="p">):</span>
+            <span class="n">inf_data_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">inf_data_inds</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">inf_data_inds</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()]</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                    <span class="s2">&quot;Detected &#39;inf&#39; entries in the effective eigenvectors.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot; This might happen, if you forgot to include a degenerate state in the model space.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="s2">&quot; Consider adding the following states to the model space:&quot;</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> has infinite admixture&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+                <span class="k">continue</span>
+
+            <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">/=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+            <span class="k">if</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">m_ind</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">required_overlap</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;The ket </span><span class="si">%s</span><span class="s2"> has only </span><span class="si">%.3f</span><span class="s2"> overlap with its corresponding effective eigenvector.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; Thus, the calculation might lead to unexpected or wrong results.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; Consider adding the most perturbing states to the model space.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot; The most perturbing states are:&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">m_ind</span><span class="p">],</span>
+                <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">m_ind</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">print_above_admixture</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">required_overlap</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">print_above_admixture</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">index</span> <span class="o">!=</span> <span class="n">m_ind</span><span class="p">:</span>
+                    <span class="n">admixture</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> with overlap </span><span class="si">%.3e</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">admixture</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">EffectiveSystemPairReal</span><span class="p">(</span><span class="n">EffectiveSystemPair</span><span class="p">):</span>
+    <span class="n">_basis_atom_class</span> <span class="o">=</span> <span class="n">BasisAtomReal</span>
+    <span class="n">_basis_pair_class</span> <span class="o">=</span> <span class="n">BasisPairReal</span>
+    <span class="n">_system_atom_class</span> <span class="o">=</span> <span class="n">SystemAtomReal</span>
+    <span class="n">_system_pair_class</span> <span class="o">=</span> <span class="n">SystemPairReal</span>
+
+
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_basis_atom_with_cache</span><span class="p">(</span>
+    <span class="n">species</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">l</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">m</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="o">*</span><span class="p">,</span> <span class="n">use_real</span><span class="p">:</span> <span class="nb">bool</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasisAtom</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a BasisAtom object potentially by using a cache to avoid recomputing it.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_real</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">BasisAtomReal</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">BasisAtom</span><span class="p">(</span><span class="n">species</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">l</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

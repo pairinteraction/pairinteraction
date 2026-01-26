@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Installation &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Tutorials" href="tutorials.html" />
+    <link rel="prev" title="Pairinteraction - A Rydberg Interaction Calculator" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pairinteraction
+              <img src="_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#binary-installers">1.1. Binary Installers</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python-library">1.1.1. Python Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#c-library">1.1.2. C++ Library</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#building-from-source">1.2. Building from Source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#requirements">1.2.1. Requirements</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#c-backend-and-python-interface">1.2.1.1. C++ Backend and Python Interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#graphical-user-interface">1.2.1.2. Graphical User Interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#documentation">1.2.1.3. Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#build-options">1.2.2. Build options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ubuntu-18-04">1.2.3. Ubuntu 18.04</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dependencies">1.2.3.1. Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#build-instructions">1.2.3.2. Build Instructions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#opensuse-leap">1.2.4. openSUSE Leap</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">1.2.4.1. Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5">1.2.4.2. Build Instructions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mac-os-x">1.2.5. Mac OS X</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id6">1.2.5.1. Dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9">1.2.5.2. Build Instructions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#code-documentation">1.2.6. Code documentation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#make-compiling-testing-and-installing">1.2.7. <code class="docutils literal notranslate"><span class="pre">make</span></code>: Compiling, testing and installing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">2. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active"><span class="section-number">1. </span>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<span id="id1"></span><h1><span class="section-number">1. </span>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<section id="binary-installers">
+<h2><span class="section-number">1.1. </span>Binary Installers<a class="headerlink" href="#binary-installers" title="Link to this heading"></a></h2>
+<p>All builds come with an easy-to-use graphical user interface for pair potential calculations, taking into
+account electric and magnetic fields. In addition, a Python 3 and C++ library is provided which can be used to
+write your own code and have more fine-grained control over what pairinteraction does. Quantities as matrix elements,
+eigenenergies, or excitation dynamics can be calculated. For usage examples
+visit the <a class="reference internal" href="tutorials.html#tutorials"><span class="std std-ref">tutorials</span></a> section of the documentation or
+download the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python">Python</a>
+and <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_cpp">C++</a> example programs.</p>
+<p>Packages are available for GNU/Linux, Mac OS X, and Windows through
+<a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/releases">GitHub Releases</a>. For these packages, the graphical user interface works out-of-the-box.
+The different packages were built on the following architectures:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">deb</span></code> package: Ubuntu 18.04 amd64</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rpm</span></code> package: OpenSUSE Leap 15.0 x86_64</p></li>
+<li><p>Mac OS X <code class="docutils literal notranslate"><span class="pre">dmg</span></code>: Mac OS X 10.13 (Xcode 9.4)</p></li>
+<li><p>Windows <code class="docutils literal notranslate"><span class="pre">exe</span></code>: Compiled with Visual Studio 2015</p></li>
+</ul>
+<p>Alternatively, you can install pairinteraction from the <a class="reference external" href="https://pypi.org/project/pairinteraction">Python Package Index</a> via pip by calling <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pairinteraction</span></code> from the command line.
+We recommend this way of installation for using pairinteraction as a Python 3 library. To get the graphical user interface work with such an installation, the Python
+library PyQt5 must be installed as well.</p>
+<p>If pairinteraction was installed from the command line, the graphical user interface can be started by executing <code class="docutils literal notranslate"><span class="pre">start_pairinteraction_gui</span></code>.</p>
+<section id="python-library">
+<h3><span class="section-number">1.1.1. </span>Python Library<a class="headerlink" href="#python-library" title="Link to this heading"></a></h3>
+<p>If pairinteraction was installed via pip or using a Linux package manager, all dependencies are installed
+automatically and the library can be used for Python 3 right away.</p>
+<p>Otherwise, the dependencies of the pairinteraction library must be installed manually. Assuming that the Python 3
+distribution <a class="reference external" href="https://conda.io/miniconda.html">Miniconda</a> or <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a> is used, the dependencies can be installed using conda. Note that it is
+important that the installed version of the NumPy library is up-to-date.</p>
+<div class="highlight-bat notranslate"><div class="highlight"><pre><span></span>conda install numpy scipy matplotlib
+</pre></div>
+</div>
+<p>In addition, the path containing the pairinteraction library must be added manually to the Python package search path.
+If the pairinteraction software was installed to its default location, this
+can be done by adding the following code block to the top of a Python script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;C:\Program Files\pairinteraction&quot;</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;darwin&quot;</span><span class="p">:</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/Applications/pairinteraction.app/Contents/Resources&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="c-library">
+<h3><span class="section-number">1.1.2. </span>C++ Library<a class="headerlink" href="#c-library" title="Link to this heading"></a></h3>
+<p>For GNU/Linux, all dependencies of the pairinteraction C++ library are installed
+automatically and the C++ library can be used right away.</p>
+<p>For Windows or OS X, the following C++ libraries and their development headers have to
+be installed manually: Sqlite3, Boost, GSL</p>
+</section>
+</section>
+<section id="building-from-source">
+<h2><span class="section-number">1.2. </span>Building from Source<a class="headerlink" href="#building-from-source" title="Link to this heading"></a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If you built from source, you have to extend the Python package search path to
+accomodate pairinteraction by adding your build directory to <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>. This can be done e.g. by
+adding the following lines to the top of a Python script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;/your/path/to/pairinteraction/build&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="requirements">
+<h3><span class="section-number">1.2.1. </span>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h3>
+<p>The following tools and libraries, including header files, are required
+for compiling the source code.</p>
+<dl class="simple">
+<dt>Git</dt><dd><p>Git is a version control system used to track changes.</p>
+</dd>
+<dt>CMake 3.9 or later</dt><dd><p>The build system is based on CMake.</p>
+</dd>
+</dl>
+<section id="c-backend-and-python-interface">
+<h4><span class="section-number">1.2.1.1. </span>C++ Backend and Python Interface<a class="headerlink" href="#c-backend-and-python-interface" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>C++ Compiler</dt><dd><p>C++14 capable C++ compiler</p>
+</dd>
+<dt>Sqlite3</dt><dd><p>SQLite is a self-contained, high-reliability, embedded,
+full-featured, public-domain, SQL database engine.</p>
+</dd>
+<dt>Boost</dt><dd><p>A library providing advanced C++ features.</p>
+</dd>
+<dt>GSL</dt><dd><p>The GNU Scientific Library (GSL) is a numerical library.</p>
+</dd>
+<dt>SWIG 3.0 or later</dt><dd><p>Simplified Wrapper and Interface Generator to generate a Python
+interface from the C++ code.</p>
+</dd>
+<dt>Python3</dt><dd><p>The user interface is provided in Python scripting language.</p>
+</dd>
+<dt>NumPy and Scipy</dt><dd><p>NumPy and SciPy are libraries for the Python programming language, adding
+support for large, multi-dimensional arrays and matrices.</p>
+</dd>
+</dl>
+</section>
+<section id="graphical-user-interface">
+<h4><span class="section-number">1.2.1.2. </span>Graphical User Interface<a class="headerlink" href="#graphical-user-interface" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>PyQt5</dt><dd><p>Python bindings of the cross-platform GUI toolkit Qt.</p>
+</dd>
+</dl>
+</section>
+<section id="documentation">
+<h4><span class="section-number">1.2.1.3. </span>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h4>
+<dl class="simple">
+<dt>Doxygen</dt><dd><p>Doxygen is used as a documentation generator for C++.</p>
+</dd>
+<dt>Sphinx</dt><dd><p>Sphinx is used as a documentation generator for Python.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="build-options">
+<h3><span class="section-number">1.2.2. </span>Build options<a class="headerlink" href="#build-options" title="Link to this heading"></a></h3>
+<p>The build system uses CMake and has some configuration switches. These are</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Effect</p></th>
+<th class="head"><p>Default</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_BACKEND</span></code></p></td>
+<td><p>Build with C++ backend</p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_PYTHON</span></code></p></td>
+<td><p>Build with SWIG Python interface</p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_GUI</span></code></p></td>
+<td><p>Build with Python GUI</p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_DATABASE</span></code></p></td>
+<td><p>Store quantum defect database so
+that it can be accessed by the GUI</p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_DOCS</span></code></p></td>
+<td><p>Generate documentation</p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_DMG</span></code></p></td>
+<td><p>Generate a DMG file (Mac OS X only)</p></td>
+<td><p>OFF</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_COVERAGE</span></code></p></td>
+<td><p>Generate code coverage report</p></td>
+<td><p>OFF</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_LTO</span></code></p></td>
+<td><p>Build with link-time optimization</p></td>
+<td><p>OFF</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_GSL</span></code></p></td>
+<td><p>Use the GNU scientific library for
+Whittaker functions <a class="footnote-reference brackets" href="#id3" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a></p></td>
+<td><p>ON</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">WITH_CLANG_TIDY</span></code></p></td>
+<td><p>Run Clang-Tidy during compilation</p></td>
+<td><p>OFF</p></td>
+</tr>
+</tbody>
+</table>
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="id3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p>This mode activates the extension for calculating radial wave
+functions using Whittaker functions. If pairinteraction
+is built in this mode, any derived work has to be licensed under
+GPL v3, because of the GSL being distributed under GPL.</p>
+</aside>
+</aside>
+<p>These options can be passed directly to <code class="docutils literal notranslate"><span class="pre">cmake</span></code>, i.e.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>cmake<span class="w"> </span>-DWITH_GUI<span class="o">=</span>OFF<span class="w"> </span>-DWITH_DATABASE<span class="o">=</span>OFF<span class="w"> </span>-DWITH_DOCS<span class="o">=</span>OFF<span class="w"> </span>..
+</pre></div>
+</div>
+<p>This way we can only build the C++ backend with the Python interface.</p>
+</section>
+<section id="ubuntu-18-04">
+<h3><span class="section-number">1.2.3. </span>Ubuntu 18.04<a class="headerlink" href="#ubuntu-18-04" title="Link to this heading"></a></h3>
+<section id="dependencies">
+<h4><span class="section-number">1.2.3.1. </span>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h4>
+<p>The build system relies on CMake.  To build the Python GUI we need the
+PyQT5 toolkit.  Thus you have to install the following packages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cmake build-essential git pyqt5-dev-tools
+</pre></div>
+</div>
+<p>For the backend we need the following packages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>libboost-all-dev libgsl-dev libsqlite3-dev sqlite3 swig python3 python3-dev python3-numpy python3-scipy
+</pre></div>
+</div>
+<p>The GUI builds with only <code class="docutils literal notranslate"><span class="pre">pyqt5-dev-tools</span></code> but to run it we
+additionally need</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python3-pint python3-pyqt5.qtsvg
+</pre></div>
+</div>
+</section>
+<section id="build-instructions">
+<h4><span class="section-number">1.2.3.2. </span>Build Instructions<a class="headerlink" href="#build-instructions" title="Link to this heading"></a></h4>
+<p>To build for GNU/Linux checkout the latest version of pairinteraction
+using <cite>git</cite></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>--single-branch<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/pairinteraction/pairinteraction.git
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget the <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> switch.  Otherwise all the
+submodules will be missing and you won’t be able to build
+pairinteraction successfully.  The <code class="docutils literal notranslate"><span class="pre">--single-branch</span></code> flag is not
+essential but will speed up the download significantly by omitting
+all other branch except <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+</div>
+<p>Then proceed with the usual CMake workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pairinteraction
+$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>..
+$<span class="w"> </span>make<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+<p>This will build pairinteraction for real and complex matrices.
+Afterwards you can start the program from the build directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./pairinteraction
+</pre></div>
+</div>
+<p>For the GUI to work, you need Python3 with the packages <code class="docutils literal notranslate"><span class="pre">numpy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scipy</span></code>, <code class="docutils literal notranslate"><span class="pre">pint</span></code>, and <code class="docutils literal notranslate"><span class="pre">pyqt5</span></code>.</p>
+<p>In order to use the pairinteraction Python 3 library,
+you have to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.</p>
+</section>
+</section>
+<section id="opensuse-leap">
+<h3><span class="section-number">1.2.4. </span>openSUSE Leap<a class="headerlink" href="#opensuse-leap" title="Link to this heading"></a></h3>
+<section id="id4">
+<h4><span class="section-number">1.2.4.1. </span>Dependencies<a class="headerlink" href="#id4" title="Link to this heading"></a></h4>
+<p>The build system relies on CMake.  To build the Python GUI we need the
+PyQT5 toolkit.  Thus you have to install the following packages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>git cmake python3-qt5-devel
+</pre></div>
+</div>
+<p>For the backend we need the following packages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>patterns-devel-C-C++-devel_C_C++ sqlite3 sqlite3-devel libboost_filesystem1_66_0-devel libboost_program_options1_66_0-devel libboost_serialization1_66_0-devel libboost_system1_66_0-devel libboost_test1_66_0-devel gsl-devel swig python3 python3-devel python3-numpy python3-numpy-devel python3-scipy
+</pre></div>
+</div>
+<p>The GUI builds with only <code class="docutils literal notranslate"><span class="pre">python3-qt5-devel</span></code> but to run it we
+additionally need</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>python3-pip
+</pre></div>
+</div>
+<p>The package manager <code class="docutils literal notranslate"><span class="pre">pip</span></code> is needed to install the <code class="docutils literal notranslate"><span class="pre">pint</span></code> package
+which we also need</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pint
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h4><span class="section-number">1.2.4.2. </span>Build Instructions<a class="headerlink" href="#id5" title="Link to this heading"></a></h4>
+<p>To build for GNU/Linux checkout the latest version of pairinteraction
+using <code class="docutils literal notranslate"><span class="pre">git</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>--single-branch<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/pairinteraction/pairinteraction.git
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget the <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> switch.  Otherwise all the
+submodules will be missing and you won’t be able to build
+pairinteraction successfully.  The <code class="docutils literal notranslate"><span class="pre">--single-branch</span></code> flag is not
+essential but will speed up the download significantly by omitting
+all other branch except <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+</div>
+<p>Then proceed with the usual CMake workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pairinteraction
+$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>..
+$<span class="w"> </span>make<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+<p>This will build pairinteraction for real and complex matrices.
+Afterwards you can start the program from the build directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./pairinteraction
+</pre></div>
+</div>
+<p>For the GUI to work, you need Python3 with the packages <code class="docutils literal notranslate"><span class="pre">numpy</span></code>,
+<code class="docutils literal notranslate"><span class="pre">scipy</span></code>, <code class="docutils literal notranslate"><span class="pre">pint</span></code>, and <code class="docutils literal notranslate"><span class="pre">pyqt5</span></code>.</p>
+<p>In order to use the pairinteraction Python 3 library,
+you have to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.</p>
+</section>
+</section>
+<section id="mac-os-x">
+<h3><span class="section-number">1.2.5. </span>Mac OS X<a class="headerlink" href="#mac-os-x" title="Link to this heading"></a></h3>
+<section id="id6">
+<h4><span class="section-number">1.2.5.1. </span>Dependencies<a class="headerlink" href="#id6" title="Link to this heading"></a></h4>
+<p>The build system relies on CMake. For building the pairinteraction C++ backend,
+you have to install (e.g. via homebrew) the following packages</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cmake git gsl swig libomp
+</pre></div>
+</div>
+<p>For the Python pairinteraction library and the Python GUI, you need a Python 3
+distribution (we recommend <a class="reference external" href="https://conda.io/miniconda.html">Miniconda</a> or <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a>). The following Python 3
+packages have to be installed</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pint pyqt numpy scipy
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h4><span class="section-number">1.2.5.2. </span>Build Instructions<a class="headerlink" href="#id9" title="Link to this heading"></a></h4>
+<p>To build for OS X checkout the latest version of pairinteraction
+using <code class="docutils literal notranslate"><span class="pre">git</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>--single-branch<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/pairinteraction/pairinteraction.git
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget the <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> switch.  Otherwise all the
+submodules will be missing and you won’t be able to build
+pairinteraction successfully.  The <code class="docutils literal notranslate"><span class="pre">--single-branch</span></code> flag is not
+essential but will speed up the download significantly by omitting
+all other branch except <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+</div>
+<p>Given that the package <code class="docutils literal notranslate"><span class="pre">llvm&#64;3.9</span></code> has been installed via <code class="docutils literal notranslate"><span class="pre">homebrew</span></code>, we force CMake
+to use the Clang C++ compiler by executing the bash commands</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">CXX</span><span class="o">=</span>/usr/local/opt/llvm@3.9/bin/clang++
+$<span class="w"> </span><span class="nb">export</span><span class="w"> </span><span class="nv">LDFLAGS</span><span class="o">=</span><span class="s2">&quot;-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,</span><span class="si">${</span><span class="nv">CONDA_PREFIX</span><span class="si">}</span><span class="s2">/lib&quot;</span>
+</pre></div>
+</div>
+<p>Then proceed with the usual CMake workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pairinteraction
+$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>..
+$<span class="w"> </span>make<span class="w"> </span>-j<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+<p>This will build pairinteraction for real and complex matrices.
+Afterwards you can start the pairinteraction GUI from the build directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./pairinteraction
+</pre></div>
+</div>
+<p>In order to use the pairinteraction Python 3 library,
+you have to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.</p>
+</section>
+</section>
+<section id="code-documentation">
+<h3><span class="section-number">1.2.6. </span>Code documentation<a class="headerlink" href="#code-documentation" title="Link to this heading"></a></h3>
+<p>To generate the code documentation Doxygen and Sphinx are needed (in
+addition to all other build dependencies).  On Ubuntu or Debian it can
+be obtained using</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>doxygen<span class="w"> </span>graphviz<span class="w"> </span>python3-sphinx<span class="w"> </span>python3-numpydoc<span class="w"> </span>jupyter-nbconvert<span class="w"> </span>pandoc<span class="w"> </span>python3-ipykernel<span class="w"> </span>python3-matplotlib
+</pre></div>
+</div>
+<p>Then checkout the latest version of pairinteraction using <cite>git</cite></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>--single-branch<span class="w"> </span>--recursive<span class="w"> </span>https://github.com/pairinteraction/pairinteraction.git
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Don’t forget the <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> switch.  Otherwise all the
+submodules will be missing and you won’t be able to build
+pairinteraction successfully.  The <code class="docutils literal notranslate"><span class="pre">--single-branch</span></code> flag is not
+essential but will speed up the download significantly by omitting
+all other branch except <code class="docutils literal notranslate"><span class="pre">master</span></code>.</p>
+</div>
+<p>Then proceed with the usual CMake workflow</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>pairinteraction
+$<span class="w"> </span>mkdir<span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
+$<span class="w"> </span>cmake<span class="w"> </span>..
+</pre></div>
+</div>
+<p>Instead of calling <code class="docutils literal notranslate"><span class="pre">make</span></code> you now call the documentation target</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>make<span class="w"> </span>doc
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can also build only the Doxygen or the Sphinx documentation by
+building the eponymous targets <code class="docutils literal notranslate"><span class="pre">doxygen</span></code> or <code class="docutils literal notranslate"><span class="pre">sphinx</span></code> (instead of
+<code class="docutils literal notranslate"><span class="pre">doc</span></code>).</p>
+</div>
+<p>This will build the documentation in the subdirectory
+<code class="docutils literal notranslate"><span class="pre">doc/doxygen/html</span></code> and <code class="docutils literal notranslate"><span class="pre">doc/sphinx/html</span></code> of the build directory.
+Open the file <code class="docutils literal notranslate"><span class="pre">index.html</span></code> in your browser to see the result.</p>
+</section>
+<section id="make-compiling-testing-and-installing">
+<h3><span class="section-number">1.2.7. </span><code class="docutils literal notranslate"><span class="pre">make</span></code>: Compiling, testing and installing<a class="headerlink" href="#make-compiling-testing-and-installing" title="Link to this heading"></a></h3>
+<p>The command <code class="docutils literal notranslate"><span class="pre">make</span></code> is mainly used to compile the source code, but it
+can do a number of other things. The generic syntax of the <code class="docutils literal notranslate"><span class="pre">make</span></code>
+command is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>make<span class="w"> </span><span class="o">[</span>options<span class="o">]</span><span class="w"> </span><span class="o">[</span>target<span class="o">]</span>
+</pre></div>
+</div>
+<p>When no target is given, the target <code class="docutils literal notranslate"><span class="pre">all</span></code> is used.  The possible
+options can be looked up in the <code class="docutils literal notranslate"><span class="pre">make</span></code> manual pages.  The following
+targets are available:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">all</span></code></dt><dd><p>Compiles the complete source code.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">check</span></code></dt><dd><p>Runs the testsuite.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">clean</span></code></dt><dd><p>Deletes all files that were created during the compilation.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">package</span></code></dt><dd><p>On GNU/Linux and Mac OS X this will produce an installable package
+for your platform.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">doxygen</span></code></dt><dd><p>Creates the Doxygen code documentation in the <code class="docutils literal notranslate"><span class="pre">doc/doxygen</span></code>
+subdirectory.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sphinx</span></code></dt><dd><p>Creates the Sphinx code documentation in the <code class="docutils literal notranslate"><span class="pre">doc/sphinx</span></code>
+subdirectory.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">doc</span></code></dt><dd><p>Synonym to make both, <code class="docutils literal notranslate"><span class="pre">doxygen</span></code> and <code class="docutils literal notranslate"><span class="pre">sphinx</span></code></p>
+</dd>
+</dl>
+<p>A number of options are available when calling <code class="docutils literal notranslate"><span class="pre">make</span></code> which can be
+found in the <code class="docutils literal notranslate"><span class="pre">make</span></code> manual pages.  One option we would like to
+present here nevertheless which is <code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">num_jobs</span></code>, which can be used
+for parallel compilation on computers that have more than one CPU or
+core.  Here <code class="docutils literal notranslate"><span class="pre">num_jobs</span></code> specifies the maximal number of jobs that
+will be run.  Setting <code class="docutils literal notranslate"><span class="pre">num_jobs</span></code> to the number of available
+processors can speed up the compilation process significantly.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Pairinteraction - A Rydberg Interaction Calculator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="tutorials.html" class="btn btn-neutral float-right" title="2. Tutorials" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
