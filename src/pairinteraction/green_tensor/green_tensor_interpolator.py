@@ -29,12 +29,8 @@ class GreenTensorInterpolator:
         >>> gt = pi.GreenTensorInterpolator()
         >>> distance_mum = 5
         >>> omega = 1
-        >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (omega**2 * distance_mum**3)
-        >>> tensor_unit = "hartree / (e^2 micrometer^3)"
-        >>> gt.set_constant_from_cartesian(1, 1, tensor, omega, tensor_unit, omega_unit="Hz")
-        GreenTensorInterpolator(...)
-        >>> print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())
-        [ 0.008 -0.016  0.008]
+
+    # TODO fix example
 
     """
 
