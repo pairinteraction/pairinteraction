@@ -62,6 +62,7 @@ dependencies = [
   "nbformat >= 5.10",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.3.0; sys_platform != 'darwin'",
+  "numba >= 0.60.0",
 ]
 
 [dependency-groups]

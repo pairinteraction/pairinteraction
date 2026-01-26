@@ -11,7 +11,7 @@ from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
 from pairinteraction.green_tensor import GreenTensorInterpolator
 from pairinteraction.system.system_base import SystemBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -23,7 +23,8 @@ if TYPE_CHECKING:
     )
     from pairinteraction.units import (
         ArrayLike,
-        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
+        NDArray,
+        PintArray,  # needed for sphinx to recognize PintArrayLike
         PintArrayLike,
         PintFloat,
     )
@@ -72,7 +73,7 @@ class SystemPair(SystemBase[BasisPair]):
         """
         self._cpp = self._cpp_type(basis._cpp)
         self._basis = basis
-        self._distance_vector_au = [0, 0, np.inf]
+        self._distance_vector_au = np.array([0, 0, np.inf])
         self._interaction_order = 3
 
     def get_eigenbasis(self) -> BasisPair:
@@ -135,17 +136,17 @@ class SystemPair(SystemBase[BasisPair]):
         """
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
-        self._distance_vector_au = distance_au
+        self._distance_vector_au = np.array(distance_au)
         return self
 
     @overload
-    def get_distance_vector(self, unit: None = None) -> list[PintFloat]: ...
+    def get_distance_vector(self, unit: None = None) -> PintArray: ...
 
     @overload
-    def get_distance_vector(self, unit: str) -> list[float]: ...
+    def get_distance_vector(self, unit: str) -> NDArray: ...
 
-    def get_distance_vector(self, unit: str | None = None) -> list[float] | list[PintFloat]:
-        return [QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
+    def get_distance_vector(self, unit: str | None = None) -> NDArray | PintArray:
+        return np.array([QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au])  # type: ignore [return-value]
 
     @overload
     def get_distance(self, unit: None = None) -> PintFloat: ...
@@ -176,13 +177,18 @@ class SystemPair(SystemBase[BasisPair]):
                 If 1, a constant Green tensor (with omega=0) is assumed.
 
         """
+        if green_tensor.pos1_au is None or green_tensor.pos2_au is None:
+            raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
+        self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
+
         if omega_steps <= 0:
             raise ValueError("omega_steps must be a positive integer.")
 
         if omega_steps == 1:
-            gt_au = green_tensor.get_dipole_dipole(omega=0, unit="hartree")
+            omega = ureg.Quantity(1e-10, "Hz")
+            gt = green_tensor.get_dipole_dipole(omega)
             gti = GreenTensorInterpolator()
-            gti.set_from_cartesian(1, 1, gt_au, tensor_unit="hartree")
+            gti.set_constant_from_cartesian(1, 1, gt, omega)
             self.set_green_tensor_interpolator(gti)
             return self
 
@@ -190,7 +196,7 @@ class SystemPair(SystemBase[BasisPair]):
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
         omega_max = max(energies_au) - min(energies_au)
 
-        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
+        gti = green_tensor.get_green_tensor_interpolator(1e-10, omega_max, omega_steps, omega_unit="hartree")
         self.set_green_tensor_interpolator(gti)
         return self
 

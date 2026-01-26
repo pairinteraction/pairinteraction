@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Callable
 
 import numpy as np
 
+from pairinteraction.green_tensor import utils
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
 from pairinteraction.units import QuantityScalar, ureg
 
@@ -51,28 +52,42 @@ class GreenTensorCavity(GreenTensorBase):
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a cavity in atomic units.
 
         Args:
-            omega_au: The frequency in atomic units at which to evaluate the Green tensor.
+            omega_au: The angular frequency in atomic units at which to evaluate the Green tensor.
 
         Returns:
-            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units.
+            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units (i.e. 1/bohr).
 
         """
         if self.pos1_au is None or self.pos2_au is None:
             raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
 
-        gt = np.zeros((3, 3), dtype=complex)
-
         au_to_meter = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
-        pos1 = np.array(self.pos1_au) * au_to_meter
-        pos2 = np.array(self.pos2_au) * au_to_meter
+        pos1_m = np.array(self.pos1_au) * au_to_meter
+        pos2_m = np.array(self.pos2_au) * au_to_meter
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
 
-        surface1_z = self.surface1_z_au * au_to_meter
-        surface1_epsilon = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
-        surface2_z = self.surface2_z_au * au_to_meter
-        surface2_epsilon = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
+        omega_hz = omega.magnitude
 
-        # TODO calculate Green tensor
-        raise NotImplementedError("GreenTensorFreeSpace is not yet implemented yet.")
+        surface1_z_m = self.surface1_z_au * au_to_meter
+        surface2_z_m = self.surface2_z_au * au_to_meter
 
-        return gt
+        height = abs(surface1_z_m - surface2_z_m)
+        pos1_shifted_m = pos1_m - np.array([0, 0, min(surface1_z_m, surface2_z_m)])
+        pos2_shifted_m = pos2_m - np.array([0, 0, min(surface1_z_m, surface2_z_m)])
+
+        if not 0 < pos1_shifted_m[2] < height or not 0 < pos2_shifted_m[2] < height:
+            raise ValueError("Both atoms must be located inside the cavity between the two surfaces.")
+
+        if surface2_z_m < surface1_z_m:
+            epsilon_top = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+        else:
+            epsilon_top = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
+
+        gt = utils.green_tensor_total(
+            pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
+        )  # 1/m
+
+        return np.real(gt) * au_to_meter  # 1/bohr
