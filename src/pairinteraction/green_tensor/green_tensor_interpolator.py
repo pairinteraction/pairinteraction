@@ -119,8 +119,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        tensors: Sequence[PintArray],
-        omegas: Sequence[PintFloat],
+        tensors: Sequence[PintArray] | PintArray,
+        omegas: Sequence[PintFloat] | PintArray,
         tensors_unit: None = None,
         omegas_unit: None = None,
     ) -> Self: ...
@@ -140,8 +140,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        tensors: Sequence[PintArray] | Sequence[NDArray],
-        omegas: Sequence[PintFloat] | Sequence[float],
+        tensors: Sequence[PintArray] | PintArray | Sequence[NDArray],
+        omegas: Sequence[PintFloat] | PintArray | Sequence[float],
         tensors_unit: str | None = None,
         omegas_unit: str | None = None,
     ) -> Self:
@@ -160,15 +160,18 @@ class GreenTensorInterpolator:
         """
         dimension: list[Dimension] = self._get_unit_dimension(kappa1, kappa2)
 
-        tensors_au = np.array([QuantityArray.convert_user_to_au(np.array(t), tensors_unit, dimension) for t in tensors])
+        tensors_au = np.array([QuantityArray.convert_user_to_au(t, tensors_unit, dimension) for t in tensors])
         if not all(t.ndim == 2 for t in tensors_au):
             raise ValueError("The tensor must be a list of 2D arrays.")
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors_au):
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
-        omegas_au = QuantityArray.convert_user_to_au(np.array(omegas), omegas_unit, "energy")
-        prefactors = np.array([self._get_green_tensor_prefactor(omega) for omega in omegas_au])
-        self._cpp.create_entries_from_cartesian(kappa1, kappa2, list(prefactors * tensors_au), omegas_au.tolist())
+        omegas_au = QuantityArray.convert_user_to_au(omegas, omegas_unit, "energy")
+        prefactors = [self._get_green_tensor_prefactor(omega) for omega in omegas_au]
+
+        tensors_au = [prefactor * tensor for prefactor, tensor in zip(prefactors, tensors_au)]
+
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
         return self
 
     @overload
@@ -176,21 +179,21 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | None = None,
+        omega: float | PintFloat,
         omega_unit: str | None = None,
         unit: None = None,
     ) -> PintArray: ...
 
     @overload
     def get_spherical(
-        self, kappa1: int, kappa2: int, omega: float | None = None, omega_unit: str | None = None, *, unit: str
+        self, kappa1: int, kappa2: int, omega: float | PintFloat, omega_unit: str | None = None, *, unit: str
     ) -> NDArray: ...
 
     def get_spherical(
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | None = None,
+        omega: float | PintFloat,
         omega_unit: str | None = None,
         unit: str | None = None,
     ) -> PintArray | NDArray:
@@ -213,7 +216,7 @@ class GreenTensorInterpolator:
 
         """
         entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
-        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy") if omega is not None else None
+        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
 
         dim1 = 3 if kappa1 == 1 else 6
         dim2 = 3 if kappa2 == 1 else 6
@@ -222,11 +225,10 @@ class GreenTensorInterpolator:
             if isinstance(entry_cpp, (_backend.ConstantEntryReal, _backend.ConstantEntryComplex)):
                 val = entry_cpp.val()
             else:
-                if omega_au is None:
-                    raise ValueError("The Green tensor has omega dependent entries, please specify an omega.")
                 val = entry_cpp.val(omega_au)
             tensor_au[entry_cpp.row(), entry_cpp.col()] = val
         tensor_au = np.real_if_close(tensor_au)
+        tensor_au /= self._get_green_tensor_prefactor(omega_au)
 
         return QuantityArray.convert_au_to_user(tensor_au, self._get_unit_dimension(kappa1, kappa2), unit)
 
