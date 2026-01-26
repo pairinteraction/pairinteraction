@@ -119,17 +119,15 @@ DiagonalizerLapackeEvr<Scalar>::DiagonalizerLapackeEvr(FloatType float_type)
     : DiagonalizerInterface<Scalar>(float_type) {}
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerLapackeEvr<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                     double rtol) const {
-    return this->eigh(matrix, std::nullopt, std::nullopt, rtol);
+EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh_full(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double rtol) const {
+    return this->eigh_range(matrix, std::nullopt, std::nullopt, rtol);
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerLapackeEvr<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                     std::optional<real_t> min_eigenvalue,
-                                     std::optional<real_t> max_eigenvalue, double rtol) const {
+EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh_range(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+    std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue, double rtol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(
@@ -152,13 +150,13 @@ DiagonalizerLapackeEvr<Scalar>::DiagonalizerLapackeEvr(FloatType float_type)
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh(
+EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh_full(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh(
+EigenSystemH<Scalar> DiagonalizerLapackeEvr<Scalar>::eigh_range(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
     std::optional<real_t> /*min_eigenvalue*/, std::optional<real_t> /*max_eigenvalue*/,
     double /*rtol*/) const {

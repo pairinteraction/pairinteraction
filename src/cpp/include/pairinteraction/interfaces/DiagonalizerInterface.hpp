@@ -32,15 +32,16 @@ public:
 
     DiagonalizerInterface(FloatType float_type);
     virtual ~DiagonalizerInterface() = default;
-    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      double rtol) const = 0;
-    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      std::optional<real_t> min_eigenvalue,
-                                      std::optional<real_t> max_eigenvalue, double rtol) const;
-    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      std::optional<Eigen::Index> nev,
-                                      std::optional<Eigen::Index> ncv, std::optional<real_t> sigma,
-                                      double rtol) const;
+    virtual EigenSystemH<Scalar>
+    eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double rtol) const = 0;
+    virtual EigenSystemH<Scalar>
+    eigh_range(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+               std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue,
+               double rtol) const;
+    virtual EigenSystemH<Scalar>
+    eigh_shift_invert(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                      std::optional<Eigen::Index> num_eigenvalues, std::optional<real_t> sigma,
+                      double rtol) const;
 
 protected:
     FloatType float_type;

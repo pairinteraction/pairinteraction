@@ -18,11 +18,12 @@ public:
     using typename DiagonalizerInterface<Scalar>::real_t;
 
     DiagonalizerFeast(int m0, FloatType float_type = FloatType::FLOAT64);
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              double rtol) const override;
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              std::optional<real_t> min_eigenvalue,
-                              std::optional<real_t> max_eigenvalue, double rtol) const override;
+    EigenSystemH<Scalar> eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                   double rtol) const override;
+    EigenSystemH<Scalar> eigh_range(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                    std::optional<real_t> min_eigenvalue,
+                                    std::optional<real_t> max_eigenvalue,
+                                    double rtol) const override;
 
 private:
     int m0;

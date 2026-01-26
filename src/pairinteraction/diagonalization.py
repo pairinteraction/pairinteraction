@@ -53,6 +53,7 @@ def diagonalize(
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
+    ncv: int | None = None,
 ) -> None: ...
 
 
@@ -68,6 +69,7 @@ def diagonalize(
     *,
     energy_unit: str | None,
     m0: int | None = None,
+    ncv: int | None = None,
 ) -> None: ...
 
 
@@ -80,6 +82,7 @@ def diagonalize(
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
+    ncv: int | None = None,
     *,
     energy_unit: str | None = None,
 ) -> None:
@@ -112,6 +115,7 @@ def diagonalize(
             Defaults to (None, None), i.e. calculate all eigenenergies.
         energy_range_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
+        ncv: The number of Ritz values used for the SpectrA diagonalizer. Defaults to None.
         energy_unit: Deprecated, use energy_range_unit instead.
 
     """
@@ -127,7 +131,7 @@ def diagonalize(
 
     cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
-    cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
+    cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0, ncv=ncv)
 
     energy_range_au: list[float | None] = [None, None]
     for i, energy in enumerate(energy_range):
@@ -162,11 +166,14 @@ def get_cpp_diagonalizer(
     system: SystemBase[Any],
     float_type: FloatType,
     m0: int | None = None,
+    ncv: int | None = None,
 ) -> UnionCPPDiagonalizer:
     if diagonalizer == "feast" and m0 is None:
         raise ValueError("m0 must be specified for the 'feast' diagonalizer")
     if diagonalizer != "feast" and m0 is not None:
         raise ValueError("m0 must not be specified if the diagonalizer is not 'feast'")
+    if diagonalizer != "spectra" and ncv is not None:
+        raise ValueError("ncv must not be specified if the diagonalizer is not 'spectra'")
 
     if isinstance(system._cpp, (_backend.SystemAtomReal, _backend.SystemPairReal)):
         type_ = "real"
@@ -188,4 +195,6 @@ def get_cpp_diagonalizer(
     cpp_float_type = get_cpp_float_type(float_type)
     if diagonalizer == "feast":
         return diagonalizer_class(m0=m0, float_type=cpp_float_type)  # type: ignore [call-arg]
+    if diagonalizer == "spectra":
+        return diagonalizer_class(ncv=ncv, float_type=cpp_float_type)  # type: ignore [call-arg]
     return diagonalizer_class(float_type=cpp_float_type)  # type: ignore [call-arg]

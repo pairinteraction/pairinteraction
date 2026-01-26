@@ -81,9 +81,8 @@ DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
     : DiagonalizerInterface<Scalar>(float_type) {}
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerLapackeEvd<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                     double rtol) const {
+EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::eigh_full(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double rtol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, rtol);
@@ -104,7 +103,7 @@ DiagonalizerLapackeEvd<Scalar>::DiagonalizerLapackeEvd(FloatType float_type)
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::eigh(
+EigenSystemH<Scalar> DiagonalizerLapackeEvd<Scalar>::eigh_full(
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }

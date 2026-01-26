@@ -255,7 +255,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 #ifdef WITH_MKL
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(10, FloatType::FLOAT64));
 #endif
-    diagonalizers.push_back(std::make_unique<DiagonalizerSpectra<double>>(FloatType::FLOAT64));
+    diagonalizers.push_back(
+        std::make_unique<DiagonalizerSpectra<double>>(std::nullopt, FloatType::FLOAT64));
 
     // Diagonalize using pairinteraction
     for (const auto &diagonalizer : diagonalizers) {

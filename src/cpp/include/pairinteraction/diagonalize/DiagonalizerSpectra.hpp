@@ -17,21 +17,24 @@ class DiagonalizerSpectra : public DiagonalizerInterface<Scalar> {
 public:
     using typename DiagonalizerInterface<Scalar>::real_t;
 
-    DiagonalizerSpectra(FloatType float_type = FloatType::FLOAT64);
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              double rtol) const override;
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              std::optional<real_t> min_eigenvalue,
-                              std::optional<real_t> max_eigenvalue, double rtol) const override;
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              std::optional<Eigen::Index> nev, std::optional<Eigen::Index> ncv,
-                              std::optional<real_t> sigma, double rtol) const override;
+    DiagonalizerSpectra(std::optional<Eigen::Index> ncv = std::nullopt,
+                        FloatType float_type = FloatType::FLOAT64);
+    EigenSystemH<Scalar> eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                   double rtol) const override;
+    EigenSystemH<Scalar> eigh_range(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                    std::optional<real_t> min_eigenvalue,
+                                    std::optional<real_t> max_eigenvalue,
+                                    double rtol) const override;
+    EigenSystemH<Scalar>
+    eigh_shift_invert(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                      std::optional<Eigen::Index> num_eigenvalues, std::optional<real_t> sigma,
+                      double rtol) const override;
 
 private:
+    std::optional<Eigen::Index> ncv;
     template <typename ScalarLim>
     EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                       std::optional<Eigen::Index> nev,
-                                       std::optional<Eigen::Index> ncv, std::optional<real_t> sigma,
+                                       Eigen::Index num_eigenvalues, std::optional<real_t> sigma,
                                        double rtol) const;
 };
 
