@@ -174,7 +174,7 @@ class PlotEnergies(PlotWidget):
             return
 
         energies = self.results.energies
-        x_values = self.parameters.get_x_values()
+        x_values = np.array(self.parameters.get_x_values())
         overlaps_list = self.results.ket_overlaps
 
         fit_func: Callable[..., NDArray[Any]]
