@@ -131,17 +131,18 @@ def _test_calculate_page(
     parameters, results = page.calculate()
     energies = np.array(results.energies) + ket_energy_0
     compare_eigensystem_to_reference(REFERENCE_PATHS[reference_name], energies)
-
-    # Test fitting of c3/c6/c3+c6 potential curves
-    # We need to pass the data to the plotwidget.
     page.plotwidget.plot(parameters, results)
-    page.plotwidget.fit("c3")
-    # We run a test fit twice, as it should iterate through the potential curves
-    page.plotwidget.fit("c3")
-    page.plotwidget.fit("c6")
-    page.plotwidget.fit("c3+c6")
-    # One could consider adding some return values to check if the estimated values are reasonable.
-    # Currently fit does not return anything. It just plots and shows the fit parameters in UI, so nothing to check here
+
+    if page_name == "TwoAtomsPage":
+        # Test fitting of c3/c6/c3+c6 potential curves
+        # We need to pass the data to the plotwidget.
+        page.plotwidget.fit("c3")
+        # We run a test fit twice, as it should iterate through the potential curves
+        page.plotwidget.fit("c3")
+        page.plotwidget.fit("c6")
+        page.plotwidget.fit("c3+c6")
+        # One could consider adding some return values to check if the estimated values are reasonable.
+        # Currently fit does not return anything, it just plots and shows the fit parameters in UI
 
     # Test export to Python code
     python_code = page._create_python_code()
