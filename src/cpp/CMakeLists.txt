@@ -19,6 +19,7 @@ add_library(
   ./include/pairinteraction/diagonalize/DiagonalizerFeast.hpp
   ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp
   ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp
+  ./include/pairinteraction/diagonalize/DiagonalizerSpectra.hpp
   ./include/pairinteraction/enums/FloatType.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
   ./include/pairinteraction/enums/Parity.hpp
@@ -74,6 +75,7 @@ add_library(
   ./src/diagonalize/DiagonalizerFeast.cpp
   ./src/diagonalize/DiagonalizerLapackeEvd.cpp
   ./src/diagonalize/DiagonalizerLapackeEvr.cpp
+  ./src/diagonalize/DiagonalizerSpectra.cpp
   ./src/enums/Parity.test.cpp
   ./src/interfaces/DiagonalizerInterface.cpp
   ./src/interfaces/TransformationBuilderInterface.cpp
@@ -113,6 +115,7 @@ target_link_libraries(
          fmt::fmt
          cpptrace::cpptrace
          miniz
+         Spectra::Spectra
          $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>)
 

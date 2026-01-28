@@ -65,6 +65,7 @@ class SystemBase(ABC, Generic[BasisType]):
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         energy_range_unit: str | None = None,
         m0: int | None = None,
+        ncv: int | None = None,
     ) -> Self: ...
 
     @overload
@@ -79,6 +80,7 @@ class SystemBase(ABC, Generic[BasisType]):
         *,
         energy_unit: str | None,
         m0: int | None = None,
+        ncv: int | None = None,
     ) -> Self: ...
 
     def diagonalize(
@@ -90,6 +92,7 @@ class SystemBase(ABC, Generic[BasisType]):
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         energy_range_unit: str | None = None,
         m0: int | None = None,
+        ncv: int | None = None,
         *,
         energy_unit: str | None = None,
     ) -> Self:
@@ -110,6 +113,7 @@ class SystemBase(ABC, Generic[BasisType]):
                 Defaults to (None, None), i.e. calculate all eigenenergies.
             energy_range_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
             m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
+            ncv: The number of Ritz values used for the SpectrA diagonalizer. Defaults to None.
             energy_unit: Deprecated, use energy_range_unit instead.
 
         Returns:
@@ -125,6 +129,7 @@ class SystemBase(ABC, Generic[BasisType]):
             energy_range,
             energy_range_unit,
             m0,
+            ncv,
             energy_unit=energy_unit,
         )  # type: ignore [misc,call-overload]
         return self

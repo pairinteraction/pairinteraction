@@ -170,19 +170,18 @@ DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                double /*rtol*/) const {
-    throw std::invalid_argument("The FEAST routine requires a search interval.");
+EigenSystemH<Scalar> DiagonalizerFeast<Scalar>::eigh_full(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*rtol*/) const {
+    throw std::invalid_argument("The FEAST routine requires an energy interval.");
 }
 
 template <typename Scalar>
 EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                std::optional<real_t> min_eigenvalue,
-                                std::optional<real_t> max_eigenvalue, double rtol) const {
+DiagonalizerFeast<Scalar>::eigh_range(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                      std::optional<real_t> min_eigenvalue,
+                                      std::optional<real_t> max_eigenvalue, double rtol) const {
     if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
-        throw std::invalid_argument("The FEAST routine requires a search interval.");
+        throw std::invalid_argument("The FEAST routine requires an energy interval.");
     }
     switch (this->float_type) {
     case FloatType::FLOAT32:
@@ -206,17 +205,16 @@ DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                double /*rtol*/) const {
+EigenSystemH<Scalar> DiagonalizerFeast<Scalar>::eigh_full(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/, double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                std::optional<real_t> /*min_eigenvalue*/,
-                                std::optional<real_t> /*max_eigenvalue*/, double /*rtol*/) const {
+EigenSystemH<Scalar> DiagonalizerFeast<Scalar>::eigh_range(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
+    std::optional<real_t> /*min_eigenvalue*/, std::optional<real_t> /*max_eigenvalue*/,
+    double /*rtol*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 

@@ -7,6 +7,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvd.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
+#include "pairinteraction/diagonalize/DiagonalizerSpectra.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -26,24 +27,7 @@ static void declare_diagonalizer_eigen(nb::module_ &m, std::string const &type_n
     std::string pyclass_name = "DiagonalizerEigen" + type_name;
     nb::class_<DiagonalizerEigen<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerEigen<T>::eigh, nb::const_));
-}
-
-template <typename T>
-static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "DiagonalizerFeast" + type_name;
-    using real_t = typename DiagonalizerFeast<T>::real_t;
-    nb::class_<DiagonalizerFeast<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<int, FloatType>(), "m0"_a, "float_type"_a = FloatType::FLOAT64)
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerFeast<T>::eigh, nb::const_))
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
-                               std::optional<real_t>, std::optional<real_t>, double>(
-                 &DiagonalizerFeast<T>::eigh, nb::const_));
+        .def("eigh_full", &DiagonalizerEigen<T>::eigh_full);
 }
 
 template <typename T>
@@ -52,9 +36,7 @@ static void declare_diagonalizer_lapacke_evd(nb::module_ &m, std::string const &
     nb::class_<DiagonalizerLapackeEvd<T>, DiagonalizerInterface<T>> pyclass(m,
                                                                             pyclass_name.c_str());
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerLapackeEvd<T>::eigh, nb::const_));
+        .def("eigh_full", &DiagonalizerLapackeEvd<T>::eigh_full);
 }
 
 template <typename T>
@@ -63,9 +45,31 @@ static void declare_diagonalizer_lapacke_evr(nb::module_ &m, std::string const &
     nb::class_<DiagonalizerLapackeEvr<T>, DiagonalizerInterface<T>> pyclass(m,
                                                                             pyclass_name.c_str());
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerLapackeEvr<T>::eigh, nb::const_));
+        .def("eigh_full", &DiagonalizerLapackeEvr<T>::eigh_full)
+        .def("eigh_range", &DiagonalizerLapackeEvr<T>::eigh_range);
+}
+
+template <typename T>
+static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "DiagonalizerFeast" + type_name;
+    using real_t = typename DiagonalizerFeast<T>::real_t;
+    nb::class_<DiagonalizerFeast<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
+    pyclass.def(nb::init<int, FloatType>(), "m0"_a, "float_type"_a = FloatType::FLOAT64)
+        .def("eigh_full", &DiagonalizerFeast<T>::eigh_full)
+        .def("eigh_range", &DiagonalizerFeast<T>::eigh_range);
+}
+
+template <typename T>
+static void declare_diagonalizer_spectra(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "DiagonalizerSpectra" + type_name;
+    using real_t = typename DiagonalizerSpectra<T>::real_t;
+    nb::class_<DiagonalizerSpectra<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
+    pyclass
+        .def(nb::init<std::optional<real_t>, FloatType>(), "ncv"_a = nb::none(),
+             "float_type"_a = FloatType::FLOAT64)
+        .def("eigh_full", &DiagonalizerSpectra<T>::eigh_full)
+        .def("eigh_range", &DiagonalizerSpectra<T>::eigh_range)
+        .def("eigh_shift_invert", &DiagonalizerSpectra<T>::eigh_shift_invert);
 }
 
 template <typename T>
@@ -99,6 +103,8 @@ void bind_diagonalizer(nb::module_ &m) {
     declare_diagonalizer_lapacke_evd<std::complex<double>>(m, "Complex");
     declare_diagonalizer_lapacke_evr<double>(m, "Real");
     declare_diagonalizer_lapacke_evr<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_spectra<double>(m, "Real");
+    declare_diagonalizer_spectra<std::complex<double>>(m, "Complex");
 
     declare_diagonalize<SystemAtom<double>>(m, "SystemAtomReal");
     declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplex");
