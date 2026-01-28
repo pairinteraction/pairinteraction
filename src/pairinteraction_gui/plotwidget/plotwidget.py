@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from numpy.typing import NDArray
+    from typing_extensions import Concatenate
 
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
     from pairinteraction_gui.page import SimulationPage
@@ -177,15 +178,15 @@ class PlotEnergies(PlotWidget):
         x_values = np.array(self.parameters.get_x_values())
         overlaps_list = self.results.ket_overlaps
 
-        fit_func: Callable[..., NDArray[Any]]
+        fit_func: Callable[Concatenate[NDArray[Any], ...], NDArray[Any]]
         if fit_type == "c6":
-            fit_func = lambda x, e0, c6: e0 + c6 / x**6  # noqa: E731
+            fit_func = fit_c6
             fitlabel = "E0 = {0:.3f} GHz\nC6 = {1:.3f} GHz*µm^6"
         elif fit_type == "c3":
-            fit_func = lambda x, e0, c3: e0 + c3 / x**3  # noqa: E731
+            fit_func = fit_c3
             fitlabel = "E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3"
         elif fit_type == "c3+c6":
-            fit_func = lambda x, e0, c3, c6: e0 + c3 / x**3 + c6 / x**6  # noqa: E731
+            fit_func = fit_c3_c6
             fitlabel = "E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3\nC6 = {2:.3f} GHz*µm^6"
         else:
             raise ValueError(f"Unknown fit type: {fit_type}")
@@ -272,3 +273,15 @@ class PlotEnergies(PlotWidget):
             del self.fit_data_highlight
         if hasattr(self, "fit_curve"):
             del self.fit_curve
+
+
+def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -> NDArray[Any]:
+    return e0 + c3 / x**3
+
+
+def fit_c6(x: NDArray[Any], /, e0: float, c6: float) -> NDArray[Any]:
+    return e0 + c6 / x**6
+
+
+def fit_c3_c6(x: NDArray[Any], /, e0: float, c3: float, c6: float) -> NDArray[Any]:
+    return e0 + c3 / x**3 + c6 / x**6
