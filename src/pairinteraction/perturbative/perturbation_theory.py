@@ -81,7 +81,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     if perturbation_order == 0:
         return eff_h_dict, eff_vecs
 
-    v_offdiag = hamiltonian - sparse.diags(energies)
+    v_offdiag = hamiltonian - sparse.diags(energies, dtype=float)
     v_mm = v_offdiag[np.ix_(m_inds, m_inds)]
     eff_h_dict[1] = v_mm.toarray()
 
