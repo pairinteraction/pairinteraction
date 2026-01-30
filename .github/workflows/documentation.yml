@@ -46,12 +46,11 @@ jobs:
       run: git fetch origin master:master || true  # ignore error if branch already exists
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
-    - name: Install PairInteraction into virtual environment
-      run: uv pip install . --group docs
     - name: Setup 2nd virtual environment for other PairInteraction versions
       run: |
         uv venv tmp_venv --python=python3.11
         uv pip install --python tmp_venv/bin/python pip
+        uv pip install --python .venv/bin/python pip
     - name: Build documentation
       run: uv run --no-project sphinx-polyversion docs/poly.py
     - name: Upload artifacts

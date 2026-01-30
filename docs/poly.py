@@ -20,7 +20,7 @@ from sphinx_polyversion.driver import DefaultDriver
 from sphinx_polyversion.environment import Environment
 from sphinx_polyversion.git import Git, closest_tag, refs_by_type
 from sphinx_polyversion.json import GLOBAL_ENCODER
-from sphinx_polyversion.pyvenv import Pip, VirtualPythonEnvironment
+from sphinx_polyversion.pyvenv import Pip
 from sphinx_polyversion.sphinx import SphinxBuilder
 
 if TYPE_CHECKING:
@@ -29,6 +29,8 @@ if TYPE_CHECKING:
 
     from sphinx_polyversion.git import GitRef
     from sphinx_polyversion.json import JSONable
+
+logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +60,7 @@ WANTED_TAGS = sorted(WANTED_TAGS)
 GIT_OBJ = Git(branch_regex="master", tag_regex="|".join([*WANTED_TAGS, LEGACY_VERSION]), buffer_size=1 * 10**9)
 ALL_TARGETS: list[GitRef] = asyncio.run(GIT_OBJ.retrieve(ROOT_DIR))
 LATEST = max(t for t in WANTED_TAGS)
+logger.info("Found %d target revisions: %s", len(ALL_TARGETS), [t.name for t in ALL_TARGETS])
 
 
 # Define factory method for data passed to sphinx,
@@ -106,7 +109,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         self.apply_patch_if_exists = apply_patch_if_exists
 
     async def build(self, environment: Environment, output_dir: Path, data: JSONable) -> None:  # noqa: C901
-        print(f"Building documentation for revision {data['current_rev']}")
+        self.logger.info("Building documentation for revision %s", data["current_rev"])
 
         source_dir = str(environment.path.absolute() / self.source)
 
@@ -195,14 +198,8 @@ ENVIRONMENT_MAPPING = {
             "sphinx_polyversion",
         ],
     ),
-    **{
-        tag: Pip.factory(
-            venv=ROOT_DIR / "tmp_venv",
-            args=[f"pairinteraction[docs]=={tag[1:]}"],
-        )
-        for tag in WANTED_TAGS
-    },
-    "master": VirtualPythonEnvironment.factory(venv=ROOT_DIR / ".venv"),
+    **{tag: Pip.factory(venv=ROOT_DIR / ".venv", args=[f"pairinteraction=={tag[1:]}"]) for tag in WANTED_TAGS},
+    "master": Pip.factory(venv=ROOT_DIR / ".venv", args=["."]),
 }
 
 # Create the actual driver instance and run it to build all wanted documentations
