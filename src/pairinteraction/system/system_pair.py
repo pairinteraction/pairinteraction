@@ -11,7 +11,7 @@ from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
 from pairinteraction.green_tensor import GreenTensorInterpolator
 from pairinteraction.system.system_base import SystemBase
-from pairinteraction.units import QuantityScalar, ureg
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -146,7 +146,7 @@ class SystemPair(SystemBase[BasisPair]):
     def get_distance_vector(self, unit: str) -> NDArray: ...
 
     def get_distance_vector(self, unit: str | None = None) -> NDArray | PintArray:
-        return np.array([QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au])  # type: ignore [return-value]
+        return QuantityArray.convert_au_to_user(self._distance_vector_au, "distance", unit)
 
     @overload
     def get_distance(self, unit: None = None) -> PintFloat: ...
