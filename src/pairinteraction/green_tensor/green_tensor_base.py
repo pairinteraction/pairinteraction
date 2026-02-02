@@ -141,7 +141,7 @@ class GreenTensorBase(ABC):
     def _get_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
 
     def get_green_tensor_interpolator(
-        self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str | None = None
+        self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
