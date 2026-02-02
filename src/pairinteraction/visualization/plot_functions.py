@@ -13,14 +13,15 @@ from pairinteraction.visualization.colormaps import alphamagma
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from matplotlib.axes import Axes
+    from matplotlib.figure import Figure
+
     from pairinteraction.ket.ket_pair import KetPairLike
     from pairinteraction.system.system_pair import SystemPair
     from pairinteraction.units import NDArray
 
 
-def plot_pair_potential(
-    system_pairs: Sequence[SystemPair], ket_pair_of_interest: KetPairLike
-) -> tuple[plt.Figure, plt.Axes]:
+def plot_pair_potential(system_pairs: Sequence[SystemPair], ket_pair_of_interest: KetPairLike) -> tuple[Figure, Axes]:
     """Plot the pair potential of a sequence of SystemPair objects."""
     distances: NDArray = np.array([system.get_distance(unit="micrometer") for system in system_pairs])
 
