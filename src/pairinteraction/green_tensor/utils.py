@@ -301,21 +301,16 @@ def Gp(  # noqa: PLR0911
     """
 
 
-def integrand_ellipse(
+@njit(cache=True)
+def integrand_ellipse_partial(
     t: complex,
-    k_maj: complex,
-    k_min: complex,
+    k_maj: float,
+    k_min: float,
     k0: complex,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
-    rho: float,
-    phi: float,
-    z_ges: float,
-    z_ab: float,
-    entry: Entries,
-    real_or_imag: str,
-) -> complex:
+) -> tuple[complex, complex, complex, complex, complex, complex, complex]:
     # elliptical path, substitution
     k_rho = k_maj * (1 + np.cos(t)) - 1j * k_min * np.sin(t)
     dk_rho = -k_maj * np.sin(t) - 1j * k_min * np.cos(t)
@@ -330,17 +325,33 @@ def integrand_ellipse(
     rp_plus = rp(kz, k1z, epsilon1)
     rp_minus = rp(kz, k2z, epsilon2)
 
-    integrand = (
-        1j
-        / (4 * np.pi)
-        * (
-            Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-            - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
-        )
-        * (k_rho / kz)
-        * np.exp(1j * kz * h)
-        * dk_rho
+    prefactor = 1j / (4 * np.pi) * (k_rho / kz) * np.exp(1j * kz * h) * dk_rho
+    return k_rho, kz, rs_plus, rs_minus, rp_plus, rp_minus, prefactor
+
+
+def integrand_ellipse(
+    t: complex,
+    k_maj: float,
+    k_min: float,
+    k0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    h: float,
+    rho: float,
+    phi: float,
+    z_ges: float,
+    z_ab: float,
+    entry: Entries,
+    real_or_imag: str,
+) -> complex:
+    k_rho, kz, rs_plus, rs_minus, rp_plus, rp_minus, prefactor = integrand_ellipse_partial(
+        t, k_maj, k_min, k0, epsilon1, epsilon2, h
     )
+
+    gs = Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+    gp = Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+
+    integrand = prefactor * (gs - (kz**2 / k0**2) * gp)
     if real_or_imag == "real":
         return np.real(integrand)
     if real_or_imag == "imag":
