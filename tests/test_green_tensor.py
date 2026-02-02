@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
     from .utils import PairinteractionModule
@@ -27,16 +28,22 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
     basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
 
     # Create a system using a user-defined green tensor interpolator for dipole-dipole interaction
-    gt = pi_module.GreenTensorInterpolator()
-    tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
-    tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.set_from_cartesian(1, 1, tensor, tensor_unit)
+    gti = pi_module.GreenTensorInterpolator()
+    omega = ureg.Quantity(1, "Hz")
+    distance_au = ureg.Quantity(distance_mum, "micrometer").to("bohr").m
 
-    tensor_spherical = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_mum**3
-    np.testing.assert_allclose(gt.get_spherical(1, 1, unit=tensor_unit), tensor_spherical)
-    np.testing.assert_allclose(gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
+    tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_au**3)
+    tensor_unit = "hartree / (e * bohr)^2"
+    gti._set_constant_with_prefactors_from_cartesian(1, 1, tensor, tensor_unit)
 
-    system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor_interpolator(gt)
+    tensor_spherical = gti.get_spherical(1, 1, omega, unit=tensor_unit, include_prefactors=True)
+    tensor_spherical_ref = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_au**3
+    np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
+
+    tensor_spherical = gti.get_spherical(1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, include_prefactors=True)
+    np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
+
+    system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor_interpolator(gti)
 
     # Create a reference system using the build in dipole-dipole interaction
     system_pairs_reference = (
@@ -54,19 +61,29 @@ def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionMod
     """Test the interpolation for different values of omega."""
     # Define an simple linear omega-dependent green tensor interpolator
     # note that at least four entries are needed for the applied spline interpolation.
-    gt = pi_module.GreenTensorInterpolator()
-    omegas = [1, 2, 3, 4]  # GHz
-    tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
-    tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omegas_unit="GHz")
+    gti = pi_module.GreenTensorInterpolator()
+    omegas = np.linspace(1, 5, 20)  # GHz
+    tensors = [
+        np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / (omega**2 * distance_mum**3)
+        for (i, omega) in enumerate(omegas, start=1)
+    ]
+    tensor_unit = "1 / micrometer"
+    gti.set_list_from_cartesian(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz")
 
     # Check the interpolation
-    tensors_spherical = [np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / distance_mum**3 for i in range(1, 5)]
+    tensors_spherical = [
+        np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / (omega**2 * distance_mum**3)
+        for (i, omega) in enumerate(omegas, start=1)
+    ]
 
-    for idx in range(1, len(omegas) - 1):  # the interpolation near the edges is bad, so we only check the middle
-        tensor = gt.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
+    for idx in range(3, len(omegas) - 3):  # the interpolation near the edges is bad, so we only check the middle
+        tensor = gti.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
         np.testing.assert_allclose(tensor, tensors_spherical[idx])
 
-    tensor = gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
-    reference_tensor = (tensors_spherical[1] + tensors_spherical[2]) / 2
-    np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
+    for ind in range(3, len(omegas) - 5):
+        ind1, ind2 = ind, ind + 1
+        omega = (omegas[ind1] + omegas[ind2]) / 2
+        reference_tensor = (tensors_spherical[ind1] + tensors_spherical[ind2]) / 2
+
+        tensor = gti.get_spherical(1, 1, omega=omega, omega_unit="GHz", unit=tensor_unit)
+        np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
