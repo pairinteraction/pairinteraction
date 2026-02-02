@@ -10,7 +10,7 @@ from pairinteraction import _backend
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Collection
 
     from typing_extensions import Self
 
@@ -108,10 +108,10 @@ class GreenTensorInterpolator:
         tensor_au = QuantityArray.convert_user_to_au(tensor, tensor_unit, dimension)
         if tensor_au.shape != (3**kappa1, 3**kappa2) or tensor_au.ndim != 2:
             raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
-
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
-        prefactor = self._get_green_tensor_prefactor(omega_au)
-        self._cpp.create_entries_from_cartesian(kappa1, kappa2, prefactor * tensor_au)
+
+        tensor_cpp: NDArray = self._get_green_tensor_prefactor(omega_au) * tensor_au
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensor_cpp)
         return self
 
     @overload
@@ -119,8 +119,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        tensors: Sequence[PintArray] | PintArray,
-        omegas: Sequence[PintFloat] | PintArray,
+        tensors: Collection[PintArray] | PintArray,
+        omegas: Collection[PintFloat] | PintArray,
         tensors_unit: None = None,
         omegas_unit: None = None,
     ) -> Self: ...
@@ -130,8 +130,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        tensors: Sequence[NDArray],
-        omegas: Sequence[float],
+        tensors: Collection[NDArray],
+        omegas: Collection[float],
         tensors_unit: str,
         omegas_unit: str,
     ) -> Self: ...
@@ -140,8 +140,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        tensors: Sequence[PintArray] | PintArray | Sequence[NDArray],
-        omegas: Sequence[PintFloat] | PintArray | Sequence[float],
+        tensors: Collection[PintArray] | PintArray | Collection[NDArray],
+        omegas: Collection[PintFloat] | PintArray | Collection[float],
         tensors_unit: str | None = None,
         omegas_unit: str | None = None,
     ) -> Self:
@@ -165,13 +165,11 @@ class GreenTensorInterpolator:
             raise ValueError("The tensor must be a list of 2D arrays.")
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors_au):
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
-
-        omegas_au = QuantityArray.convert_user_to_au(omegas, omegas_unit, "energy")
+        omegas_au = [QuantityScalar.convert_user_to_au(omega, omegas_unit, "energy") for omega in omegas]
         prefactors = [self._get_green_tensor_prefactor(omega) for omega in omegas_au]
 
-        tensors_au = [prefactor * tensor for prefactor, tensor in zip(prefactors, tensors_au)]
-
-        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_au, omegas_au.tolist())
+        tensors_cpp = [prefactor * tensor for prefactor, tensor in zip(prefactors, tensors_au)]
+        self._cpp.create_entries_from_cartesian(kappa1, kappa2, tensors_cpp, omegas_au)
         return self
 
     @overload
