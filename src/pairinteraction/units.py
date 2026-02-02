@@ -35,6 +35,7 @@ Dimension = Literal[
     "inverse_distance",
     "energy",
     "charge",
+    "inverse_charge",
     "velocity",
     "temperature",
     "time",
@@ -62,6 +63,7 @@ _CommonUnits: dict[Dimension, str] = {
     "inverse_distance": "1 / micrometer",
     "energy": "hartree",  # 1 hartree = 1 bohr ** 2 * m_e / au_time ** 2
     "charge": "e",  # 1 e = 1 au_current * au_time
+    "inverse_charge": "1 / e",
     "velocity": "speed_of_light",  # 1 c = 137.03599908356244 bohr / au_time
     "temperature": "K",  # 1 K = 3.1668115634555572e-06 atomic_unit_of_temperature
     "time": "s",  # 1 s = 4.134137333518244e+16 au_time
