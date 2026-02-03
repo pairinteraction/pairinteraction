@@ -319,6 +319,7 @@ def integrand_ellipse_partial(
     k_maj: float,
     k_min: float,
     k0: float,
+    epsilon0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -328,7 +329,7 @@ def integrand_ellipse_partial(
     dk_rho = -k_maj * np.sin(t) - 1j * k_min * np.cos(t)
 
     # Wave vector components
-    kz = branch(1, k0, k_rho)
+    kz = branch(epsilon0, k0, k_rho)
     k1z = branch(epsilon1, k0, k_rho)
     k2z = branch(epsilon2, k0, k_rho)
 
@@ -349,6 +350,7 @@ def integrand_ellipse(
     k_maj: float,
     k_min: float,
     k0: float,
+    epsilon0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -360,7 +362,7 @@ def integrand_ellipse(
     real_or_imag: str,
 ) -> complex:
     k_rho, kz, rs_plus, rs_minus, rp_plus, rp_minus, prefactor = integrand_ellipse_partial(
-        t, k_maj, k_min, k0, epsilon1, epsilon2, h
+        t, k_maj, k_min, k0, epsilon0, epsilon1, epsilon2, h
     )
     if k0 == 0 and kz == 0:
         return 0.0
@@ -419,7 +421,7 @@ def elliptic_integral(
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
     k_min = min(k_vac, 1 / rho) if rho != 0 else k_vac
 
-    args = (k_maj, k_min, k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
+    args = (k_maj, k_min, k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
     real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)  # type: ignore [arg-type]
     if only_real_part:
@@ -431,6 +433,7 @@ def elliptic_integral(
 def integrand_real(
     k_rho: complex,
     k0: float,
+    epsilon0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -441,7 +444,7 @@ def integrand_real(
     entry: Entries,
     real_or_imag: str,
 ) -> complex:
-    kz = branch(1, k0, k_rho)
+    kz = branch(epsilon0, k0, k_rho)
     if kz == 0 and k0 == 0:
         return 0
 
@@ -512,7 +515,7 @@ def real_axis_integral(
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
 
-    args = (k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
+    args = (k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
     # Estimate the upper limit for the real axis integral
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
