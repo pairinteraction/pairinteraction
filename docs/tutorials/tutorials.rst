@@ -33,7 +33,16 @@ lifetimes to calculations of pair potentials.
     examples_python/lifetimes
     examples_python/c3_c6_coefficients
     examples_python/state_atom_object
-    examples_python/green_tensor
+
+**Examples Demonstrating Basic Usage**
+
+Some examples showcasing the usage of custom green tensors.
+
+.. nbgallery::
+
+    examples_python/green_tensor/green_tensor_example_cavity
+    examples_python/green_tensor/pair_potential_with_green_tensor
+    examples_python/green_tensor/c6_near_surfaces.ipynb
 
 **Examples From Publications**
 
