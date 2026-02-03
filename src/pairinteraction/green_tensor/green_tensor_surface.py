@@ -47,7 +47,7 @@ class GreenTensorSurface(GreenTensorBase):
         self.surface_epsilon = epsilon
         return self
 
-    def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
+    def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a single surface in atomic units.
 
         Args:

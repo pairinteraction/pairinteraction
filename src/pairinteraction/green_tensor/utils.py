@@ -31,10 +31,14 @@ if TYPE_CHECKING:
 def green_tensor_homogeneous(
     r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, *, only_real_part: bool = False
 ) -> NDArray:
-    """Homogeneous Green Tensor for two atoms in cartesian coordinates in an infinite homogeneous medium.
+    r"""Homogeneous Green Tensor for two atoms in cartesian coordinates in an infinite homogeneous medium.
 
     The function used is from equation 2 of the paper:
     "Dispersionless subradiant photon storage in one-dimensional emitter chains"
+
+    We calculate the scaled Green Tensor, i.e.
+    .. math::
+        \frac{\omega^2}{\hbar \epsilon_0 c^2} G(r_\alpha, r_\beta, \omega)
 
     Args:
         r_a: Position vector of atom A in meters
@@ -43,7 +47,7 @@ def green_tensor_homogeneous(
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
-    Returns: The 3x3 Homogeneous Green Tensor (general complex values) (1/m)
+    Returns: The 3x3 scaled homogeneous Green Tensor :math:`(\omega/c)^2 G` (general complex values) (1/m)
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
@@ -51,7 +55,13 @@ def green_tensor_homogeneous(
     r = r_a - r_b
     r_norm = np.linalg.norm(r)
 
-    prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * k0**2 * r_norm**3)
+    # this is missing a 1/k0**2 compared to the paper, we absorb this in the scaled prefactor, see line below
+    prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * r_norm**3)
+    prefactor /= epsilon0 * np.pi
+    # epsilon0 from missing k0^2 compared to omega^2/c^2
+    # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+    # and some additional (2 * pi)**2 (TODO check omega angular or normal frequency mistake somewhere?)
+
     result: NDArray = prefactor * (
         (k0**2 * r_norm**2 + 1j * k0 * r_norm - 1) * np.eye(3)
         + (-(k0**2) * r_norm**2 - 3j * k0 * r_norm + 3) * np.outer(r, r) / r_norm**2
@@ -350,7 +360,7 @@ def integrand_ellipse(
     gs = Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
     gp = Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
 
-    integrand = prefactor * (gs - (kz**2 / k0**2) * gp)
+    integrand = prefactor * (k0**2 * gs - kz**2 * gp)
     if real_or_imag == "real":
         return np.real(integrand)
     if real_or_imag == "imag":
@@ -437,8 +447,8 @@ def integrand_real(
         1j
         / (4 * np.pi)
         * (
-            Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-            - (kz**2 / k0**2) * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+            k0**2 * Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
+            - kz**2 * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
         )
         * (k_rho / kz)
         * np.exp(1j * kz * h)
@@ -575,7 +585,8 @@ def green_tensor_scattered(
                 upper_limit_real_integral,
                 only_real_part=only_real_part,
             )
-            gt_total[i][j] = g_ij_elliptic + g_ij_real
+            value = (g_ij_elliptic + g_ij_real) / (epsilon0 * np.pi)  # see comment in green_tensor_homogeneous
+            gt_total[i][j] = value
 
     return gt_total
 
