@@ -91,6 +91,6 @@ class GreenTensorCavity(GreenTensorBase):
         gt = utils.green_tensor_total(
             pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
         )
-        to_au = ureg.Quantity(1, "m**3") * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
+        to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomc units
-        return np.real(gt) / to_au.to_base_units().magnitude
+        return np.real(gt) / to_au
