@@ -32,11 +32,11 @@ class GreenTensorInterpolator:
         >>> gt = pi.GreenTensorInterpolator()
         >>> distance_mum = 5
         >>> omega = 1
-        >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (omega**2 * distance_mum**3)
-        >>> tensor_unit = "1 / micrometer"
-        >>> gt.set_constant(1, 1, tensor, omega, tensor_unit, omega_unit="Hz")
+        >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_mum**3)
+        >>> tensor_unit = "hartree / (e * micrometer)^2"
+        >>> gt.set_constant(1, 1, tensor, tensor_unit)
         GreenTensorInterpolator(...)
-        >>> print(gt.get(1, 1, omega, omega_unit="Hz", unit=tensor_unit).diagonal())
+        >>> print(gt.get(1, 1, omega, omega_unit="Hz", unit=tensor_unit, scaled_green_tensor=True).diagonal())
         [ 0.008 -0.016  0.008]
 
     """
