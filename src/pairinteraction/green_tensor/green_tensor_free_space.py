@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 class GreenTensorFreeSpace(GreenTensorBase):
-    def _get_dipole_dipole_au(self, omega_au: float) -> NDArray:
+    def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for free space in atomic units.
 
         Args:
