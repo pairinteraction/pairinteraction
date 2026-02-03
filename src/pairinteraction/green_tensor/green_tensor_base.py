@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING, Callable, overload
 
 import numpy as np
 
-from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
         NDArray,
@@ -210,8 +210,20 @@ class GreenTensorBase(ABC):
         factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
         return factor
 
+    @overload
+    def get_green_tensor_interpolator(self) -> GreenTensorInterpolator: ...
+
+    @overload
     def get_green_tensor_interpolator(
         self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str
+    ) -> GreenTensorInterpolator: ...
+
+    def get_green_tensor_interpolator(
+        self,
+        omega_min: float | None = None,
+        omega_max: float | None = None,
+        omega_steps: int | None = None,
+        omega_unit: str | None = None,
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
@@ -221,13 +233,34 @@ class GreenTensorBase(ABC):
             A GreenTensorInterpolator that interpolates the Green tensor at given frequency points.
 
         """
-        omega_list = list(np.linspace(omega_min, omega_max, omega_steps))
-        gt_list = [self.get_dipole_dipole(omega, omega_unit, unit="hartree") for omega in omega_list]
+        from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 
-        gti = GreenTensorInterpolator()
-        gti.set_list_from_cartesian(1, 1, gt_list, omega_list, tensors_unit="hartree", omegas_unit=omega_unit)
+        if self.use_static_limit and not all(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
+            raise ValueError("Cannot specify frequency range when static limit is set.")
+        if not self.use_static_limit and any(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
+            raise ValueError("Must specify frequency range or set static limit.")
 
-        return gti
+        if self.use_static_limit:
+            scaled_gt_au = self.get_dipole_dipole(0, scaled_green_tensor=True)
+            gti = GreenTensorInterpolator()
+            gti.set_constant(1, 1, scaled_gt_au, from_coordinates="cartesian")
+            return gti
+
+        if omega_min is not None and omega_max is not None and omega_steps is not None and omega_unit is not None:
+            if omega_steps == 1:
+                omega_list = [ureg.Quantity((omega_min + omega_max) / 2, omega_unit)]
+            else:
+                omega_list = [
+                    ureg.Quantity(omega, omega_unit) for omega in np.linspace(omega_min, omega_max, omega_steps)
+                ]
+            scaled_gt_list = [self.get_dipole_dipole(omega, scaled_green_tensor=True) for omega in omega_list]
+            gti = GreenTensorInterpolator()
+            gti.set_list(
+                1, 1, scaled_gt_list, omega_list, from_coordinates="cartesian", prefactor_already_included=True
+            )
+            return gti
+
+        raise ValueError("Invalid combination of arguments.")
 
 
 def get_electric_permitivity(
