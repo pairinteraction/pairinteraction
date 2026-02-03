@@ -103,6 +103,8 @@ def rs(kz: complex, k1z: complex) -> complex:
     Returns: The Fresnel reflection coefficient for s-polarized light (dimensionless, complex)
 
     """
+    if kz == 0 and k1z == 0:
+        return 0.0
     return (kz - k1z) / (kz + k1z)
 
 
@@ -118,6 +120,8 @@ def rp(kz: complex, k1z: complex, epsilon: complex) -> complex:
     Returns: The Fresnel reflection coefficient for p-polarized light (dimensionless, complex)
 
     """
+    if kz == 0 and k1z == 0:
+        return 0.0
     return (epsilon * kz - k1z) / (epsilon * kz + k1z)
 
 
@@ -333,7 +337,10 @@ def integrand_ellipse_partial(
     rp_plus = rp(kz, k1z, epsilon1)
     rp_minus = rp(kz, k2z, epsilon2)
 
-    prefactor = 1j / (4 * np.pi) * (k_rho / kz) * np.exp(1j * kz * h) * dk_rho
+    if k_rho == 0 and dk_rho == 0:  # noqa: SIM108
+        prefactor = 0.0
+    else:
+        prefactor = 1j / (4 * np.pi) * (k_rho / kz) * np.exp(1j * kz * h) * dk_rho
     return k_rho, kz, rs_plus, rs_minus, rp_plus, rp_minus, prefactor
 
 
@@ -355,6 +362,8 @@ def integrand_ellipse(
     k_rho, kz, rs_plus, rs_minus, rp_plus, rp_minus, prefactor = integrand_ellipse_partial(
         t, k_maj, k_min, k0, epsilon1, epsilon2, h
     )
+    if k0 == 0 and kz == 0:
+        return 0.0
 
     gs = Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
     gp = Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
@@ -433,6 +442,9 @@ def integrand_real(
     real_or_imag: str,
 ) -> complex:
     kz = branch(1, k0, k_rho)
+    if kz == 0 and k0 == 0:
+        return 0
+
     k1z = branch(epsilon1, k0, k_rho)
     k2z = branch(epsilon2, k0, k_rho)
 
@@ -470,7 +482,6 @@ def real_axis_integral(
     z_ges: float,
     z_ab: float,
     entry: Entries,
-    upper_limit: float,
     *,
     only_real_part: bool = False,
 ) -> complex:
@@ -503,10 +514,15 @@ def real_axis_integral(
 
     args = (k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
+    # Estimate the upper limit for the real axis integral
+    k_vac = omega / const.c  # magnitude of wave vector in vacuum
+    k0 = k_vac * np.sqrt(epsilon0)
+    upper_limit = np.sqrt((745 / h) ** 2 + 1)
+
     real_real, _ = quad(
         integrand_real,  # type: ignore [arg-type]
         2 * k_maj,
-        upper_limit * np.real(k0),
+        upper_limit,
         args=(*args, "real"),  # type: ignore [arg-type]
         limit=1000,
         epsrel=1e-9,
@@ -516,7 +532,7 @@ def real_axis_integral(
     imag_real, _ = quad(
         integrand_real,  # type: ignore [arg-type]
         2 * k_maj,
-        upper_limit * np.real(k0),
+        upper_limit,
         args=(*args, "imag"),  # type: ignore [arg-type]
         limit=1000,
         epsrel=1e-9,
@@ -558,11 +574,6 @@ def green_tensor_scattered(
     z_ab = r[2]
     phi = np.arccos(r[0] / rho) if rho != 0 else 0
 
-    # Estimate the upper limit for the real axis integral
-    k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0)
-    upper_limit_real_integral = np.sqrt((745 / (np.real(k0) * h)) ** 2 + 1)
-
     gt_total = np.zeros((3, 3), dtype=complex)
     for i, ix in enumerate(["x", "y", "z"]):
         for j, jx in enumerate(["x", "y", "z"]):
@@ -581,7 +592,6 @@ def green_tensor_scattered(
                 z_ges,
                 z_ab,
                 entry,
-                upper_limit_real_integral,
                 only_real_part=only_real_part,
             )
             # prefactor see comment in green_tensor_homogeneous
