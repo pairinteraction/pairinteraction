@@ -32,6 +32,18 @@ class GreenTensorBase(ABC):
         self.pos1_au = None
         self.pos2_au = None
         self.epsilon = 1.0
+        self.use_static_limit = False
+
+    def set_static_limit(self, use_static_limit: bool = True) -> Self:
+        """Set whether to use the static limit (omega -> 0) for the Green tensor.
+
+        Args:
+            use_static_limit: If True, the static limit is used.
+                Default True.
+
+        """
+        self.use_static_limit = use_static_limit
+        return self
 
     def set_atom_positions(
         self, pos1: ArrayLike | PintArrayLike, pos2: ArrayLike | PintArrayLike, unit: str | None = None
@@ -163,7 +175,12 @@ class GreenTensorBase(ABC):
 
         """
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
-        scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_au)
+
+        if self.use_static_limit:
+            scaled_gt_au = self._get_scaled_dipole_dipole_au(0)
+        else:
+            scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_au)
+
         if scaled_green_tensor:
             return QuantityArray.convert_au_to_user(scaled_gt_au, "scaled_green_tensor_dd", unit)
         gt_au = scaled_gt_au / self._get_green_tensor_prefactor_au(omega_au)
