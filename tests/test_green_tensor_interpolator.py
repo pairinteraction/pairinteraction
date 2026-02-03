@@ -34,13 +34,15 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
 
     tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_au**3)
     tensor_unit = "hartree / (e * bohr)^2"
-    gti._set_constant_with_prefactors_from_cartesian(1, 1, tensor, tensor_unit)
+    gti.set_constant(1, 1, tensor, tensor_unit, from_coordinates="cartesian")
 
-    tensor_spherical = gti.get_spherical(1, 1, omega, unit=tensor_unit, include_prefactors=True)
+    tensor_spherical = gti.get(1, 1, omega, unit=tensor_unit, scaled_green_tensor=True, coordinates="spherical")
     tensor_spherical_ref = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_au**3
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
-    tensor_spherical = gti.get_spherical(1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, include_prefactors=True)
+    tensor_spherical = gti.get(
+        1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, scaled_green_tensor=True, coordinates="spherical"
+    )
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
     system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor_interpolator(gti)
@@ -68,7 +70,7 @@ def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionMod
         for (i, omega) in enumerate(omegas, start=1)
     ]
     tensor_unit = "1 / micrometer"
-    gti.set_list_from_cartesian(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz")
+    gti.set_list(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz", from_coordinates="cartesian")
 
     # Check the interpolation
     tensors_spherical = [
@@ -77,7 +79,7 @@ def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionMod
     ]
 
     for idx in range(3, len(omegas) - 3):  # the interpolation near the edges is bad, so we only check the middle
-        tensor = gti.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
+        tensor = gti.get(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit, coordinates="spherical")
         np.testing.assert_allclose(tensor, tensors_spherical[idx])
 
     for ind in range(3, len(omegas) - 5):
@@ -85,5 +87,5 @@ def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionMod
         omega = (omegas[ind1] + omegas[ind2]) / 2
         reference_tensor = (tensors_spherical[ind1] + tensors_spherical[ind2]) / 2
 
-        tensor = gti.get_spherical(1, 1, omega=omega, omega_unit="GHz", unit=tensor_unit)
+        tensor = gti.get(1, 1, omega=omega, omega_unit="GHz", unit=tensor_unit, coordinates="spherical")
         np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
