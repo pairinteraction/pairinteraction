@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
+import scipy.constants as const
 
 from pairinteraction.green_tensor import utils
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
@@ -37,5 +38,8 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
         omega_hz = omega.magnitude
 
-        gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)  # 1/m
-        return np.real(gt) * au_to_meter  # 1/bohr
+        # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
+        gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
+        to_au = ureg.Quantity(1, "m**3") * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
+        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomc units
+        return np.real(gt) / to_au.to_base_units().magnitude
