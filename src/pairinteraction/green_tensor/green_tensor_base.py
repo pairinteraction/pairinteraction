@@ -66,27 +66,38 @@ class GreenTensorBase(ABC):
         self,
         kappa1: int,
         kappa2: int,
-        omega: float = 0,
+        omega: float | PintFloat,
         omega_unit: str | None = None,
         unit: None = None,
+        *,
+        scaled_green_tensor: bool = False,
     ) -> PintArray: ...
 
     @overload
     def get(
-        self, kappa1: int, kappa2: int, omega: float = 0, omega_unit: str | None = None, *, unit: str
+        self,
+        kappa1: int,
+        kappa2: int,
+        omega: float | PintFloat,
+        omega_unit: str | None = None,
+        *,
+        unit: str,
+        scaled_green_tensor: bool = False,
     ) -> NDArray: ...
 
     def get(
         self,
         kappa1: int,
         kappa2: int,
-        omega: float = 0,
+        omega: float | PintFloat,
         omega_unit: str | None = None,
         unit: str | None = None,
+        *,
+        scaled_green_tensor: bool = False,
     ) -> PintArray | NDArray:
-        """Calculate the Green tensor in cartesian coordinates for the given indices kappa1 and kappa2.
+        """Calculate the Green tensor in cartesian coordinates for the given ranks kappa1, kappa2 and frequency omega.
 
-        kappa == 1 corresponds to dipole operator (-> the basis is [x, y, z]),
+        kappa = 1 corresponds to dipole operator with the cartesian basis: [x, y, z]
 
         Args:
             kappa1: The rank of the first multipole operator.
@@ -97,25 +108,40 @@ class GreenTensorBase(ABC):
                 Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
+            scaled_green_tensor: If True, the Green tensor is returned with the prefactor for the interaction
+                already included (the unit has to be adopted accordingly).
+                Default False returns the bare Green tensor.
 
         Returns:
-            The Green tensor as a 2D array.
+            The Green tensor as a 2D array in cartesian coordinates.
 
         """
         if kappa1 == 1 and kappa2 == 1:
-            return self.get_dipole_dipole(omega, omega_unit, unit=unit)
+            return self.get_dipole_dipole(omega, omega_unit, unit=unit, scaled_green_tensor=scaled_green_tensor)
         raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
 
     @overload
     def get_dipole_dipole(
-        self, omega: float | PintFloat, omega_unit: str | None = None, unit: None = None
+        self,
+        omega: float | PintFloat,
+        omega_unit: str | None = None,
+        unit: None = None,
+        *,
+        scaled_green_tensor: bool = False,
     ) -> PintArray: ...
 
     @overload
-    def get_dipole_dipole(self, omega: float | PintFloat, omega_unit: str | None = None, *, unit: str) -> NDArray: ...
+    def get_dipole_dipole(
+        self, omega: float | PintFloat, omega_unit: str | None = None, *, unit: str, scaled_green_tensor: bool = False
+    ) -> NDArray: ...
 
     def get_dipole_dipole(
-        self, omega: float | PintFloat, omega_unit: str | None = None, unit: str | None = None
+        self,
+        omega: float | PintFloat,
+        omega_unit: str | None = None,
+        unit: str | None = None,
+        *,
+        scaled_green_tensor: bool = False,
     ) -> PintArray | NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates.
 
@@ -128,17 +154,44 @@ class GreenTensorBase(ABC):
                 Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the green tensor (e.g. "1/m").
                 Default None, which means that the result is returned as pint object.
+            scaled_green_tensor: If True, the Green tensor is returned with the prefactor for the interaction
+                already included (the unit has to be adopted accordingly).
+                Default False returns the bare Green tensor.
 
         Returns:
             The dipole dipole Green tensor in cartesian coordinates as a 3x3 array.
 
         """
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
-        gt_au = self._get_dipole_dipole_au(omega_au)
+        scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_au)
+        if scaled_green_tensor:
+            return QuantityArray.convert_au_to_user(scaled_gt_au, "scaled_green_tensor_dd", unit)
+        gt_au = scaled_gt_au / self._get_green_tensor_prefactor_au(omega_au)
         return QuantityArray.convert_au_to_user(gt_au, "green_tensor_dd", unit)
 
     @abstractmethod
-    def _get_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
+    def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
+
+    @staticmethod
+    def _get_green_tensor_prefactor_au(omega_au: float) -> float:
+        r"""Get the prefactor to get the interaction strength from the Green tensor.
+
+        The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)
+        .. math::
+            V_{\alpha\beta} = \frac{\omega^2}{\hbar \epsilon_0 c^2}
+                d_\alpha^T \mathrm{Re}\{G(r_\alpha, r_\beta, \omega)\} d_\beta
+
+        This functions returns the prefactor
+        .. math::
+            \frac{\omega^2}{\hbar \epsilon_0 c^2}
+
+        In C++ we use the convention that the Green tensor already contains this prefactor.
+        """
+        speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
+        factor = (omega_au / speed_of_light_au) ** 2
+        factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+        factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
+        return factor
 
     def get_green_tensor_interpolator(
         self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str
