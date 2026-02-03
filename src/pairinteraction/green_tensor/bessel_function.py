@@ -2,8 +2,13 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
-from scipy.special import jv as scipy_bessel_function
+if TYPE_CHECKING:
+
+    def scipy_bessel_function(v: int, z: complex) -> complex: ...
+else:
+    from scipy.special import jv as scipy_bessel_function
 
 
 @lru_cache(maxsize=100_000)
