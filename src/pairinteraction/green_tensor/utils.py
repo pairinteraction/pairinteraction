@@ -47,7 +47,8 @@ def green_tensor_homogeneous(
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
-    Returns: The 3x3 scaled homogeneous Green Tensor :math:`(\omega/c)^2 G` (general complex values) (1/m)
+    Returns: The 3x3 scaled homogeneous Green Tensor (general complex values) (m^(-3) [hbar]^(-1) [epsilon_0]^(-1))
+        :math:`\omega^2 / (\hbar \epsilon_0 c^2) G(r_\alpha, r_\beta, \omega)`
 
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
@@ -57,10 +58,8 @@ def green_tensor_homogeneous(
 
     # this is missing a 1/k0**2 compared to the paper, we absorb this in the scaled prefactor, see line below
     prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * r_norm**3)
-    prefactor /= epsilon0 * np.pi
+    prefactor *= 1 / (epsilon0 * const.epsilon_0 * const.hbar)
     # epsilon0 from missing k0^2 compared to omega^2/c^2
-    # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
-    # and some additional (2 * pi)**2 (TODO check omega angular or normal frequency mistake somewhere?)
 
     result: NDArray = prefactor * (
         (k0**2 * r_norm**2 + 1j * k0 * r_norm - 1) * np.eye(3)
@@ -585,7 +584,9 @@ def green_tensor_scattered(
                 upper_limit_real_integral,
                 only_real_part=only_real_part,
             )
-            value = (g_ij_elliptic + g_ij_real) / (epsilon0 * np.pi)  # see comment in green_tensor_homogeneous
+            # prefactor see comment in green_tensor_homogeneous
+            prefactor = 1 / (epsilon0 * const.epsilon_0 * const.hbar)
+            value = prefactor * (g_ij_elliptic + g_ij_real)
             gt_total[i][j] = value
 
     return gt_total
@@ -614,7 +615,7 @@ def green_tensor_total(
         h: Distance between the two surfaces (m).
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
-    Returns: The 3x3 Total Green Tensor (general complex values) (1/m)
+    Returns: The 3x3 Total Green Tensor (general complex values) m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
 
     """
     gt_scat = green_tensor_scattered(r_a, r_b, omega, epsilon0, epsilon1, epsilon2, h, only_real_part=only_real_part)
