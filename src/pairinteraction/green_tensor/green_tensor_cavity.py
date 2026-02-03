@@ -61,7 +61,7 @@ class GreenTensorCavity(GreenTensorBase):
         if self.pos1_au is None or self.pos2_au is None:
             raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
 
-        au_to_meter = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
+        au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
         epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")

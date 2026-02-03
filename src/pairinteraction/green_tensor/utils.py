@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Callable, Literal, TypeVar
 
 import numpy as np
 import scipy.constants as const
@@ -18,9 +18,14 @@ from pairinteraction.green_tensor.bessel_function import bessel_function_0, bess
 if TYPE_CHECKING:
     from pairinteraction.units import NDArray
 
-    def bessel_function(v: float, z: complex) -> complex: ...  # type: ignore [misc]
-
     Entries = Literal["xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz"]
+
+    from typing_extensions import ParamSpec
+
+    P = ParamSpec("P")
+    R = TypeVar("R")
+
+    def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 
 def green_tensor_homogeneous(
@@ -47,7 +52,7 @@ def green_tensor_homogeneous(
     r_norm = np.linalg.norm(r)
 
     prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * k0**2 * r_norm**3)
-    result = prefactor * (
+    result: NDArray = prefactor * (
         (k0**2 * r_norm**2 + 1j * k0 * r_norm - 1) * np.eye(3)
         + (-(k0**2) * r_norm**2 - 3j * k0 * r_norm + 3) * np.outer(r, r) / r_norm**2
     )
@@ -58,7 +63,7 @@ def green_tensor_homogeneous(
 
 
 @njit(cache=True)
-def branch(epsilon: complex, k: float, k_rho: float) -> complex:
+def branch(epsilon: complex, k: float, k_rho: complex) -> complex:
     """Calculate the perpendicular wave vector component with positive imaginary part.
 
     Args:
@@ -300,7 +305,7 @@ def integrand_ellipse_partial(
     t: complex,
     k_maj: float,
     k_min: float,
-    k0: complex,
+    k0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -327,7 +332,7 @@ def integrand_ellipse(
     t: complex,
     k_maj: float,
     k_min: float,
-    k0: complex,
+    k0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -398,16 +403,16 @@ def elliptic_integral(
 
     args = (k_maj, k_min, k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
-    real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)
+    real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)  # type: ignore [arg-type]
     if only_real_part:
         return real_ellipse
-    imag_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "imag"), epsrel=1e-9, limit=1000)
+    imag_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "imag"), epsrel=1e-9, limit=1000)  # type: ignore [arg-type]
     return real_ellipse + 1j * imag_ellipse
 
 
 def integrand_real(
     k_rho: complex,
-    k0: complex,
+    k0: float,
     epsilon1: complex,
     epsilon2: complex,
     h: float,
@@ -490,12 +495,22 @@ def real_axis_integral(
     args = (k0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
     real_real, _ = quad(
-        integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "real"), limit=1000, epsrel=1e-9
+        integrand_real,  # type: ignore [arg-type]
+        2 * k_maj,
+        upper_limit * np.real(k0),
+        args=(*args, "real"),  # type: ignore [arg-type]
+        limit=1000,
+        epsrel=1e-9,
     )
     if only_real_part:
         return real_real
     imag_real, _ = quad(
-        integrand_real, 2 * k_maj, upper_limit * np.real(k0), args=(*args, "imag"), limit=1000, epsrel=1e-9
+        integrand_real,  # type: ignore [arg-type]
+        2 * k_maj,
+        upper_limit * np.real(k0),
+        args=(*args, "imag"),  # type: ignore [arg-type]
+        limit=1000,
+        epsrel=1e-9,
     )
     return real_real + 1j * imag_real
 
