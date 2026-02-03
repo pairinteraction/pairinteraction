@@ -9,14 +9,13 @@ import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
-from pairinteraction.green_tensor import GreenTensorInterpolator
 from pairinteraction.system.system_base import SystemBase
-from pairinteraction.units import QuantityArray, QuantityScalar, ureg
+from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor import GreenTensorBase
+    from pairinteraction.green_tensor import GreenTensorBase, GreenTensorInterpolator
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
         KetAtomTuple,
@@ -168,35 +167,37 @@ class SystemPair(SystemBase[BasisPair]):
         self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
         return self
 
-    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int) -> Self:
+    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int | None = None) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
-            omega_steps: The number of omega steps to use for non-constant Green tensors.
-                If 1, a constant Green tensor (with omega=0) is assumed.
+            omega_steps: If the Green tensor is in the static limit, this argument must be None.
+                If the Green tensor is not assumed to be in the static limit, define the number of omega steps to use
+                for the interpolation of the Green tensor.
 
         """
         if green_tensor.pos1_au is None or green_tensor.pos2_au is None:
             raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
         self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
 
-        if omega_steps <= 0:
-            raise ValueError("omega_steps must be a positive integer.")
-
-        if omega_steps == 1:
-            omega = ureg.Quantity(1e-10, "Hz")
-            gt = green_tensor.get_dipole_dipole(omega)
-            gti = GreenTensorInterpolator()
-            gti.set_constant_from_cartesian(1, 1, gt, omega)
+        if green_tensor.use_static_limit:
+            if omega_steps is not None:
+                raise ValueError("omega_steps must not be provided when using the static limit of the Green tensor.")
+            gti = green_tensor.get_green_tensor_interpolator()
             self.set_green_tensor_interpolator(gti)
             return self
+
+        if omega_steps is None:
+            raise ValueError("omega_steps must be provided when not using the static limit of the Green tensor.")
+        if omega_steps <= 0:
+            raise ValueError("omega_steps must be a positive integer.")
 
         # TODO optimize how to choose omegas, for now we just use linear spacing
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
         omega_max = max(energies_au) - min(energies_au)
 
-        gti = green_tensor.get_green_tensor_interpolator(1e-10, omega_max, omega_steps, omega_unit="hartree")
+        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
         self.set_green_tensor_interpolator(gti)
         return self
 
