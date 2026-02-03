@@ -317,7 +317,7 @@ class GreenTensorInterpolator:
 
         In C++ we use the convention that the Green tensor already contains this prefactor.
         """
-        speed_of_light_au = ureg.Quantity(1, "speed_of_light").to_base_units().m
+        speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
         factor = (omega_au / speed_of_light_au) ** 2
         factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
         factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
