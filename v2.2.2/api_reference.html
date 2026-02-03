@@ -1,0 +1,272 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=219dea72"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Database" href="_autosummary/pairinteraction._wrapped.Database.html" />
+    <link rel="prev" title="MQDT Calculations for Ytterbium" href="tutorials/examples_python/mqdt.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PairInteraction
+              <img src="_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.Database.html">Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.KetAtom.html">KetAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.StateAtom.html">StateAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.BasisAtom.html">BasisAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.SystemAtom.html">SystemAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.KetPair.html">KetPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.StatePair.html">StatePair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.BasisPair.html">BasisPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.SystemPair.html">SystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.GreenTensor.html">GreenTensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction._wrapped.diagonalize.html">diagonalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction.perturbative.C3.html">C3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction.perturbative.C6.html">C6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="_autosummary/pairinteraction.perturbative.EffectiveSystemPair.html">EffectiveSystemPair</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api_reference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<span id="id1"></span><h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>The PairInteraction package provides a Python interface for easily accessing the functionality in a pythonic way. This
+Python interface can be accessed via the <code class="docutils literal notranslate"><span class="pre">pairinteraction</span></code> module by importing</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+</pre></div>
+</div>
+<p>Alternatively, the same functionality can be accessed using complex data types via <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pairinteraction.complex</span> <span class="pre">as</span>
+<span class="pre">pi</span></code>. The two submodules are completely identical in their functionality, but only differ in the data type they use.</p>
+<p>All the available classes, methods and functions are documented below:</p>
+<p><strong>Database</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.Database.html#pairinteraction._wrapped.Database" title="pairinteraction._wrapped.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
+<td><p>Class for handling the databases for the PairInteraction package.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Single Atom</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.KetAtom.html#pairinteraction._wrapped.KetAtom" title="pairinteraction._wrapped.KetAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KetAtom</span></code></a></p></td>
+<td><p>Ket for an atomic basis state.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.StateAtom.html#pairinteraction._wrapped.StateAtom" title="pairinteraction._wrapped.StateAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StateAtom</span></code></a></p></td>
+<td><p>State of a single atom.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.BasisAtom.html#pairinteraction._wrapped.BasisAtom" title="pairinteraction._wrapped.BasisAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasisAtom</span></code></a></p></td>
+<td><p>Basis for a single atom.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom" title="pairinteraction._wrapped.SystemAtom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SystemAtom</span></code></a></p></td>
+<td><p>System of a single atom.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pair of Atoms</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.KetPair.html#pairinteraction._wrapped.KetPair" title="pairinteraction._wrapped.KetPair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">KetPair</span></code></a></p></td>
+<td><p>Ket for a pair state of two atoms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.StatePair.html#pairinteraction._wrapped.StatePair" title="pairinteraction._wrapped.StatePair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">StatePair</span></code></a></p></td>
+<td><p>Pair state of two atoms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.BasisPair.html#pairinteraction._wrapped.BasisPair" title="pairinteraction._wrapped.BasisPair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasisPair</span></code></a></p></td>
+<td><p>Basis for a pair of atoms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair" title="pairinteraction._wrapped.SystemPair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SystemPair</span></code></a></p></td>
+<td><p>System of a pair of atoms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.GreenTensor.html#pairinteraction._wrapped.GreenTensor" title="pairinteraction._wrapped.GreenTensor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GreenTensor</span></code></a></p></td>
+<td><p>Green tensor for the multipole pair interactions.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Convenience Functions</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction._wrapped.diagonalize.html#pairinteraction._wrapped.diagonalize" title="pairinteraction._wrapped.diagonalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagonalize</span></code></a>(systems[, diagonalizer, ...])</p></td>
+<td><p>Diagonalize a list of systems in parallel using the C++ backend.</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Perturbative Calculations</strong></p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction.perturbative.C3.html#pairinteraction.perturbative.C3" title="pairinteraction.perturbative.C3"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturbative.C3</span></code></a></p></td>
+<td><p>Class for calculating the C3 coefficient between two states.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="_autosummary/pairinteraction.perturbative.C6.html#pairinteraction.perturbative.C6" title="pairinteraction.perturbative.C6"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturbative.C6</span></code></a></p></td>
+<td><p>Class for calculating the C6 coefficient for a two-atom state <code class="docutils literal notranslate"><span class="pre">|ket1,</span> <span class="pre">ket2&gt;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="_autosummary/pairinteraction.perturbative.EffectiveSystemPair.html#pairinteraction.perturbative.EffectiveSystemPair" title="pairinteraction.perturbative.EffectiveSystemPair"><code class="xref py py-obj docutils literal notranslate"><span class="pre">perturbative.EffectiveSystemPair</span></code></a></p></td>
+<td><p>Class for creating an effective SystemPair object and calculating the effective Hamiltonian.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="tutorials/examples_python/mqdt.html" class="btn btn-neutral float-left" title="MQDT Calculations for Ytterbium" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_autosummary/pairinteraction._wrapped.Database.html" class="btn btn-neutral float-right" title="Database" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

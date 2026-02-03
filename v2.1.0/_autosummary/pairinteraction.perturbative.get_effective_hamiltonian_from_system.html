@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>get_effective_hamiltonian_from_system &mdash; pairinteraction 2.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=20623aea"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Publications" href="../publications/publications.html" />
+    <link rel="prev" title="get_c6_from_system" href="pairinteraction.perturbative.get_c6_from_system.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.Database.html">Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.KetAtom.html">KetAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.BasisAtom.html">BasisAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.SystemAtom.html">SystemAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.KetPair.html">KetPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.BasisPair.html">BasisPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.SystemPair.html">SystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.GreenTensor.html">GreenTensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction._wrapped.diagonalize.html">diagonalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.perturbative.get_c3_from_system.html">get_c3_from_system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.perturbative.get_c6_from_system.html">get_c6_from_system</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">get_effective_hamiltonian_from_system</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pairinteraction.perturbative.get_effective_hamiltonian_from_system"><code class="docutils literal notranslate"><span class="pre">get_effective_hamiltonian_from_system()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/architecture.html">Overview About pairinteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">get_effective_hamiltonian_from_system</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/pairinteraction.perturbative.get_effective_hamiltonian_from_system.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="get-effective-hamiltonian-from-system">
+<h1>get_effective_hamiltonian_from_system<a class="headerlink" href="#get-effective-hamiltonian-from-system" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="pairinteraction.perturbative.get_effective_hamiltonian_from_system">
+<span class="sig-name descname"><span class="pre">get_effective_hamiltonian_from_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ket_tuple_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">system_pair</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">required_overlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_only_specified_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/perturbative/perturbative.html#get_effective_hamiltonian_from_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.perturbative.get_effective_hamiltonian_from_system" title="Link to this definition"></a></dt>
+<dd><p>Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.</p>
+<p>This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective
+Hamiltonian is calculated. The whole Hamiltonian is taken from a pair system.
+The Hamiltonian of the pair system is assumed to be diagonal in the unperturbed Hamiltonian, all off-diagonal
+elements are assumed to belong to the perturbative term.
+The function also checks for resonances between all states and states in the model space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ket_tuple_list</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">KetPairReal</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">KetPairComplex</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<a class="reference internal" href="pairinteraction._wrapped.KetAtom.html#pairinteraction._wrapped.KetAtom" title="pairinteraction._wrapped.ket.ket_atom.KetAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">KetAtom</span></code></a>, <a class="reference internal" href="pairinteraction._wrapped.KetAtom.html#pairinteraction._wrapped.KetAtom" title="pairinteraction._wrapped.ket.ket_atom.KetAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">KetAtom</span></code></a>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>[<a class="reference internal" href="pairinteraction._wrapped.KetAtom.html#pairinteraction._wrapped.KetAtom" title="pairinteraction._wrapped.ket.ket_atom.KetAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">KetAtom</span></code></a>]]</span>) – List of all pair states that span up the model space.
+The effective Hamiltonian is calculated for these states.</p></li>
+<li><p><strong>system_pair</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">SystemPairReal</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">SystemPairComplex</span></code></span>) – Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</p></li>
+<li><p><strong>order</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – Order up to which the perturbation theory is expanded. Support up to third order.
+Default is second order.</p></li>
+<li><p><strong>required_overlap</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – If set, the code checks for validity of a perturbative treatment.
+Error is thrown if the perturbed eigenstate has less overlap than this value with the
+unperturbed eigenstate.</p></li>
+<li><p><strong>return_only_specified_order</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, the returned effective Hamiltonian will only contain the specified order.
+Default is False, which returns the sum of all orders up to the specified order.</p></li>
+<li><p><strong>unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit to which to convert the result. Default None will return a pint quantity.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]] | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]], <code class="xref py py-class docutils literal notranslate"><span class="pre">csr_matrix</span></code>]</span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p>Effective Hamiltonian as a <span class="math notranslate nohighlight">\(m \times m\)</span> matrix, where m is the length of <cite>ket_tuple_list</cite>.</p></li>
+<li><p>Eigenvectors in perturbation theory due to interaction with states out of the model space, returned as
+a sparse matrix in compressed row format. Each row represents the corresponding eigenvector.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a resonance between a state in the model space and a state not in the model space occurs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pairinteraction.perturbative.get_c6_from_system.html" class="btn btn-neutral float-left" title="get_c6_from_system" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../publications/publications.html" class="btn btn-neutral float-right" title="Publications" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Pairinteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.1.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

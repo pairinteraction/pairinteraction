@@ -1,0 +1,525 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SystemPair &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GreenTensor" href="pairinteraction.GreenTensor.html" />
+    <link rel="prev" title="BasisPair" href="pairinteraction.BasisPair.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.Database.html">Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetAtom.html">KetAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StateAtom.html">StateAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisAtom.html">BasisAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.SystemAtom.html">SystemAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetPair.html">KetPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StatePair.html">StatePair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisPair.html">BasisPair</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">SystemPair</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pairinteraction.SystemPair"><code class="docutils literal notranslate"><span class="pre">SystemPair</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.__init__"><code class="docutils literal notranslate"><span class="pre">SystemPair.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_eigenbasis"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_eigenbasis()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.set_interaction_order"><code class="docutils literal notranslate"><span class="pre">SystemPair.set_interaction_order()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.set_distance"><code class="docutils literal notranslate"><span class="pre">SystemPair.set_distance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.set_distance_vector"><code class="docutils literal notranslate"><span class="pre">SystemPair.set_distance_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_distance_vector"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_distance_vector()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_distance"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_distance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.set_green_tensor"><code class="docutils literal notranslate"><span class="pre">SystemPair.set_green_tensor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.basis"><code class="docutils literal notranslate"><span class="pre">SystemPair.basis</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.diagonalize"><code class="docutils literal notranslate"><span class="pre">SystemPair.diagonalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_eigenenergies"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_eigenenergies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_hamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_hamiltonian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.is_diagonal"><code class="docutils literal notranslate"><span class="pre">SystemPair.is_diagonal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.matrix"><code class="docutils literal notranslate"><span class="pre">SystemPair.matrix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.SystemPair.get_corresponding_energy"><code class="docutils literal notranslate"><span class="pre">SystemPair.get_corresponding_energy()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.GreenTensor.html">GreenTensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.diagonalize.html">diagonalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.EffectiveSystemPair.html">EffectiveSystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C3.html">C3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C6.html">C6</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">SystemPair</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/pairinteraction.SystemPair.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="systempair">
+<h1>SystemPair<a class="headerlink" href="#systempair" title="Link to this heading"></a></h1>
+<p class="rubric">Class Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.__init__" title="pairinteraction.SystemPair.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(basis)</p></td>
+<td><p>Create a system object for a pair of atoms.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.diagonalize" title="pairinteraction.SystemPair.diagonalize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">diagonalize</span></code></a>([diagonalizer, float_type, ...])</p></td>
+<td><p>Diagonalize the Hamiltonian and update the basis to the eigenbasis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_corresponding_energy" title="pairinteraction.SystemPair.get_corresponding_energy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_corresponding_energy</span></code></a>(ket_tuple[, unit])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_distance" title="pairinteraction.SystemPair.get_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_distance</span></code></a>([unit])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_distance_vector" title="pairinteraction.SystemPair.get_distance_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_distance_vector</span></code></a>([unit])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_eigenbasis" title="pairinteraction.SystemPair.get_eigenbasis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eigenbasis</span></code></a>()</p></td>
+<td><p>Get the eigenbasis of the system.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_eigenenergies" title="pairinteraction.SystemPair.get_eigenenergies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_eigenenergies</span></code></a>([unit])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.get_hamiltonian" title="pairinteraction.SystemPair.get_hamiltonian"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_hamiltonian</span></code></a>([unit])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.set_distance" title="pairinteraction.SystemPair.set_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_distance</span></code></a>(distance[, angle_degree, unit])</p></td>
+<td><p>Set the distance between the atoms using the specified distance and angle.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.set_distance_vector" title="pairinteraction.SystemPair.set_distance_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_distance_vector</span></code></a>(distance[, unit])</p></td>
+<td><p>Set the distance vector between the atoms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.set_green_tensor" title="pairinteraction.SystemPair.set_green_tensor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_green_tensor</span></code></a>(green_tensor)</p></td>
+<td><p>Set the Green tensor for the pair system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.set_interaction_order" title="pairinteraction.SystemPair.set_interaction_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_interaction_order</span></code></a>(order)</p></td>
+<td><p>Set the interaction order of the pair system.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Class Attributes and Properties</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.basis" title="pairinteraction.SystemPair.basis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">basis</span></code></a></p></td>
+<td><p>The basis object of the system.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.is_diagonal" title="pairinteraction.SystemPair.is_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_diagonal</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.SystemPair.matrix" title="pairinteraction.SystemPair.matrix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matrix</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">SystemPair</span></span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair" title="Link to this definition"></a></dt>
+<dd><p>System of a pair of atoms.</p>
+<p>Use the given BasisPair object to create the system object.
+You can set the distance (vector) between the atoms afterwards via the corresponding methods.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="mi">58</span><span class="p">,</span> <span class="mi">63</span><span class="p">),</span> <span class="n">l</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;G&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pair_energy</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pair_basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">system</span><span class="p">,</span> <span class="n">system</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">pair_energy</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">pair_energy</span> <span class="o">+</span> <span class="mi">3</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pair_system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">pair_basis</span><span class="p">)</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">pair_system</span><span class="p">)</span>
+<span class="go">SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pair_system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="go">SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=True)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">eigenenergies</span> <span class="o">=</span> <span class="n">pair_system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eigenenergies</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">pair_energy</span><span class="si">:</span><span class="s2">.5f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">-2.18394</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a system object for a pair of atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>basis</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pairinteraction.BasisPair.html#pairinteraction.BasisPair" title="pairinteraction.basis.basis_pair.BasisPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasisPair</span></code></a></span>) – The <a class="reference internal" href="pairinteraction.BasisPair.html#pairinteraction.BasisPair" title="pairinteraction.BasisPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">pairinteraction.BasisPair</span></code></a> object that describes the basis of the system.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_eigenbasis">
+<span class="sig-name descname"><span class="pre">get_eigenbasis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.get_eigenbasis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.get_eigenbasis" title="Link to this definition"></a></dt>
+<dd><p>Get the eigenbasis of the system.</p>
+<p>This method retrieves the eigenbasis of the system, which is the basis in which the Hamiltonian is diagonal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pairinteraction.BasisPair.html#pairinteraction.BasisPair" title="pairinteraction.basis.basis_pair.BasisPair"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasisPair</span></code></a></span></p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A BasisPair object representing the eigenbasis of the system.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.set_interaction_order">
+<span class="sig-name descname"><span class="pre">set_interaction_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.set_interaction_order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.set_interaction_order" title="Link to this definition"></a></dt>
+<dd><p>Set the interaction order of the pair system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>order</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The interaction order to set for the pair system.
+The order must be 3, 4, or 5.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.set_distance">
+<span class="sig-name descname"><span class="pre">set_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_degree</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.set_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.set_distance" title="Link to this definition"></a></dt>
+<dd><p>Set the distance between the atoms using the specified distance and angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span>) – The distance to set between the atoms in the given unit.</p></li>
+<li><p><strong>angle_degree</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – The angle between the distance vector and the z-axis in degrees.
+90 degrees corresponds to the x-axis.
+Defaults to 0, which corresponds to the z-axis.</p></li>
+<li><p><strong>unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit of the distance, e.g. “micrometer”.
+Default None expects a <cite>pint.Quantity</cite>.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.set_distance_vector">
+<span class="sig-name descname"><span class="pre">set_distance_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.set_distance_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.set_distance_vector" title="Link to this definition"></a></dt>
+<dd><p>Set the distance vector between the atoms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]] | <code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]] | <code class="xref py py-class docutils literal notranslate"><span class="pre">Collection</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</span>) – The distance vector to set between the atoms in the given unit.</p></li>
+<li><p><strong>unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit of the distance, e.g. “micrometer”.
+Default None expects a <cite>pint.Quantity</cite>.</p></li>
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_distance_vector">
+<span class="sig-name descname"><span class="pre">get_distance_vector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.get_distance_vector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.get_distance_vector" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>] | <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_distance">
+<span class="sig-name descname"><span class="pre">get_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.get_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.get_distance" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.set_green_tensor">
+<span class="sig-name descname"><span class="pre">set_green_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">green_tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.set_green_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.set_green_tensor" title="Link to this definition"></a></dt>
+<dd><p>Set the Green tensor for the pair system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>green_tensor</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="pairinteraction.GreenTensor.html#pairinteraction.GreenTensor" title="pairinteraction.system.green_tensor.GreenTensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">GreenTensor</span></code></a></span>) – The Green tensor to set for the system.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.basis">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">basis</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">BasisType</span></span><a class="headerlink" href="#pairinteraction.SystemPair.basis" title="Link to this definition"></a></dt>
+<dd><p>The basis object of the system.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.diagonalize">
+<span class="sig-name descname"><span class="pre">diagonalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diagonalizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'eigen'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'float64'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_range_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pairinteraction.SystemPair.diagonalize" title="Link to this definition"></a></dt>
+<dd><p>Diagonalize the Hamiltonian and update the basis to the eigenbasis.</p>
+<p>This method diagonalizes the Hamiltonian of the system and updates the basis of the system accordingly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>systems</strong> – A list of <cite>SystemAtom</cite> or <cite>SystemPair</cite> objects.</p></li>
+<li><p><strong>diagonalizer</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'eigen'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lapacke_evd'</span></code>, <code class="docutils literal notranslate"><span class="pre">'lapacke_evr'</span></code>, <code class="docutils literal notranslate"><span class="pre">'feast'</span></code>]</span>) – The diagonalizer method to use. Defaults to “eigen”.</p></li>
+<li><p><strong>float_type</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Literal</span></code>[<code class="docutils literal notranslate"><span class="pre">'float32'</span></code>, <code class="docutils literal notranslate"><span class="pre">'float64'</span></code>]</span>) – The floating point precision to use for the diagonalization. Defaults to “float64”.</p></li>
+<li><p><strong>rtol</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></span>) – The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
+by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.</p></li>
+<li><p><strong>sort_by_energy</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to sort the resulting basis by energy. Defaults to True.</p></li>
+<li><p><strong>energy_range</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Quantity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, PintFloat) | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">TypeVar</span></code>(<code class="docutils literal notranslate"><span class="pre">Quantity</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>, PintFloat) | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code>]</span>) – A tuple specifying an energy range, in which the eigenenergies should be calculated.
+Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
+The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
+Defaults to (None, None), i.e. calculate all eigenenergies.</p></li>
+<li><p><strong>energy_range_unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit in which the energy_range is given. Defaults to None assumes pint objects.</p></li>
+<li><p><strong>m0</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The search subspace size for the FEAST diagonalizer. Defaults to None.</p></li>
+<li><p><strong>energy_unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – Deprecated, use energy_range_unit instead.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated instance of the system.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_eigenenergies">
+<span class="sig-name descname"><span class="pre">get_eigenenergies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pairinteraction.SystemPair.get_eigenenergies" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]] | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>, <code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code>], <code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code>[<code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code>]]]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_hamiltonian">
+<span class="sig-name descname"><span class="pre">get_hamiltonian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pairinteraction.SystemPair.get_hamiltonian" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">csr_matrix</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">csr_matrix</span></code>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.is_diagonal">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_diagonal</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pairinteraction.SystemPair.is_diagonal" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.matrix">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">matrix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">csr_matrix</span></span><a class="headerlink" href="#pairinteraction.SystemPair.matrix" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.SystemPair.get_corresponding_energy">
+<span class="sig-name descname"><span class="pre">get_corresponding_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ket_tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/system/system_pair.html#SystemPair.get_corresponding_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.SystemPair.get_corresponding_energy" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PlainQuantity</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code>]</span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>self</strong> (<em>Self</em>)</p></li>
+<li><p><strong>ket_tuple</strong> (<em>tuple</em><em>[</em><a class="reference internal" href="pairinteraction.KetAtom.html#pairinteraction.KetAtom" title="pairinteraction.ket.ket_atom.KetAtom"><em>KetAtom</em></a><em>, </em><a class="reference internal" href="pairinteraction.KetAtom.html#pairinteraction.KetAtom" title="pairinteraction.ket.ket_atom.KetAtom"><em>KetAtom</em></a><em>] </em><em>| </em><em>Sequence</em><em>[</em><a class="reference internal" href="pairinteraction.KetAtom.html#pairinteraction.KetAtom" title="pairinteraction.ket.ket_atom.KetAtom"><em>KetAtom</em></a><em>]</em>)</p></li>
+<li><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pairinteraction.BasisPair.html" class="btn btn-neutral float-left" title="BasisPair" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pairinteraction.GreenTensor.html" class="btn btn-neutral float-right" title="GreenTensor" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

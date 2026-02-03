@@ -1,0 +1,363 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PairInteraction - A Rydberg Interaction Calculator &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=67b02a41"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="about.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="About" href="about.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            PairInteraction
+              <img src="_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PairInteraction - A Rydberg Interaction Calculator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pairinteraction-a-rydberg-interaction-calculator">
+<h1>PairInteraction - A Rydberg Interaction Calculator<a class="headerlink" href="#pairinteraction-a-rydberg-interaction-calculator" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="https://pypi.org/project/pairinteraction/"><img alt="PyPI Package" src="https://img.shields.io/pypi/v/pairinteraction.svg?style=flat" /></a>
+<a class="reference external" href="https://arxiv.org/abs/1612.08053"><img alt="arXiv:1612.08053" src="https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat" /></a>
+<a class="reference external" href="https://www.gnu.org/licenses/lgpl-3.0.html"><img alt="License: LGPL v3" src="https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat" /></a>
+<a class="reference external" href="https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml"><img alt="CI Workflow" src="https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg" /></a>
+<a class="reference external" href="https://sonarcloud.io/dashboard?id=pairinteraction_pairinteraction"><img alt="Quality Gate Status" src="https://sonarcloud.io/api/project_badges/measure?project=pairinteraction_pairinteraction&amp;metric=alert_status" /></a>
+<a class="reference external" href="https://www.pairinteraction.org/pairinteraction/coverage/cpp-pytest/index.html"><img alt="C++ Coverage - pytest" src="https://pairinteraction.github.io/pairinteraction/coverage/cpp-pytest/badge.svg" /></a>
+<a class="reference external" href="https://www.pairinteraction.org/pairinteraction/coverage/python-pytest/index.html"><img alt="Python Coverage - pytest" src="https://pairinteraction.github.io/pairinteraction/coverage/python-pytest/badge.svg" /></a>
+<a class="reference external" href="https://www.pairinteraction.org/pairinteraction/"><img alt="Documentation" src="https://img.shields.io/badge/Documentation-pairinteraction.org-blue.svg?style=flat" /></a></p>
+<p><strong>Note: This is a completely new version of the PairInteraction software that is not backward compatible to versions below v1.0.</strong></p>
+<p>The <em>PairInteraction</em> software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. For a more detailed description of the software that is written to be accessible also to non-specialists, see the <a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/about.html">About page</a> of the project. The software can be installed via pip (requires Python &gt;= 3.9, for tips see our <a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html">extended installation instructions</a>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>pairinteraction
+</pre></div>
+</div>
+<p>You can use the PairInteraction software as a Python library, see our <a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/tutorials/examples_python/quick_start.html">quick start guide to get started in 5 minutes</a>, or you can launch its graphical user interface from the command line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pairinteraction<span class="w"> </span>gui
+</pre></div>
+</div>
+<section id="highlights">
+<h2>Highlights<a class="headerlink" href="#highlights" title="Link to this heading"></a></h2>
+<ul>
+<li><p>For calculating Rydberg pair potentials, the software uses a similar approach to the <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/tree/v0.9.10">old version of PairInteraction</a>, the <a class="reference external" href="https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator">Alkali.ne Rydberg Calculator</a>, and the <a class="reference external" href="https://github.com/ThompsonLabPrinceton/rydcalc">rydcalc library</a>. We optimized the construction and diagonalization of Hamiltonians, typically achieving a <strong>speedup of 5-20x</strong> compared to other implementations.</p>
+<p><img alt="benchmarking results" src="https://github.com/pairinteraction/pairinteraction/raw/master/data/benchmarking_results/0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png" /></p>
+<p><em>Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. When supported, symmetries were used to reduce the Hilbert space size. See the <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/tools/benchmarking">benchmarking tool</a>.</em></p>
+</li>
+<li><p>The software uses single-channel quantum defect theory (SQDT) and also <strong>multi-channel quantum defect theory (MQDT)</strong> for the accurate description of atoms.</p>
+<p>The construction of Hamiltonians is accelerated by using pre-calculated matrix elements, which are stored in database tables. These tables are automatically downloaded from GitHub [<a class="reference external" href="https://github.com/pairinteraction/database-sqdt/releases">1</a>,<a class="reference external" href="https://github.com/pairinteraction/database-mqdt/releases">2</a>] and cached locally when needed.</p>
+</li>
+</ul>
+<ul class="simple">
+<li><p><strong>Electric and magnetic fields in arbitrary directions</strong> can be included in the calculations. Diamagnetism is supported.</p></li>
+</ul>
+</section>
+<section id="how-to-cite">
+<h2>How to Cite<a class="headerlink" href="#how-to-cite" title="Link to this heading"></a></h2>
+<p>If you use PairInteraction in your research, please cite our tutorial paper:</p>
+<blockquote>
+<div><p>Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, <em>Tutorial: Calculation of Rydberg interaction potentials</em>, <a class="reference external" href="https://doi.org/10.1088/1361-6455/aa743a">J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)</a>, <a class="reference external" href="https://arxiv.org/abs/1612.08053">arXiv:1612.08053</a></p>
+</div></blockquote>
+<p><strong>Quantum Defects</strong>
+<a id="quantum-defects"></a></p>
+<p>PairInteraction relies on quantum defects provided by the community. Consider citing relevant publications for your atomic species alongside PairInteraction.</p>
+<p><details>
+<summary><b>Click to expand for quantum defect references</b></summary>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Element</p></th>
+<th class="head"><p>Model</p></th>
+<th class="head"><p>Identifier</p></th>
+<th class="head"><p>References</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>H</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">H</span></code></p></td>
+<td><p>Schrödinger equation for hydrogen</p></td>
+</tr>
+<tr class="row-odd"><td><p>Li</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Li</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1017/CBO9780511524530">10.1017/CBO9780511524530</a> (1994)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.34.2889">10.1103/PhysRevA.34.2889</a> (1986)</p></td>
+</tr>
+<tr class="row-even"><td><p>Na</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Na</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1088/0953-4075/30/10/009">10.1088/0953-4075/30/10/009</a> (1997)<br><a class="reference external" href="https://doi.org/10.1070/QE1995v025n09ABEH000501">10.1070/QE1995v025n09ABEH000501</a> (1995)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.45.4720">10.1103/PhysRevA.45.4720</a> (1992)</p></td>
+</tr>
+<tr class="row-odd"><td><p>K</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">K</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1088/0031-8949/27/4/012">10.1088/0031-8949/27/4/012</a> (1983)<br><a class="reference external" href="https://doi.org/10.1016/0030-4018(81)90225-X">10.1016/0030-4018(81)90225-X</a> (1981)</p></td>
+</tr>
+<tr class="row-even"><td><p>Rb</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Rb</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1103/PhysRevA.83.052515">10.1103/PhysRevA.83.052515</a> (2011)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.74.054502">10.1103/PhysRevA.74.054502</a> (2006)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.74.062712">10.1103/PhysRevA.74.062712</a> (2006)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.67.052502">10.1103/PhysRevA.67.052502</a> (2003)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cs</p></td>
+<td><p>SQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Cs</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1103/PhysRevA.93.013424">10.1103/PhysRevA.93.013424</a> (2016)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.35.4650">10.1103/PhysRevA.35.4650</a> (1987)<br><a class="reference external" href="https://doi.org/10.1103/PhysRevA.26.2733">10.1103/PhysRevA.26.2733</a> (1982)</p></td>
+</tr>
+<tr class="row-even"><td><p>Sr88</p></td>
+<td><p>SQDT, singlet sector</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sr88_singlet</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1103/PhysRevA.108.022815">10.1103/PhysRevA.108.022815</a> (2023)<br><a class="reference external" href="https://doi.org/10.17169/refubium-34581">10.17169/refubium-34581</a> (2022)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sr88</p></td>
+<td><p>SQDT, triplet sector</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sr88_triplet</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1016/j.cpc.2020.107814">10.1016/j.cpc.2020.107814</a> (2021)</p></td>
+</tr>
+<tr class="row-even"><td><p>Sr87</p></td>
+<td><p>MQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sr87_mqdt</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1088/1361-6455/ab4c22">10.1088/1361-6455/ab4c22</a> (2019)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sr88</p></td>
+<td><p>MQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Sr88_mqdt</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.1088/1361-6455/ab4c22">10.1088/1361-6455/ab4c22</a> (2019)</p></td>
+</tr>
+<tr class="row-even"><td><p>Yb171</p></td>
+<td><p>MQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Yb171_mqdt</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.48550/arXiv.2406.01482">10.48550/arXiv.2406.01482</a> (2024)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Yb173</p></td>
+<td><p>MQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Yb173_mqdt</span></code></p></td>
+<td><p>MQDT model formulated by us</p></td>
+</tr>
+<tr class="row-even"><td><p>Yb174</p></td>
+<td><p>MQDT</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Yb174_mqdt</span></code></p></td>
+<td><p><a class="reference external" href="https://doi.org/10.48550/arXiv.2406.01482">10.48550/arXiv.2406.01482</a> (2024)</p></td>
+</tr>
+</tbody>
+</table>
+<p>The identifier can be used to specify an atomic species in the PairInteraction software.</p>
+</details></p>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Link to this heading"></a></h2>
+<p><strong>User Guide</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html">Installation</a> - Whether you prefer an installation via pip or compiling from source, we’ve got all the information you need.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/tutorials/tutorials.html">Tutorials</a> - Covering both the graphical user interface and the Python library,
+these tutorials enable you to leverage PairInteraction for your projects.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/api_reference.html">API Reference</a> - Documentation of classes and functions of PairInteraction’s Python library.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/publications/publications.html">Publications</a> - Find out more about the theory behind PairInteraction and how to cite it and the quantum defects you use.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/faqs.html">FAQs</a> - Frequently asked questions.</p></li>
+</ul>
+<p><strong>Contributor Guide</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/contribute/getting_started.html">Getting Started as a Contributor</a> - Discover the many ways you can help improve PairInteraction, from contributing to the repository to providing quantum defects.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/contribute/architecture.html">Overview of PairInteraction’s Architecture</a> - Find out how PairInteraction is structured.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/contribute/style_guide.html">Style Guide</a> - Learn about the coding style used in PairInteraction.</p></li>
+<li><p><a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/contribute/database.html">Database Format</a> - Explore the database for storing atomic states and matrix elements.</p></li>
+</ul>
+<p><strong>Utility Tools [External Links]</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a> - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.</p></li>
+<li><p><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a> - Learn how to calculate Rydberg states and matrix elements using single quantum defect theory with our tool written in Python.</p></li>
+</ul>
+</section>
+<section id="contributors">
+<h2>Contributors<a class="headerlink" href="#contributors" title="Link to this heading"></a></h2>
+<p>The software is maintained by:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/seweber">Sebastian Weber</a></p></li>
+<li><p><a class="reference external" href="https://github.com/johannes-moegerle">Johannes Mögerle</a></p></li>
+</ul>
+<p>In addition, the following people contributed significantly to the current and/or previous versions of the software:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/hmenke">Henri Menke</a></p></li>
+<li><p><a class="reference external" href="https://github.com/frederic-atom">Frederic Hummel</a> - Julia package for multi-channel quantum defect theory, matrix elements</p></li>
+<li><p><a class="reference external" href="https://github.com/EduardJBraun">Eduard J. Braun</a> - Perturbative calculations, installation instructions for Windows</p></li>
+<li><p><a class="reference external" href="https://github.com/johblock">Johannes Block</a> - Calculation of Rydberg pair potentials near surfaces <em>(not yet in new version)</em></p></li>
+<li><p><a class="reference external" href="https://github.com/tripiti">Nicolas Zuber</a> - Tutorial on Rydberg-ion interaction</p></li>
+<li><p><a class="reference external" href="https://github.com/SimonHollerith">Simon Hollerith</a> - Documentation of the graphical user interface <em>(not yet in new version)</em></p></li>
+</ul>
+<p>We warmly welcome new contributions! Please see our <a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/contribute/getting_started.html">contributor guide</a> for more information!</p>
+<p>The development of the PairInteraction software has been supported by the <a class="reference external" href="https://www.itp3.uni-stuttgart.de/">Institute for Theoretical Physics III</a> of the University of Stuttgart, the Federal Ministry of Education and Research under the Grants <a class="reference external" href="https://www.quantentechnologien.de/forschung/foerderung/quantenprozessoren-und-technologien-fuer-quantencomputer/qryddemo.html">QRydDemo</a> and <a class="reference external" href="https://www.quantentechnologien.de/forschung/foerderung/quantencomputer-demonstrationsaufbauten/muniqc-atoms.html">MUNIQC-Atoms</a>, and the company <a class="reference external" href="https://atom-computing.com/">Atom Computing</a>. The development of the original version of the software started at the <a class="reference external" href="https://www.pi5.uni-stuttgart.de/">5th Institute of Physics</a> of the University of Stuttgart.</p>
+<p><a class="reference external" href="https://www.uni-stuttgart.de/en/"><img alt="University of Stuttgart" src="https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/uni_stuttgart.svg" /></a>
+<a class="reference external" href="https://www.bmbf.de/EN/"><img alt="Federal Ministry of Education and Research" src="https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/bmbf.svg" /></a>
+<a class="reference external" href="https://atom-computing.com/"><img alt="Atom Computing" src="https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.svg" /></a></p>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>The PairInteraction software is licensed under <a class="reference external" href="https://www.gnu.org/licenses/lgpl-3.0.html">LGPL v3</a>. For more information, see <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/LICENSE.txt">LICENSE.txt</a>.</p>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="about.html" class="btn btn-neutral float-right" title="About" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: master (dev)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

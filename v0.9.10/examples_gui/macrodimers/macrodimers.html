@@ -1,0 +1,201 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.1.2. Application: Vibrational Spectroscopy of Macrodimer Binding Potentials &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="2.2.1. Introduction to the pairinteraction Library" href="../../examples_python/introduction.html" />
+    <link rel="prev" title="2.1.1. Introduction to the Graphical User Interface" href="../introduction/gui_introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">2. Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../tutorials.html#graphical-user-interface">2.1. Graphical User Interface</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../introduction/gui_introduction.html">2.1.1. Introduction to the Graphical User Interface</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.1.2. Application: Vibrational Spectroscopy of Macrodimer Binding Potentials</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#multipole-interactions">2.1.2.1. Multipole Interactions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#python-api">2.2. Python API</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorials.html"><span class="section-number">2. </span>Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.1.2. </span>Application: Vibrational Spectroscopy of Macrodimer Binding Potentials</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/examples_gui/macrodimers/macrodimers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="application-vibrational-spectroscopy-of-macrodimer-binding-potentials">
+<span id="gui-macrodimers"></span><h1><span class="section-number">2.1.2. </span>Application: Vibrational Spectroscopy of Macrodimer Binding Potentials<a class="headerlink" href="#application-vibrational-spectroscopy-of-macrodimer-binding-potentials" title="Link to this heading"></a></h1>
+<p><a class="reference external" href="citehttps://pubs.acs.org/doi/10.1021/acs.jpca.2c08454">Macrodimers</a> are micrometer-seized diatomic molecules consisting of Rydberg pairs bound by their interactions. Macrodimer spectroscopy is currently the most precise way to benchmark Rydberg interactions because it provides narrow spectroscopic signatures and probes the interactions at short distances. For rubidium, the binding potentials can be calculated at high accuracy using the pairinteraction software. For more complicated atoms such as Sr or Yb, macrodimer spectroscopy may provide valuable insights into the details of their Rydberg interactions.</p>
+<p>Here, we include config files that can be loaded in the <a class="reference internal" href="../introduction/gui_introduction.html#gui-intro-pair-potentials"><span class="std std-ref">graphical user interface</span></a> for</p>
+<ul class="simple">
+<li><p>the <span class="math notranslate nohighlight">\(0^{+}_g\)</span> potential observed blue-detuned from the <span class="math notranslate nohighlight">\(35P_{1/2}\)</span> resonance [<a class="reference external" href="https://www.science.org/doi/10.1126/science.aaw4150">1</a>]: <a class="reference download internal" download="" href="../../_downloads/ea010495096eb611f1db67b08512475c/settings_0gp.sconf"><code class="xref download docutils literal notranslate"><span class="pre">settings_0gp.sconf</span></code></a></p></li>
+<li><p>the <span class="math notranslate nohighlight">\(1_u\)</span> potential observed blue-detuned from the <span class="math notranslate nohighlight">\(36P_{1/2}\)</span> resonance [<a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.128.113602">2</a>]: <a class="reference download internal" download="" href="../../_downloads/cfdab6189fc0643e78b76939efb90c00/settings_1u.sconf"><code class="xref download docutils literal notranslate"><span class="pre">settings_1u.sconf</span></code></a></p></li>
+</ul>
+<p>In contrast to interactions at large distances which are usually described by van der Waals interactions, these high-precision calculations require several thousands of pair states. The larger the interaction shift from the non-interacting pair state energies, the larger the required basis. In order to reduce the computational effort, the basis should be restricted to the symmetry subspace of interest. In the two provided config files, we used one <em>gerade</em> and one <em>ungerade</em> potential. Furthermore, pair states are selected according to their angular momentum projection along the interatomic axis. We found the highest precision if the energy bandwidth for the selection of single-atom and two-atom states were similar.</p>
+<p>High-precision calculations in the presence external fields which break the molecular symmetry are very difficult (see how the dimension of the Hamiltonian increases if applying external fields in the provided config files). For finite fields, if the field strength is small enough, it might be easier to export the pair potentials and its electronic states and calculate the effects of the fields using perturbation theory.</p>
+<p>The vibrational energies can be calculated by solving the Schrödinger equation of the interatomic motion in the calculated binding potentials. Here, in many cases (but not all), the Born-Oppenheimer approximation holds.</p>
+<section id="multipole-interactions">
+<h2><span class="section-number">2.1.2.1. </span>Multipole Interactions<a class="headerlink" href="#multipole-interactions" title="Link to this heading"></a></h2>
+<p>Rydberg interactions have their strongest contribution from dipole-dipole interactions <span class="math notranslate nohighlight">\(1/R^3\)</span>, followed by dipole-quadrupole interactions <span class="math notranslate nohighlight">\(1/R^4\)</span>. Calculating vibrational energies of macrodimers requires to also include higher order multipole terms. Approaching the experimental accuracy requires one to include multipole terms up to <span class="math notranslate nohighlight">\(1/R^6\)</span> (octupole-octupole and other terms with the same scaling). The image below shows how the calcations approach the observed vibrational resonance when the number of multipole terms is increased.</p>
+<figure class="align-default">
+<a class="reference internal image-reference" href="../../_images/multipole_terms.png"><img alt="../../_images/multipole_terms.png" src="../../_images/multipole_terms.png" style="width: 500px;" />
+</a>
+</figure>
+<p>For details on the calculations and experiments, see the <a class="reference external" href="https://edoc.ub.uni-muenchen.de/30114/">PhD thesis of Simon Hollerith (2022)</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../introduction/gui_introduction.html" class="btn btn-neutral float-left" title="2.1.1. Introduction to the Graphical User Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../examples_python/introduction.html" class="btn btn-neutral float-right" title="2.2.1. Introduction to the pairinteraction Library" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,247 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview of PairInteraction’s Architecture &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Style Guide" href="style_guide.html" />
+    <link rel="prev" title="Getting Started as a Contributor" href="getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview of PairInteraction’s Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-structure">Code Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#control-flow">Control Flow</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#constructing-a-basis">1. Constructing a Basis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#constructing-a-hamiltonian">2. Constructing a Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#diagonalizing-the-hamiltonian">3. Diagonalizing the Hamiltonian</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview of PairInteraction’s Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/contribute/architecture.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="overview-of-pairinteraction-s-architecture">
+<h1>Overview of PairInteraction’s Architecture<a class="headerlink" href="#overview-of-pairinteraction-s-architecture" title="Link to this heading"></a></h1>
+<p>This page provides an overview of how the PairInteraction software is structured and how it is working internally. The
+information is intended for developers and advanced users who want to understand the software’s architecture in more
+detail.</p>
+<section id="code-structure">
+<h2>Code Structure<a class="headerlink" href="#code-structure" title="Link to this heading"></a></h2>
+<p>The PairInteraction software consists of three parts. Each part is implemented in a separate directory in the
+PairInteraction repository:</p>
+<ul class="simple">
+<li><p><a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/cpp">src/cpp</a> - A high-performance C++ backend for constructing and diagonalizing
+Hamiltonians of systems of Rydberg atoms. Python bindings are created using <a class="reference external" href="https://github.com/wjakob/nanobind">nanobind</a>.</p></li>
+<li><p><a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/pairinteraction">src/pairinteraction</a> - A Python library that wraps the Python bindings,
+providing a Python interface for easily accessing the functionality in a pythonic way. Moreover, the Python library
+adds functionality like the perturbative calculation of dispersion coefficients and effective Hamiltonians. The python
+classes like <code class="docutils literal notranslate"><span class="pre">pairinteraction.BasisAtom</span></code> and <code class="docutils literal notranslate"><span class="pre">pairinteraction.SystemAtom</span></code> are defined for the general case of
+complex-valued data types (and thus also use the complex C++ bindings). To use only real-valued data types (which can
+accelerate the calculations) one can use the classes from the <code class="docutils literal notranslate"><span class="pre">pairinteraction.real</span></code> submodule, e.g.
+<code class="docutils literal notranslate"><span class="pre">pairinteraction.real.BasisAtom</span></code> and <code class="docutils literal notranslate"><span class="pre">pairinteraction.real.SystemAtom</span></code>. To easily switch between complex and real
+data types one can simply change the import statement from <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pairinteraction</span> <span class="pre">as</span> <span class="pre">pi</span></code> to <code class="docutils literal notranslate"><span class="pre">import</span>
+<span class="pre">pairinteraction.real</span> <span class="pre">as</span> <span class="pre">pi</span></code>.</p></li>
+<li><p><a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/pairinteraction_gui">src/pairinteraction_gui</a> - A graphical user interface (GUI) that allows
+users to perform common calculations without writing any code. The GUI is built on top of the Python library.</p></li>
+</ul>
+</section>
+<section id="control-flow">
+<h2>Control Flow<a class="headerlink" href="#control-flow" title="Link to this heading"></a></h2>
+<p>Calculations with the PairInteraction software typically involve three steps that we describe in the following. Hereby,
+the result of one step is used as input for the next step. Note that, regardless of whether you use the Python library
+or the GUI, the steps are always the same and eventually performed by the C++ backend:</p>
+<section id="constructing-a-basis">
+<h3>1. Constructing a Basis<a class="headerlink" href="#constructing-a-basis" title="Link to this heading"></a></h3>
+<p>A user can specify a basis by restricting the energies and quantum numbers of the states to be included. If a basis for
+a single atom should be constructed, the PairInteraction software uses these restrictions internally to search its
+<a class="reference internal" href="database.html#database"><span class="std std-ref">database</span></a> for states that match the criteria. If a basis for two atoms should be constructed, the
+PairInteraction software combines eigenstates of two single-atom Hamiltonians so that the resulting pair states match
+the criteria.</p>
+</section>
+<section id="constructing-a-hamiltonian">
+<h3>2. Constructing a Hamiltonian<a class="headerlink" href="#constructing-a-hamiltonian" title="Link to this heading"></a></h3>
+<p>Independent of whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain
+matrix elements of fundamental operators within a single-atom basis (for example, matrix elements for the dipole
+operators d0, d+, and d-). The matrix elements of the operators are received from PairInteraction’s <a class="reference internal" href="database.html#database"><span class="std std-ref">database</span></a> where they are indexed by the corresponding states. Next, the matrix elements of the fundamental operators
+are combined to matrix elements of more complex operators (for example, the operator describing the interaction with an
+electric field). For the multipole interaction between two atoms, tensor products of the single-atom operators are
+required. To accelerate the calculation of the tensor products, we take into account energy restrictions of the pair
+basis, ensuring that only matrix elements are constructed that belong to pair states that are energetically allowed.</p>
+</section>
+<section id="diagonalizing-the-hamiltonian">
+<h3>3. Diagonalizing the Hamiltonian<a class="headerlink" href="#diagonalizing-the-hamiltonian" title="Link to this heading"></a></h3>
+<p>The Hamiltonian is diagonalized using Intel’s MKL library. If multiple Hamiltonians have been constructed, for example,
+for different interatomic distances, they can be diagonalized in parallel by passing a list of Hamiltonians to the
+diagonalization routine. The parallelization is done in C++, circumventing the global interpreter lock of Python.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting Started as a Contributor" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="style_guide.html" class="btn btn-neutral float-right" title="Style Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: master (dev)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
