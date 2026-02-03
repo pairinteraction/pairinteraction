@@ -74,7 +74,7 @@ def branch(epsilon: complex, k: float, k_rho: complex) -> complex:
     Returns: The perpendicular wave vector component (1/m)
 
     """
-    return np.sqrt(epsilon * k**2 - k_rho**2 + 0j)
+    return np.sqrt(epsilon * k**2 - k_rho**2 + 0j)  # type: ignore [no-any-return]
 
 
 """The following functions are used from Appendix B of the paper:
@@ -125,7 +125,7 @@ def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
     Returns: The value of the denominator term D (dimensionless, complex)
 
     """
-    return 1 - r_plus * r_minus * np.exp(2j * kz * h)
+    return 1 - r_plus * r_minus * np.exp(2j * kz * h)  # type: ignore [no-any-return]
 
 
 @njit(cache=True)
@@ -143,7 +143,7 @@ def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     Returns: The value of the numerator term A_plus (dimensionless, complex)
 
     """
-    return (
+    return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
         + 2 * r_plus * r_minus * np.cos(kz * z_ab) * np.exp(1j * kz * h)
@@ -165,7 +165,7 @@ def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     Returns: The value of the numerator term A_minus (dimensionless, complex)
 
     """
-    return (
+    return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
         - 2 * r_plus * r_minus * np.cos(kz * z_ab) * np.exp(1j * kz * h)
@@ -187,7 +187,7 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     Returns: The value of the numerator term B_plus (dimensionless, complex)
 
     """
-    return (
+    return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
         + 2j * r_plus * r_minus * np.sin(kz * z_ab) * np.exp(1j * kz * h)
@@ -209,7 +209,7 @@ def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     Returns: The value of the numerator term B_minus (dimensionless, complex)
 
     """
-    return (
+    return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
         - 2j * r_plus * r_minus * np.sin(kz * z_ab) * np.exp(1j * kz * h)
@@ -444,9 +444,9 @@ def integrand_real(
         * np.exp(1j * kz * h)
     )
     if real_or_imag == "real":
-        return np.real(integrand)
+        return np.real(integrand)  # type: ignore [no-any-return]
     if real_or_imag == "imag":
-        return np.imag(integrand)
+        return np.imag(integrand)  # type: ignore [no-any-return]
     raise ValueError("real_or_imag must be 'real' or 'imag'")
 
 
