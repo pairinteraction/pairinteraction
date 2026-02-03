@@ -40,6 +40,6 @@ class GreenTensorFreeSpace(GreenTensorBase):
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
-        to_au = ureg.Quantity(1, "m**3") * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
+        to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomc units
-        return np.real(gt) / to_au.to_base_units().magnitude
+        return np.real(gt) / to_au
