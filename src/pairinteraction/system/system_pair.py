@@ -157,7 +157,7 @@ class SystemPair(SystemBase[BasisPair]):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
+    def _set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
         """Set the Green tensor interpolator for the pair system.
 
         Args:
@@ -167,12 +167,12 @@ class SystemPair(SystemBase[BasisPair]):
         self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
         return self
 
-    def set_green_tensor(self, green_tensor: GreenTensorBase, omega_steps: int | None = None) -> Self:
+    def set_green_tensor(self, green_tensor: GreenTensorBase, interpolation_steps: int | None = None) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
-            omega_steps: If the Green tensor is in the static limit, this argument must be None.
+            interpolation_steps: If the Green tensor is in the static limit, this argument must be None.
                 If the Green tensor is not assumed to be in the static limit, define the number of omega steps to use
                 for the interpolation of the Green tensor.
 
@@ -181,24 +181,29 @@ class SystemPair(SystemBase[BasisPair]):
             raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
         self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
 
-        if green_tensor.use_static_limit:
-            if omega_steps is not None:
-                raise ValueError("omega_steps must not be provided when using the static limit of the Green tensor.")
-            gti = green_tensor.get_green_tensor_interpolator()
-            self.set_green_tensor_interpolator(gti)
+        if green_tensor.static_limit:
+            if interpolation_steps is not None:
+                raise ValueError(
+                    "interpolation_steps must not be provided when using the static limit of the Green tensor."
+                )
+            gti = green_tensor.get_interpolator()
+            self._set_green_tensor_interpolator(gti)
             return self
 
-        if omega_steps is None:
-            raise ValueError("omega_steps must be provided when not using the static limit of the Green tensor.")
-        if omega_steps <= 0:
-            raise ValueError("omega_steps must be a positive integer.")
+        if interpolation_steps is None:
+            raise ValueError(
+                "interpolation_steps must be provided when not using the static limit of the Green tensor."
+            )
+        if interpolation_steps <= 0:
+            raise ValueError("interpolation_steps must be a positive integer.")
 
         # TODO optimize how to choose omegas, for now we just use linear spacing
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
         omega_max = max(energies_au) - min(energies_au)
+        omegas = np.linspace(0, omega_max, interpolation_steps)
 
-        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
-        self.set_green_tensor_interpolator(gti)
+        gti = green_tensor.get_interpolator(omegas, "hartree")
+        self._set_green_tensor_interpolator(gti)
         return self
 
     @overload
