@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.constants as const
@@ -15,36 +15,53 @@ from pairinteraction.units import QuantityScalar, ureg
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.units import NDArray, PintFloat
+    from pairinteraction.green_tensor.green_tensor_base import Permitivity
+    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
 
 
 class GreenTensorCavity(GreenTensorBase):
-    def set_surface_positions(self, z1: float, z2: float, unit: str | None = None) -> Self:
-        """Set the positions of the two surfaces of the cavity along the z-axis.
+    def __init__(
+        self,
+        pos1: ArrayLike | PintArrayLike,
+        pos2: ArrayLike | PintArrayLike,
+        z1: float | PintFloat,
+        z2: float | PintFloat,
+        unit: str | None = None,
+        static_limit: bool = False,
+        interaction_order: int = 3,
+    ) -> None:
+        """Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.
 
         The two surfaces of the cavity are assumed to be infinite in the x-y plane.
 
         Args:
+            pos1: Position of the first atom in the given unit.
+            pos2: Position of the second atom in the given unit.
             z1: The z-position of the first surface in the given unit.
             z2: The z-position of the second surface in the given unit.
             unit: The unit of the distance, e.g. "micrometer".
                 Default None expects a `pint.Quantity`.
+            static_limit: If True, the static limit is used.
+                Default False.
+            interaction_order: The order of interaction, e.g., 3 for dipole-dipole.
+                Defaults to 3.
 
         """
+        super().__init__(pos1, pos2, unit, static_limit, interaction_order)
         self.surface1_z_au = QuantityScalar.convert_user_to_au(z1, unit, "distance")
         self.surface2_z_au = QuantityScalar.convert_user_to_au(z2, unit, "distance")
-        return self
 
-    def set_electric_permitivity_surfaces(
-        self, epsilon1: complex | Callable[[PintFloat], complex], epsilon2: complex | Callable[[PintFloat], complex]
-    ) -> Self:
-        """Set the electric permittivity for the surfaces.
+    def set_relative_permittivities(self, epsilon: Permitivity, epsilon1: Permitivity, epsilon2: Permitivity) -> Self:
+        """Set the relative permittivities of the system.
 
         Args:
-            epsilon1: The electric permittivity (dimensionless) of the first surface.
-            epsilon2: The electric permittivity (dimensionless) of the second surface.
+            epsilon: The relative permittivity (dimensionless) of the medium inside the cavity.
+            epsilon1: The relative permittivity (dimensionless) of the first surface.
+            epsilon2: The relative permittivity (dimensionless) of the second surface.
+
 
         """
+        self.epsilon = epsilon
         self.surface1_epsilon = epsilon1
         self.surface2_epsilon = epsilon2
         return self

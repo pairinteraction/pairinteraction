@@ -181,7 +181,7 @@ class SystemPair(SystemBase[BasisPair]):
             raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
         self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
 
-        if green_tensor.use_static_limit:
+        if green_tensor.static_limit:
             if omega_steps is not None:
                 raise ValueError("omega_steps must not be provided when using the static limit of the Green tensor.")
             gti = green_tensor.get_green_tensor_interpolator()

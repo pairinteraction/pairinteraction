@@ -13,10 +13,49 @@ from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
-    from pairinteraction.units import NDArray
+    from typing_extensions import Self
+
+    from pairinteraction.green_tensor.green_tensor_base import Permitivity
+    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike
 
 
 class GreenTensorFreeSpace(GreenTensorBase):
+    def __init__(
+        self,
+        pos1: ArrayLike | PintArrayLike,
+        pos2: ArrayLike | PintArrayLike,
+        unit: str | None = None,
+        static_limit: bool = False,
+        interaction_order: int = 3,
+    ) -> None:
+        """Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.
+
+        The two surfaces of the cavity are assumed to be infinite in the x-y plane.
+
+        Args:
+            pos1: Position of the first atom in the given unit.
+            pos2: Position of the second atom in the given unit.
+            unit: The unit of the distance, e.g. "micrometer".
+                Default None expects a `pint.Quantity`.
+            static_limit: If True, the static limit is used.
+                Default False.
+            interaction_order: The order of interaction, e.g., 3 for dipole-dipole.
+                Defaults to 3.
+
+        """
+        super().__init__(pos1, pos2, unit, static_limit, interaction_order)
+
+    def set_relative_permittivity(self, epsilon: Permitivity) -> Self:
+        """Set the relative permittivity of the system.
+
+        Args:
+            epsilon: The relative permittivity (dimensionless) of the medium inside the cavity.
+
+
+        """
+        self.epsilon = epsilon
+        return self
+
     def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for free space in atomic units.
 
