@@ -11,67 +11,43 @@ import numpy as np
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from collections.abc import Collection
 
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
+        Dimension,
         NDArray,
         PintArray,  # needed for sphinx to recognize PintArrayLike
         PintArrayLike,
         PintFloat,
     )
 
+    Permitivity = complex | Callable[[PintFloat], complex]
+
 
 class GreenTensorBase(ABC):
-    pos1_au: NDArray | None
-    pos2_au: NDArray | None
     epsilon: complex | Callable[[PintFloat], complex]
 
-    def __init__(self) -> None:
-        self.pos1_au = None
-        self.pos2_au = None
-        self.epsilon = 1.0
-        self.use_static_limit = False
-
-    def set_static_limit(self, use_static_limit: bool = True) -> Self:
-        """Set whether to use the static limit (omega -> 0) for the Green tensor.
-
-        Args:
-            use_static_limit: If True, the static limit is used.
-                Default True.
-
-        """
-        self.use_static_limit = use_static_limit
-        return self
-
-    def set_atom_positions(
-        self, pos1: ArrayLike | PintArrayLike, pos2: ArrayLike | PintArrayLike, unit: str | None = None
-    ) -> Self:
-        """Set the positions of the two interacting atoms.
-
-        Args:
-            pos1: Position of the first atom in the given unit.
-            pos2: Position of the second atom in the given unit.
-            unit: The unit of the distance, e.g. "micrometer".
-                Default None expects a `pint.Quantity`.
-
-        """
+    def __init__(
+        self,
+        pos1: ArrayLike | PintArrayLike,
+        pos2: ArrayLike | PintArrayLike,
+        unit: str | None = None,
+        static_limit: bool = False,
+        interaction_order: int = 3,
+    ) -> None:
         self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
         self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
-        return self
+        self.static_limit = static_limit
 
-    def set_electric_permitivity(self, epsilon: complex | Callable[[PintFloat], complex]) -> Self:
-        """Set the electric permittivity for the space between the two atoms.
+        self.interaction_order = interaction_order
+        if interaction_order != 3:
+            raise NotImplementedError(
+                "Only interaction order 3 (dipole-dipole) is currently implemented for custom Green tensors."
+            )
 
-        By default, the electric permittivity is set to 1 (vacuum).
-
-        Args:
-            epsilon: The electric permittivity (dimensionless).
-
-        """
-        self.epsilon = epsilon
-        return self
+        self.epsilon = 1.0
 
     @overload
     def get(
@@ -82,7 +58,7 @@ class GreenTensorBase(ABC):
         omega_unit: str | None = None,
         unit: None = None,
         *,
-        scaled_green_tensor: bool = False,
+        scaled: bool = False,
     ) -> PintArray: ...
 
     @overload
@@ -94,7 +70,7 @@ class GreenTensorBase(ABC):
         omega_unit: str | None = None,
         *,
         unit: str,
-        scaled_green_tensor: bool = False,
+        scaled: bool = False,
     ) -> NDArray: ...
 
     def get(
@@ -105,7 +81,7 @@ class GreenTensorBase(ABC):
         omega_unit: str | None = None,
         unit: str | None = None,
         *,
-        scaled_green_tensor: bool = False,
+        scaled: bool = False,
     ) -> PintArray | NDArray:
         """Calculate the Green tensor in cartesian coordinates for the given ranks kappa1, kappa2 and frequency omega.
 
@@ -120,7 +96,7 @@ class GreenTensorBase(ABC):
                 Default None, which means that the angular frequency must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
-            scaled_green_tensor: If True, the Green tensor is returned with the prefactor for the interaction
+            scaled: If True, the Green tensor is returned with the prefactor for the interaction
                 already included (the unit has to be adopted accordingly).
                 Default False returns the bare Green tensor.
 
@@ -128,69 +104,23 @@ class GreenTensorBase(ABC):
             The Green tensor as a 2D array in cartesian coordinates.
 
         """
-        if kappa1 == 1 and kappa2 == 1:
-            return self.get_dipole_dipole(omega, omega_unit, unit=unit, scaled_green_tensor=scaled_green_tensor)
-        raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
-
-    @overload
-    def get_dipole_dipole(
-        self,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
-        unit: None = None,
-        *,
-        scaled_green_tensor: bool = False,
-    ) -> PintArray: ...
-
-    @overload
-    def get_dipole_dipole(
-        self, omega: float | PintFloat, omega_unit: str | None = None, *, unit: str, scaled_green_tensor: bool = False
-    ) -> NDArray: ...
-
-    def get_dipole_dipole(
-        self,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
-        unit: str | None = None,
-        *,
-        scaled_green_tensor: bool = False,
-    ) -> PintArray | NDArray:
-        """Calculate the dipole dipole Green tensor in cartesian coordinates.
-
-        This is a 3x3 matrix in the basis [x1, y1, z1] x [x2, y2, z2].
-
-        Args:
-            omega: The angular frequency at which to evaluate the Green tensor.
-                Only needed if the Green tensor is frequency dependent.
-            omega_unit: The unit of the angular frequency.
-                Default None, which means that the angular frequency must be given as pint object.
-            unit: The unit to which to convert the green tensor (e.g. "1/m").
-                Default None, which means that the result is returned as pint object.
-            scaled_green_tensor: If True, the Green tensor is returned with the prefactor for the interaction
-                already included (the unit has to be adopted accordingly).
-                Default False returns the bare Green tensor.
-
-        Returns:
-            The dipole dipole Green tensor in cartesian coordinates as a 3x3 array.
-
-        """
         omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+        omega_for_calculation = 0 if self.static_limit else omega_au
 
-        if self.use_static_limit:
-            scaled_gt_au = self._get_scaled_dipole_dipole_au(0)
+        if kappa1 == 1 and kappa2 == 1:
+            scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_for_calculation)
         else:
-            scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_au)
+            raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
 
-        if scaled_green_tensor:
-            return QuantityArray.convert_au_to_user(scaled_gt_au, "scaled_green_tensor_dd", unit)
-        gt_au = scaled_gt_au / self._get_green_tensor_prefactor_au(omega_au)
-        return QuantityArray.convert_au_to_user(gt_au, "green_tensor_dd", unit)
+        prefactor = 1 if scaled else self._get_prefactor_au(kappa1, kappa2, omega_au)
+        dimension = self._get_dimension(kappa1, kappa2, scaled)
+        return QuantityArray.convert_au_to_user(scaled_gt_au / prefactor, dimension, unit)
 
     @abstractmethod
     def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
 
     @staticmethod
-    def _get_green_tensor_prefactor_au(omega_au: float) -> float:
+    def _get_prefactor_au(kappa1: int, kappa2: int, omega_au: float) -> float:
         r"""Get the prefactor to get the interaction strength from the Green tensor.
 
         The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)
@@ -203,27 +133,42 @@ class GreenTensorBase(ABC):
             \frac{\omega^2}{\hbar \epsilon_0 c^2}
 
         In C++ we use the convention that the Green tensor already contains this prefactor.
+
+        Args:
+            kappa1: The rank of the first multipole operator.
+            kappa2: The rank of the second multipole operator.
+            omega_au: The angular frequency at which to evaluate the Green tensor in atomic units (hartree).
+
         """
-        speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
-        factor = (omega_au / speed_of_light_au) ** 2
-        factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
-        factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
-        return factor
+        if kappa1 == 1 and kappa2 == 1:
+            speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
+            factor = (omega_au / speed_of_light_au) ** 2
+            factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+            factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
+            return factor
+        raise NotImplementedError("Only dipole-dipole Green tensor prefactor is currently implemented.")
+
+    @staticmethod
+    def _get_dimension(kappa1: int, kappa2: int, scaled: bool) -> list[Dimension]:
+        dimension_dd: Dimension = "scaled_green_tensor_dd" if scaled else "green_tensor_dd"
+        dimension: list[Dimension] = [dimension_dd] + ["inverse_distance"] * (kappa1 + kappa2 - 2)
+        return dimension
 
     @overload
-    def get_green_tensor_interpolator(self) -> GreenTensorInterpolator: ...
+    def get_interpolator(self) -> GreenTensorInterpolator: ...
 
     @overload
-    def get_green_tensor_interpolator(
-        self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str
+    def get_interpolator(
+        self, omegas: Collection[PintFloat] | PintArray, omegas_unit: None = None
     ) -> GreenTensorInterpolator: ...
 
-    def get_green_tensor_interpolator(
+    @overload
+    def get_interpolator(self, omegas: Collection[float] | NDArray, omegas_unit: str) -> GreenTensorInterpolator: ...
+
+    def get_interpolator(
         self,
-        omega_min: float | None = None,
-        omega_max: float | None = None,
-        omega_steps: int | None = None,
-        omega_unit: str | None = None,
+        omegas: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,
+        omegas_unit: str | None = None,
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
@@ -235,37 +180,26 @@ class GreenTensorBase(ABC):
         """
         from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 
-        if self.use_static_limit and not all(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
-            raise ValueError("Cannot specify frequency range when static limit is set.")
-        if not self.use_static_limit and any(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
-            raise ValueError("Must specify frequency range or set static limit.")
+        if self.static_limit and not (omegas is None and omegas_unit is None):
+            raise ValueError("You should not specify a frequency range when static limit is set.")
 
-        if self.use_static_limit:
-            scaled_gt_au = self.get_dipole_dipole(0, scaled_green_tensor=True)
+        if self.static_limit:
             gti = GreenTensorInterpolator()
-            gti.set_constant(1, 1, scaled_gt_au, from_coordinates="cartesian")
+            scaled_gt_au = self.get(1, 1, 0, scaled=True)
+            gti.set_constant(1, 1, scaled_gt_au)
             return gti
 
-        if omega_min is not None and omega_max is not None and omega_steps is not None and omega_unit is not None:
-            if omega_steps == 1:
-                omega_list = [ureg.Quantity((omega_min + omega_max) / 2, omega_unit)]
-            else:
-                omega_list = [
-                    ureg.Quantity(omega, omega_unit) for omega in np.linspace(omega_min, omega_max, omega_steps)
-                ]
-            scaled_gt_list = [self.get_dipole_dipole(omega, scaled_green_tensor=True) for omega in omega_list]
+        if omegas is not None:
+            omegas_pint = [QuantityScalar.convert_user_to_pint(omega, omegas_unit, "energy") for omega in omegas]
             gti = GreenTensorInterpolator()
-            gti.set_list(
-                1, 1, scaled_gt_list, omega_list, from_coordinates="cartesian", prefactor_already_included=True
-            )
+            scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]
+            gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
             return gti
 
-        raise ValueError("Invalid combination of arguments.")
+        raise ValueError("You must either specify omegas or set static_limit to True to get an interpolator object.")
 
 
-def get_electric_permitivity(
-    epsilon: complex | Callable[[PintFloat], complex], omega: float, omega_unit: str | None = None
-) -> complex:
+def get_electric_permittivity(epsilon: Permitivity, omega: float, omega_unit: str | None = None) -> complex:
     """Get the electric permittivity for the given frequency.
 
     Args:

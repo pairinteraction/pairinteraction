@@ -3,48 +3,69 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.constants as const
 
 from pairinteraction.green_tensor import utils
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permittivity
 from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.units import NDArray, PintFloat
+    from pairinteraction.green_tensor.green_tensor_base import Permitivity
+    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
 
 
 class GreenTensorCavity(GreenTensorBase):
-    def set_surface_positions(self, z1: float, z2: float, unit: str | None = None) -> Self:
-        """Set the positions of the two surfaces of the cavity along the z-axis.
+    def __init__(
+        self,
+        pos1: ArrayLike | PintArrayLike,
+        pos2: ArrayLike | PintArrayLike,
+        z1: float | PintFloat,
+        z2: float | PintFloat,
+        unit: str | None = None,
+        static_limit: bool = False,
+        interaction_order: int = 3,
+    ) -> None:
+        """Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.
 
         The two surfaces of the cavity are assumed to be infinite in the x-y plane.
+        If not specified otherwise (see `set_relative_permittivities`), the surfaces are treated as perfect mirrors.
 
         Args:
+            pos1: Position of the first atom in the given unit.
+            pos2: Position of the second atom in the given unit.
             z1: The z-position of the first surface in the given unit.
             z2: The z-position of the second surface in the given unit.
             unit: The unit of the distance, e.g. "micrometer".
                 Default None expects a `pint.Quantity`.
+            static_limit: If True, the static limit is used.
+                Default False.
+            interaction_order: The order of interaction, e.g., 3 for dipole-dipole.
+                Defaults to 3.
 
         """
+        super().__init__(pos1, pos2, unit, static_limit, interaction_order)
         self.surface1_z_au = QuantityScalar.convert_user_to_au(z1, unit, "distance")
         self.surface2_z_au = QuantityScalar.convert_user_to_au(z2, unit, "distance")
-        return self
+        # Almost perfect mirrors # TODO make utils be able to handle inf
+        self.surface1_epsilon: Permitivity = 1e9
+        self.surface2_epsilon: Permitivity = 1e9
 
-    def set_electric_permitivity_surfaces(
-        self, epsilon1: complex | Callable[[PintFloat], complex], epsilon2: complex | Callable[[PintFloat], complex]
-    ) -> Self:
-        """Set the electric permittivity for the surfaces.
+    def set_relative_permittivities(self, epsilon: Permitivity, epsilon1: Permitivity, epsilon2: Permitivity) -> Self:
+        """Set the relative permittivities of the system.
 
         Args:
-            epsilon1: The electric permittivity (dimensionless) of the first surface.
-            epsilon2: The electric permittivity (dimensionless) of the second surface.
+            epsilon: The relative permittivity (dimensionless) of the medium inside the cavity.
+            epsilon1: The relative permittivity (dimensionless) of the first surface.
+            epsilon2: The relative permittivity (dimensionless) of the second surface.
+
 
         """
+        self.epsilon = epsilon
         self.surface1_epsilon = epsilon1
         self.surface2_epsilon = epsilon2
         return self
@@ -65,7 +86,7 @@ class GreenTensorCavity(GreenTensorBase):
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
+        epsilon = get_electric_permittivity(self.epsilon, omega_au, "hartree")
 
         omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
         omega_hz = omega.magnitude
@@ -81,11 +102,11 @@ class GreenTensorCavity(GreenTensorBase):
             raise ValueError("Both atoms must be located inside the cavity between the two surfaces.")
 
         if surface2_z_m < surface1_z_m:
-            epsilon_top = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
-            epsilon_bottom = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
+            epsilon_top = get_electric_permittivity(self.surface1_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permittivity(self.surface2_epsilon, omega_au, "hartree")
         else:
-            epsilon_top = get_electric_permitivity(self.surface2_epsilon, omega_au, "hartree")
-            epsilon_bottom = get_electric_permitivity(self.surface1_epsilon, omega_au, "hartree")
+            epsilon_top = get_electric_permittivity(self.surface2_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permittivity(self.surface1_epsilon, omega_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_total(
