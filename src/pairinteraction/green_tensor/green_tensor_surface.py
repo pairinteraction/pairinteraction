@@ -9,7 +9,7 @@ import numpy as np
 import scipy.constants as const
 
 from pairinteraction.green_tensor import utils
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permitivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permittivity
 from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -32,6 +32,8 @@ class GreenTensorSurface(GreenTensorBase):
         """Create a Green tensor for two atoms near a single infinite surface.
 
         The surface is assumed to be infinite in the x-y plane.
+        If not specified otherwise (see `set_relative_permittivities`), the surface is treated as a perfect mirror.
+
 
         Args:
             pos1: Position of the first atom in the given unit.
@@ -47,6 +49,7 @@ class GreenTensorSurface(GreenTensorBase):
         """
         super().__init__(pos1, pos2, unit, static_limit, interaction_order)
         self.surface_z_au = QuantityScalar.convert_user_to_au(z, unit, "distance")
+        self.surface_epsilon: Permitivity = 1e9  # Almost perfect mirror # TODO make utils be able to handle inf
 
     def set_relative_permittivities(self, epsilon: Permitivity, surface_epsilon: Permitivity) -> Self:
         """Set the relative permittivities of the system.
@@ -77,7 +80,7 @@ class GreenTensorSurface(GreenTensorBase):
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = get_electric_permitivity(self.epsilon, omega_au, "hartree")
+        epsilon = get_electric_permittivity(self.epsilon, omega_au, "hartree")
 
         omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
         omega_hz = omega.magnitude
@@ -97,11 +100,11 @@ class GreenTensorSurface(GreenTensorBase):
         pos2_shifted_m = pos2_m - np.array([0, 0, min(surface_z, surface2_z)])
 
         if surface2_z < surface_z:
-            epsilon_top = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
+            epsilon_top = get_electric_permittivity(self.surface_epsilon, omega_au, "hartree")
             epsilon_bottom = epsilon
         else:
             epsilon_top = epsilon
-            epsilon_bottom = get_electric_permitivity(self.surface_epsilon, omega_au, "hartree")
+            epsilon_bottom = get_electric_permittivity(self.surface_epsilon, omega_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_total(

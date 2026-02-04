@@ -184,7 +184,7 @@ class SystemPair(SystemBase[BasisPair]):
         if green_tensor.static_limit:
             if omega_steps is not None:
                 raise ValueError("omega_steps must not be provided when using the static limit of the Green tensor.")
-            gti = green_tensor.get_green_tensor_interpolator()
+            gti = green_tensor.get_interpolator()
             self.set_green_tensor_interpolator(gti)
             return self
 
@@ -196,8 +196,9 @@ class SystemPair(SystemBase[BasisPair]):
         # TODO optimize how to choose omegas, for now we just use linear spacing
         energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
         omega_max = max(energies_au) - min(energies_au)
+        omegas = np.linspace(0, omega_max, omega_steps)
 
-        gti = green_tensor.get_green_tensor_interpolator(0, omega_max, omega_steps, omega_unit="hartree")
+        gti = green_tensor.get_interpolator(omegas, "hartree")
         self.set_green_tensor_interpolator(gti)
         return self
 

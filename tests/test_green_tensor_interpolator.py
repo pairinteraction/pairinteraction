@@ -34,15 +34,13 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
 
     tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_au**3)
     tensor_unit = "hartree / (e * bohr)^2"
-    gti.set_constant(1, 1, tensor, tensor_unit, from_coordinates="cartesian")
+    gti.set_constant(1, 1, tensor, tensor_unit)
 
-    tensor_spherical = gti.get(1, 1, omega, unit=tensor_unit, scaled_green_tensor=True, coordinates="spherical")
+    tensor_spherical = gti.get(1, 1, omega, unit=tensor_unit, scaled=True, coordinates="spherical")
     tensor_spherical_ref = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_au**3
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
-    tensor_spherical = gti.get(
-        1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, scaled_green_tensor=True, coordinates="spherical"
-    )
+    tensor_spherical = gti.get(1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, scaled=True, coordinates="spherical")
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
     system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor_interpolator(gti)
@@ -70,7 +68,7 @@ def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionMod
         for (i, omega) in enumerate(omegas, start=1)
     ]
     tensor_unit = "1 / micrometer"
-    gti.set_list(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz", from_coordinates="cartesian")
+    gti.set_list(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz")
 
     # Check the interpolation
     tensors_spherical = [

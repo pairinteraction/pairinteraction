@@ -11,6 +11,8 @@ import numpy as np
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
+    from collections.abc import Collection
+
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
@@ -21,7 +23,7 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-    Permitivity = float | Callable[[PintFloat], float]
+    Permitivity = complex | Callable[[PintFloat], complex]
 
 
 class GreenTensorBase(ABC):
@@ -110,9 +112,8 @@ class GreenTensorBase(ABC):
         else:
             raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
 
-        prefactor = self._get_prefactor_au(kappa1, kappa2, omega_au) if scaled else 1
-        dimension_dd: Dimension = "scaled_green_tensor_dd" if scaled else "green_tensor_dd"
-        dimension: list[Dimension] = [dimension_dd] + ["inverse_distance"] * (kappa1 + kappa2 - 2)
+        prefactor = 1 if scaled else self._get_prefactor_au(kappa1, kappa2, omega_au)
+        dimension = self._get_dimension(kappa1, kappa2, scaled)
         return QuantityArray.convert_au_to_user(scaled_gt_au / prefactor, dimension, unit)
 
     @abstractmethod
@@ -147,20 +148,27 @@ class GreenTensorBase(ABC):
             return factor
         raise NotImplementedError("Only dipole-dipole Green tensor prefactor is currently implemented.")
 
-    @overload
-    def get_green_tensor_interpolator(self) -> GreenTensorInterpolator: ...
+    @staticmethod
+    def _get_dimension(kappa1: int, kappa2: int, scaled: bool) -> list[Dimension]:
+        dimension_dd: Dimension = "scaled_green_tensor_dd" if scaled else "green_tensor_dd"
+        dimension: list[Dimension] = [dimension_dd] + ["inverse_distance"] * (kappa1 + kappa2 - 2)
+        return dimension
 
     @overload
-    def get_green_tensor_interpolator(
-        self, omega_min: float, omega_max: float, omega_steps: int, omega_unit: str
+    def get_interpolator(self) -> GreenTensorInterpolator: ...
+
+    @overload
+    def get_interpolator(
+        self, omegas: Collection[PintFloat] | PintArray, omegas_unit: None = None
     ) -> GreenTensorInterpolator: ...
 
-    def get_green_tensor_interpolator(
+    @overload
+    def get_interpolator(self, omegas: Collection[float] | NDArray, omegas_unit: str) -> GreenTensorInterpolator: ...
+
+    def get_interpolator(
         self,
-        omega_min: float | None = None,
-        omega_max: float | None = None,
-        omega_steps: int | None = None,
-        omega_unit: str | None = None,
+        omegas: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,
+        omegas_unit: str | None = None,
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
@@ -172,37 +180,26 @@ class GreenTensorBase(ABC):
         """
         from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 
-        if self.static_limit and not all(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
-            raise ValueError("Cannot specify frequency range when static limit is set.")
-        if not self.static_limit and any(v is None for v in (omega_min, omega_max, omega_steps, omega_unit)):
-            raise ValueError("Must specify frequency range or set static limit.")
+        if self.static_limit and not (omegas is None and omegas_unit is None):
+            raise ValueError("You should not specify a frequency range when static limit is set.")
 
         if self.static_limit:
+            gti = GreenTensorInterpolator()
             scaled_gt_au = self.get(1, 1, 0, scaled=True)
-            gti = GreenTensorInterpolator()
-            gti.set_constant(1, 1, scaled_gt_au, from_coordinates="cartesian")
+            gti.set_constant(1, 1, scaled_gt_au)
             return gti
 
-        if omega_min is not None and omega_max is not None and omega_steps is not None and omega_unit is not None:
-            if omega_steps == 1:
-                omega_list = [ureg.Quantity((omega_min + omega_max) / 2, omega_unit)]
-            else:
-                omega_list = [
-                    ureg.Quantity(omega, omega_unit) for omega in np.linspace(omega_min, omega_max, omega_steps)
-                ]
-            scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omega_list]
+        if omegas is not None:
+            omegas_pint = [QuantityScalar.convert_user_to_pint(omega, omegas_unit, "energy") for omega in omegas]
             gti = GreenTensorInterpolator()
-            gti.set_list(
-                1, 1, scaled_gt_list, omega_list, from_coordinates="cartesian", prefactor_already_included=True
-            )
+            scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]
+            gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
             return gti
 
-        raise ValueError("Invalid combination of arguments.")
+        raise ValueError("You must either specify omegas or set static_limit to True to get an interpolator object.")
 
 
-def get_electric_permitivity(
-    epsilon: complex | Callable[[PintFloat], complex], omega: float, omega_unit: str | None = None
-) -> complex:
+def get_electric_permittivity(epsilon: Permitivity, omega: float, omega_unit: str | None = None) -> complex:
     """Get the electric permittivity for the given frequency.
 
     Args:
