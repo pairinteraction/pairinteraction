@@ -43,7 +43,7 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
     tensor_spherical = gti.get(1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, scaled=True, coordinates="spherical")
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
-    system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor_interpolator(gti)
+    system_pairs = pi_module.SystemPair(basis_pair)._set_green_tensor_interpolator(gti)
 
     # Create a reference system using the build in dipole-dipole interaction
     system_pairs_reference = (

@@ -25,7 +25,7 @@ class GreenTensorInterpolator:
 
     This class allows to define constant or frequency-dependent Green tensor interpolators,
     which can then be used for the interaction of a :class:`SystemPair`
-    (see :meth:`SystemPair.set_green_tensor_interpolator`).
+    (see :meth:`SystemPair._set_green_tensor_interpolator`).
 
     Examples:
         >>> import pairinteraction as pi
