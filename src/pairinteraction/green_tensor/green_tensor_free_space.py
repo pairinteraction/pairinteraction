@@ -16,10 +16,28 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor.green_tensor_base import Permitivity
-    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike
+    from pairinteraction.units import (
+        ArrayLike,
+        NDArray,
+        PintArray,  # noqa: F401  # required for sphinx
+        PintArrayLike,
+        PintFloat,  # noqa: F401  # required for sphinx
+    )
 
 
 class GreenTensorFreeSpace(GreenTensorBase):
+    """Green tensor for two atoms in free space.
+
+    Examples:
+        >>> from pairinteraction.green_tensor import GreenTensorFreeSpace
+        >>> gt = GreenTensorFreeSpace([0, 0, 0], [10, 0, 00], unit="micrometer")
+        >>> transition_energy = 2  # h * GHz
+        >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
+        >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
+        189.24 / bohr
+
+    """
+
     def __init__(
         self,
         pos1: ArrayLike | PintArrayLike,

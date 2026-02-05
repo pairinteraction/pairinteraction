@@ -45,7 +45,6 @@ documented below:
        StatePair
        BasisPair
        SystemPair
-       GreenTensorInterpolator
 
 **Convenience Functions**
 
@@ -62,3 +61,13 @@ documented below:
        EffectiveSystemPair
        C3
        C6
+
+**Green Tensors**
+
+.. autosummary::
+    :toctree: _autosummary/
+
+       green_tensor.GreenTensorFreeSpace
+       green_tensor.GreenTensorSurface
+       green_tensor.GreenTensorCavity
+       green_tensor.GreenTensorInterpolator
