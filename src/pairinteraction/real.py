@@ -1,18 +1,13 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from pairinteraction import green_tensor
 from pairinteraction.basis import (
     BasisAtomReal as BasisAtom,
     BasisPairReal as BasisPair,
 )
 from pairinteraction.database import Database
 from pairinteraction.diagonalization import diagonalize
-from pairinteraction.green_tensor import (
-    GreenTensorCavity,
-    GreenTensorFreeSpace,
-    GreenTensorInterpolatorReal as GreenTensorInterpolator,
-    GreenTensorSurface,
-)
 from pairinteraction.ket import (
     KetAtom,
     KetPairReal as KetPair,
@@ -38,10 +33,6 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensorCavity",
-    "GreenTensorFreeSpace",
-    "GreenTensorInterpolator",
-    "GreenTensorSurface",
     "KetAtom",
     "KetPair",
     "StateAtom",
@@ -49,4 +40,5 @@ __all__ = [
     "SystemAtom",
     "SystemPair",
     "diagonalize",
+    "green_tensor",
 ]
