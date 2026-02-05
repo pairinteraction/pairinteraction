@@ -180,13 +180,14 @@ class SystemPair(SystemBase[BasisPair]):
         if green_tensor.pos1_au is None or green_tensor.pos2_au is None:
             raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
         self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
+        use_real = isinstance(self, SystemPairReal)
 
         if green_tensor.static_limit:
             if interpolation_steps is not None:
                 raise ValueError(
                     "interpolation_steps must not be provided when using the static limit of the Green tensor."
                 )
-            gti = green_tensor.get_interpolator()
+            gti = green_tensor.get_interpolator(use_real=use_real)
             self._set_green_tensor_interpolator(gti)
             return self
 
@@ -202,7 +203,7 @@ class SystemPair(SystemBase[BasisPair]):
         omega_max = max(energies_au) - min(energies_au)
         omegas = np.linspace(0, omega_max, interpolation_steps)
 
-        gti = green_tensor.get_interpolator(omegas, "hartree")
+        gti = green_tensor.get_interpolator(omegas, "hartree", use_real=use_real)
         self._set_green_tensor_interpolator(gti)
         return self
 

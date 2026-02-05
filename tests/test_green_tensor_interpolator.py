@@ -10,11 +10,17 @@ import pytest
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
+    from pairinteraction.green_tensor import GreenTensorInterpolator
+
     from .utils import PairinteractionModule
 
 
 @pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, distance_mum: float) -> None:
+def test_static_green_tensor_interpolator(
+    pi_module: PairinteractionModule,
+    green_tensor_interpolator_class: type[GreenTensorInterpolator],
+    distance_mum: float,
+) -> None:
     """Test calculating a pair potential using a user-defined static green tensor interpolator."""
     # Create a single-atom system
     basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
@@ -28,7 +34,7 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
     basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
 
     # Create a system using a user-defined green tensor interpolator for dipole-dipole interaction
-    gti = pi_module.GreenTensorInterpolator()
+    gti = green_tensor_interpolator_class()
     omega = ureg.Quantity(1, "Hz")
     distance_au = ureg.Quantity(distance_mum, "micrometer").to("bohr").m
 
@@ -57,11 +63,14 @@ def test_static_green_tensor_interpolator(pi_module: PairinteractionModule, dist
 
 
 @pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_omega_dependent_green_tensor_interpolator(pi_module: PairinteractionModule, distance_mum: float) -> None:
+def test_omega_dependent_green_tensor_interpolator(
+    green_tensor_interpolator_class: type[GreenTensorInterpolator],
+    distance_mum: float,
+) -> None:
     """Test the interpolation for different values of omega."""
     # Define an simple linear omega-dependent green tensor interpolator
     # note that at least four entries are needed for the applied spline interpolation.
-    gti = pi_module.GreenTensorInterpolator()
+    gti = green_tensor_interpolator_class()
     omegas = np.linspace(1, 5, 20)  # GHz
     tensors = [
         np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / (omega**2 * distance_mum**3)

@@ -28,8 +28,8 @@ class GreenTensorInterpolator:
     (see :meth:`SystemPair._set_green_tensor_interpolator`).
 
     Examples:
-        >>> import pairinteraction as pi
-        >>> gt = pi.GreenTensorInterpolator()
+        >>> from pairinteraction.green_tensor import GreenTensorInterpolator
+        >>> gt = GreenTensorInterpolator()
         >>> distance_mum = 5
         >>> omega = 1
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_mum**3)

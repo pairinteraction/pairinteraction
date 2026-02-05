@@ -155,20 +155,24 @@ class GreenTensorBase(ABC):
         return dimension
 
     @overload
-    def get_interpolator(self) -> GreenTensorInterpolator: ...
+    def get_interpolator(self, *, use_real: bool) -> GreenTensorInterpolator: ...
 
     @overload
     def get_interpolator(
-        self, omegas: Collection[PintFloat] | PintArray, omegas_unit: None = None
+        self, omegas: Collection[PintFloat] | PintArray, omegas_unit: None = None, *, use_real: bool
     ) -> GreenTensorInterpolator: ...
 
     @overload
-    def get_interpolator(self, omegas: Collection[float] | NDArray, omegas_unit: str) -> GreenTensorInterpolator: ...
+    def get_interpolator(
+        self, omegas: Collection[float] | NDArray, omegas_unit: str, *, use_real: bool
+    ) -> GreenTensorInterpolator: ...
 
     def get_interpolator(
         self,
         omegas: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,
         omegas_unit: str | None = None,
+        *,
+        use_real: bool,
     ) -> GreenTensorInterpolator:
         """Get a GreenTensorInterpolator from this Green tensor.
 
@@ -178,20 +182,24 @@ class GreenTensorBase(ABC):
             A GreenTensorInterpolator that interpolates the Green tensor at given frequency points.
 
         """
-        from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
+        GTIClass: type[GreenTensorInterpolator]  # noqa: N806
+        if use_real:
+            from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolatorReal as GTIClass
+        else:
+            from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator as GTIClass
 
         if self.static_limit and not (omegas is None and omegas_unit is None):
             raise ValueError("You should not specify a frequency range when static limit is set.")
 
         if self.static_limit:
-            gti = GreenTensorInterpolator()
+            gti = GTIClass()
             scaled_gt_au = self.get(1, 1, 0, scaled=True)
             gti.set_constant(1, 1, scaled_gt_au)
             return gti
 
         if omegas is not None:
             omegas_pint = [QuantityScalar.convert_user_to_pint(omega, omegas_unit, "energy") for omega in omegas]
-            gti = GreenTensorInterpolator()
+            gti = GTIClass()
             scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]
             gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
             return gti

@@ -3,19 +3,30 @@
 
 import warnings
 
-from pairinteraction.basis import BasisAtom, BasisPair
+from pairinteraction import green_tensor
+from pairinteraction.basis import (
+    BasisAtom,
+    BasisPair,
+)
 from pairinteraction.database import Database
 from pairinteraction.diagonalization import diagonalize
-from pairinteraction.green_tensor import (
-    GreenTensorCavity,
-    GreenTensorFreeSpace,
-    GreenTensorInterpolator,
-    GreenTensorSurface,
+from pairinteraction.ket import (
+    KetAtom,
+    KetPair,
 )
-from pairinteraction.ket import KetAtom, KetPair
-from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
-from pairinteraction.state import StateAtom, StatePair
-from pairinteraction.system import SystemAtom, SystemPair
+from pairinteraction.perturbative import (
+    C3,
+    C6,
+    EffectiveSystemPair,
+)
+from pairinteraction.state import (
+    StateAtom,
+    StatePair,
+)
+from pairinteraction.system import (
+    SystemAtom,
+    SystemPair,
+)
 
 __all__ = [
     "C3",
@@ -24,10 +35,6 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensorCavity",
-    "GreenTensorFreeSpace",
-    "GreenTensorInterpolator",
-    "GreenTensorSurface",
     "KetAtom",
     "KetPair",
     "StateAtom",
@@ -35,6 +42,7 @@ __all__ = [
     "SystemAtom",
     "SystemPair",
     "diagonalize",
+    "green_tensor",
 ]
 
 
