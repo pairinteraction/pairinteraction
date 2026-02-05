@@ -12,6 +12,7 @@
 #include <Eigen/SparseCore>
 #include <complex>
 #include <optional>
+#include <tuple>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -31,11 +32,16 @@ public:
 
     DiagonalizerInterface(FloatType float_type);
     virtual ~DiagonalizerInterface() = default;
-    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      double rtol) const = 0;
-    virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      std::optional<real_t> min_eigenvalue,
-                                      std::optional<real_t> max_eigenvalue, double rtol) const;
+    virtual EigenSystemH<Scalar>
+    eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, double rtol) const = 0;
+    virtual EigenSystemH<Scalar>
+    eigh_range(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+               std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue,
+               double rtol) const;
+    virtual EigenSystemH<Scalar>
+    eigh_shift_invert(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                      std::optional<Eigen::Index> num_eigenvalues, std::optional<real_t> sigma,
+                      double rtol) const;
 
 protected:
     FloatType float_type;
@@ -44,6 +50,10 @@ protected:
                                             double rtol) const;
     template <typename RealLim>
     Eigen::VectorX<real_t> add_mean(const Eigen::VectorX<RealLim> &eigenvalues, real_t shift) const;
+
+    std::tuple<real_t, real_t, Eigen::Index, Eigen::Index>
+    gershgorin_bounds(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &A,
+                      const real_t lower_bound, const real_t upper_bound) const;
 };
 
 extern template class DiagonalizerInterface<double>;

@@ -17,8 +17,8 @@ public:
     using typename DiagonalizerInterface<Scalar>::real_t;
 
     DiagonalizerLapackeEvd(FloatType float_type = FloatType::FLOAT64);
-    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              double rtol) const override;
+    EigenSystemH<Scalar> eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                   double rtol) const override;
 
 private:
     template <typename ScalarLim>

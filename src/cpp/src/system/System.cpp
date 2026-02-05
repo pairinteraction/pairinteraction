@@ -217,11 +217,11 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
             for (size_t idx = range.begin(); idx != range.end(); ++idx) {
                 auto eigensys = min_eigenenergy.has_value() || max_eigenenergy.has_value()
-                    ? diagonalizer.eigh(
+                    ? diagonalizer.eigh_range(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
                           min_eigenenergy, max_eigenenergy, rtol)
-                    : diagonalizer.eigh(
+                    : diagonalizer.eigh_full(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
                           rtol);

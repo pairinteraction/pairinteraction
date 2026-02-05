@@ -9,6 +9,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
+#include <cassert>
+#include <limits>
 #include <optional>
 #include <spdlog/spdlog.h>
 
@@ -91,20 +93,89 @@ DiagonalizerInterface<Scalar>::add_mean(const Eigen::VectorX<RealLim> &shifted_e
     return eigenvalues;
 }
 
+/// @brief Gershgorin-based spectral enclosure and eigenvalue count bounds.
+///
+/// Computes global lower and upper bounds enclosing the entire eigenvalue
+/// spectrum using Gershgorin intervals, and estimates how many eigenvalues
+/// lie within a specified interval [`lower_bound`, `upper_bound`].
+///
+/// The eigenvalue counts are rigorous bounds:
+/// - `lower_count` is a guaranteed minimum number of eigenvalues in the interval
+/// - `upper_count` is a maximum possible number of eigenvalues in the interval
+///
+/// No eigenvalues are computed; the algorithm runs in O(nnz).
+///
+/// @note The matrix is assumed to be symmetric (real) or Hermitian (complex).
+///       For non-Hermitian matrices, the bounds apply to the spectrum in the
+///       complex plane and the counting interpretation is no longer valid.
+///
+/// @param A Symmetric (or Hermitian) sparse matrix (row-major).
+/// @param lower_bound Lower bound of the interval of interest.
+/// @param upper_bound Upper bound of the interval of interest.
+/// @return Tuple (global_lower, global_upper, lower_count, upper_count).
 template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                    std::optional<real_t> min_eigenvalue,
-                                    std::optional<real_t> max_eigenvalue, double rtol) const {
+std::tuple<typename DiagonalizerInterface<Scalar>::real_t,
+           typename DiagonalizerInterface<Scalar>::real_t, Eigen::Index, Eigen::Index>
+DiagonalizerInterface<Scalar>::gershgorin_bounds(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &A, const real_t lower_bound,
+    const real_t upper_bound) const {
+    using InnerIterator = typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator;
+
+    assert(lower_bound < upper_bound);
+
+    Eigen::Index lower_count = 0;
+    Eigen::Index upper_count = 0;
+
+    real_t global_lower = std::numeric_limits<real_t>::infinity();
+    real_t global_upper = -std::numeric_limits<real_t>::infinity();
+
+    for (Eigen::Index i = 0; i < A.rows(); ++i) {
+        real_t diag = 0;
+        real_t row_sum = 0;
+
+        for (InnerIterator it(A, i); it; ++it) {
+            if (it.col() == i) {
+                diag = std::real(it.value());
+            } else {
+                row_sum += std::abs(it.value());
+            }
+        }
+
+        real_t row_lower = diag - row_sum;
+        real_t row_upper = diag + row_sum;
+
+        // Fully contained -> guaranteed eigenvalue
+        if (row_lower >= lower_bound && row_upper <= upper_bound) {
+            ++lower_count;
+        }
+
+        // Intersects -> possible eigenvalue
+        if (!(row_upper < lower_bound || row_lower > upper_bound)) {
+            ++upper_count;
+        }
+
+        global_lower = std::min(global_lower, row_lower);
+        global_upper = std::max(global_upper, row_upper);
+    }
+
+    return {global_lower, global_upper, lower_count, upper_count};
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar> DiagonalizerInterface<Scalar>::eigh_range(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+    std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue, double rtol) const {
     int dim = matrix.rows();
 
-    auto eigensys = eigh(matrix, rtol);
+    auto eigensys = eigh_full(matrix, rtol);
+
+    const int num_eigenvalues = eigensys.eigenvalues.rows();
 
     auto *it_begin =
-        std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+        std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + num_eigenvalues,
                          min_eigenvalue.value_or(std::numeric_limits<real_t>::lowest() / 2));
     auto *it_end =
-        std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+        std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + num_eigenvalues,
                          max_eigenvalue.value_or(std::numeric_limits<real_t>::max() / 2));
     eigensys.eigenvectors = eigensys.eigenvectors
                                 .block(0, std::distance(eigensys.eigenvalues.data(), it_begin), dim,
@@ -114,6 +185,49 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
                                .segment(std::distance(eigensys.eigenvalues.data(), it_begin),
                                         std::distance(it_begin, it_end))
                                .eval();
+
+    return eigensys;
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar> DiagonalizerInterface<Scalar>::eigh_shift_invert(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+    std::optional<Eigen::Index> num_eigenvalues, std::optional<real_t> sigma, double rtol) const {
+    // Default to half the spectrum
+    const Eigen::Index dim = matrix.rows();
+    const Eigen::Index half = std::max(dim / 2, Eigen::Index{1});
+
+    auto eigensys = eigh_full(matrix, rtol);
+
+    const Eigen::Index num_eigenvalues_ = num_eigenvalues.value_or(half);
+    const real_t sigma_ = sigma.value_or(matrix.diagonal().real().mean());
+    assert(0 < num_eigenvalues_ && num_eigenvalues_ < dim);
+
+    // Find insertion point for sigma
+    const real_t *data = eigensys.eigenvalues.data();
+    const Eigen::Index size = eigensys.eigenvalues.size();
+    const Eigen::Index it = std::distance(data, std::lower_bound(data, data + size, sigma_));
+
+    // Expand window until it contains num_eigenvalues elements
+    Eigen::Index left = std::min(it, size - 1);
+    Eigen::Index right = std::min(it, size - 1);
+    while (right - left < num_eigenvalues_) {
+        if (left == 0) {
+            ++right;
+        } else if (right == size - 1) {
+            --left;
+        } else {
+            if (std::abs(data[left - 1] - sigma_) <= std::abs(data[right] - sigma_)) {
+                --left;
+            } else {
+                ++right;
+            }
+        }
+    }
+
+    // Retrieve the num_eigenvalues eigenvalues and eigenvectors closest to sigma
+    eigensys.eigenvectors = eigensys.eigenvectors.block(0, left, dim, right - left).eval();
+    eigensys.eigenvalues = eigensys.eigenvalues.segment(left, right - left).eval();
 
     return eigensys;
 }

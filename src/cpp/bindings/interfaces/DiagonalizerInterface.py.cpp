@@ -16,16 +16,10 @@ using namespace pairinteraction;
 template <typename T>
 static void declare_diagonalizer_interface(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "DiagonalizerInterface" + type_name;
-    using real_t = typename DiagonalizerInterface<T>::real_t;
     nb::class_<DiagonalizerInterface<T>> pyclass(m, pylass_name.c_str());
-    pyclass
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerInterface<T>::eigh, nb::const_))
-        .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
-                               std::optional<real_t>, std::optional<real_t>, double>(
-                 &DiagonalizerInterface<T>::eigh, nb::const_));
+    pyclass.def("eigh_full", &DiagonalizerInterface<T>::eigh_full)
+        .def("eigh_range", &DiagonalizerInterface<T>::eigh_range)
+        .def("eigh_shift_invert", &DiagonalizerInterface<T>::eigh_shift_invert);
 }
 
 template <typename T>

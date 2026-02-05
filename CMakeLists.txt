@@ -220,6 +220,23 @@ if(NOT cpptrace_FOUND)
   set_target_properties(cpptrace-lib PROPERTIES CXX_CLANG_TIDY "")
 endif()
 
+# Find Spectra
+find_package(spectra QUIET)
+if(NOT spectra_FOUND)
+  FetchContent_Declare(
+    spectra
+    SYSTEM
+    GIT_REPOSITORY https://github.com/yixuan/spectra.git
+    GIT_TAG 6841bcbacaa0f0a8446210314e682057a084be4e # v1.2.0
+  )
+  FetchContent_GetProperties(spectra)
+  if(NOT spectra_POPULATED)
+    FetchContent_Populate(spectra)
+  endif()
+  add_library(Spectra::Spectra INTERFACE IMPORTED)
+  target_include_directories(Spectra::Spectra INTERFACE ${spectra_SOURCE_DIR}/include)
+endif()
+
 # Add subdirectories for building the project
 add_subdirectory(src/cpp)
 add_subdirectory(src/cpp/bindings)
