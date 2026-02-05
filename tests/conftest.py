@@ -78,7 +78,7 @@ def qapp_cls() -> type[Application]:
 @pytest.fixture(params=["real", "complex"])
 def use_real(request: pytest.FixtureRequest) -> bool:
     """Import and return the pairinteraction module, either real or complex version."""
-    return request.param == "real"
+    return bool(request.param == "real")
 
 
 @pytest.fixture
