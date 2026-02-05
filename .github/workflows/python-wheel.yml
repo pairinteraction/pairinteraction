@@ -2,7 +2,7 @@ name: Python Wheel
 
 on:
   push:
-    branches: ["*"]
+    branches: ["master"]
     tags: ["v*.*.*"]  # and run on tags that describe new versions
   pull_request:
     types: [opened, reopened, synchronize]

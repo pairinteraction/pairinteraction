@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-    branches: ["*"]
+    branches: ["master"]
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_call:
