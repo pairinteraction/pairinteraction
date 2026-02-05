@@ -16,10 +16,28 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor.green_tensor_base import Permitivity
-    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
+    from pairinteraction.units import (
+        ArrayLike,
+        NDArray,
+        PintArray,  # noqa: F401  # required for sphinx
+        PintArrayLike,
+        PintFloat,
+    )
 
 
 class GreenTensorCavity(GreenTensorBase):
+    """Green tensor for two atoms in a cavity (between two infinite planar surfaces).
+
+    Examples:
+        >>> from pairinteraction.green_tensor import GreenTensorCavity
+        >>> gt = GreenTensorCavity([0, 0, 0], [10, 0, 0], z1=-5, z2=5, unit="micrometer")
+        >>> transition_energy = 2  # h * GHz
+        >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
+        >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
+        151.77 / bohr
+
+    """
+
     def __init__(
         self,
         pos1: ArrayLike | PintArrayLike,
