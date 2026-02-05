@@ -2,8 +2,7 @@ name: SonarCloud
 
 on:
   push:
-    branches:
-      - master
+    branches: ["master"]
 
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
