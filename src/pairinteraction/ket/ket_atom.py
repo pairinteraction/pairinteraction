@@ -61,7 +61,7 @@ class KetAtom(KetBase):
         >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
         ('Yb174_mqdt', 60.049, 1.0, 1.0)
         >>> print(ket_mqdt)
-        |Yb174:S=0.4,nu=60.0,L=1.0,J=1,1⟩
+        |Yb174:S=0.0,nu=60.0,L=1.0,J=1,1⟩
 
     """
 
