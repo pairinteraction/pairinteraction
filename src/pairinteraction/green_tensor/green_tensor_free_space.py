@@ -92,7 +92,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         pos2_m = np.array(self.pos2_au) * au_to_meter
         epsilon = get_electric_permittivity(self.epsilon, omega_au, "hartree")
 
-        omega = ureg.Quantity(omega_au, "hartree").to("Hz", "spectroscopy")
+        omega = ureg.Quantity(omega_au, "hartree").to("hbar Hz", "spectroscopy")
         omega_hz = omega.magnitude
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
