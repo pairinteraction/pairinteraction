@@ -16,10 +16,28 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor.green_tensor_base import Permitivity
-    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
+    from pairinteraction.units import (
+        ArrayLike,
+        NDArray,
+        PintArray,  # noqa: F401  # required for sphinx
+        PintArrayLike,
+        PintFloat,
+    )
 
 
 class GreenTensorSurface(GreenTensorBase):
+    """Green tensor for two atoms near a single infinite surface.
+
+    Examples:
+        >>> from pairinteraction.green_tensor import GreenTensorSurface
+        >>> gt = GreenTensorSurface([0, 0, 0], [10, 0, 0], z=-5, unit="micrometer")
+        >>> transition_energy = 2  # h * GHz
+        >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
+        >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
+        172.51 / bohr
+
+    """
+
     def __init__(
         self,
         pos1: ArrayLike | PintArrayLike,
