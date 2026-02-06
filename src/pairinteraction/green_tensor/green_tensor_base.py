@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable, TypeAlias, overload
+from typing import TYPE_CHECKING, Callable, overload
 
 import numpy as np
 
@@ -12,6 +12,8 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from collections.abc import Collection
+
+    from typing_extensions import TypeAlias
 
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
