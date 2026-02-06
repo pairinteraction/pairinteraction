@@ -9,7 +9,7 @@ import numpy as np
 import scipy.constants as const
 from typing_extensions import override
 
-from pairinteraction.green_tensor import utils
+from pairinteraction.green_tensor.calc_dynamic_green_tensor import green_tensor_total
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
 from pairinteraction.units import QuantityScalar, ureg
 
@@ -114,9 +114,7 @@ class GreenTensorCavity(GreenTensorBase):
         epsilon2 = evaluate_relative_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
-        gt = utils.green_tensor_total(
-            pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
-        )
+        gt = green_tensor_total(pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au
