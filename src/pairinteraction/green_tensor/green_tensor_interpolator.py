@@ -31,12 +31,12 @@ class GreenTensorInterpolator:
         >>> from pairinteraction.green_tensor import GreenTensorInterpolator
         >>> gt = GreenTensorInterpolator()
         >>> distance_mum = 5
-        >>> omega = 1
+        >>> transition_energy = 1  # planck_constant * GHz
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_mum**3)
         >>> tensor_unit = "hartree / (e * micrometer)^2"
         >>> gt.set_constant(1, 1, tensor, tensor_unit)
         GreenTensorInterpolator(...)
-        >>> tensor_sph = gt.get(1, 1, omega, omega_unit="Hz", unit=tensor_unit, scaled=True, coordinates="spherical")
+        >>> tensor_sph = gt.get(1, 1, transition_energy, "planck_constant * GHz", unit=tensor_unit, scaled=True)
         >>> print(tensor_sph.diagonal())
         [ 0.008 -0.016  0.008]
 
@@ -122,9 +122,9 @@ class GreenTensorInterpolator:
         kappa1: int,
         kappa2: int,
         tensors: Collection[PintArray],
-        omegas: Collection[PintFloat],
+        transition_energies: Collection[PintFloat],
         tensors_unit: None = None,
-        omegas_unit: None = None,
+        transition_energies_unit: None = None,
         *,
         from_coordinates: Coordinates = "cartesian",
         from_scaled: bool = False,
@@ -136,9 +136,9 @@ class GreenTensorInterpolator:
         kappa1: int,
         kappa2: int,
         tensors: Collection[NDArray],
-        omegas: Collection[float],
+        transition_energies: Collection[float],
         tensors_unit: str,
-        omegas_unit: str,
+        transition_energies_unit: str,
         *,
         from_coordinates: Coordinates = "cartesian",
         from_scaled: bool = False,
@@ -149,24 +149,24 @@ class GreenTensorInterpolator:
         kappa1: int,
         kappa2: int,
         tensors: Collection[PintArray] | Collection[NDArray],
-        omegas: Collection[PintFloat] | Collection[float],
+        transition_energies: Collection[PintFloat] | Collection[float],
         tensors_unit: str | None = None,
-        omegas_unit: str | None = None,
+        transition_energies_unit: str | None = None,
         *,
         from_coordinates: Coordinates = "cartesian",
         from_scaled: bool = False,
     ) -> Self:
-        """Set the entries of the Green tensor for specified omega.
+        """Set the entries of the Green tensor for specified transition energies.
 
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
             tensors: A list of frequency-dependent green tensors in cartesian coordinates.
-            omegas: A list of angular frequencies at which the green tensors are defined.
+            transition_energies: A list of transition energies at which the green tensors are defined.
             tensors_unit: The unit of the tensor.
                 Default None, which means that the tensor must be given as pint object.
-            omegas_unit: The unit of the angular frequencies.
-                Default None, which means that the angular frequencies must be given as pint object.
+            transition_energies_unit: The unit of the transition energies.
+                Default None, which means that the transition energies must be given as pint object.
             from_coordinates: The coordinate system in which the tensor is given.
                 Default "cartesian".
             from_scaled: Whether the prefactor for the interaction strength
@@ -181,7 +181,10 @@ class GreenTensorInterpolator:
         if not all(t.shape == (3**kappa1, 3**kappa2) for t in tensors):  # type: ignore [union-attr]
             raise ValueError("The tensors must be of shape (3**kappa1, 3**kappa2).")
 
-        omegas_au = [QuantityScalar.convert_user_to_au(omega, omegas_unit, "energy") for omega in omegas]
+        omegas_au = [
+            QuantityScalar.convert_user_to_au(omega, transition_energies_unit, "energy")
+            for omega in transition_energies
+        ]
         prefactors = [1.0] * len(tensors)
         if not from_scaled:
             prefactors = [GreenTensorBase._get_prefactor_au(kappa1, kappa2, omega) for omega in omegas_au]
@@ -196,8 +199,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         unit: None = None,
         *,
         scaled: bool = False,
@@ -209,8 +212,8 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         *,
         unit: str,
         scaled: bool = False,
@@ -221,14 +224,14 @@ class GreenTensorInterpolator:
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         unit: str | None = None,
         *,
         scaled: bool = False,
         coordinates: Coordinates = "spherical",
     ) -> PintArray | NDArray:
-        """Get the Green tensor in the given coordinates for the given ranks kappa1, kappa2 and frequency omega.
+        """Get the Green tensor in the given coordinates for the given ranks kappa1, kappa2 and transition energy.
 
         kappa = 1 corresponds to dipole operator with the basis
             - spherical: [p_{1,-1}, p_{1,0}, p_{1,1}]
@@ -238,10 +241,10 @@ class GreenTensorInterpolator:
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega: The angular frequency at which to evaluate the Green tensor.
-                Use omega=0 for the static limit.
-            omega_unit: The unit of the angular frequency.
-                Default None, which means that the angular frequency must be given as pint object (or is 0).
+            transition_energy: The transition energy at which to evaluate the Green tensor.
+                Use transition_energy=0 for the static limit.
+            transition_energy_unit: The unit of the transition energy.
+                Default None, which means that the transition energy must be given as pint object (or is 0).
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
             scaled: If True, the Green tensor is returned with the prefactor for the interaction
@@ -257,7 +260,7 @@ class GreenTensorInterpolator:
         if coordinates != "spherical":
             raise NotImplementedError("Only spherical coordinates are currently implemented for get.")
 
-        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+        omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
 
         entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
         kappa_to_dim = {1: 3, 2: 6}
