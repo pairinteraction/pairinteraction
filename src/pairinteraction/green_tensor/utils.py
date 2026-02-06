@@ -39,6 +39,7 @@ def green_tensor_homogeneous(
 
     The function used is from equation 2 of the paper:
     "Dispersionless subradiant photon storage in one-dimensional emitter chains"
+    https://doi.org/10.1103/PhysRevA.108.L051702
 
     We calculate the scaled Green Tensor, i.e.
     .. math::
@@ -92,7 +93,9 @@ def branch(epsilon: complex, k: float, k_rho: complex) -> complex:
 
 """The following functions are used from Appendix B of the paper:
 "Modified dipole-dipole interaction and dissipation in an atomic ensemble near surfaces"
+https://doi.org/10.1103/PhysRevA.97.053841
 and are needed to calculate the scattering Green Tensor for two atoms between two planar surfaces.
+We try to keep the same notation (in particular the same function names) as in the paper.
 """
 
 
@@ -311,9 +314,10 @@ def Gp(  # noqa: PLR0911
     and the second part is along the real axis from 2*k_maj to an upper limit.
 
     The methods for evaluating these integrals are explained in the papers:
-    - "Accurate and efficient computation of the Green's tensor for stratified media" section III.A
+    - "Accurate and efficient computation of the Green's tensor for stratified media"
+        section III.A (https://doi.org/10.1103/PhysRevE.62.5797)
     - "Challenges in Computational Electromagnetics: Analysis and Optimization of Planar Multilayered Structures"
-        section 2.4.1
+        section 2.4.1 (https://doi.org/10.5075/epfl-thesis-5122)
     """
 
 
