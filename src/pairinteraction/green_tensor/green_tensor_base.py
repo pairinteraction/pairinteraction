@@ -161,8 +161,8 @@ class GreenTensorBase(ABC):
 
     @staticmethod
     def _get_dimension(kappa1: int, kappa2: int, scaled: bool) -> list[Dimension]:
-        dimension_dd: Dimension = "scaled_green_tensor_dd" if scaled else "green_tensor_dd"
-        dimension: list[Dimension] = [dimension_dd] + ["inverse_distance"] * (kappa1 + kappa2 - 2)
+        dimension_dd: Dimension = "scaled_green_tensor_00" if scaled else "green_tensor_00"
+        dimension: list[Dimension] = [dimension_dd] + ["inverse_distance"] * (kappa1 + kappa2)
         return dimension
 
     @overload
