@@ -13,6 +13,8 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 if TYPE_CHECKING:
     from collections.abc import Collection
 
+    from typing_extensions import TypeAlias
+
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
         ArrayLike,
@@ -23,7 +25,7 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-    Permitivity = complex | Callable[[PintFloat], complex]
+    PermittivityLike: TypeAlias = complex | Callable[[PintFloat], complex]
 
 
 class GreenTensorBase(ABC):
@@ -227,8 +229,8 @@ class GreenTensorBase(ABC):
         )
 
 
-def get_electric_permittivity(
-    epsilon: Permitivity, transition_energy: float, transition_energy_unit: str | None = None
+def evaluate_relative_permittivity(
+    epsilon: PermittivityLike, transition_energy: float, transition_energy_unit: str | None = None
 ) -> complex:
     """Get the electric permittivity for the given frequency.
 

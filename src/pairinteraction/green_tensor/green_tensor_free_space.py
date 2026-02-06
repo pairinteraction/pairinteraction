@@ -10,13 +10,13 @@ import scipy.constants as const
 from typing_extensions import override
 
 from pairinteraction.green_tensor import utils
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permittivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor.green_tensor_base import Permitivity
+    from pairinteraction.green_tensor.green_tensor_base import PermittivityLike
     from pairinteraction.units import (
         ArrayLike,
         NDArray,
@@ -62,7 +62,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         """
         super().__init__(pos1, pos2, unit, static_limit, interaction_order)
 
-    def set_relative_permittivity(self, epsilon: Permitivity) -> Self:
+    def set_relative_permittivity(self, epsilon: PermittivityLike) -> Self:
         """Set the relative permittivity of the system.
 
         Args:
@@ -87,7 +87,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = get_electric_permittivity(self.epsilon, transition_energy_au, "hartree")
+        epsilon = evaluate_relative_permittivity(self.epsilon, transition_energy_au, "hartree")
 
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
 
