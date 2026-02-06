@@ -177,8 +177,6 @@ class SystemPair(SystemBase[BasisPair]):
                 for the interpolation of the Green tensor.
 
         """
-        if green_tensor.pos1_au is None or green_tensor.pos2_au is None:
-            raise ValueError("The positions of the atoms in the Green tensor must be set before using it.")
         self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
         use_real = isinstance(self, SystemPairReal)
 
