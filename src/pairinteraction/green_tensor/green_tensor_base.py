@@ -109,7 +109,7 @@ class GreenTensorBase(ABC):
                 Default None, which means that the result is returned as pint object.
             scaled: If True, the Green tensor is returned with the prefactor for the interaction
                 already included (the unit has to be adopted accordingly).
-                Default False returns the bare Green tensor.
+                Default False, which means that the bare Green tensor is returned.
 
         Returns:
             The Green tensor as a 2D array in cartesian coordinates.
