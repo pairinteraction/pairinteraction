@@ -214,7 +214,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
     }
 
-    if (user_defined_green_tensor_interpolator) {
+    if (green_tensor_interpolator) {
         throw std::invalid_argument(
             "Cannot set interaction order if a user-defined green tensor interpolator is set.");
     }
@@ -233,7 +233,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
-    if (user_defined_green_tensor_interpolator) {
+    if (green_tensor_interpolator) {
         throw std::invalid_argument(
             "Cannot set distance vector if a user-defined green tensor interpolator is set.");
     }
@@ -254,7 +254,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
             "Cannot set green tensor interpolator if a finite distance vector is set.");
     }
 
-    user_defined_green_tensor_interpolator = green_tensor_interpolator;
+    this->green_tensor_interpolator = green_tensor_interpolator;
 
     return *this;
 }
@@ -266,8 +266,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis2 = basis->get_basis2();
 
     std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator_ptr;
-    if (user_defined_green_tensor_interpolator) {
-        green_tensor_interpolator_ptr = user_defined_green_tensor_interpolator;
+    if (green_tensor_interpolator) {
+        green_tensor_interpolator_ptr = green_tensor_interpolator;
     } else {
         green_tensor_interpolator_ptr = std::make_shared<const GreenTensorInterpolator<Scalar>>(
             construct_green_tensor_interpolator<Scalar>(distance_vector, interaction_order));
