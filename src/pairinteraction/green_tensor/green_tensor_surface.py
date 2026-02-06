@@ -128,5 +128,5 @@ class GreenTensorSurface(GreenTensorBase):
             pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
         )
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
-        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomc units
+        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au

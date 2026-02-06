@@ -518,8 +518,6 @@ def real_axis_integral(
     args = (k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
 
     # Estimate the upper limit for the real axis integral
-    k_vac = omega / const.c  # magnitude of wave vector in vacuum
-    k0 = k_vac * np.sqrt(epsilon0)
     upper_limit = np.sqrt((745 / h) ** 2 + 1)
 
     real_real, _ = quad(

@@ -143,7 +143,7 @@ class GreenTensorBase(ABC):
         if kappa1 == 1 and kappa2 == 1:
             speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
             factor = (transition_energy_au / speed_of_light_au) ** 2
-            factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+            factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomic units
             factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
             return factor
         raise NotImplementedError("Only dipole-dipole Green tensor prefactor is currently implemented.")
