@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 
 
 def green_tensor_homogeneous(
-    r_a: NDArray, r_b: NDArray, omega: float, epsilon0: complex, *, only_real_part: bool = False
+    pos1: NDArray, pos2: NDArray, omega: float, epsilon0: complex, *, only_real_part: bool = False
 ) -> NDArray:
     r"""Homogeneous Green Tensor for two atoms in cartesian coordinates in an infinite homogeneous medium.
 
@@ -45,8 +45,8 @@ def green_tensor_homogeneous(
         \frac{\omega^2}{\hbar \epsilon_0 c^2} G(r_\alpha, r_\beta, \omega)
 
     Args:
-        r_a: Position vector of atom A in meters
-        r_b: Position vector of atom B in meters
+        pos1: Position vector of atom A in meters
+        pos2: Position vector of atom B in meters
         omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
@@ -57,7 +57,7 @@ def green_tensor_homogeneous(
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
     k0 = k_vac * np.sqrt(epsilon0)  # magnitude of wave vector in medium with permittivity epsilon0
-    r = r_a - r_b
+    r = pos1 - pos2
     r_norm = np.linalg.norm(r)
 
     # this is missing a 1/k0**2 compared to the paper, we absorb this in the scaled prefactor, see line below
@@ -146,7 +146,7 @@ def D(r_plus: complex, r_minus: complex, kz: complex, h: float) -> complex:
 
 
 @njit(cache=True)
-def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_diff: float) -> complex:
     """Calculate the numerator term A_plus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -155,7 +155,7 @@ def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
         kz: Perpendicular wave vector component in the medium between the two surfaces (1/m)
         h: Distance between the two surfaces (m)
         z_ges: Total z-coordinate (m)
-        z_ab: Difference in z-coordinates (m)
+        z_diff: Difference in z-coordinates (m)
 
     Returns: The value of the numerator term A_plus (dimensionless, complex)
 
@@ -163,12 +163,12 @@ def A_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
-        + 2 * r_plus * r_minus * np.cos(kz * z_ab) * np.exp(1j * kz * h)
+        + 2 * r_plus * r_minus * np.cos(kz * z_diff) * np.exp(1j * kz * h)
     ) / D(r_plus, r_minus, kz, h)
 
 
 @njit(cache=True)
-def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_diff: float) -> complex:
     """Calculate the numerator term A_minus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -177,7 +177,7 @@ def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
         kz: Perpendicular wave vector component in the medium between the two surfaces (1/m)
         h: Distance between the two surfaces (m)
         z_ges: Total z-coordinate (m)
-        z_ab: Difference in z-coordinates (m)
+        z_diff: Difference in z-coordinates (m)
 
     Returns: The value of the numerator term A_minus (dimensionless, complex)
 
@@ -185,12 +185,12 @@ def A_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
-        - 2 * r_plus * r_minus * np.cos(kz * z_ab) * np.exp(1j * kz * h)
+        - 2 * r_plus * r_minus * np.cos(kz * z_diff) * np.exp(1j * kz * h)
     ) / D(r_plus, r_minus, kz, h)
 
 
 @njit(cache=True)
-def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_diff: float) -> complex:
     """Calculate the numerator term B_plus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -199,7 +199,7 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
         kz: Perpendicular wave vector component in the medium between the two surfaces (1/m)
         h: Distance between the two surfaces (m)
         z_ges: Total z-coordinate (m)
-        z_ab: Difference in z-coordinates (m)
+        z_diff: Difference in z-coordinates (m)
 
     Returns: The value of the numerator term B_plus (dimensionless, complex)
 
@@ -207,12 +207,12 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
-        + 2j * r_plus * r_minus * np.sin(kz * z_ab) * np.exp(1j * kz * h)
+        + 2j * r_plus * r_minus * np.sin(kz * z_diff) * np.exp(1j * kz * h)
     ) / D(r_plus, r_minus, kz, h)
 
 
 @njit(cache=True)
-def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_ab: float) -> complex:
+def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: float, z_diff: float) -> complex:
     """Calculate the numerator term B_minus used in the scattering Green Tensor matrix elements.
 
     Args:
@@ -221,7 +221,7 @@ def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
         kz: Perpendicular wave vector component in the medium between the two surfaces (1/m)
         h: Distance between the two surfaces (m)
         z_ges: Total z-coordinate (m)
-        z_ab: Difference in z-coordinates (m)
+        z_diff: Difference in z-coordinates (m)
 
     Returns: The value of the numerator term B_minus (dimensionless, complex)
 
@@ -229,7 +229,7 @@ def B_minus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: flo
     return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
         + r_plus * np.exp(-1j * kz * (z_ges - h))
-        - 2j * r_plus * r_minus * np.sin(kz * z_ab) * np.exp(1j * kz * h)
+        - 2j * r_plus * r_minus * np.sin(kz * z_diff) * np.exp(1j * kz * h)
     ) / D(r_plus, r_minus, kz, h)
 
 
@@ -242,13 +242,13 @@ def Gs(
     rs_plus: complex,
     rs_minus: complex,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
 ) -> complex:
     """Calculate the Gs part of the scattering Green Tensor."""
     if entry in ["xz", "yz", "zx", "zy", "zz"]:
         return 0
-    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
+    As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_diff)
     J2 = cached_bessel_function_2(k_rho * rho)
     if entry in ["xy", "yx"]:
         return -As_plus / 2 * J2 * math.sin(2 * phi)
@@ -270,16 +270,16 @@ def Gp(  # noqa: PLR0911
     rp_plus: complex,
     rp_minus: complex,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
 ) -> complex:
     """Calculate the Gp part of the scattering Green Tensor."""
     if entry in ["xz", "zx", "yz", "zy"]:
         J1 = cached_bessel_function_1(k_rho * rho)
         if entry == "zx":
-            Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+            Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
             return -1j * (k_rho / kz) * Bp_minus * J1 * math.cos(phi)
-        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
         if entry == "xz":
             return 1j * (k_rho / kz) * Bp_plus * J1 * math.cos(phi)
         if entry == "yz":
@@ -289,11 +289,11 @@ def Gp(  # noqa: PLR0911
 
     if entry == "zz":
         J0 = cached_bessel_function_0(k_rho * rho)
-        Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+        Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
         return -(k_rho**2 / kz**2) * Ap_plus * J0
 
     J2 = cached_bessel_function_2(k_rho * rho)
-    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
+    Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
     if entry in ["xy", "yx"]:
         return Ap_minus / 2 * J2 * math.sin(2 * phi)
 
@@ -361,7 +361,7 @@ def integrand_ellipse(
     rho: float,
     phi: float,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
     real_or_imag: str,
 ) -> complex:
@@ -371,8 +371,8 @@ def integrand_ellipse(
     if k0 == 0 and kz == 0:
         return 0.0
 
-    gs = Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-    gp = Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+    gs = Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_diff, entry)
+    gp = Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_diff, entry)
 
     integrand = prefactor * (k0**2 * gs - kz**2 * gp)
     if real_or_imag == "real":
@@ -391,7 +391,7 @@ def elliptic_integral(
     epsilon1: complex,
     epsilon2: complex,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
     *,
     only_real_part: bool = False,
@@ -407,7 +407,7 @@ def elliptic_integral(
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         z_ges: Sum of the z-positions of the two atoms in meters
-        z_ab: Difference of the z-positions of the two atoms in meters
+        z_diff: Difference of the z-positions of the two atoms in meters
         entry: Entry of the Green tensor to calculate
         only_real_part: If True, only the real part of the integral is calculated (default: False)
 
@@ -425,7 +425,7 @@ def elliptic_integral(
     k_maj = (kl_max + k_vac) / 2  # major axis of ellipse
     k_min = min(k_vac, 1 / rho) if rho != 0 else k_vac
 
-    args = (k_maj, k_min, k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
+    args = (k_maj, k_min, k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_diff, entry)
 
     real_ellipse, _ = quad(integrand_ellipse, np.pi, 0, args=(*args, "real"), epsrel=1e-9, limit=1000)  # type: ignore [arg-type]
     if only_real_part:
@@ -444,7 +444,7 @@ def integrand_real(
     rho: float,
     phi: float,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
     real_or_imag: str,
 ) -> complex:
@@ -465,8 +465,8 @@ def integrand_real(
         1j
         / (4 * np.pi)
         * (
-            k0**2 * Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_ab, entry)
-            - kz**2 * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_ab, entry)
+            k0**2 * Gs(kz, h, k_rho, rho, phi, rs_plus, rs_minus, z_ges, z_diff, entry)
+            - kz**2 * Gp(kz, h, k_rho, rho, phi, rp_plus, rp_minus, z_ges, z_diff, entry)
         )
         * (k_rho / kz)
         * np.exp(1j * kz * h)
@@ -487,7 +487,7 @@ def real_axis_integral(
     epsilon1: complex,
     epsilon2: complex,
     z_ges: float,
-    z_ab: float,
+    z_diff: float,
     entry: Entries,
     *,
     only_real_part: bool = False,
@@ -503,7 +503,7 @@ def real_axis_integral(
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
         z_ges: Sum of the z-positions of the two atoms in meters
-        z_ab: Difference of the z-positions of the two atoms in meters
+        z_diff: Difference of the z-positions of the two atoms in meters
         entry: Entry of the Green tensor to calculate
         upper_limit: Upper limit for the real axis integral (1/m)
         only_real_part: If True, only the real part of the integral is calculated (default: False)
@@ -519,7 +519,7 @@ def real_axis_integral(
     kl_max = max(np.real(k0), np.real(k1), np.real(k2))
     k_maj = (kl_max + k_vac) / 2
 
-    args = (k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_ab, entry)
+    args = (k0, epsilon0, epsilon1, epsilon2, h, rho, phi, z_ges, z_diff, entry)
 
     # Estimate the upper limit for the real axis integral
     upper_limit = np.sqrt((745 / h) ** 2 + 1)
@@ -546,56 +546,76 @@ def real_axis_integral(
 
 
 def green_tensor_scattered(
-    r_a: NDArray,
-    r_b: NDArray,
+    pos1: NDArray,
+    pos2: NDArray,
+    z1: float,
+    z2: float,
     omega: float,
     epsilon0: complex,
     epsilon1: complex,
     epsilon2: complex,
-    h: float,
     *,
     only_real_part: bool = False,
 ) -> NDArray:
     """Assemble the total scattering Green tensor.
 
     Args:
-        r_a: Position vector of atom A (m)
-        r_b: Position vector of atom B (m)
+        pos1: Position vector of atom A (m)
+        pos2: Position vector of atom B (m)
+        z1: z-coordinate of the first surface (m)
+        z2: z-coordinate of the second surface (m)
         omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
-        h: Distance between the two surfaces (m)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
     Returns: The 3x3 Scattering Green Tensor (general complex values) (1/m)
 
     """
-    r = r_a - r_b
-    rho = np.sqrt(r[0] ** 2 + r[1] ** 2)
-    z_alpha = r_a[2]
-    z_beta = r_b[2]
-    z_ges = z_alpha + z_beta
-    z_ab = r[2]
-    phi = np.arccos(r[0] / rho) if rho != 0 else 0
+    if z1 > z2:
+        # Ensure z1 is the lower surface and z2 is the upper surface
+        z1, z2 = z2, z1
+        epsilon1, epsilon2 = epsilon2, epsilon1
+    if not (z1 < pos1[2] < z2 and z1 < pos2[2] < z2):
+        raise ValueError("Both atoms must be located between the two surfaces (i.e. z1 < z_atom < z2).")
+
+    distance = pos1 - pos2
+    height = abs(z1 - z2)
+
+    rho = np.sqrt(distance[0] ** 2 + distance[1] ** 2)
+    phi = np.arccos(distance[0] / rho) if rho != 0 else 0
+
+    z_ges = pos1[2] + pos2[2] - 2 * min(z1, z2)
+    z_diff = pos1[2] - pos2[2]
 
     gt_total = np.zeros((3, 3), dtype=complex)
     for i, ix in enumerate(["x", "y", "z"]):
         for j, jx in enumerate(["x", "y", "z"]):
             entry: Entries = ix + jx  # type: ignore [assignment]
             g_ij_elliptic = elliptic_integral(
-                omega, h, rho, phi, epsilon0, epsilon1, epsilon2, z_ges, z_ab, entry, only_real_part=only_real_part
-            )
-            g_ij_real = real_axis_integral(
                 omega,
-                h,
+                height,
                 rho,
                 phi,
                 epsilon0,
                 epsilon1,
                 epsilon2,
                 z_ges,
-                z_ab,
+                z_diff,
+                entry,
+                only_real_part=only_real_part,
+            )
+            g_ij_real = real_axis_integral(
+                omega,
+                height,
+                rho,
+                phi,
+                epsilon0,
+                epsilon1,
+                epsilon2,
+                z_ges,
+                z_diff,
                 entry,
                 only_real_part=only_real_part,
             )
@@ -608,32 +628,37 @@ def green_tensor_scattered(
 
 
 def green_tensor_total(
-    r_a: NDArray,
-    r_b: NDArray,
+    pos1: NDArray,
+    pos2: NDArray,
+    z1: float,
+    z2: float,
     omega: float,
     epsilon0: complex,
     epsilon1: complex,
     epsilon2: complex,
-    h: float,
     *,
     only_real_part: bool = False,
 ) -> NDArray:
     """Assemble the total Green tensor.
 
     Args:
-        r_a: Position vector of atom A (m)
-        r_b: Position vector of atom B (m)
+        pos1: Position vector of atom A (m)
+        pos2: Position vector of atom B (m)
+        z1: z-coordinate of the first surface (m)
+        z2: z-coordinate of the second surface (m)
         omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
-        h: Distance between the two surfaces (m).
+        height: Distance between the two surfaces (m).
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
     Returns: The 3x3 Total Green Tensor (general complex values) m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
 
     """
-    gt_scat = green_tensor_scattered(r_a, r_b, omega, epsilon0, epsilon1, epsilon2, h, only_real_part=only_real_part)
-    gt_hom = green_tensor_homogeneous(r_a, r_b, omega, epsilon0, only_real_part=only_real_part)
+    gt_scat = green_tensor_scattered(
+        pos1, pos2, z1, z2, omega, epsilon0, epsilon1, epsilon2, only_real_part=only_real_part
+    )
+    gt_hom = green_tensor_homogeneous(pos1, pos2, omega, epsilon0, only_real_part=only_real_part)
 
     return gt_scat + gt_hom
