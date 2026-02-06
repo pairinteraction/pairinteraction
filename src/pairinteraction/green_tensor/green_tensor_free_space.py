@@ -82,9 +82,6 @@ class GreenTensorFreeSpace(GreenTensorBase):
             The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units (i.e. 1/bohr).
 
         """
-        if self.pos1_au is None or self.pos2_au is None:
-            raise RuntimeError("Atom positions have to be set before calculating the Green tensor.")
-
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter

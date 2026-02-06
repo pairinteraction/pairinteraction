@@ -204,7 +204,7 @@ class GreenTensorBase(ABC):
             from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator as GTIClass
 
         if self.static_limit and not (transition_energies is None and transition_energies_unit is None):
-            raise ValueError("You should not specify a frequency range when static limit is set.")
+            raise ValueError("You must not specify a frequency range when static limit is set.")
 
         if self.static_limit:
             gti = GTIClass()
@@ -222,7 +222,9 @@ class GreenTensorBase(ABC):
             gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
             return gti
 
-        raise ValueError("You must either specify omegas or set static_limit to True to get an interpolator object.")
+        raise ValueError(
+            "You must either specify transition_energies or set static_limit to True to get an interpolator object."
+        )
 
 
 def get_electric_permittivity(
