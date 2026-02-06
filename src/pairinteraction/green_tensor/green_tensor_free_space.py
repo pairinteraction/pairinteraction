@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.constants as const
+from typing_extensions import override
 
 from pairinteraction.green_tensor import utils
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permittivity
@@ -72,6 +73,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         self.epsilon = epsilon
         return self
 
+    @override
     def _get_scaled_dipole_dipole_au(self, transition_energy_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for free space in atomic units.
 
