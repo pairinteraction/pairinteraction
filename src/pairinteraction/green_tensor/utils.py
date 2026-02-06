@@ -43,7 +43,7 @@ def green_tensor_homogeneous(
     Args:
         r_a: Position vector of atom A in meters
         r_b: Position vector of atom B in meters
-        omega: Angular frequency in Hz
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium (dimensionless, complex)
         only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
 
@@ -395,7 +395,7 @@ def elliptic_integral(
     """Evaluate the elliptic part of the integral.
 
     Args:
-        omega: Angular frequency in Hz
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
         h: Distance between the two surfaces in meters
         rho: In-plane distance between the two atoms in meters
         phi: Angle between the in-plane distance vector and the x-axis in radians
@@ -491,7 +491,7 @@ def real_axis_integral(
     """Evaluate the real axis part of the integral.
 
     Args:
-        omega: Angular frequency in Hz
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
         h: Distance between the two surfaces in meters
         rho: In-plane distance between the two atoms in meters
         phi: Angle between the in-plane distance vector and the x-axis in radians
@@ -559,7 +559,7 @@ def green_tensor_scattered(
     Args:
         r_a: Position vector of atom A (m)
         r_b: Position vector of atom B (m)
-        omega: Angular frequency in (1/s)
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
@@ -621,7 +621,7 @@ def green_tensor_total(
     Args:
         r_a: Position vector of atom A (m)
         r_b: Position vector of atom B (m)
-        omega: Angular frequency in (1/s)
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
         epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
         epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
         epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
