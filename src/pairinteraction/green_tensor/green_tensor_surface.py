@@ -10,13 +10,13 @@ import scipy.constants as const
 from typing_extensions import override
 
 from pairinteraction.green_tensor import utils
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, get_electric_permittivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
 from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor.green_tensor_base import Permitivity
+    from pairinteraction.green_tensor.green_tensor_base import PermittivityLike
     from pairinteraction.units import (
         ArrayLike,
         NDArray,
@@ -68,9 +68,9 @@ class GreenTensorSurface(GreenTensorBase):
         """
         super().__init__(pos1, pos2, unit, static_limit, interaction_order)
         self.surface_z_au = QuantityScalar.convert_user_to_au(z, unit, "distance")
-        self.surface_epsilon: Permitivity = 1e9  # Almost perfect mirror # TODO make utils be able to handle inf
+        self.surface_epsilon: PermittivityLike = 1e9  # Almost perfect mirror # TODO make utils be able to handle inf
 
-    def set_relative_permittivities(self, epsilon: Permitivity, surface_epsilon: Permitivity) -> Self:
+    def set_relative_permittivities(self, epsilon: PermittivityLike, surface_epsilon: PermittivityLike) -> Self:
         """Set the relative permittivities of the system.
 
         Args:
@@ -97,7 +97,7 @@ class GreenTensorSurface(GreenTensorBase):
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = get_electric_permittivity(self.epsilon, transition_energy_au, "hartree")
+        epsilon = evaluate_relative_permittivity(self.epsilon, transition_energy_au, "hartree")
 
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
 
@@ -112,7 +112,7 @@ class GreenTensorSurface(GreenTensorBase):
         else:
             raise ValueError("Both atoms must be located either above or below the surface.")
 
-        epsilon1 = get_electric_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
+        epsilon1 = evaluate_relative_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
         epsilon2 = epsilon
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
