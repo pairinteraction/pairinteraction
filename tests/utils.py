@@ -69,7 +69,6 @@ class PairinteractionModule(Protocol):
     KetPair: type[pi.KetPair]
     BasisPair: type[pi.BasisPair]
     SystemPair: type[pi.SystemPair]
-    GreenTensor: type[pi.GreenTensor]
     EffectiveSystemPair: type[pi.EffectiveSystemPair]
     C3: type[pi.C3]
     C6: type[pi.C6]

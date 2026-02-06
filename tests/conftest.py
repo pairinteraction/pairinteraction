@@ -13,6 +13,7 @@ from pint import UnitRegistry
 if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.config.argparsing import Parser
+    from pairinteraction.green_tensor import GreenTensorInterpolator
     from pairinteraction_gui.app import Application
 
     from .utils import PairinteractionModule
@@ -75,9 +76,14 @@ def qapp_cls() -> type[Application]:
 
 
 @pytest.fixture(params=["real", "complex"])
-def pi_module(request: pytest.FixtureRequest) -> PairinteractionModule:
+def use_real(request: pytest.FixtureRequest) -> bool:
     """Import and return the pairinteraction module, either real or complex version."""
-    use_real = request.param == "real"
+    return bool(request.param == "real")
+
+
+@pytest.fixture
+def pi_module(use_real: bool) -> PairinteractionModule:
+    """Import and return the pairinteraction module, either real or complex version."""
     if use_real:
         import pairinteraction.real as pi_real
 
@@ -86,3 +92,16 @@ def pi_module(request: pytest.FixtureRequest) -> PairinteractionModule:
     import pairinteraction as pi_complex
 
     return pi_complex
+
+
+@pytest.fixture
+def green_tensor_interpolator_class(use_real: bool) -> type[GreenTensorInterpolator]:
+    """Import and return the GreenTensorInterpolator class, either real or complex version."""
+    if use_real:
+        from pairinteraction.green_tensor import GreenTensorInterpolatorReal as GTIClassReal
+
+        return GTIClassReal
+
+    from pairinteraction.green_tensor import GreenTensorInterpolator as GTIClassComplex
+
+    return GTIClassComplex
