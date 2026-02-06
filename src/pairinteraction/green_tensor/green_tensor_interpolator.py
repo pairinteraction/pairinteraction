@@ -60,28 +60,6 @@ class GreenTensorInterpolator:
     def __str__(self) -> str:
         return self.__repr__()
 
-    @overload
-    def set_constant(
-        self,
-        kappa1: int,
-        kappa2: int,
-        tensor: PintArray,
-        tensor_unit: None = None,
-        *,
-        coordinates: Coordinates = "cartesian",
-    ) -> Self: ...
-
-    @overload
-    def set_constant(
-        self,
-        kappa1: int,
-        kappa2: int,
-        tensor: NDArray,
-        tensor_unit: str,
-        *,
-        coordinates: Coordinates = "cartesian",
-    ) -> Self: ...
-
     def set_constant(
         self,
         kappa1: int,
@@ -116,34 +94,6 @@ class GreenTensorInterpolator:
         scaled_tensor_au = QuantityArray.convert_user_to_au(tensor, tensor_unit, dimension)
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, scaled_tensor_au)
         return self
-
-    @overload
-    def set_list(
-        self,
-        kappa1: int,
-        kappa2: int,
-        tensors: Collection[PintArray],
-        transition_energies: Collection[PintFloat],
-        tensors_unit: None = None,
-        transition_energies_unit: None = None,
-        *,
-        coordinates: Coordinates = "cartesian",
-        scaled: bool = False,
-    ) -> Self: ...
-
-    @overload
-    def set_list(
-        self,
-        kappa1: int,
-        kappa2: int,
-        tensors: Collection[NDArray],
-        transition_energies: Collection[float],
-        tensors_unit: str,
-        transition_energies_unit: str,
-        *,
-        coordinates: Coordinates = "cartesian",
-        scaled: bool = False,
-    ) -> Self: ...
 
     def set_list(
         self,
