@@ -23,7 +23,8 @@ Coordinates = Literal["cartesian", "spherical"]
 class GreenTensorInterpolator:
     """Green tensor interpolator for the multipole pair interactions.
 
-    This class allows to define constant or frequency-dependent Green tensor interpolators,
+    This class is mainly used internally, a user usually only has to access the GreenTensor classes.
+    It allows to define constant or frequency-dependent Green tensor interpolators,
     which can then be used for the interaction of a :class:`SystemPair`
     (see :meth:`SystemPair._set_green_tensor_interpolator`).
 
