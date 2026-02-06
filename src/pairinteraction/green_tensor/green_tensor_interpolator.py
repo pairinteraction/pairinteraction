@@ -68,7 +68,7 @@ class GreenTensorInterpolator:
         tensor: PintArray,
         tensor_unit: None = None,
         *,
-        from_coordinates: Coordinates = "cartesian",
+        coordinates: Coordinates = "cartesian",
     ) -> Self: ...
 
     @overload
@@ -79,7 +79,7 @@ class GreenTensorInterpolator:
         tensor: NDArray,
         tensor_unit: str,
         *,
-        from_coordinates: Coordinates = "cartesian",
+        coordinates: Coordinates = "cartesian",
     ) -> Self: ...
 
     def set_constant(
@@ -89,7 +89,7 @@ class GreenTensorInterpolator:
         tensor: NDArray | PintArray,
         tensor_unit: str | None = None,
         *,
-        from_coordinates: Coordinates = "cartesian",
+        coordinates: Coordinates = "cartesian",
     ) -> Self:
         r"""Set the scaled Green tensor to a constant entry.
 
@@ -103,11 +103,11 @@ class GreenTensorInterpolator:
                 (see :meth:`GreenTensorBase._get_prefactor_au`).
             tensor_unit: The unit of the tensor.
                 Default None, which means that the tensor must be given as pint object.
-            from_coordinates: The coordinate system in which the tensor is given.
+            coordinates: The coordinate system in which the tensor is given.
                 Default "cartesian".
 
         """
-        if from_coordinates != "cartesian":
+        if coordinates != "cartesian":
             raise NotImplementedError("Only cartesian coordinates are currently implemented for set_constant.")
         if tensor.shape != (3**kappa1, 3**kappa2) or tensor.ndim != 2:  # type: ignore [union-attr]
             raise ValueError("The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).")
@@ -127,8 +127,8 @@ class GreenTensorInterpolator:
         tensors_unit: None = None,
         transition_energies_unit: None = None,
         *,
-        from_coordinates: Coordinates = "cartesian",
-        from_scaled: bool = False,
+        coordinates: Coordinates = "cartesian",
+        scaled: bool = False,
     ) -> Self: ...
 
     @overload
@@ -141,8 +141,8 @@ class GreenTensorInterpolator:
         tensors_unit: str,
         transition_energies_unit: str,
         *,
-        from_coordinates: Coordinates = "cartesian",
-        from_scaled: bool = False,
+        coordinates: Coordinates = "cartesian",
+        scaled: bool = False,
     ) -> Self: ...
 
     def set_list(
@@ -154,8 +154,8 @@ class GreenTensorInterpolator:
         tensors_unit: str | None = None,
         transition_energies_unit: str | None = None,
         *,
-        from_coordinates: Coordinates = "cartesian",
-        from_scaled: bool = False,
+        coordinates: Coordinates = "cartesian",
+        scaled: bool = False,
     ) -> Self:
         """Set the entries of the Green tensor for specified transition energies.
 
@@ -168,14 +168,14 @@ class GreenTensorInterpolator:
                 Default None, which means that the tensor must be given as pint object.
             transition_energies_unit: The unit of the transition energies.
                 Default None, which means that the transition energies must be given as pint object.
-            from_coordinates: The coordinate system in which the tensor is given.
+            coordinates: The coordinate system in which the tensor is given.
                 Default "cartesian".
-            from_scaled: Whether the prefactor for the interaction strength
+            scaled: Whether the prefactor for the interaction strength
                 (see :meth:`GreenTensorBase._get_prefactor_au`) is already included in the given tensor.
                 The unit has to be adjusted accordingly. Default False.
 
         """
-        if from_coordinates != "cartesian":
+        if coordinates != "cartesian":
             raise NotImplementedError("Only cartesian coordinates are currently implemented for set_list.")
         if not all(t.ndim == 2 for t in tensors):
             raise ValueError("The tensor must be a list of 2D arrays.")
@@ -187,9 +187,9 @@ class GreenTensorInterpolator:
             for omega in transition_energies
         ]
         prefactors = [1.0] * len(tensors)
-        if not from_scaled:
+        if not scaled:
             prefactors = [GreenTensorBase._get_prefactor_au(kappa1, kappa2, omega) for omega in omegas_au]
-        dimension = GreenTensorBase._get_dimension(kappa1, kappa2, scaled=from_scaled)
+        dimension = GreenTensorBase._get_dimension(kappa1, kappa2, scaled=scaled)
         tensors_au = [QuantityArray.convert_user_to_au(t, tensors_unit, dimension) for t in tensors]
         scaled_tensors_au = [prefactor * t for prefactor, t in zip(prefactors, tensors_au)]
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, scaled_tensors_au, omegas_au)  # type: ignore [arg-type]

@@ -221,7 +221,7 @@ class GreenTensorBase(ABC):
             ]
             gti = GTIClass()
             scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]
-            gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
+            gti.set_list(1, 1, scaled_gt_list, omegas_pint, scaled=True)
             return gti
 
         raise ValueError(
