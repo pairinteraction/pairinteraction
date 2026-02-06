@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable, overload
+from typing import TYPE_CHECKING, Callable, TypeAlias, overload
 
 import numpy as np
 
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-    Permitivity = complex | Callable[[PintFloat], complex]
+    PermittivityLike: TypeAlias = complex | Callable[[PintFloat], complex]
 
 
 class GreenTensorBase(ABC):
@@ -227,8 +227,8 @@ class GreenTensorBase(ABC):
         )
 
 
-def get_electric_permittivity(
-    epsilon: Permitivity, transition_energy: float, transition_energy_unit: str | None = None
+def evaluate_relative_permittivity(
+    epsilon: PermittivityLike, transition_energy: float, transition_energy_unit: str | None = None
 ) -> complex:
     """Get the electric permittivity for the given frequency.
 
