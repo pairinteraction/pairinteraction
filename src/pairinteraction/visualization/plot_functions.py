@@ -53,7 +53,7 @@ def plot_pair_potential(
         fig, ax = plt.subplots()
     else:
         owns_ax = False
-        fig = ax.figure
+        fig = ax.figure  # type: ignore[assignment]
 
     lw = mpl.rcParams["lines.linewidth"]
     ax.plot(distances, np.array(eigenenergies), c="k", lw=lw / 6, zorder=-10)
