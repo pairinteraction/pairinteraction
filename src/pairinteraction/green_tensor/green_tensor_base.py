@@ -66,8 +66,19 @@ class GreenTensorBase(ABC):
         self,
         kappa1: int,
         kappa2: int,
-        transition_energy: float | PintFloat,
-        transition_energy_unit: str | None = None,
+        transition_energy: float,
+        transition_energy_unit: str,
+        unit: str,
+        *,
+        scaled: bool = False,
+    ) -> NDArray: ...
+
+    @overload
+    def get(
+        self,
+        kappa1: int,
+        kappa2: int,
+        transition_energy: PintFloat,
         *,
         unit: str,
         scaled: bool = False,
