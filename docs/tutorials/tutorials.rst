@@ -34,8 +34,6 @@ lifetimes to calculations of pair potentials.
     examples_python/c3_c6_coefficients
     examples_python/state_atom_object
 
-**Examples Demonstrating Basic Usage**
-
 Some examples showcasing the usage of custom green tensors.
 
 .. nbgallery::
