@@ -67,32 +67,33 @@ def test_omega_dependent_green_tensor_interpolator(
     green_tensor_interpolator_class: type[GreenTensorInterpolator],
     distance_mum: float,
 ) -> None:
-    """Test the interpolation for different values of omega."""
+    """Test the interpolation for different values of the transition energy."""
     # Define an simple linear omega-dependent green tensor interpolator
     # note that at least four entries are needed for the applied spline interpolation.
     gti = green_tensor_interpolator_class()
-    omegas = np.linspace(1, 5, 20)  # GHz
+    transition_energies = [ureg.Quantity(i, "planck_constant * GHz") for i in np.linspace(1, 5, 20)]
     tensors = [
-        np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / (omega**2 * distance_mum**3)
-        for (i, omega) in enumerate(omegas, start=1)
+        np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / (freq.m**2 * distance_mum**3)
+        for (i, freq) in enumerate(transition_energies, start=1)
     ]
-    tensor_unit = "1 / micrometer"
-    gti.set_list(1, 1, tensors, omegas, tensors_unit=tensor_unit, omegas_unit="GHz")
+    tensors_pint = [ureg.Quantity(tensor, "1/micrometer") for tensor in tensors]
+    gti.set_list(1, 1, tensors_pint, transition_energies)
 
     # Check the interpolation
     tensors_spherical = [
-        np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / (omega**2 * distance_mum**3)
-        for (i, omega) in enumerate(omegas, start=1)
+        np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / (freq.m**2 * distance_mum**3)
+        for (i, freq) in enumerate(transition_energies, start=1)
     ]
 
-    for idx in range(3, len(omegas) - 3):  # the interpolation near the edges is bad, so we only check the middle
-        tensor = gti.get(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit, coordinates="spherical")
+    # the interpolation near the edges is bad, so we only check the middle
+    for idx in range(3, len(transition_energies) - 3):
+        tensor = gti.get(1, 1, transition_energies[idx], unit="1/micrometer", coordinates="spherical")
         np.testing.assert_allclose(tensor, tensors_spherical[idx])
 
-    for ind in range(3, len(omegas) - 5):
+    for ind in range(3, len(transition_energies) - 5):
         ind1, ind2 = ind, ind + 1
-        omega = (omegas[ind1] + omegas[ind2]) / 2
+        transition_energy = (transition_energies[ind1] + transition_energies[ind2]) / 2
         reference_tensor = (tensors_spherical[ind1] + tensors_spherical[ind2]) / 2
 
-        tensor = gti.get(1, 1, omega=omega, omega_unit="GHz", unit=tensor_unit, coordinates="spherical")
+        tensor = gti.get(1, 1, transition_energy, unit="1/micrometer", coordinates="spherical")
         np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)

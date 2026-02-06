@@ -54,8 +54,8 @@ class GreenTensorBase(ABC):
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         unit: None = None,
         *,
         scaled: bool = False,
@@ -66,8 +66,8 @@ class GreenTensorBase(ABC):
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         *,
         unit: str,
         scaled: bool = False,
@@ -77,8 +77,8 @@ class GreenTensorBase(ABC):
         self,
         kappa1: int,
         kappa2: int,
-        omega: float | PintFloat,
-        omega_unit: str | None = None,
+        transition_energy: float | PintFloat,
+        transition_energy_unit: str | None = None,
         unit: str | None = None,
         *,
         scaled: bool = False,
@@ -90,10 +90,10 @@ class GreenTensorBase(ABC):
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega: The angular frequency at which to evaluate the Green tensor.
+            transition_energy: The transition energy at which to evaluate the Green tensor.
                 Only needed if the Green tensor is frequency dependent.
-            omega_unit: The unit of the angular frequency.
-                Default None, which means that the angular frequency must be given as pint object.
+            transition_energy_unit: The unit of the transition energy.
+                Default None, which means that the transition energy must be given as pint object.
             unit: The unit to which to convert the result.
                 Default None, which means that the result is returned as pint object.
             scaled: If True, the Green tensor is returned with the prefactor for the interaction
@@ -104,7 +104,7 @@ class GreenTensorBase(ABC):
             The Green tensor as a 2D array in cartesian coordinates.
 
         """
-        omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+        omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
         omega_for_calculation = 0 if self.static_limit else omega_au
 
         if kappa1 == 1 and kappa2 == 1:
@@ -117,10 +117,10 @@ class GreenTensorBase(ABC):
         return QuantityArray.convert_au_to_user(scaled_gt_au / prefactor, dimension, unit)
 
     @abstractmethod
-    def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray: ...
+    def _get_scaled_dipole_dipole_au(self, transition_energy_au: float) -> NDArray: ...
 
     @staticmethod
-    def _get_prefactor_au(kappa1: int, kappa2: int, omega_au: float) -> float:
+    def _get_prefactor_au(kappa1: int, kappa2: int, transition_energy_au: float) -> float:
         r"""Get the prefactor to get the interaction strength from the Green tensor.
 
         The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)
@@ -137,13 +137,13 @@ class GreenTensorBase(ABC):
         Args:
             kappa1: The rank of the first multipole operator.
             kappa2: The rank of the second multipole operator.
-            omega_au: The angular frequency at which to evaluate the Green tensor in atomic units (hartree).
+            transition_energy_au: The transition energy at which to evaluate the Green tensor in atomic units (hartree).
 
         """
         if kappa1 == 1 and kappa2 == 1:
             speed_of_light_au: float = ureg.Quantity(1, "speed_of_light").to_base_units().m
-            factor = (omega_au / speed_of_light_au) ** 2
-            factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomc units
+            factor = (transition_energy_au / speed_of_light_au) ** 2
+            factor /= 1 / (4 * np.pi)  # hbar * epsilon_0 = 1 / (4*np.pi) in atomic units
             factor /= (2 * np.pi) ** 2  # TODO check omega angular or normal frequency mistake somewhere?
             return factor
         raise NotImplementedError("Only dipole-dipole Green tensor prefactor is currently implemented.")
@@ -159,18 +159,22 @@ class GreenTensorBase(ABC):
 
     @overload
     def get_interpolator(
-        self, omegas: Collection[PintFloat] | PintArray, omegas_unit: None = None, *, use_real: bool
+        self,
+        transition_energies: Collection[PintFloat] | PintArray,
+        transition_energies_unit: None = None,
+        *,
+        use_real: bool,
     ) -> GreenTensorInterpolator: ...
 
     @overload
     def get_interpolator(
-        self, omegas: Collection[float] | NDArray, omegas_unit: str, *, use_real: bool
+        self, transition_energies: Collection[float] | NDArray, transition_energies_unit: str, *, use_real: bool
     ) -> GreenTensorInterpolator: ...
 
     def get_interpolator(
         self,
-        omegas: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,
-        omegas_unit: str | None = None,
+        transition_energies: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,
+        transition_energies_unit: str | None = None,
         *,
         use_real: bool,
     ) -> GreenTensorInterpolator:
@@ -188,7 +192,7 @@ class GreenTensorBase(ABC):
         else:
             from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator as GTIClass
 
-        if self.static_limit and not (omegas is None and omegas_unit is None):
+        if self.static_limit and not (transition_energies is None and transition_energies_unit is None):
             raise ValueError("You should not specify a frequency range when static limit is set.")
 
         if self.static_limit:
@@ -197,8 +201,11 @@ class GreenTensorBase(ABC):
             gti.set_constant(1, 1, scaled_gt_au)
             return gti
 
-        if omegas is not None:
-            omegas_pint = [QuantityScalar.convert_user_to_pint(omega, omegas_unit, "energy") for omega in omegas]
+        if transition_energies is not None:
+            omegas_pint = [
+                QuantityScalar.convert_user_to_pint(omega, transition_energies_unit, "energy")
+                for omega in transition_energies
+            ]
             gti = GTIClass()
             scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]
             gti.set_list(1, 1, scaled_gt_list, omegas_pint, from_scaled=True)
@@ -207,21 +214,23 @@ class GreenTensorBase(ABC):
         raise ValueError("You must either specify omegas or set static_limit to True to get an interpolator object.")
 
 
-def get_electric_permittivity(epsilon: Permitivity, omega: float, omega_unit: str | None = None) -> complex:
+def get_electric_permittivity(
+    epsilon: Permitivity, transition_energy: float, transition_energy_unit: str | None = None
+) -> complex:
     """Get the electric permittivity for the given frequency.
 
     Args:
         epsilon: The electric permittivity (dimensionless) or a callable function that returns it.
-        omega: The angular frequency at which to evaluate the permittivity.
+        transition_energy: The angular frequency at which to evaluate the permittivity.
             Only needed if the permittivity is frequency dependent.
-        omega_unit: The unit of the angular frequency.
+        transition_energy_unit: The unit of the angular frequency.
             Default None, which means that the angular frequency must be given as pint object.
 
     Returns:
         The electric permittivity at the given angular frequency.
 
     """
-    omega_au = QuantityScalar.convert_user_to_au(omega, omega_unit, "energy")
+    omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
     if np.isscalar(epsilon):
         return epsilon  # type: ignore [return-value]
     if callable(epsilon):

@@ -88,11 +88,11 @@ class GreenTensorCavity(GreenTensorBase):
         self.surface2_epsilon = epsilon2
         return self
 
-    def _get_scaled_dipole_dipole_au(self, omega_au: float) -> NDArray:
+    def _get_scaled_dipole_dipole_au(self, transition_energy_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for a cavity in atomic units.
 
         Args:
-            omega_au: The angular frequency in atomic units at which to evaluate the Green tensor.
+            transition_energy_au: The transition energy in atomic units at which to evaluate the Green tensor.
 
         Returns:
             The dipole dipole Green tensor in cartesian coordinates as a 3x3 array in atomic units (i.e. 1/bohr).
@@ -104,10 +104,9 @@ class GreenTensorCavity(GreenTensorBase):
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
         pos1_m = np.array(self.pos1_au) * au_to_meter
         pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = get_electric_permittivity(self.epsilon, omega_au, "hartree")
+        epsilon = get_electric_permittivity(self.epsilon, transition_energy_au, "hartree")
 
-        omega = ureg.Quantity(omega_au, "hartree").to("hbar Hz")
-        omega_hz = omega.magnitude
+        omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz").magnitude
 
         surface1_z_m = self.surface1_z_au * au_to_meter
         surface2_z_m = self.surface2_z_au * au_to_meter
@@ -120,16 +119,16 @@ class GreenTensorCavity(GreenTensorBase):
             raise ValueError("Both atoms must be located inside the cavity between the two surfaces.")
 
         if surface2_z_m < surface1_z_m:
-            epsilon_top = get_electric_permittivity(self.surface1_epsilon, omega_au, "hartree")
-            epsilon_bottom = get_electric_permittivity(self.surface2_epsilon, omega_au, "hartree")
+            epsilon_top = get_electric_permittivity(self.surface1_epsilon, transition_energy_au, "hartree")
+            epsilon_bottom = get_electric_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
         else:
-            epsilon_top = get_electric_permittivity(self.surface2_epsilon, omega_au, "hartree")
-            epsilon_bottom = get_electric_permittivity(self.surface1_epsilon, omega_au, "hartree")
+            epsilon_top = get_electric_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
+            epsilon_bottom = get_electric_permittivity(self.surface1_epsilon, transition_energy_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_total(
             pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
         )
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
-        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomc units
+        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au
