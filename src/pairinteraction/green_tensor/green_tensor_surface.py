@@ -99,30 +99,23 @@ class GreenTensorSurface(GreenTensorBase):
 
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
 
-        surface_z = self.surface_z_au * au_to_meter
-
-        # Assume two surfaces, but the second surface has the same permittivity as the inbetween medium
-        height = 2 * max(abs(surface_z - pos1_m[2]), abs(surface_z - pos2_m[2]))
-        if pos1_m[2] < surface_z and pos2_m[2] < surface_z:
-            surface2_z = surface_z - height
-        elif pos1_m[2] > surface_z and pos2_m[2] > surface_z:
-            surface2_z = surface_z + height
+        # Assume two surfaces, where the further apart atom is located in the center
+        # but the second surface has the same permittivity as the inbetween medium
+        z1_m = self.surface_z_au * au_to_meter
+        height = 2 * max(abs(pos1_m[2] - z1_m), abs(pos2_m[2] - z1_m))
+        if pos1_m[2] < z1_m and pos2_m[2] < z1_m:
+            z2_m = z1_m - height
+        elif pos1_m[2] > z1_m and pos2_m[2] > z1_m:
+            z2_m = z1_m + height
         else:
             raise ValueError("Both atoms must be located either above or below the surface.")
 
-        pos1_shifted_m = pos1_m - np.array([0, 0, min(surface_z, surface2_z)])
-        pos2_shifted_m = pos2_m - np.array([0, 0, min(surface_z, surface2_z)])
-
-        if surface2_z < surface_z:
-            epsilon_top = get_electric_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
-            epsilon_bottom = epsilon
-        else:
-            epsilon_top = epsilon
-            epsilon_bottom = get_electric_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
+        epsilon1 = get_electric_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
+        epsilon2 = epsilon
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_total(
-            pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
+            pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
         )
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units

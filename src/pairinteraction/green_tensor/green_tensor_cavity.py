@@ -104,27 +104,14 @@ class GreenTensorCavity(GreenTensorBase):
         epsilon = get_electric_permittivity(self.epsilon, transition_energy_au, "hartree")
 
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz").magnitude
-
-        surface1_z_m = self.surface1_z_au * au_to_meter
-        surface2_z_m = self.surface2_z_au * au_to_meter
-
-        height = abs(surface1_z_m - surface2_z_m)
-        pos1_shifted_m = pos1_m - np.array([0, 0, min(surface1_z_m, surface2_z_m)])
-        pos2_shifted_m = pos2_m - np.array([0, 0, min(surface1_z_m, surface2_z_m)])
-
-        if not 0 < pos1_shifted_m[2] < height or not 0 < pos2_shifted_m[2] < height:
-            raise ValueError("Both atoms must be located inside the cavity between the two surfaces.")
-
-        if surface2_z_m < surface1_z_m:
-            epsilon_top = get_electric_permittivity(self.surface1_epsilon, transition_energy_au, "hartree")
-            epsilon_bottom = get_electric_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
-        else:
-            epsilon_top = get_electric_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
-            epsilon_bottom = get_electric_permittivity(self.surface1_epsilon, transition_energy_au, "hartree")
+        z1_m = self.surface1_z_au * au_to_meter
+        z2_m = self.surface2_z_au * au_to_meter
+        epsilon1 = get_electric_permittivity(self.surface1_epsilon, transition_energy_au, "hartree")
+        epsilon2 = get_electric_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = utils.green_tensor_total(
-            pos1_shifted_m, pos2_shifted_m, omega_hz, epsilon, epsilon_top, epsilon_bottom, height, only_real_part=True
+            pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
         )
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
