@@ -31,12 +31,12 @@ class GreenTensorInterpolator:
         >>> from pairinteraction.green_tensor import GreenTensorInterpolator
         >>> gt = GreenTensorInterpolator()
         >>> distance_mum = 5
-        >>> omega = 1
+        >>> transition_energy = 1  # planck_constant * GHz
         >>> tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / (distance_mum**3)
         >>> tensor_unit = "hartree / (e * micrometer)^2"
         >>> gt.set_constant(1, 1, tensor, tensor_unit)
         GreenTensorInterpolator(...)
-        >>> tensor_sph = gt.get(1, 1, omega, omega_unit="Hz", unit=tensor_unit, scaled=True, coordinates="spherical")
+        >>> tensor_sph = gt.get(1, 1, transition_energy, "planck_constant * GHz", unit=tensor_unit, scaled=True)
         >>> print(tensor_sph.diagonal())
         [ 0.008 -0.016  0.008]
 
@@ -156,7 +156,7 @@ class GreenTensorInterpolator:
         from_coordinates: Coordinates = "cartesian",
         from_scaled: bool = False,
     ) -> Self:
-        """Set the entries of the Green tensor for specified omega.
+        """Set the entries of the Green tensor for specified transition energies.
 
         Args:
             kappa1: The rank of the first multipole operator.
