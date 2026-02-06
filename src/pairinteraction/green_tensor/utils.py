@@ -13,7 +13,11 @@ import scipy.constants as const
 from numba import njit
 from scipy.integrate import quad
 
-from pairinteraction.green_tensor.bessel_function import bessel_function_0, bessel_function_1, bessel_function_2
+from pairinteraction.green_tensor.bessel_function import (
+    cached_bessel_function_0,
+    cached_bessel_function_1,
+    cached_bessel_function_2,
+)
 
 if TYPE_CHECKING:
     from pairinteraction.units import NDArray
@@ -245,10 +249,10 @@ def Gs(
     if entry in ["xz", "yz", "zx", "zy", "zz"]:
         return 0
     As_plus = A_plus(rs_plus, rs_minus, kz, h, z_ges, z_ab)
-    J2 = bessel_function_2(k_rho * rho)
+    J2 = cached_bessel_function_2(k_rho * rho)
     if entry in ["xy", "yx"]:
         return -As_plus / 2 * J2 * math.sin(2 * phi)
-    J0 = bessel_function_0(k_rho * rho)
+    J0 = cached_bessel_function_0(k_rho * rho)
     if entry == "xx":
         return As_plus / 2 * (J0 + J2 * math.cos(2 * phi))
     if entry == "yy":
@@ -271,7 +275,7 @@ def Gp(  # noqa: PLR0911
 ) -> complex:
     """Calculate the Gp part of the scattering Green Tensor."""
     if entry in ["xz", "zx", "yz", "zy"]:
-        J1 = bessel_function_1(k_rho * rho)
+        J1 = cached_bessel_function_1(k_rho * rho)
         if entry == "zx":
             Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
             return -1j * (k_rho / kz) * Bp_minus * J1 * math.cos(phi)
@@ -284,16 +288,16 @@ def Gp(  # noqa: PLR0911
             return -1j * (k_rho / kz) * Bp_plus * J1 * math.sin(phi)
 
     if entry == "zz":
-        J0 = bessel_function_0(k_rho * rho)
+        J0 = cached_bessel_function_0(k_rho * rho)
         Ap_plus = A_plus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
         return -(k_rho**2 / kz**2) * Ap_plus * J0
 
-    J2 = bessel_function_2(k_rho * rho)
+    J2 = cached_bessel_function_2(k_rho * rho)
     Ap_minus = A_minus(rp_plus, rp_minus, kz, h, z_ges, z_ab)
     if entry in ["xy", "yx"]:
         return Ap_minus / 2 * J2 * math.sin(2 * phi)
 
-    J0 = bessel_function_0(k_rho * rho)
+    J0 = cached_bessel_function_0(k_rho * rho)
     if entry == "xx":
         return Ap_minus / 2 * (J0 - J2 * math.cos(2 * phi))
     if entry == "yy":
