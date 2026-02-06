@@ -74,7 +74,9 @@ class GreenTensorCavity(GreenTensorBase):
         self.surface1_epsilon: PermittivityLike = 1e9
         self.surface2_epsilon: PermittivityLike = 1e9
 
-    def set_relative_permittivities(self, epsilon: PermittivityLike, epsilon1: PermittivityLike, epsilon2: PermittivityLike) -> Self:
+    def set_relative_permittivities(
+        self, epsilon: PermittivityLike, epsilon1: PermittivityLike, epsilon2: PermittivityLike
+    ) -> Self:
         """Set the relative permittivities of the system.
 
         Args:
