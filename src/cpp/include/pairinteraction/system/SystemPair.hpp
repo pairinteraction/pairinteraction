@@ -62,7 +62,7 @@ public:
 private:
     int interaction_order{3};
     std::array<real_t, 3> distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
-    std::shared_ptr<const GreenTensorInterpolator<Scalar>> user_defined_green_tensor_interpolator;
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
     void construct_hamiltonian() const override;
 };
