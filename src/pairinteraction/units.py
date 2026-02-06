@@ -47,8 +47,7 @@ Dimension = Literal[
     "c3",
     "c6",
     "green_tensor_00",
-    "green_tensor_dd",
-    "scaled_green_tensor_dd",
+    "scaled_green_tensor_00",
     "identity",
     "arbitrary",
     "zero",
@@ -75,8 +74,7 @@ _CommonUnits: dict[Dimension, str] = {
     "c3": "hartree * bohr^3",  # 1 hartree * bohr^3 = 1 bohr ** 3 * m_e / au_time ** 2
     "c6": "hartree * bohr^6",  # 1 hartree * bohr^6 = 1 bohr ** 6 * m_e / au_time ** 2
     "green_tensor_00": "meter",  # unit for green tensor with kappa1 = kappa2 = 0
-    "green_tensor_dd": "1 / meter",  # unit for green tensor with kappa1 = kappa2 = 1
-    "scaled_green_tensor_dd": "hartree / (e * meter)^2",  # unit for scaled green tensor with kappa1 = kappa2 = 1
+    "scaled_green_tensor_00": "hartree / e^2",  # unit for scaled green tensor with kappa1 = kappa2 = 1
     "identity": "",  # 1 dimensionless
     "arbitrary": "",  # 1 dimensionless
     "zero": "",  # 1 dimensionless
