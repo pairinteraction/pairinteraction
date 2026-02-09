@@ -91,6 +91,11 @@ mypy = [
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
 ]
+tools = [
+  "dbmanager",
+  "benchmarking"
+]
+
 dev = [
   { include-group = "docs" },
   { include-group = "tests" },
@@ -103,6 +108,11 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
 pairinteraction = "pairinteraction.cli:main"
+
+
+[tool.uv.sources]
+dbmanager = { path = "tools/dbmanager", editable = true }
+benchmarking = { path = "tools/benchmarking", editable = true }
 
 
 [tool.scikit-build]
@@ -178,7 +188,6 @@ test-command = [
   "cd /d {project}",  # /d is required for windows to change the drive, the second cd then does effectively nothing
 ]
 repair-wheel-command = "delvewheel repair --exclude mkl_core.2.dll --exclude mkl_tbb_thread.2.dll --ignore-in-wheel -w {dest_dir} {wheel}"
-
 
 [tool.check-wheel-contents]
 ignore = [

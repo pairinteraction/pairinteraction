@@ -200,7 +200,7 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
     # Format the axes
     axes[-1].set_ylabel("Duration (s)")
     x_left, x_right = axes[-1].get_xlim()
-    axes[-1].set_xlim(x_left, x_right + 2)
+    axes[-1].set_xlim(x_left, x_right + 2.5)
     axes[-1].legend(loc="lower right", frameon=False)
     sns.despine(ax=axes[-1])
 
@@ -233,23 +233,30 @@ def run() -> None:
     """Run the benchmarking."""
     parser = argparse.ArgumentParser(
         description="Run benchmarks for the PairInteraction software.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        required=True,
+        help="output directory for the benchmarking results",
     )
     parser.add_argument(
         "--reps",
         type=int,
-        help="Number of repetitions for each benchmark.",
+        help="number of repetitions for each benchmark",
         default=1,
     )
     parser.add_argument(
         "--download-missing",
         action="store_true",
-        help="Download missing database files.",
+        help="download missing database files",
         default=False,
     )
     parser.add_argument(
         "--floats",
         action="store_true",
-        help="Run all benchmarks.",
+        help="run benchmarks comparing floating point data types",
         default=False,
     )
     args = parser.parse_args()
@@ -306,7 +313,7 @@ def run() -> None:
     system = {"Linux": "linux", "Windows": "win", "Darwin": "macosx"}.get(platform.system(), "unknown")
     identifier = f"{__version__}-cp{sys.version_info.major}{sys.version_info.minor}-{system}"
     cpuname = "-".join(get_cpu_info().get("brand_raw", "unknown").lower().split())
-    outdir = Path.cwd().parent.parent / "data" / "benchmarking_results"
+    outdir = args.out
     plot_path = (
         outdir
         / f"{hashed.hexdigest()[:10]}_{identifier}_{cpuname}_reps{args.reps}{'_floats' if args.floats else ''}.png"
@@ -314,6 +321,7 @@ def run() -> None:
     settings_path = outdir / f"{hashed.hexdigest()[:10]}.json"
 
     # Save plot and settings
+    plot_path.parent.mkdir(parents=True, exist_ok=True)
     plot_results(all_results, plot_path)
     with settings_path.open("w", encoding="utf-8") as f:
         json.dump(settings, f, indent=4)
