@@ -5,3 +5,4 @@ typing_extensions>=4.7
 numpy>=2.0.2
 tbb-devel==2022.3.0; sys_platform != 'darwin'
 mkl-devel==2025.3.0; sys_platform != 'darwin'
+setuptools>=75.0.0 # required for building sphinx-tabs from github
