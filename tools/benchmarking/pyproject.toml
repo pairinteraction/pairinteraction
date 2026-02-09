@@ -5,7 +5,7 @@
 name = "benchmarking"
 version = "0.2.0"
 description = "Tools for running benchmarks"
-requires-python = "==3.12.*"
+requires-python = ">=3.9"
 dependencies = [
     "pairinteraction>=1.4.0",
     "pandas>=2.2.3",
@@ -25,7 +25,7 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
-benchmark = "benchmarking:run"
+benchmarking = "benchmarking:run"
 
 # if you want to use the package from test-pypi or a local path, uncomment the following lines
 # [tool.uv.sources]

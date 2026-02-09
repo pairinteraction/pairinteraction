@@ -168,17 +168,18 @@ def optimize() -> None:
     """Optimize the parquet database files for performance."""
     parser = argparse.ArgumentParser(
         description="Optimize the parquet database files for performance. By default, the files from the source "
-        "directory are overwritten with the optimized files."
+        "directory are overwritten with the optimized files.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--out", type=Path, default=get_source_directory(), help="The output directory for the shrunk parquet files."
+        "--out", type=Path, default=get_source_directory(), help="output directory for the shrunk parquet files"
     )
     parser.add_argument(
         "--compression",
         type=str,
         choices=["UNCOMPRESSED", "SNAPPY", "ZSTD"],
         default="ZSTD",
-        help="The algorithm for compressing the parquet files.",
+        help="algorithm for compressing the parquet files",
     )
     args = parser.parse_args()
 
@@ -220,35 +221,35 @@ def optimize() -> None:
 def shrink() -> None:
     """Shrink the parquet database files by filtering and compressing the data."""
     parser = argparse.ArgumentParser(
-        description="Shrink the parquet database files by filtering and compressing the data. The default output "
-        "directory is the data/database directory of the PairInteraction repository."
+        description="Shrink the parquet database files by filtering and compressing the data.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path(__file__).parent.parent.parent.parent.parent / "data" / "database",
-        help="The output directory for the shrunk parquet files.",
+        required=True,
+        help="output directory for the shrunk parquet files",
     )
     parser.add_argument(
         "--compression",
         type=str,
         choices=["UNCOMPRESSED", "SNAPPY", "ZSTD"],
         default="ZSTD",
-        help="The algorithm for compressing the parquet files.",
+        help="algorithm for compressing the parquet files",
     )
     parser.add_argument(
-        "--min_nu", type=int, default=50, help="The minimum value for the effective principal quantum number."
+        "--min_nu", type=int, default=50, help="minimum value for the effective principal quantum number"
     )
     parser.add_argument(
-        "--max_nu", type=int, default=70, help="The maximum value for the effective principal quantum number."
+        "--max_nu", type=int, default=70, help="maximum value for the effective principal quantum number"
     )
     parser.add_argument(
         "--low_nu",
         type=int,
         default=20,
-        help="The value for the effective principal quantum number up to which low-lying states are included.",
+        help="value for the effective principal quantum number up to which low-lying states are included",
     )
-    parser.add_argument("--max_f", type=int, default=5, help="The maximum value for the quantum number f.")
+    parser.add_argument("--max_f", type=int, default=5, help="maximum value for the quantum number f")
     args = parser.parse_args()
 
     path_target = args.out
