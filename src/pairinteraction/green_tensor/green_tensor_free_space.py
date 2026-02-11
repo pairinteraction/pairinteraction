@@ -74,6 +74,11 @@ class GreenTensorFreeSpace(GreenTensorBase):
         return self
 
     @override
+    def _get_scaled_au(self, kappa1: int, kappa2: int, transition_energy_au: float) -> NDArray:
+        if kappa1 == 1 and kappa2 == 1:
+            return self._get_scaled_dipole_dipole_au(transition_energy_au)
+        raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
+
     def _get_scaled_dipole_dipole_au(self, transition_energy_au: float) -> NDArray:
         """Calculate the dipole dipole Green tensor in cartesian coordinates for free space in atomic units.
 

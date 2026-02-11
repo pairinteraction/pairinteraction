@@ -120,17 +120,14 @@ class GreenTensorBase(ABC):
         omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
         omega_for_calculation = 0 if self.static_limit else omega_au
 
-        if kappa1 == 1 and kappa2 == 1:
-            scaled_gt_au = self._get_scaled_dipole_dipole_au(omega_for_calculation)
-        else:
-            raise NotImplementedError("Only dipole-dipole Green tensors are currently implemented.")
+        scaled_gt_au = self._get_scaled_au(kappa1, kappa2, omega_for_calculation)
 
         prefactor = 1 if scaled else self._get_prefactor_au(kappa1, kappa2, omega_au)
         dimension = self._get_dimension(kappa1, kappa2, scaled)
         return QuantityArray.convert_au_to_user(scaled_gt_au / prefactor, dimension, unit)
 
     @abstractmethod
-    def _get_scaled_dipole_dipole_au(self, transition_energy_au: float) -> NDArray: ...
+    def _get_scaled_au(self, kappa1: int, kappa2: int, transition_energy_au: float) -> NDArray: ...
 
     @staticmethod
     def _get_prefactor_au(kappa1: int, kappa2: int, transition_energy_au: float) -> float:
