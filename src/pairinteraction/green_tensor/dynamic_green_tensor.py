@@ -32,7 +32,47 @@ if TYPE_CHECKING:
     def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 
-def green_tensor_homogeneous(
+__all__ = ["dynamic_green_tensor_homogeneous", "dynamic_green_tensor_scattered", "dynamic_green_tensor_total"]
+
+
+def dynamic_green_tensor_total(
+    pos1: NDArray,
+    pos2: NDArray,
+    z1: float,
+    z2: float,
+    omega: float,
+    epsilon0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    *,
+    only_real_part: bool = False,
+) -> NDArray:
+    """Assemble the total Green tensor.
+
+    Args:
+        pos1: Position vector of atom A (m)
+        pos2: Position vector of atom B (m)
+        z1: z-coordinate of the first surface (m)
+        z2: z-coordinate of the second surface (m)
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
+        epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
+        epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
+        epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
+        height: Distance between the two surfaces (m).
+        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
+
+    Returns: The 3x3 Total Green Tensor (general complex values) m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
+
+    """
+    gt_hom = dynamic_green_tensor_homogeneous(pos1, pos2, omega, epsilon0, only_real_part=only_real_part)
+    gt_scat = dynamic_green_tensor_scattered(
+        pos1, pos2, z1, z2, omega, epsilon0, epsilon1, epsilon2, only_real_part=only_real_part
+    )
+
+    return gt_hom + gt_scat
+
+
+def dynamic_green_tensor_homogeneous(
     pos1: NDArray, pos2: NDArray, omega: float, epsilon0: complex, *, only_real_part: bool = False
 ) -> NDArray:
     r"""Homogeneous Green Tensor for two atoms in cartesian coordinates in an infinite homogeneous medium.
@@ -74,6 +114,88 @@ def green_tensor_homogeneous(
     if only_real_part:
         return np.real(result)
     return result
+
+
+def dynamic_green_tensor_scattered(
+    pos1: NDArray,
+    pos2: NDArray,
+    z1: float,
+    z2: float,
+    omega: float,
+    epsilon0: complex,
+    epsilon1: complex,
+    epsilon2: complex,
+    *,
+    only_real_part: bool = False,
+) -> NDArray:
+    """Assemble the total scattering Green tensor.
+
+    Args:
+        pos1: Position vector of atom A (m)
+        pos2: Position vector of atom B (m)
+        z1: z-coordinate of the first surface (m)
+        z2: z-coordinate of the second surface (m)
+        omega: Angular frequency (i.e. 2*pi*f) in 1/s
+        epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
+        epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
+        epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
+        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
+
+    Returns: The 3x3 Scattering Green Tensor (general complex values) (1/m)
+
+    """
+    if z1 > z2:
+        # Ensure z1 is the lower surface and z2 is the upper surface
+        z1, z2 = z2, z1
+        epsilon1, epsilon2 = epsilon2, epsilon1
+    if not (z1 < pos1[2] < z2 and z1 < pos2[2] < z2):
+        raise ValueError("Both atoms must be located between the two surfaces (i.e. z1 < z_atom < z2).")
+
+    distance = pos1 - pos2
+    height = abs(z1 - z2)
+
+    rho = np.sqrt(distance[0] ** 2 + distance[1] ** 2)
+    phi = np.arccos(distance[0] / rho) if rho != 0 else 0
+
+    z_ges = pos1[2] + pos2[2] - 2 * min(z1, z2)
+    z_diff = pos1[2] - pos2[2]
+
+    gt_total = np.zeros((3, 3), dtype=complex)
+    for i, ix in enumerate(["x", "y", "z"]):
+        for j, jx in enumerate(["x", "y", "z"]):
+            entry: Entries = ix + jx  # type: ignore [assignment]
+            g_ij_elliptic = elliptic_integral(
+                omega,
+                height,
+                rho,
+                phi,
+                epsilon0,
+                epsilon1,
+                epsilon2,
+                z_ges,
+                z_diff,
+                entry,
+                only_real_part=only_real_part,
+            )
+            g_ij_real = real_axis_integral(
+                omega,
+                height,
+                rho,
+                phi,
+                epsilon0,
+                epsilon1,
+                epsilon2,
+                z_ges,
+                z_diff,
+                entry,
+                only_real_part=only_real_part,
+            )
+            # prefactor see comment in dynamic_green_tensor_homogeneous
+            prefactor = 1 / (epsilon0 * const.epsilon_0 * const.hbar)
+            value = prefactor * (g_ij_elliptic + g_ij_real)
+            gt_total[i][j] = value
+
+    return gt_total
 
 
 @njit(cache=True)
@@ -547,122 +669,3 @@ def real_axis_integral(
         epsrel=1e-9,
     )
     return real_real + 1j * imag_real
-
-
-def green_tensor_scattered(
-    pos1: NDArray,
-    pos2: NDArray,
-    z1: float,
-    z2: float,
-    omega: float,
-    epsilon0: complex,
-    epsilon1: complex,
-    epsilon2: complex,
-    *,
-    only_real_part: bool = False,
-) -> NDArray:
-    """Assemble the total scattering Green tensor.
-
-    Args:
-        pos1: Position vector of atom A (m)
-        pos2: Position vector of atom B (m)
-        z1: z-coordinate of the first surface (m)
-        z2: z-coordinate of the second surface (m)
-        omega: Angular frequency (i.e. 2*pi*f) in 1/s
-        epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
-        epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
-        epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
-        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
-
-    Returns: The 3x3 Scattering Green Tensor (general complex values) (1/m)
-
-    """
-    if z1 > z2:
-        # Ensure z1 is the lower surface and z2 is the upper surface
-        z1, z2 = z2, z1
-        epsilon1, epsilon2 = epsilon2, epsilon1
-    if not (z1 < pos1[2] < z2 and z1 < pos2[2] < z2):
-        raise ValueError("Both atoms must be located between the two surfaces (i.e. z1 < z_atom < z2).")
-
-    distance = pos1 - pos2
-    height = abs(z1 - z2)
-
-    rho = np.sqrt(distance[0] ** 2 + distance[1] ** 2)
-    phi = np.arccos(distance[0] / rho) if rho != 0 else 0
-
-    z_ges = pos1[2] + pos2[2] - 2 * min(z1, z2)
-    z_diff = pos1[2] - pos2[2]
-
-    gt_total = np.zeros((3, 3), dtype=complex)
-    for i, ix in enumerate(["x", "y", "z"]):
-        for j, jx in enumerate(["x", "y", "z"]):
-            entry: Entries = ix + jx  # type: ignore [assignment]
-            g_ij_elliptic = elliptic_integral(
-                omega,
-                height,
-                rho,
-                phi,
-                epsilon0,
-                epsilon1,
-                epsilon2,
-                z_ges,
-                z_diff,
-                entry,
-                only_real_part=only_real_part,
-            )
-            g_ij_real = real_axis_integral(
-                omega,
-                height,
-                rho,
-                phi,
-                epsilon0,
-                epsilon1,
-                epsilon2,
-                z_ges,
-                z_diff,
-                entry,
-                only_real_part=only_real_part,
-            )
-            # prefactor see comment in green_tensor_homogeneous
-            prefactor = 1 / (epsilon0 * const.epsilon_0 * const.hbar)
-            value = prefactor * (g_ij_elliptic + g_ij_real)
-            gt_total[i][j] = value
-
-    return gt_total
-
-
-def green_tensor_total(
-    pos1: NDArray,
-    pos2: NDArray,
-    z1: float,
-    z2: float,
-    omega: float,
-    epsilon0: complex,
-    epsilon1: complex,
-    epsilon2: complex,
-    *,
-    only_real_part: bool = False,
-) -> NDArray:
-    """Assemble the total Green tensor.
-
-    Args:
-        pos1: Position vector of atom A (m)
-        pos2: Position vector of atom B (m)
-        z1: z-coordinate of the first surface (m)
-        z2: z-coordinate of the second surface (m)
-        omega: Angular frequency (i.e. 2*pi*f) in 1/s
-        epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
-        epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
-        epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
-        height: Distance between the two surfaces (m).
-        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
-
-    Returns: The 3x3 Total Green Tensor (general complex values) m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
-
-    """
-    gt_scat = green_tensor_scattered(
-        pos1, pos2, z1, z2, omega, epsilon0, epsilon1, epsilon2, only_real_part=only_real_part
-    )
-    gt_hom = green_tensor_homogeneous(pos1, pos2, omega, epsilon0, only_real_part=only_real_part)
-
-    return gt_scat + gt_hom

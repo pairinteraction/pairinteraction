@@ -9,7 +9,7 @@ import numpy as np
 import scipy.constants as const
 from typing_extensions import override
 
-from pairinteraction.green_tensor.calc_dynamic_green_tensor import green_tensor_homogeneous
+from pairinteraction.green_tensor.dynamic_green_tensor import dynamic_green_tensor_homogeneous
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
 from pairinteraction.units import ureg
 
@@ -92,7 +92,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
-        gt = green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
+        gt = dynamic_green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au
