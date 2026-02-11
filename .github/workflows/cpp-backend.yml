@@ -62,6 +62,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'

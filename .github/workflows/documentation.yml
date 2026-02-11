@@ -66,6 +66,8 @@ jobs:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
@@ -97,6 +99,8 @@ jobs:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install PairInteraction into virtual environment
