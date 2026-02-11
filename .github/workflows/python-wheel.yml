@@ -47,6 +47,8 @@ jobs:
     timeout-minutes: 180
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
 
     - name: Log in to the Container registry
       if: runner.os == 'Linux'
@@ -91,6 +93,8 @@ jobs:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
 
     - name: Install uv
       uses: astral-sh/setup-uv@v7
@@ -121,6 +125,8 @@ jobs:
     needs: [sdist]
     steps:
     - uses: actions/checkout@v6
+      with:
+        lfs: true
 
     - name: Install Windows dependencies
       if: runner.os == 'Windows'
