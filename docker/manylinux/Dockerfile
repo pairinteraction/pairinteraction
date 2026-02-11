@@ -35,6 +35,7 @@ COPY --from=builder /tmp/duckdb/src/amalgamation/duckdb.hpp /opt/duckdb/duckdb.h
 
 RUN yum install -y epel-release \
     && yum install -y \
+    git-lfs \
     doctest-devel \
     eigen3-devel \
     fmt-devel \

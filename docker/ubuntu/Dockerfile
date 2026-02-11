@@ -22,7 +22,7 @@ COPY --from=builder /tmp/duckdb/src/amalgamation/duckdb.hpp /opt/duckdb/duckdb.h
 
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
-    cmake build-essential git file \
+    cmake build-essential git git-lfs file \
     doctest-dev libspdlog-dev libeigen3-dev libfmt-dev liblapacke-dev libopenblas-dev \
     libcpp-httplib-dev nlohmann-json3-dev \
     doxygen pandoc \

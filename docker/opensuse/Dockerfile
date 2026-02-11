@@ -28,7 +28,7 @@ COPY --from=builder /usr/src/packages/RPMS/x86_64/cpp-httplib-devel-0.12.5-0.x86
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     patterns-devel-C-C++-devel_C_C++ gcc12-c++ \
-    cmake tar gzip git \
+    cmake tar gzip git git-lfs \
     doctest-devel spdlog-devel eigen3-devel fmt-devel openblas-devel \
     nlohmann_json-devel \
     doxygen pandoc \
