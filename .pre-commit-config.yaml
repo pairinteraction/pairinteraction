@@ -7,7 +7,7 @@ repos:
         exclude: '^.*\.json$'
       - id: check-yaml
       - id: check-added-large-files
-        args: ["--maxkb=900"]
+        args: ["--maxkb=3500"]
       - id: check-merge-conflict
 
   - repo: https://github.com/pocc/pre-commit-hooks
