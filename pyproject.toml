@@ -169,7 +169,6 @@ test-command = [
 [[tool.cibuildwheel.overrides]]  # linux overrides
 select = "*-????linux_*"
 manylinux-x86_64-image = "ghcr.io/pairinteraction/pairinteraction-manylinux:docker"
-config-settings."cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB" = "/opt/duckdb"
 inherit.environment = "append"
 environment.CXXFLAGS = "-march=x86-64-v3"
 repair-wheel-command = "auditwheel repair --exclude libmkl_core.so.2 --exclude libmkl_intel_lp64.so.2 --exclude libmkl_tbb_thread.so.2 -w {dest_dir} {wheel}"
