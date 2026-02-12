@@ -25,6 +25,7 @@ from pairinteraction.system import (
     SystemAtomReal as SystemAtom,
     SystemPairReal as SystemPair,
 )
+from pairinteraction.units import ureg
 
 __all__ = [
     "C3",
@@ -41,4 +42,5 @@ __all__ = [
     "SystemPair",
     "diagonalize",
     "green_tensor",
+    "ureg",
 ]
