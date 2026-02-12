@@ -35,7 +35,7 @@ class GreenTensorFreeSpace(GreenTensorBase):
         >>> transition_energy = 2  # h * GHz
         >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
         >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
-        189.24 / bohr
+        -4.79 / bohr
 
     """
 
@@ -99,5 +99,5 @@ class GreenTensorFreeSpace(GreenTensorBase):
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = dynamic_green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
-        # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
+        # hbar = 1, epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au

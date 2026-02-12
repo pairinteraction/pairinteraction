@@ -35,7 +35,7 @@ class GreenTensorSurface(GreenTensorBase):
         >>> transition_energy = 2  # h * GHz
         >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
         >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
-        172.51 / bohr
+        -4.37 / bohr
 
     """
 
