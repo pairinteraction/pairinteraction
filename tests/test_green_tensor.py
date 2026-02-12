@@ -14,6 +14,7 @@ from pairinteraction.green_tensor.green_tensor_surface import GreenTensorSurface
 
 if TYPE_CHECKING:
     from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
+    from pairinteraction.units import NDArray
 
     from .utils import PairinteractionModule
 
@@ -22,11 +23,7 @@ DISTANCE_VECTOR_MUM_LIST = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 3.5]]
 
 @pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
 def test_static_green_tensor(distance_vector_mum: list[float]) -> None:
-    distance_mum = np.linalg.norm(distance_vector_mum)
-    distance_au = ureg.Quantity(distance_mum, "micrometer").to_base_units().m
-    gt_reference = (
-        np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2
-    ) / distance_au**3
+    gt_reference = reference_green_tensor_vacuum(distance_vector_mum)
 
     gt: GreenTensorBase
     gt = GreenTensorFreeSpace([0, 0, 0], distance_vector_mum, unit="micrometer", static_limit=True)
@@ -68,3 +65,37 @@ def test_static_green_tensor_pair_potential(pi_module: PairinteractionModule, di
         system_pair_vacuum.get_eigenenergies("GHz") - pair_energy_ghz,
         system_pair_free_space.get_eigenenergies("GHz") - pair_energy_ghz,
     )
+
+
+@pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
+def test_vacuum_green_tensor(pi_module: PairinteractionModule, distance_vector_mum: list[float]) -> None:
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+
+    basis = pi_module.BasisAtom("Rb", n=(0, 0), additional_kets=[ket1, ket2])
+    system = pi_module.SystemAtom(basis)
+    pair_energy = ket1.get_energy("GHz") + ket2.get_energy("GHz")
+    basis_pair = pi_module.BasisPair((system, system), energy=(pair_energy - 0.1, pair_energy + 0.1), energy_unit="GHz")
+
+    dd = ket1.get_matrix_element(ket2, "electric_dipole", q=0)
+    gt_reference = reference_green_tensor_vacuum(distance_vector_mum)
+    reference = dd * gt_reference[2, 2] * dd
+
+    # test internal vacuum green tensor
+    system_pair = pi_module.SystemPair(basis_pair)
+    system_pair.set_distance_vector(distance_vector_mum, "micrometer")
+    hamiltonian = system_pair.get_hamiltonian("hartree").toarray()
+    np.testing.assert_allclose(hamiltonian[1, 0], reference)
+
+    # test custom free space vacuum green tensor
+    system_pair = pi_module.SystemPair(basis_pair)
+    gt = GreenTensorFreeSpace([0, 0, 0], distance_vector_mum, unit="micrometer", static_limit=True)
+    system_pair.set_green_tensor(gt)
+    hamiltonian = system_pair.get_hamiltonian("hartree").toarray()
+    np.testing.assert_allclose(hamiltonian[1, 0], reference)
+
+
+def reference_green_tensor_vacuum(distance_vector_mum: list[float]) -> NDArray:
+    distance_mum = np.linalg.norm(distance_vector_mum)
+    distance_au = ureg.Quantity(distance_mum, "micrometer").to_base_units().m
+    return (np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2) / distance_au**3
