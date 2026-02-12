@@ -98,4 +98,7 @@ def test_vacuum_green_tensor(pi_module: PairinteractionModule, distance_vector_m
 def reference_green_tensor_vacuum(distance_vector_mum: list[float]) -> NDArray:
     distance_mum = np.linalg.norm(distance_vector_mum)
     distance_au = ureg.Quantity(distance_mum, "micrometer").to_base_units().m
-    return (np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2) / distance_au**3
+    gt: NDArray = (
+        np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2
+    ) / distance_au**3
+    return gt
