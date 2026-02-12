@@ -98,17 +98,17 @@ def dynamic_green_tensor_homogeneous(
     """
     k_vac = omega / const.c  # magnitude of wave vector in vacuum
     k0 = k_vac * np.sqrt(epsilon0)  # magnitude of wave vector in medium with permittivity epsilon0
-    r = pos1 - pos2
-    r_norm = np.linalg.norm(r)
+    distance_vec = pos2 - pos1
+    distance = np.linalg.norm(distance_vec)
 
     # this is missing a 1/k0**2 compared to the paper, we absorb this in the scaled prefactor, see line below
-    prefactor = np.exp(1j * k0 * r_norm) / (4 * np.pi * r_norm**3)
-    prefactor *= 1 / (epsilon0 * const.epsilon_0 * const.hbar)
-    # epsilon0 from missing k0^2 compared to omega^2/c^2
+    prefactor = np.exp(1j * k0 * distance) / (4 * np.pi * distance**3)
+    prefactor *= 1 / (epsilon0 * const.epsilon_0 * const.hbar)  # epsilon0 from missing k0^2 compared to omega^2/c^2
+    prefactor *= -1  # minus sign from H = - \hbar \sum V_{\alpha\beta} ...
 
     result: NDArray = prefactor * (
-        (k0**2 * r_norm**2 + 1j * k0 * r_norm - 1) * np.eye(3)
-        + (-(k0**2) * r_norm**2 - 3j * k0 * r_norm + 3) * np.outer(r, r) / r_norm**2
+        (k0**2 * distance**2 + 1j * k0 * distance - 1) * np.eye(3)
+        + (-(k0**2) * distance**2 - 3j * k0 * distance + 3) * np.outer(distance_vec, distance_vec) / distance**2
     )
 
     if only_real_part:
@@ -151,7 +151,7 @@ def dynamic_green_tensor_scattered(
     if not (z1 < pos1[2] < z2 and z1 < pos2[2] < z2):
         raise ValueError("Both atoms must be located between the two surfaces (i.e. z1 < z_atom < z2).")
 
-    distance = pos1 - pos2
+    distance = pos2 - pos1
     height = abs(z1 - z2)
 
     rho = np.sqrt(distance[0] ** 2 + distance[1] ** 2)
@@ -160,7 +160,7 @@ def dynamic_green_tensor_scattered(
     z_ges = pos1[2] + pos2[2] - 2 * min(z1, z2)
     z_diff = pos1[2] - pos2[2]
 
-    gt_total = np.zeros((3, 3), dtype=complex)
+    gt_scattered = np.zeros((3, 3), dtype=complex)
     for i, ix in enumerate(["x", "y", "z"]):
         for j, jx in enumerate(["x", "y", "z"]):
             entry: Entries = ix + jx  # type: ignore [assignment]
@@ -191,11 +191,11 @@ def dynamic_green_tensor_scattered(
                 only_real_part=only_real_part,
             )
             # prefactor see comment in dynamic_green_tensor_homogeneous
-            prefactor = 1 / (epsilon0 * const.epsilon_0 * const.hbar)
+            prefactor = -1 / (epsilon0 * const.epsilon_0 * const.hbar)
             value = prefactor * (g_ij_elliptic + g_ij_real)
-            gt_total[i][j] = value
+            gt_scattered[i][j] = value
 
-    return gt_total
+    return gt_scattered
 
 
 @njit(cache=True)

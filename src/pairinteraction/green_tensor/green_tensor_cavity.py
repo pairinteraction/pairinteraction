@@ -35,7 +35,7 @@ class GreenTensorCavity(GreenTensorBase):
         >>> transition_energy = 2  # h * GHz
         >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
         >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
-        151.77 / bohr
+        -3.84 / bohr
 
     """
 
