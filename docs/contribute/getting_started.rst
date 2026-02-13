@@ -51,7 +51,12 @@ encourage exploring `GitHub's educational resources`_.
 Start by forking the PairInteraction repository to your GitHub account by clicking the :github:`"Fork" <fork>` button on
 the repository's page. This action creates your own version of the repository, enabling you to perform changes freely.
 
-Once forked, clone the repository to your local machine to start working on the files directly.
+.. note::
+
+    The repository uses `Git LFS`_ (Git Large File Storage) for local database files. These files are a slimmed-down
+    version of the full database tables and allow you to run tests without having to download the full tables from the
+    internet. Please install Git LFS before cloning, otherwise you may end up with LFS pointer files instead of the
+    actual database files, and tests may fail or have to fetch tables online.
 
 .. code-block:: bash
 
@@ -61,6 +66,8 @@ Familiarize yourself with the repository's architecture. The software is divided
 <tree/master/src/cpp>` with Python bindings and a :github:`Python library <tree/master/src/pairinteraction>`. The Python
 library makes the Python bindings accessible and adds functionality like the perturbative calculation of effective
 Hamiltonians.
+
+.. _git lfs: https://git-lfs.com
 
 2. Set Up a Development Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,7 +115,7 @@ necessary steps:
       mkdir build
       cd build
       cmake ..
-      cmake --build .
+      cmake --build . -j
 
 To ensure your code adheres to the project's coding standards, we highly recommend using the `pre-commit tool`_. Once
 you've installed this tool, integrate it as a pre-commit hook into your local repository with the following command:
@@ -129,14 +136,17 @@ execute:
 3. Implement, Test, and Document Your Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-After applying your changes, run our test cases to ensure that the software is still working. If you built the software
-via ``pip``, run the following command (the virtual environment must be activated):
+After applying your changes, run our test cases to ensure that the software is still working. If built the software via
+``pip``, make sure your virtual environment is activated, then run:
 
 .. code-block:: bash
 
     pytest
 
-If you used ``cmake``, execute the command below in your build directory to run all C++ tests:
+To run the tests using full database tables downloaded from the internet, execute ``pytest --download-missing
+--database-dir ""``.
+
+If built the software with ``cmake``, execute the command below in your build directory to run all C++ tests:
 
 .. code-block:: bash
 
