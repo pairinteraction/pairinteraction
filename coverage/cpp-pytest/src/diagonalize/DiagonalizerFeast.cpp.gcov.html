@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/diagonalize/DiagonalizerFeast.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/diagonalize</a> - DiagonalizerFeast.cpp<span style="font-size: 80%;"> (source / <a href="DiagonalizerFeast.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">53</td>
+            <td class="headerCovTableEntry">89</td>
+            <td class="headerCovTableEntryMed">59.6 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-02-13 13:04:16</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntryMed">71.4 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // SPDX-FileCopyrightText: 2024 PairInteraction Developers</a>
+<a name="2"><span class="lineNum">       2 </span>            : // SPDX-License-Identifier: LGPL-3.0-or-later</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #include &quot;pairinteraction/diagonalize/DiagonalizerFeast.hpp&quot;</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &quot;pairinteraction/enums/FloatType.hpp&quot;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &quot;pairinteraction/utils/eigen_assertion.hpp&quot;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;pairinteraction/utils/eigen_compat.hpp&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<a name="10"><span class="lineNum">      10 </span>            : #include &lt;Eigen/Dense&gt;</a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;cmath&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;optional&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &lt;spdlog/spdlog.h&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
+<a name="15"><span class="lineNum">      15 </span>            : #ifdef WITH_MKL</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &lt;fmt/core.h&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : #include &lt;mkl.h&gt;</a>
+<a name="18"><span class="lineNum">      18 </span>            : #endif // WITH_MKL</a>
+<a name="19"><span class="lineNum">      19 </span>            : </a>
+<a name="20"><span class="lineNum">      20 </span>            : namespace pairinteraction {</a>
+<a name="21"><span class="lineNum">      21 </span>            : #ifdef WITH_MKL</a>
+<a name="22"><span class="lineNum">      22 </span><span class="lineNoCov">          0 : void feast(const char *uplo, const MKL_INT *n, const float *a, const MKL_INT *lda, MKL_INT *fpm,</span></a>
+<a name="23"><span class="lineNum">      23 </span>            :            float *epsout, MKL_INT *loop, const float *emin, const float *emax, MKL_INT *m0,</a>
+<a name="24"><span class="lineNum">      24 </span>            :            float *e, float *x, MKL_INT *m, float *res, MKL_INT *info) {</a>
+<a name="25"><span class="lineNum">      25 </span><span class="lineNoCov">          0 :     sfeast_syev(uplo, n, a, lda, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);</span></a>
+<a name="26"><span class="lineNum">      26 </span><span class="lineNoCov">          0 : }</span></a>
+<a name="27"><span class="lineNum">      27 </span>            : </a>
+<a name="28"><span class="lineNum">      28 </span><span class="lineCov">          1 : void feast(const char *uplo, const MKL_INT *n, const double *a, const MKL_INT *lda, MKL_INT *fpm,</span></a>
+<a name="29"><span class="lineNum">      29 </span>            :            double *epsout, MKL_INT *loop, const double *emin, const double *emax, MKL_INT *m0,</a>
+<a name="30"><span class="lineNum">      30 </span>            :            double *e, double *x, MKL_INT *m, double *res, MKL_INT *info) {</a>
+<a name="31"><span class="lineNum">      31 </span><span class="lineCov">          1 :     dfeast_syev(uplo, n, a, lda, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);</span></a>
+<a name="32"><span class="lineNum">      32 </span><span class="lineCov">          1 : }</span></a>
+<a name="33"><span class="lineNum">      33 </span>            : </a>
+<a name="34"><span class="lineNum">      34 </span><span class="lineCov">          2 : void feast(const char *uplo, const MKL_INT *n, const MKL_Complex8 *a, const MKL_INT *lda,</span></a>
+<a name="35"><span class="lineNum">      35 </span>            :            MKL_INT *fpm, float *epsout, MKL_INT *loop, const float *emin, const float *emax,</a>
+<a name="36"><span class="lineNum">      36 </span>            :            MKL_INT *m0, float *e, MKL_Complex8 *x, MKL_INT *m, float *res, MKL_INT *info) {</a>
+<a name="37"><span class="lineNum">      37 </span><span class="lineCov">          2 :     cfeast_heev(uplo, n, a, lda, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);</span></a>
+<a name="38"><span class="lineNum">      38 </span><span class="lineCov">          2 : }</span></a>
+<a name="39"><span class="lineNum">      39 </span>            : </a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineCov">          3 : void feast(const char *uplo, const MKL_INT *n, const MKL_Complex16 *a, const MKL_INT *lda,</span></a>
+<a name="41"><span class="lineNum">      41 </span>            :            MKL_INT *fpm, double *epsout, MKL_INT *loop, const double *emin, const double *emax,</a>
+<a name="42"><span class="lineNum">      42 </span>            :            MKL_INT *m0, double *e, MKL_Complex16 *x, MKL_INT *m, double *res, MKL_INT *info) {</a>
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">          3 :     zfeast_heev(uplo, n, a, lda, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);</span></a>
+<a name="44"><span class="lineNum">      44 </span><span class="lineCov">          3 : }</span></a>
+<a name="45"><span class="lineNum">      45 </span>            : </a>
+<a name="46"><span class="lineNum">      46 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="47"><span class="lineNum">      47 </span>            : template &lt;typename ScalarLim&gt;</a>
+<a name="48"><span class="lineNum">      48 </span>            : EigenSystemH&lt;Scalar&gt;</a>
+<a name="49"><span class="lineNum">      49 </span><span class="lineCov">          6 : DiagonalizerFeast&lt;Scalar&gt;::dispatch_eigh(const Eigen::SparseMatrix&lt;Scalar, Eigen::RowMajor&gt; &amp;matrix,</span></a>
+<a name="50"><span class="lineNum">      50 </span>            :                                          real_t min_eigenvalue, real_t max_eigenvalue,</a>
+<a name="51"><span class="lineNum">      51 </span>            :                                          double rtol) const {</a>
+<a name="52"><span class="lineNum">      52 </span>            :     using real_lim_t = typename traits::NumTraits&lt;ScalarLim&gt;::real_t;</a>
+<a name="53"><span class="lineNum">      53 </span><span class="lineCov">          6 :     int dim = matrix.rows();</span></a>
+<a name="54"><span class="lineNum">      54 </span>            : </a>
+<a name="55"><span class="lineNum">      55 </span>            :     // Subtract the mean of the diagonal elements from the diagonal</a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          6 :     real_t shift{};</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          6 :     Eigen::MatrixX&lt;ScalarLim&gt; hamiltonian =</span></a>
+<a name="58"><span class="lineNum">      58 </span>            :         this-&gt;template subtract_mean&lt;ScalarLim&gt;(matrix, shift, rtol);</a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            :     // Diagonalize the shifted matrix</a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          6 :     int m0 = std::min(dim, this-&gt;m0);</span></a>
+<a name="62"><span class="lineNum">      62 </span>            : </a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">          6 :     Eigen::VectorX&lt;real_lim_t&gt; evals(dim);</span></a>
+<a name="64"><span class="lineNum">      64 </span><span class="lineCov">          6 :     Eigen::MatrixX&lt;ScalarLim&gt; evecs(dim, m0); // the first m columns will contain the eigenvectors</span></a>
+<a name="65"><span class="lineNum">      65 </span>            : </a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">          6 :     double targeted_trace_relative_error = rtol;</span></a>
+<a name="67"><span class="lineNum">      67 </span><span class="lineCov">          6 :     int precision_feast = static_cast&lt;int&gt;(std::ceil(-std::log10(targeted_trace_relative_error)));</span></a>
+<a name="68"><span class="lineNum">      68 </span>            : </a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          6 :     std::vector&lt;MKL_INT&gt; fpm(128);</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">          6 :     feastinit(fpm.data());</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">          6 :     fpm[0] = 0;                      // disable terminal output</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">          6 :     fpm[1] = 8;                      // number of contour points</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">          6 :     fpm[4] = 0;                      // do not use initial subspace</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">          6 :     fpm[26] = 0;                     // disables matrix checker</span></a>
+<a name="75"><span class="lineNum">      75 </span><span class="lineCov">          6 :     fpm[2] = precision_feast;        // single precision stopping criteria</span></a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          6 :     fpm[6] = precision_feast;        // double precision stopping criteria</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          6 :     MKL_INT m{};                     // will contain the number of eigenvalues</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">          6 :     std::vector&lt;real_lim_t&gt; e(m0);   // will contain the first m eigenvalues</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">          6 :     char uplo = 'F';                 // full matrix is stored</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">          6 :     MKL_INT info{};                  // will contain return codes</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">          6 :     real_lim_t epsout{};             // will contain relative error</span></a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">          6 :     MKL_INT loop{};                  // will contain number of used refinement</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">          6 :     std::vector&lt;real_lim_t&gt; res(m0); // will contain the residual errors</span></a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">          6 :     real_lim_t min_eigenvalue_lim = min_eigenvalue - shift;</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">          6 :     real_lim_t max_eigenvalue_lim = max_eigenvalue - shift;</span></a>
+<a name="86"><span class="lineNum">      86 </span>            : </a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">          6 :     feast(&amp;uplo, &amp;dim, hamiltonian.data(), &amp;dim, fpm.data(), &amp;epsout, &amp;loop, &amp;min_eigenvalue_lim,</span></a>
+<a name="88"><span class="lineNum">      88 </span>            :           &amp;max_eigenvalue_lim, &amp;m0, evals.data(), evecs.data(), &amp;m, res.data(), &amp;info);</a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span>            :     // https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/extended-eigensolver-output-details.html</a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">          6 :     if (info != 0) {</span></a>
+<a name="92"><span class="lineNum">      92 </span><span class="lineNoCov">          0 :         if (info == 202) {</span></a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(</span></a>
+<a name="94"><span class="lineNum">      94 </span>            :                 &quot;Diagonalization error: Problem with size of the system n (n≤0).&quot;);</a>
+<a name="95"><span class="lineNum">      95 </span>            :         }</a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineNoCov">          0 :         if (info == 201) {</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(</span></a>
+<a name="98"><span class="lineNum">      98 </span>            :                 &quot;Diagonalization error: Problem with size of initial subspace m0 (m0≤0 or m0&gt;n).&quot;);</a>
+<a name="99"><span class="lineNum">      99 </span>            :         }</a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineNoCov">          0 :         if (info == 200) {</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(</span></a>
+<a name="102"><span class="lineNum">     102 </span>            :                 &quot;Diagonalization error: Problem with emin,emax (emin≥emax).&quot;);</a>
+<a name="103"><span class="lineNum">     103 </span>            :         }</a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineNoCov">          0 :         if (info == 3) {</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(</span></a>
+<a name="106"><span class="lineNum">     106 </span>            :                 &quot;Diagonalization error: Size of the subspace m0 is too small (m0&lt;m).&quot;);</a>
+<a name="107"><span class="lineNum">     107 </span>            :         }</a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineNoCov">          0 :         if (info == 2) {</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineNoCov">          0 :             throw std::runtime_error(</span></a>
+<a name="110"><span class="lineNum">     110 </span>            :                 &quot;Diagonalization error: No convergence (number of iteration loops &gt;fpm[3]).&quot;);</a>
+<a name="111"><span class="lineNum">     111 </span>            :         }</a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineNoCov">          0 :         if (info == 1) {</span></a>
+<a name="113"><span class="lineNum">     113 </span><span class="lineNoCov">          0 :             throw std::runtime_error(</span></a>
+<a name="114"><span class="lineNum">     114 </span>            :                 &quot;Diagonalization error: No eigenvalue found in the search interval.&quot;);</a>
+<a name="115"><span class="lineNum">     115 </span>            :         }</a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineNoCov">          0 :         if (info == -1) {</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineNoCov">          0 :             throw std::runtime_error(</span></a>
+<a name="118"><span class="lineNum">     118 </span>            :                 &quot;Diagonalization error: Internal error for allocation memory.&quot;);</a>
+<a name="119"><span class="lineNum">     119 </span>            :         }</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineNoCov">          0 :         if (info == -2) {</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineNoCov">          0 :             throw std::runtime_error(</span></a>
+<a name="122"><span class="lineNum">     122 </span>            :                 &quot;Diagonalization error: Internal error of the inner system solver. Possible &quot;</a>
+<a name="123"><span class="lineNum">     123 </span>            :                 &quot;reasons: not enough memory for inner linear system solver or inconsistent input.&quot;);</a>
+<a name="124"><span class="lineNum">     124 </span>            :         }</a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineNoCov">          0 :         if (info == -3) {</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineNoCov">          0 :             throw std::runtime_error(</span></a>
+<a name="127"><span class="lineNum">     127 </span>            :                 &quot;Diagonalization error: Internal error of the reduced eigenvalue solver. Possible &quot;</a>
+<a name="128"><span class="lineNum">     128 </span>            :                 &quot;cause: matrix may not be positive definite.&quot;);</a>
+<a name="129"><span class="lineNum">     129 </span>            :         }</a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineNoCov">          0 :         if (info == -4) {</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(&quot;Diagonalization error: Matrix is not positive definite.&quot;);</span></a>
+<a name="132"><span class="lineNum">     132 </span>            :         }</a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineNoCov">          0 :         if (info &lt;= 100) {</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(</span></a>
+<a name="135"><span class="lineNum">     135 </span>            :                 fmt::format(&quot;Diagonalization error: Argument {} to the FEAST *interface* &quot;</a>
+<a name="136"><span class="lineNum">     136 </span>            :                             &quot;had an illegal value (the counting of the arguments starts with one). &quot;</a>
+<a name="137"><span class="lineNum">     137 </span>            :                             &quot;For a documentation of the feast interface, see &quot;</a>
+<a name="138"><span class="lineNum">     138 </span>            :                             &quot;https://www.intel.com/content/www/us/en/docs/onemkl/&quot;</a>
+<a name="139"><span class="lineNum">     139 </span>            :                             &quot;developer-reference-c/2025-1/feast-syev-feast-heev.html.&quot;,</a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineNoCov">          0 :                             -info - 100));</span></a>
+<a name="141"><span class="lineNum">     141 </span>            :         }</a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineNoCov">          0 :         if (info &gt;= 100) {</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineNoCov">          0 :             throw std::invalid_argument(fmt::format(</span></a>
+<a name="144"><span class="lineNum">     144 </span>            :                 &quot;Diagonalization error: Argument {} to the FEAST &quot;</a>
+<a name="145"><span class="lineNum">     145 </span>            :                 &quot;*initialization* had an illegal value (the counting of the arguments starts with &quot;</a>
+<a name="146"><span class="lineNum">     146 </span>            :                 &quot;one). For a documentation of the feast initialization, see &quot;</a>
+<a name="147"><span class="lineNum">     147 </span>            :                 &quot;https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2025-1/&quot;</a>
+<a name="148"><span class="lineNum">     148 </span>            :                 &quot;extended-eigensolver-input-parameters.html.&quot;,</a>
+<a name="149"><span class="lineNum">     149 </span><span class="lineNoCov">          0 :                 info - 100));</span></a>
+<a name="150"><span class="lineNum">     150 </span>            :         }</a>
+<a name="151"><span class="lineNum">     151 </span><span class="lineNoCov">          0 :         throw std::runtime_error(fmt::format(</span></a>
+<a name="152"><span class="lineNum">     152 </span>            :             &quot;Diagonalization error: The FEAST routine failed with error code {}.&quot;, info));</a>
+<a name="153"><span class="lineNum">     153 </span>            :     }</a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span>            :     // Restrict to the first m eigenvectors and eigenvalues because the rest is not calculated</a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          6 :     evecs.conservativeResize(dim, m);</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">          6 :     evals.conservativeResize(m);</span></a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">          6 :     return {evecs.sparseView(1, 0.5 * rtol / std::sqrt(dim)).template cast&lt;Scalar&gt;(),</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">          6 :             this-&gt;add_mean(evals, shift)};</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">         12 : }</span></a>
+<a name="162"><span class="lineNum">     162 </span>            : </a>
+<a name="163"><span class="lineNum">     163 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="164"><span class="lineNum">     164 </span><span class="lineCov">          3 : DiagonalizerFeast&lt;Scalar&gt;::DiagonalizerFeast(int m0, FloatType float_type)</span></a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineCov">          3 :     : DiagonalizerInterface&lt;Scalar&gt;(float_type), m0(m0) {</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">          3 :     if (m0 &lt;= 0) {</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :         throw std::invalid_argument(&quot;The size of the initial subspace m0 (i.e., the number of &quot;</span></a>
+<a name="168"><span class="lineNum">     168 </span>            :                                     &quot;maximally obtainable eigenvalues) must be positive.&quot;);</a>
+<a name="169"><span class="lineNum">     169 </span>            :     }</a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">          3 : }</span></a>
+<a name="171"><span class="lineNum">     171 </span>            : </a>
+<a name="172"><span class="lineNum">     172 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="173"><span class="lineNum">     173 </span>            : EigenSystemH&lt;Scalar&gt;</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineNoCov">          0 : DiagonalizerFeast&lt;Scalar&gt;::eigh(const Eigen::SparseMatrix&lt;Scalar, Eigen::RowMajor&gt; &amp; /*matrix*/,</span></a>
+<a name="175"><span class="lineNum">     175 </span>            :                                 double /*rtol*/) const {</a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineNoCov">          0 :     throw std::invalid_argument(&quot;The FEAST routine requires a search interval.&quot;);</span></a>
+<a name="177"><span class="lineNum">     177 </span>            : }</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="180"><span class="lineNum">     180 </span>            : EigenSystemH&lt;Scalar&gt;</a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          6 : DiagonalizerFeast&lt;Scalar&gt;::eigh(const Eigen::SparseMatrix&lt;Scalar, Eigen::RowMajor&gt; &amp;matrix,</span></a>
+<a name="182"><span class="lineNum">     182 </span>            :                                 std::optional&lt;real_t&gt; min_eigenvalue,</a>
+<a name="183"><span class="lineNum">     183 </span>            :                                 std::optional&lt;real_t&gt; max_eigenvalue, double rtol) const {</a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">          6 :     if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineNoCov">          0 :         throw std::invalid_argument(&quot;The FEAST routine requires a search interval.&quot;);</span></a>
+<a name="186"><span class="lineNum">     186 </span>            :     }</a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">          6 :     switch (this-&gt;float_type) {</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">          2 :     case FloatType::FLOAT32:</span></a>
+<a name="189"><span class="lineNum">     189 </span>            :         return dispatch_eigh&lt;traits::restricted_t&lt;Scalar, FloatType::FLOAT32&gt;&gt;(</a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">          2 :             matrix, min_eigenvalue.value(), max_eigenvalue.value(), rtol);</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">          4 :     case FloatType::FLOAT64:</span></a>
+<a name="192"><span class="lineNum">     192 </span>            :         return dispatch_eigh&lt;traits::restricted_t&lt;Scalar, FloatType::FLOAT64&gt;&gt;(</a>
+<a name="193"><span class="lineNum">     193 </span><span class="lineCov">          4 :             matrix, min_eigenvalue.value(), max_eigenvalue.value(), rtol);</span></a>
+<a name="194"><span class="lineNum">     194 </span><span class="lineNoCov">          0 :     default:</span></a>
+<a name="195"><span class="lineNum">     195 </span><span class="lineNoCov">          0 :         throw std::invalid_argument(&quot;Unsupported floating point precision.&quot;);</span></a>
+<a name="196"><span class="lineNum">     196 </span>            :     }</a>
+<a name="197"><span class="lineNum">     197 </span>            : }</a>
+<a name="198"><span class="lineNum">     198 </span>            : </a>
+<a name="199"><span class="lineNum">     199 </span>            : #else</a>
+<a name="200"><span class="lineNum">     200 </span>            : </a>
+<a name="201"><span class="lineNum">     201 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="202"><span class="lineNum">     202 </span>            : DiagonalizerFeast&lt;Scalar&gt;::DiagonalizerFeast(int m0, FloatType float_type)</a>
+<a name="203"><span class="lineNum">     203 </span>            :     : DiagonalizerInterface&lt;Scalar&gt;(float_type), m0(m0) {</a>
+<a name="204"><span class="lineNum">     204 </span>            :     throw std::runtime_error(</a>
+<a name="205"><span class="lineNum">     205 </span>            :         &quot;The FEAST routine is not available in this build. Please use a different diagonalizer.&quot;);</a>
+<a name="206"><span class="lineNum">     206 </span>            : }</a>
+<a name="207"><span class="lineNum">     207 </span>            : </a>
+<a name="208"><span class="lineNum">     208 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="209"><span class="lineNum">     209 </span>            : EigenSystemH&lt;Scalar&gt;</a>
+<a name="210"><span class="lineNum">     210 </span>            : DiagonalizerFeast&lt;Scalar&gt;::eigh(const Eigen::SparseMatrix&lt;Scalar, Eigen::RowMajor&gt; &amp; /*matrix*/,</a>
+<a name="211"><span class="lineNum">     211 </span>            :                                 double /*rtol*/) const {</a>
+<a name="212"><span class="lineNum">     212 </span>            :     std::abort(); // can't happen because the constructor throws</a>
+<a name="213"><span class="lineNum">     213 </span>            : }</a>
+<a name="214"><span class="lineNum">     214 </span>            : </a>
+<a name="215"><span class="lineNum">     215 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="216"><span class="lineNum">     216 </span>            : EigenSystemH&lt;Scalar&gt;</a>
+<a name="217"><span class="lineNum">     217 </span>            : DiagonalizerFeast&lt;Scalar&gt;::eigh(const Eigen::SparseMatrix&lt;Scalar, Eigen::RowMajor&gt; &amp; /*matrix*/,</a>
+<a name="218"><span class="lineNum">     218 </span>            :                                 std::optional&lt;real_t&gt; /*min_eigenvalue*/,</a>
+<a name="219"><span class="lineNum">     219 </span>            :                                 std::optional&lt;real_t&gt; /*max_eigenvalue*/, double /*rtol*/) const {</a>
+<a name="220"><span class="lineNum">     220 </span>            :     std::abort(); // can't happen because the constructor throws</a>
+<a name="221"><span class="lineNum">     221 </span>            : }</a>
+<a name="222"><span class="lineNum">     222 </span>            : </a>
+<a name="223"><span class="lineNum">     223 </span>            : #endif // WITH_MKL</a>
+<a name="224"><span class="lineNum">     224 </span>            : </a>
+<a name="225"><span class="lineNum">     225 </span>            : // Explicit instantiations</a>
+<a name="226"><span class="lineNum">     226 </span>            : template class DiagonalizerFeast&lt;double&gt;;</a>
+<a name="227"><span class="lineNum">     227 </span>            : template class DiagonalizerFeast&lt;std::complex&lt;double&gt;&gt;;</a>
+<a name="228"><span class="lineNum">     228 </span>            : } // namespace pairinteraction</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="https://github.com/linux-test-project/lcov" target="_parent">LCOV version 1.16</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

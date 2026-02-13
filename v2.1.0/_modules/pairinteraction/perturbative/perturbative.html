@@ -1,0 +1,719 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction.perturbative.perturbative &mdash; pairinteraction 2.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=20623aea"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview About pairinteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction.perturbative.perturbative</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction.perturbative.perturbative</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2025 Pairinteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Iterable</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy</span><span class="w"> </span><span class="kn">import</span> <span class="n">sparse</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csr_matrix</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="nb">complex</span> <span class="k">as</span> <span class="n">pi_complex</span><span class="p">,</span>
+    <span class="n">real</span> <span class="k">as</span> <span class="n">pi_real</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">AtomicUnits</span><span class="p">,</span> <span class="n">QuantityArray</span><span class="p">,</span> <span class="n">QuantityScalar</span><span class="p">,</span> <span class="n">ureg</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csr_matrix</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.ket.ket_atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">KetAtom</span>  <span class="c1"># noqa: F401  # required for sphinx for KetPairLike</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.ket.ket_pair</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: F401  # required for sphinx for KetPairLike</span>
+        <span class="n">KetAtomTuple</span><span class="p">,</span>
+        <span class="n">KetPairComplex</span><span class="p">,</span>
+        <span class="n">KetPairLike</span><span class="p">,</span>
+        <span class="n">KetPairReal</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">PintArray</span><span class="p">,</span> <span class="n">PintFloat</span>
+
+    <span class="n">SystemPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">pi_real</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">,</span> <span class="n">pi_complex</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span>
+    <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">required_overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">return_only_specified_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="s2">&quot;PintArray&quot;</span><span class="p">,</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">]:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span>
+    <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">required_overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">return_only_specified_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="s2">&quot;NDArray&quot;</span><span class="p">,</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">]:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="get_effective_hamiltonian_from_system">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.perturbative.get_effective_hamiltonian_from_system.html#pairinteraction.perturbative.get_effective_hamiltonian_from_system">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_effective_hamiltonian_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span>
+    <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">required_overlap</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">return_only_specified_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s2">&quot;NDArray&quot;</span><span class="p">,</span> <span class="s2">&quot;PintArray&quot;</span><span class="p">],</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.</span>
+
+<span class="sd">    This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective</span>
+<span class="sd">    Hamiltonian is calculated. The whole Hamiltonian is taken from a pair system.</span>
+<span class="sd">    The Hamiltonian of the pair system is assumed to be diagonal in the unperturbed Hamiltonian, all off-diagonal</span>
+<span class="sd">    elements are assumed to belong to the perturbative term.</span>
+<span class="sd">    The function also checks for resonances between all states and states in the model space.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ket_tuple_list: List of all pair states that span up the model space.</span>
+<span class="sd">            The effective Hamiltonian is calculated for these states.</span>
+<span class="sd">        system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</span>
+<span class="sd">        order: Order up to which the perturbation theory is expanded. Support up to third order.</span>
+<span class="sd">            Default is second order.</span>
+<span class="sd">        required_overlap: If set, the code checks for validity of a perturbative treatment.</span>
+<span class="sd">            Error is thrown if the perturbed eigenstate has less overlap than this value with the</span>
+<span class="sd">            unperturbed eigenstate.</span>
+<span class="sd">        return_only_specified_order: If True, the returned effective Hamiltonian will only contain the specified order.</span>
+<span class="sd">            Default is False, which returns the sum of all orders up to the specified order.</span>
+<span class="sd">        unit: The unit to which to convert the result. Default None will return a pint quantity.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        - Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`.</span>
+<span class="sd">        - Eigenvectors in perturbation theory due to interaction with states out of the model space, returned as</span>
+<span class="sd">          a sparse matrix in compressed row format. Each row represents the corresponding eigenvector.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a resonance between a state in the model space and a state not in the model space occurs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">system_pair</span><span class="o">.</span><span class="n">get_distance</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Pair system is initialized without a distance. &quot;</span>
+            <span class="s2">&quot;Please set a distance for calculating an effective Hamiltonian.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">model_inds</span> <span class="o">=</span> <span class="n">_get_model_inds</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">)</span>
+    <span class="n">h_au</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">()</span><span class="o">.</span><span class="n">to_base_units</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span>  <span class="c1"># Hamiltonian in atomic units</span>
+    <span class="n">h_eff_au</span><span class="p">,</span> <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">_calculate_perturbative_hamiltonian</span><span class="p">(</span><span class="n">h_au</span><span class="p">,</span> <span class="n">model_inds</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">return_only_specified_order</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">required_overlap</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Required overlap has to be a positive real number between zero and one.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">required_overlap</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">_check_for_resonances</span><span class="p">(</span><span class="n">model_inds</span><span class="p">,</span> <span class="n">eigvec_perturb</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">,</span> <span class="n">required_overlap</span><span class="p">)</span>
+
+    <span class="n">h_eff</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">h_eff_au</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span></div>
+
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c3_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c3_from_system</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="get_c3_from_system">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.perturbative.get_c3_from_system.html#pairinteraction.perturbative.get_c3_from_system">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c3_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single atom ket states.</span>
+
+<span class="sd">    This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of</span>
+<span class="sd">    single atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)],</span>
+<span class="sd">            the :math:`C_3` coefficient is calculated for (a,b)-&gt;(c,d).</span>
+<span class="sd">            If there are not exactly two tuples in the list, a ValueError is raised.</span>
+<span class="sd">        system_pair: The pair system that is used for the calculation.</span>
+<span class="sd">        unit: The unit to which to convert the result. Default None will return a pint quantity.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The :math:`C_3` coefficient with its unit.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a list of not exactly two tuples of single atom states is given.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;C3 coefficient can be calculated only between two 2-atom states.&quot;</span><span class="p">)</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">get_distance</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">magnitude</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Pair system is initialized without a distance. &quot;</span>
+            <span class="s2">&quot;Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">old_distance_vector</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">get_distance_vector</span><span class="p">()</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+        <span class="n">c3</span> <span class="o">=</span> <span class="n">get_c3_from_system</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">old_distance_vector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">c3</span>
+
+    <span class="n">h_eff</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_effective_hamiltonian_from_system</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">c3_pint</span> <span class="o">=</span> <span class="n">h_eff</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="mi">3</span>  <span class="c1"># type: ignore [index] # PintArray does not know it can be indexed</span>
+    <span class="k">return</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">from_pint</span><span class="p">(</span><span class="n">c3_pint</span><span class="p">,</span> <span class="s2">&quot;c3&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pint_or_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span></div>
+
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c6_from_system</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetPairLike&quot;</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="nd">@overload</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c6_from_system</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetPairLike&quot;</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+
+<div class="viewcode-block" id="get_c6_from_system">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.perturbative.get_c6_from_system.html#pairinteraction.perturbative.get_c6_from_system">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_c6_from_system</span><span class="p">(</span>
+    <span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetPairLike&quot;</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the :math:`C_6` coefficient for a given tuple of ket states.</span>
+
+<span class="sd">    This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single atom ket</span>
+<span class="sd">    states.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ket_tuple: The input is a tuple repeating the same single atom state in the format (a,a).</span>
+<span class="sd">        If a tuple with not exactly two identical states is given, a ValueError is raised.</span>
+<span class="sd">        system_pair: The pair system that is used for the calculation.</span>
+<span class="sd">        unit: The unit to which to convert the result. Default None will return a pint quantity.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The :math:`C_6` coefficient. If a unit is specified, the value in this unit is returned.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a tuple with more than two single atom states is given.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;C6 coefficient can be calculated only for a single 2-atom state.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ket_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">species</span> <span class="o">==</span> <span class="n">ket_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">species</span> <span class="ow">and</span> <span class="n">ket_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ket_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;If you want to calculate 2nd order perturbations of two different states a and b, &quot;</span>
+                <span class="s2">&quot;please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">get_distance</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">magnitude</span><span class="p">):</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Pair system is initialized without a distance. &quot;</span>
+            <span class="s2">&quot;Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum.&quot;</span>
+        <span class="p">)</span>
+        <span class="n">old_distance_vector</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">get_distance_vector</span><span class="p">()</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">],</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+        <span class="n">c6</span> <span class="o">=</span> <span class="n">get_c6_from_system</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">,</span> <span class="n">system_pair</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">old_distance_vector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">c6</span>
+
+    <span class="n">h_eff</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_effective_hamiltonian_from_system</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">ket_tuple</span><span class="p">],</span> <span class="n">system_pair</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">return_only_specified_order</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="n">c6_pint</span> <span class="o">=</span> <span class="n">h_eff</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="mi">6</span>  <span class="c1"># type: ignore [index] # PintArray does not know it can be indexed</span>
+    <span class="k">return</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">from_pint</span><span class="p">(</span><span class="n">c6_pint</span><span class="p">,</span> <span class="s2">&quot;c6&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_pint_or_unit</span><span class="p">(</span><span class="n">unit</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_perturbative_hamiltonian</span><span class="p">(</span>
+    <span class="n">hamiltonian</span><span class="p">:</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">,</span> <span class="n">model_inds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">return_only_specified_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="s2">&quot;NDArray&quot;</span><span class="p">,</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">]:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the perturbative Hamiltonian at a given order.</span>
+
+<span class="sd">    This function takes a Hamiltonian as a sparse matrix which is diagonal in the unperturbed basis</span>
+<span class="sd">    and list of indices spanning up the model space.</span>
+<span class="sd">    It calculates both the effective Hamiltonian, spanned up by the states of the model space, as well as the</span>
+<span class="sd">    perturbed eigenstates due to interactions with the exterior space in the desired order of perturbation theory.</span>
+<span class="sd">    The output is either the full Hamiltonian up to the order of perturbation theory, or only the corrections at</span>
+<span class="sd">    a given order.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        hamiltonian: Quadratic hermitian matrix. Perturbative terms are assumed to be only off-diagonal.</span>
+<span class="sd">        model_inds: List of indices corresponding to the states that span up the model space.</span>
+<span class="sd">        order: Order up to which the perturbation theory is expanded. Support up to third order.</span>
+<span class="sd">            Default is second order.</span>
+<span class="sd">        return_only_specified_order: If True, the returned effective Hamiltonian will only contain the specified order.</span>
+<span class="sd">            Default is False, which returns the sum of all orders up to the specified order.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`</span>
+<span class="sd">        Eigenvectors in perturbation theory due to interaction with states out of the model</span>
+<span class="sd">            space, returned as a sparse matrix in compressed row format. Each row represent the</span>
+<span class="sd">            corresponding eigenvector</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">m_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">model_inds</span><span class="p">)</span>
+    <span class="n">o_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">setdiff1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">hamiltonian</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">m_inds</span><span class="p">)</span>
+    <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">_calculate_unsorted_perturbative_hamiltonian</span><span class="p">(</span>
+        <span class="n">hamiltonian</span><span class="p">,</span> <span class="n">m_inds</span><span class="p">,</span> <span class="n">o_inds</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">return_only_specified_order</span>
+    <span class="p">)</span>
+
+    <span class="c1"># resort eigvec to original order</span>
+    <span class="n">all_inds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m_inds</span><span class="p">,</span> <span class="n">o_inds</span><span class="p">)</span>
+    <span class="n">all_inds_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">all_inds</span><span class="p">)</span>
+    <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">eigvec_perturb</span><span class="p">[:,</span> <span class="n">all_inds_positions</span><span class="p">]</span>
+
+    <span class="c1"># include the hermitian conjugate part of the effective Hamiltonian</span>
+    <span class="n">h_eff</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">h_eff</span> <span class="o">+</span> <span class="n">h_eff</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_unsorted_perturbative_hamiltonian</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="n">hamiltonian</span><span class="p">:</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">,</span>
+    <span class="n">m_inds</span><span class="p">:</span> <span class="s2">&quot;NDArray&quot;</span><span class="p">,</span>
+    <span class="n">o_inds</span><span class="p">:</span> <span class="s2">&quot;NDArray&quot;</span><span class="p">,</span>
+    <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">return_only_specified_order</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="s2">&quot;NDArray&quot;</span><span class="p">,</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">]:</span>
+    <span class="c1"># This function is outsourced from _calculate_perturbative_hamiltonian to allow for better type checking</span>
+    <span class="k">if</span> <span class="n">order</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Perturbation theory is only implemented for orders [0, 1, 2, 3].&quot;</span><span class="p">)</span>
+
+    <span class="n">h0</span> <span class="o">=</span> <span class="n">hamiltonian</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span>
+    <span class="n">h0_m</span> <span class="o">=</span> <span class="n">h0</span><span class="p">[</span><span class="n">m_inds</span><span class="p">]</span>
+    <span class="n">h_eff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">h0_m</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_only_specified_order</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">h_eff</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">h0_m</span><span class="p">)</span>
+    <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">sparse</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csr&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">tocsr</span><span class="p">(),</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">o_inds</span><span class="p">)))]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span>
+
+    <span class="n">v_offdiag</span> <span class="o">=</span> <span class="n">hamiltonian</span> <span class="o">-</span> <span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">h0</span><span class="p">)</span>
+    <span class="n">v_mm</span> <span class="o">=</span> <span class="n">v_offdiag</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">m_inds</span><span class="p">,</span> <span class="n">m_inds</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_only_specified_order</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">h_eff</span> <span class="o">+=</span> <span class="n">v_mm</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span>
+
+    <span class="n">h0_e</span> <span class="o">=</span> <span class="n">h0</span><span class="p">[</span><span class="n">o_inds</span><span class="p">]</span>
+    <span class="n">v_me</span> <span class="o">=</span> <span class="n">v_offdiag</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">m_inds</span><span class="p">,</span> <span class="n">o_inds</span><span class="p">)]</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="n">delta_e_em</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">h0_m</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">h0_e</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">])</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_only_specified_order</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">h_eff</span> <span class="o">+=</span> <span class="n">v_me</span> <span class="o">@</span> <span class="p">((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span>
+    <span class="n">addition_mm</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">)))</span>
+    <span class="n">addition_me</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">eigvec_perturb</span> <span class="o">+</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">addition_mm</span><span class="p">,</span> <span class="n">addition_me</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span>
+
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">h0_m</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">h0_m</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">diff</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">diff</span><span class="p">)</span>
+    <span class="n">delta_e_mm</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">diff</span>
+    <span class="n">v_ee</span> <span class="o">=</span> <span class="n">v_offdiag</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ix_</span><span class="p">(</span><span class="n">o_inds</span><span class="p">,</span> <span class="n">o_inds</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_inds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;At third order, the eigenstates are currently only valid when only one state is in the model space. &quot;</span>
+            <span class="s2">&quot;Take care with interpreation of the perturbed eigenvectors.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_only_specified_order</span> <span class="ow">or</span> <span class="n">order</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">h_eff</span> <span class="o">+=</span> <span class="n">v_me</span> <span class="o">@</span> <span class="p">(</span>
+            <span class="p">(</span><span class="n">v_ee</span> <span class="o">@</span> <span class="p">((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span> <span class="o">-</span> <span class="p">((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span> <span class="o">@</span> <span class="n">v_mm</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span>
+                <span class="n">delta_e_em</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="n">addition_mm_diag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span>
+        <span class="n">sparse</span><span class="o">.</span><span class="n">diags</span><span class="p">((</span><span class="n">v_me</span> <span class="o">@</span> <span class="p">((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))))</span><span class="o">.</span><span class="n">diagonal</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="n">addition_mm_offdiag</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(((</span><span class="n">v_me</span> <span class="o">@</span> <span class="p">(</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_mm</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">addition_me</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(((</span><span class="n">v_ee</span> <span class="o">@</span> <span class="p">((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">)))</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">addition_me_2</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(((</span><span class="n">v_me</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="p">((</span><span class="n">v_mm</span><span class="o">.</span><span class="n">conj</span><span class="p">()</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_mm</span><span class="p">)))</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">delta_e_em</span><span class="p">))</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">eigvec_perturb</span> <span class="o">=</span> <span class="n">eigvec_perturb</span> <span class="o">+</span> <span class="n">sparse</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">addition_mm_diag</span> <span class="o">+</span> <span class="n">addition_mm_offdiag</span><span class="p">,</span> <span class="n">addition_me</span> <span class="o">+</span> <span class="n">addition_me_2</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">order</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">h_eff</span><span class="p">,</span> <span class="n">eigvec_perturb</span>
+
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Perturbation theory is only implemented for orders [0, 1, 2, 3].&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_model_inds</span><span class="p">(</span><span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetPairLike&quot;</span><span class="p">],</span> <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the indices of all ket tuples in the basis of pair system.</span>
+
+<span class="sd">    This function takes a list of 2-tuples of ket states, and a pair system holding the entire basis.</span>
+<span class="sd">    It returns an array of indices of the pair system basis in the order of the tuple list.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ket_tuple_list: List of all pair states that span up the model space.</span>
+<span class="sd">        system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List of indices corresponding to the states that span up the model space.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model_inds</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">kets</span> <span class="ow">in</span> <span class="n">ket_tuple_list</span><span class="p">:</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">kets</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlap</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pairstate </span><span class="si">{</span><span class="n">kets</span><span class="si">}</span><span class="s2"> is not part of the basis of the pair system.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlap</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pairstate </span><span class="si">{</span><span class="n">kets</span><span class="si">}</span><span class="s2"> cannot be identified uniquely (max overlap: </span><span class="si">{</span><span class="n">overlap</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="si">}</span><span class="s2">).&quot;</span><span class="p">)</span>
+        <span class="n">model_inds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">model_inds</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_for_resonances</span><span class="p">(</span>
+    <span class="n">model_inds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">eigvec_perturb</span><span class="p">:</span> <span class="s2">&quot;csr_matrix&quot;</span><span class="p">,</span>
+    <span class="n">system_pair</span><span class="p">:</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">,</span>
+    <span class="n">required_overlap</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Check for resonance between the states in the model space and other states.</span>
+
+<span class="sd">    This function takes the perturbed eigenvectors of the perturbation theory as an input.</span>
+<span class="sd">    If the overlap of the perturbed eigenstate with its corresponding unperturbed state are too small,</span>
+<span class="sd">    this function raises an error, as perturbation theory breaks down.</span>
+<span class="sd">    In this case, it also prints all states with a relevant admixture that should therefore be also included in the</span>
+<span class="sd">    model space, to allow perturbation theory.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_inds: List of indices corresponding to the states that span up the model space.</span>
+<span class="sd">        eigvec_perturb: Sparse representation of the perturbed eigenstates in the desired order of</span>
+<span class="sd">            perturbation theory. Each row corresponds to the eigestate according to `state model indices.`</span>
+<span class="sd">        system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</span>
+<span class="sd">        order: Order up to which the perturbation theory is expanded. Support up to third order.</span>
+<span class="sd">            Default is second order.</span>
+<span class="sd">        required_overlap: If set, the code checks for validity of a perturbative treatment.</span>
+<span class="sd">            Error is thrown if the perturbed eigenstate has less overlap than this value with the unperturbed eigenstate</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`</span>
+<span class="sd">        Eigenvectors in perturbation theory due to interaction with states out of the model space,</span>
+<span class="sd">            returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If a resonance between a state in the model space and a state not in the model space occurs.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">overlaps</span> <span class="o">=</span> <span class="p">(</span><span class="n">eigvec_perturb</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">eigvec_perturb</span><span class="o">.</span><span class="n">conj</span><span class="p">()))</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">error_flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">model_inds</span><span class="p">)),</span> <span class="n">model_inds</span><span class="p">):</span>
+        <span class="n">vector_norm</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:])</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="n">vector_norm</span>
+        <span class="k">if</span> <span class="n">overlap</span> <span class="o">&gt;=</span> <span class="n">required_overlap</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">error_flag</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">print_above_admixture</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">required_overlap</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">print_above_admixture</span> <span class="o">*</span> <span class="n">vector_norm</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="s2">&quot;The state </span><span class="si">%s</span><span class="s2"> has resonances with the following states, please consider adding them to your model space:&quot;</span><span class="p">,</span>
+            <span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">admixture</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">])</span> <span class="k">else</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">index</span><span class="p">]</span> <span class="o">/</span> <span class="n">vector_norm</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;  - </span><span class="si">%s</span><span class="s2"> with admixture </span><span class="si">%.3f</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">system_pair</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">admixture</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">error_flag</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Error. Perturbative Calculation not possible due to resonances. &quot;</span>
+            <span class="s2">&quot;Add more states to the model space or adapt your required overlap.&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_system_for_perturbative</span><span class="p">(</span>  <span class="c1"># noqa: C901, PLR0912, PLR0915</span>
+    <span class="n">ket_tuple_list</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="s2">&quot;KetAtomTuple&quot;</span><span class="p">],</span>
+    <span class="n">electric_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;PintArray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">magnetic_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;PintArray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_vector</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;PintArray&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">multipole_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">with_diamagnetism</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">perturbation_order</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">number_of_considered_pair_kets</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2_000</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;SystemPair&quot;</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Create a good estimate for a system in which to perform perturbative calculations.</span>
+
+<span class="sd">    This function takes a list of 2-tuples of ket states and creates a pair system holding a larger basis.</span>
+<span class="sd">    The parameters of the basis are adjusted by the electric and magnetic field vectors of the system, as well</span>
+<span class="sd">    as the distance and the multipole-order of the interaction. For higher-order perturbation theory, larger</span>
+<span class="sd">    systems can be considered. Diamagnetism can be considered as well.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ket_tuple_list: List of all pair states that span up the model space. The system is created such that</span>
+<span class="sd">            the effective Hamiltonian of the model system can be calculated accurately at a later stage.</span>
+<span class="sd">        electric_field: Electric field in the system.</span>
+<span class="sd">        magnetic_field: Magnetic field in the system.</span>
+<span class="sd">        distance_vector: Distance vector between the atoms.</span>
+<span class="sd">        multipole_order: Multipole-order of the interaction. Default is 3 (dipole-dipole).</span>
+<span class="sd">        with_diamagnetism: True if diamagnetic term should be considered. Default is False.</span>
+<span class="sd">        perturbation_order: Order of perturbative calculation the system shall be used for. Default is 2.</span>
+<span class="sd">        number_of_considered_pair_kets: Number of pair kets that are considered in the system. Default is 2000.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Pair system that can be used for perturbative calculations.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">electric_field</span> <span class="o">=</span> <span class="n">electric_field</span> <span class="k">if</span> <span class="n">electric_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ureg</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;V/cm&quot;</span><span class="p">)</span>
+    <span class="n">magnetic_field</span> <span class="o">=</span> <span class="n">magnetic_field</span> <span class="k">if</span> <span class="n">magnetic_field</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ureg</span><span class="o">.</span><span class="n">Quantity</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;G&quot;</span><span class="p">)</span>
+
+    <span class="n">pi</span> <span class="o">=</span> <span class="n">pi_real</span> <span class="k">if</span> <span class="n">electric_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">magnetic_field</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">pi_complex</span>  <span class="c1"># type: ignore [index]</span>
+    <span class="n">are_fields_along_z</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="o">*</span><span class="n">magnetic_field</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span> <span class="o">*</span><span class="n">electric_field</span><span class="p">[:</span><span class="mi">2</span><span class="p">]])</span>  <span class="c1"># type: ignore [index]</span>
+
+    <span class="n">system_atoms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">pi_real</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">pi_complex</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">delta_n</span> <span class="o">=</span> <span class="mi">7</span>
+    <span class="n">delta_l</span> <span class="o">=</span> <span class="n">perturbation_order</span> <span class="o">*</span> <span class="p">(</span><span class="n">multipole_order</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">kets</span> <span class="o">=</span> <span class="p">[</span><span class="n">ket_tuple</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="n">ket_tuple_list</span><span class="p">]</span>
+        <span class="n">nlfm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">([[</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">f</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">ket</span> <span class="ow">in</span> <span class="n">kets</span><span class="p">])</span>
+        <span class="n">n_range</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">-</span> <span class="n">delta_n</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">+</span> <span class="n">delta_n</span><span class="p">)</span>
+        <span class="n">l_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_l</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_l</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">is_calculated_with_mqdt</span> <span class="k">for</span> <span class="n">ket</span> <span class="ow">in</span> <span class="n">kets</span><span class="p">):</span>
+            <span class="c1"># for mqdt we increase delta_l by 1 to take into account the variance ...</span>
+            <span class="n">l_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_l</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">m_range</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">are_fields_along_z</span><span class="p">:</span>
+            <span class="n">m_range</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">-</span> <span class="n">delta_l</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">nlfm</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="n">delta_l</span><span class="p">)</span>
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">species</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n_range</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">l_range</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">m_range</span><span class="p">)</span>
+        <span class="n">system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+        <span class="n">system</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="n">with_diamagnetism</span><span class="p">)</span>
+        <span class="n">system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">(</span><span class="n">magnetic_field</span><span class="p">)</span>
+        <span class="n">system</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">(</span><span class="n">electric_field</span><span class="p">)</span>
+        <span class="n">system_atoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="p">)</span>
+
+    <span class="n">pi</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="n">system_atoms</span><span class="p">)</span>
+
+    <span class="n">pair_energies_au</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span><span class="o">.</span><span class="n">to_base_units</span><span class="p">()</span><span class="o">.</span><span class="n">magnitude</span>
+            <span class="k">for</span> <span class="n">system</span><span class="p">,</span> <span class="n">ket</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">system_atoms</span><span class="p">,</span> <span class="n">ket_tuple</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">ket_tuple</span> <span class="ow">in</span> <span class="n">ket_tuple_list</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_basis_pair</span><span class="p">(</span><span class="n">delta_energy_au</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pi_real</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">,</span> <span class="n">pi_complex</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">(</span>  <span class="c1"># type: ignore [no-any-return]</span>
+            <span class="n">system_atoms</span><span class="p">,</span>
+            <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">pair_energies_au</span><span class="p">)</span> <span class="o">-</span> <span class="n">delta_energy_au</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">pair_energies_au</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_energy_au</span><span class="p">),</span>
+            <span class="n">energy_unit</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">AtomicUnits</span><span class="p">[</span><span class="s2">&quot;energy&quot;</span><span class="p">]),</span>
+        <span class="p">)</span>
+
+    <span class="n">mhz_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;MHz&quot;</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+    <span class="n">delta_energy_au</span> <span class="o">=</span> <span class="n">mhz_au</span>
+    <span class="n">min_delta</span><span class="p">,</span> <span class="n">max_delta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="c1"># make a bisect search to get a sensible basis size between:</span>
+    <span class="c1"># number_of_considered_pair_kets and 1.2 * number_of_considered_pair_kets</span>
+    <span class="k">while</span> <span class="n">delta_energy_au</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># stop if delta_energy_au is 1 and the basis is still very small</span>
+        <span class="n">basis_pair</span> <span class="o">=</span> <span class="n">get_basis_pair</span><span class="p">(</span><span class="n">delta_energy_au</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span> <span class="o">&lt;</span> <span class="n">number_of_considered_pair_kets</span><span class="p">:</span>
+            <span class="n">min_delta</span> <span class="o">=</span> <span class="n">delta_energy_au</span>
+            <span class="k">if</span> <span class="n">max_delta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">delta_energy_au</span> <span class="o">*=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">delta_energy_au</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta_energy_au</span> <span class="o">+</span> <span class="n">max_delta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">elif</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span> <span class="o">&gt;</span> <span class="n">number_of_considered_pair_kets</span> <span class="o">*</span> <span class="mf">1.2</span><span class="p">:</span>
+            <span class="n">max_delta</span> <span class="o">=</span> <span class="n">delta_energy_au</span>
+            <span class="k">if</span> <span class="n">min_delta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">delta_energy_au</span> <span class="o">/=</span> <span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">delta_energy_au</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta_energy_au</span> <span class="o">+</span> <span class="n">min_delta</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">max_delta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">min_delta</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">max_delta</span> <span class="o">-</span> <span class="n">min_delta</span> <span class="o">&lt;</span> <span class="n">mhz_au</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;The pair basis for the perturbative calculations consists of </span><span class="si">%d</span><span class="s2"> kets.&quot;</span><span class="p">,</span> <span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_kets</span><span class="p">)</span>
+
+    <span class="n">system_pair</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">basis_pair</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">distance_vector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">system_pair</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">distance_vector</span><span class="p">)</span>
+    <span class="n">system_pair</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="n">multipole_order</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">system_pair</span>  <span class="c1"># type: ignore [no-any-return]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Pairinteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.1.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

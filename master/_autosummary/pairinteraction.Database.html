@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="KetAtom" href="pairinteraction.KetAtom.html" />
+    <link rel="prev" title="API Reference" href="../api_reference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Database</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pairinteraction.Database"><code class="docutils literal notranslate"><span class="pre">Database</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.__init__"><code class="docutils literal notranslate"><span class="pre">Database.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.get_global_database"><code class="docutils literal notranslate"><span class="pre">Database.get_global_database()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.initialize_global_database"><code class="docutils literal notranslate"><span class="pre">Database.initialize_global_database()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.download_missing"><code class="docutils literal notranslate"><span class="pre">Database.download_missing</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.use_cache"><code class="docutils literal notranslate"><span class="pre">Database.use_cache</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.Database.database_dir"><code class="docutils literal notranslate"><span class="pre">Database.database_dir</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetAtom.html">KetAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StateAtom.html">StateAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisAtom.html">BasisAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.SystemAtom.html">SystemAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetPair.html">KetPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StatePair.html">StatePair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisPair.html">BasisPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.SystemPair.html">SystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.GreenTensor.html">GreenTensor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.diagonalize.html">diagonalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.EffectiveSystemPair.html">EffectiveSystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C3.html">C3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C6.html">C6</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Database</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/_autosummary/pairinteraction.Database.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="database">
+<h1>Database<a class="headerlink" href="#database" title="Link to this heading"></a></h1>
+<p class="rubric">Class Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.Database.__init__" title="pairinteraction.Database.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([download_missing, use_cache, ...])</p></td>
+<td><p>Create a new database instance with the given parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.Database.get_global_database" title="pairinteraction.Database.get_global_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_global_database</span></code></a>()</p></td>
+<td><p>Return the global database instance if it was initialized, otherwise None.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.Database.initialize_global_database" title="pairinteraction.Database.initialize_global_database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialize_global_database</span></code></a>([...])</p></td>
+<td><p>Initialize the global database with the given parameters.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Class Attributes and Properties</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.Database.database_dir" title="pairinteraction.Database.database_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">database_dir</span></code></a></p></td>
+<td><p>The directory where the databases are stored.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.Database.download_missing" title="pairinteraction.Database.download_missing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">download_missing</span></code></a></p></td>
+<td><p>Whether to download missing databases if needed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.Database.use_cache" title="pairinteraction.Database.use_cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">use_cache</span></code></a></p></td>
+<td><p>Whether to load the Wigner 3j symbols table into memory.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pairinteraction.Database">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">Database</span></span><a class="reference internal" href="../_modules/pairinteraction/database/database.html#Database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.Database" title="Link to this definition"></a></dt>
+<dd><p>Class for handling the databases for the PairInteraction package.</p>
+<p>The Databases are used to store the atomic states, their energies, and their matrix elements to other states.
+The databases are stored in the user’s cache directory by default, but can be stored in a different directory.
+When running PairInteraction for the first time, the databases have to be downloaded from the internet
+(e.g. by explicitly passing <cite>download_missing=True</cite> to the constructor).
+Once the databases are downloaded, the user usually does not have to interact with the Database class directly.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.Database.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/database/database.html#Database.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.Database.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a new database instance with the given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>download_missing</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to download missing databases if needed. Default False.</p></li>
+<li><p><strong>use_cache</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – Whether to load the Wigner 3j symbols table into memory. Default True.</p></li>
+<li><p><strong>database_dir</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">PathLike</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code>]</span>) – The directory where the databases are stored.
+Default “”, i.e. use the default directory (the user’s cache directory).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.Database.get_global_database">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">get_global_database</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/database/database.html#Database.get_global_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.Database.get_global_database" title="Link to this definition"></a></dt>
+<dd><p>Return the global database instance if it was initialized, otherwise None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="#pairinteraction.Database" title="pairinteraction.database.database.Database"><code class="xref py py-class docutils literal notranslate"><span class="pre">Database</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.Database.initialize_global_database">
+<span class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">initialize_global_database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">download_missing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_cache</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/database/database.html#Database.initialize_global_database"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.Database.initialize_global_database" title="Link to this definition"></a></dt>
+<dd><p>Initialize the global database with the given parameters.</p>
+<p>The arguments are the same as for the constructor of this class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span></p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>download_missing</strong> (<em>bool</em>)</p></li>
+<li><p><strong>use_cache</strong> (<em>bool</em>)</p></li>
+<li><p><strong>database_dir</strong> (<em>str</em><em> | </em><em>PathLike</em><em>[</em><em>str</em><em>]</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.Database.download_missing">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">download_missing</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pairinteraction.Database.download_missing" title="Link to this definition"></a></dt>
+<dd><p>Whether to download missing databases if needed.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.Database.use_cache">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">use_cache</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#pairinteraction.Database.use_cache" title="Link to this definition"></a></dt>
+<dd><p>Whether to load the Wigner 3j symbols table into memory.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pairinteraction.Database.database_dir">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">database_dir</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></span><a class="headerlink" href="#pairinteraction.Database.database_dir" title="Link to this definition"></a></dt>
+<dd><p>The directory where the databases are stored.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api_reference.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pairinteraction.KetAtom.html" class="btn btn-neutral float-right" title="KetAtom" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: master (dev)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

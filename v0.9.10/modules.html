@@ -1,0 +1,648 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modules &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pairinteraction package" href="pairinteraction.html" />
+    <link rel="prev" title="3. Development" href="development.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            pairinteraction
+              <img src="_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorials.html">2. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html">pairinteraction package</a></li>
+</ul>
+</li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Modules</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h1>
+<p>The module <code class="docutils literal notranslate"><span class="pre">pireal</span></code> can be used if matrix elements are purely real-valued. If one considers electric or magnetic fields with a non-zero <span class="math notranslate nohighlight">\(y\)</span>-value, the module <code class="docutils literal notranslate"><span class="pre">picomplex</span></code> must be used.</p>
+<p>Note that this part of the documentation is under construction, the <a class="reference external" href="https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html">tutorials</a> might be more useful.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pairinteraction.html">pairinteraction package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.HypergeometricU"><code class="docutils literal notranslate"><span class="pre">HypergeometricU()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getDefectDB"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getDefectDB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getDiamagnetism"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getDiamagnetism()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getElectricDipole"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricDipole()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getElectricMultipole"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricMultipole()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getMagneticDipole"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getMagneticDipole()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.getRadial"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getRadial()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.loadElectricDipoleDB"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.loadElectricDipoleDB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.precalculateDiamagnetism"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.precalculateDiamagnetism()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.precalculateElectricMomentum"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.precalculateElectricMomentum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.precalculateMagneticMomentum"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.precalculateMagneticMomentum()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.precalculateMultipole"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.precalculateMultipole()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.precalculateRadial"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.precalculateRadial()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.setDefectDB"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.setDefectDB()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.setMethod"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.setMethod()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.size"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.MatrixElementCache.thisown"><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Numerov"><code class="docutils literal notranslate"><span class="pre">Numerov</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Numerov.integrate"><code class="docutils literal notranslate"><span class="pre">Numerov.integrate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Numerov.power_kernel"><code class="docutils literal notranslate"><span class="pre">Numerov.power_kernel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Numerov.thisown"><code class="docutils literal notranslate"><span class="pre">Numerov.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.PerturbativeInteraction"><code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.PerturbativeInteraction.getC3"><code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC3()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.PerturbativeInteraction.getC6"><code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC6()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.PerturbativeInteraction.getEnergy"><code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.PerturbativeInteraction.thisown"><code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect"><code class="docutils literal notranslate"><span class="pre">QuantumDefect</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.Z"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.Z</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.a1"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.a1</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.a2"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.a2</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.a3"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.a3</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.a4"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.a4</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.ac"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.ac</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.energy"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.energy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.j"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.j</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.l"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.l</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.n"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.n</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.nstar"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.nstar</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.rc"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.rc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.species"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.species</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.QuantumDefect.thisown"><code class="docutils literal notranslate"><span class="pre">QuantumDefect.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.RadialWFWhittaker"><code class="docutils literal notranslate"><span class="pre">RadialWFWhittaker()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne"><code class="docutils literal notranslate"><span class="pre">StateOne</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">StateOne.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getElement"><code class="docutils literal notranslate"><span class="pre">StateOne.getElement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getEnergy"><code class="docutils literal notranslate"><span class="pre">StateOne.getEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getHash"><code class="docutils literal notranslate"><span class="pre">StateOne.getHash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getJ"><code class="docutils literal notranslate"><span class="pre">StateOne.getJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getL"><code class="docutils literal notranslate"><span class="pre">StateOne.getL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getLabel"><code class="docutils literal notranslate"><span class="pre">StateOne.getLabel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getM"><code class="docutils literal notranslate"><span class="pre">StateOne.getM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getN"><code class="docutils literal notranslate"><span class="pre">StateOne.getN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getNStar"><code class="docutils literal notranslate"><span class="pre">StateOne.getNStar()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getReflected"><code class="docutils literal notranslate"><span class="pre">StateOne.getReflected()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getS"><code class="docutils literal notranslate"><span class="pre">StateOne.getS()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.getSpecies"><code class="docutils literal notranslate"><span class="pre">StateOne.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.isArtificial"><code class="docutils literal notranslate"><span class="pre">StateOne.isArtificial()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.isGeneralized"><code class="docutils literal notranslate"><span class="pre">StateOne.isGeneralized()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.str"><code class="docutils literal notranslate"><span class="pre">StateOne.str()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateOne.thisown"><code class="docutils literal notranslate"><span class="pre">StateOne.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo"><code class="docutils literal notranslate"><span class="pre">StateTwo</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">StateTwo.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getElement"><code class="docutils literal notranslate"><span class="pre">StateTwo.getElement()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getEnergy"><code class="docutils literal notranslate"><span class="pre">StateTwo.getEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getFirstState"><code class="docutils literal notranslate"><span class="pre">StateTwo.getFirstState()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getHash"><code class="docutils literal notranslate"><span class="pre">StateTwo.getHash()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getJ"><code class="docutils literal notranslate"><span class="pre">StateTwo.getJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getL"><code class="docutils literal notranslate"><span class="pre">StateTwo.getL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getLabel"><code class="docutils literal notranslate"><span class="pre">StateTwo.getLabel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getLeRoyRadius"><code class="docutils literal notranslate"><span class="pre">StateTwo.getLeRoyRadius()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getM"><code class="docutils literal notranslate"><span class="pre">StateTwo.getM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getN"><code class="docutils literal notranslate"><span class="pre">StateTwo.getN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getNStar"><code class="docutils literal notranslate"><span class="pre">StateTwo.getNStar()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getReflected"><code class="docutils literal notranslate"><span class="pre">StateTwo.getReflected()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getS"><code class="docutils literal notranslate"><span class="pre">StateTwo.getS()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getSecondState"><code class="docutils literal notranslate"><span class="pre">StateTwo.getSecondState()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.getSpecies"><code class="docutils literal notranslate"><span class="pre">StateTwo.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.isArtificial"><code class="docutils literal notranslate"><span class="pre">StateTwo.isArtificial()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.isGeneralized"><code class="docutils literal notranslate"><span class="pre">StateTwo.isGeneralized()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.str"><code class="docutils literal notranslate"><span class="pre">StateTwo.str()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.StateTwo.thisown"><code class="docutils literal notranslate"><span class="pre">StateTwo.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry"><code class="docutils literal notranslate"><span class="pre">Symmetry</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry.inversion"><code class="docutils literal notranslate"><span class="pre">Symmetry.inversion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry.permutation"><code class="docutils literal notranslate"><span class="pre">Symmetry.permutation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry.reflection"><code class="docutils literal notranslate"><span class="pre">Symmetry.reflection</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry.rotation"><code class="docutils literal notranslate"><span class="pre">Symmetry.rotation</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Symmetry.thisown"><code class="docutils literal notranslate"><span class="pre">Symmetry.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.add"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.addStates"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.buildBasis"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.buildInteraction"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.canonicalize"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.diagonalize"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.enableDiamagnetism"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.enableDiamagnetism()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getConnections"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getMainStates"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getNumStates"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getOverlap"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getSpecies"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getStateIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getStates"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.restrictJ"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.restrictL"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.restrictM"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.restrictN"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.rotate"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setBfield"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setBfield()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setConservedMomentaUnderRotation"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setConservedMomentaUnderRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setConservedParityUnderReflection"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setConservedParityUnderReflection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setEfield"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setEfield()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setIonCharge"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setIonCharge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setRydIonDistance"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setRydIonDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.setRydIonOrder"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.setRydIonOrder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.thisown"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneComplex.unitarize"><code class="docutils literal notranslate"><span class="pre">SystemOneComplex.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal"><code class="docutils literal notranslate"><span class="pre">SystemOneReal</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.add"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.addStates"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.buildBasis"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.buildInteraction"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.canonicalize"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.diagonalize"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.enableDiamagnetism"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.enableDiamagnetism()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getConnections"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getMainStates"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getNumStates"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getOverlap"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getSpecies"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getStateIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getStates"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.restrictJ"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.restrictL"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.restrictM"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.restrictN"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.rotate"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setBfield"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setBfield()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setConservedMomentaUnderRotation"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setConservedMomentaUnderRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setConservedParityUnderReflection"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setConservedParityUnderReflection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setEfield"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setEfield()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setIonCharge"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setIonCharge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setRydIonDistance"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setRydIonDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.setRydIonOrder"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.setRydIonOrder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.thisown"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemOneReal.unitarize"><code class="docutils literal notranslate"><span class="pre">SystemOneReal.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.add"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.addStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.buildBasis"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.buildInteraction"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.canonicalize"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.diagonalize"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.enableGreenTensor"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.enableGreenTensor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getConnections"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getMainStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getNumStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getOverlap"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getSpecies"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getStateIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getStatesFirst"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getStatesFirst()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.getStatesSecond"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.getStatesSecond()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.restrictJ"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.restrictL"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.restrictM"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.restrictN"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.rotate"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setAngle"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setAngle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setConservedMomentaUnderRotation"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setConservedMomentaUnderRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setConservedParityUnderInversion"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setConservedParityUnderInversion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setConservedParityUnderPermutation"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setConservedParityUnderPermutation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setConservedParityUnderReflection"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setConservedParityUnderReflection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setDistance"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setDistanceVector"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setDistanceVector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setOneAtomBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setOneAtomBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setOrder"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setOrder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.setSurfaceDistance"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.setSurfaceDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.thisown"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoComplex.unitarize"><code class="docutils literal notranslate"><span class="pre">SystemTwoComplex.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.__setstate_internal"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.__setstate_internal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.add"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.addStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.buildBasis"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.buildInteraction"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.canonicalize"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.diagonalize"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.enableGreenTensor"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.enableGreenTensor()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getConnections"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getMainStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getNumStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getOverlap"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getSpecies"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getSpecies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getStateIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getStates"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getStatesFirst"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getStatesFirst()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.getStatesSecond"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.getStatesSecond()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.restrictJ"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.restrictL"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.restrictM"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.restrictN"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.rotate"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setAngle"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setAngle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setConservedMomentaUnderRotation"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setConservedMomentaUnderRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setConservedParityUnderInversion"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setConservedParityUnderInversion()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setConservedParityUnderPermutation"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setConservedParityUnderPermutation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setConservedParityUnderReflection"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setConservedParityUnderReflection()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setDistance"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setDistanceVector"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setDistanceVector()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setOneAtomBasisvectors"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setOneAtomBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setOrder"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setOrder()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.setSurfaceDistance"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.setSurfaceDistance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.thisown"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.SystemTwoReal.unitarize"><code class="docutils literal notranslate"><span class="pre">SystemTwoReal.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.V"><code class="docutils literal notranslate"><span class="pre">V()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Whittaker"><code class="docutils literal notranslate"><span class="pre">Whittaker</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Whittaker.integrate"><code class="docutils literal notranslate"><span class="pre">Whittaker.integrate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Whittaker.power_kernel"><code class="docutils literal notranslate"><span class="pre">Whittaker.power_kernel()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.Whittaker.thisown"><code class="docutils literal notranslate"><span class="pre">Whittaker.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.WhittakerW"><code class="docutils literal notranslate"><span class="pre">WhittakerW()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.WignerD"><code class="docutils literal notranslate"><span class="pre">WignerD</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.WignerD.thisown"><code class="docutils literal notranslate"><span class="pre">WignerD.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SwigNonDynamicMeta"><code class="docutils literal notranslate"><span class="pre">_SwigNonDynamicMeta</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SwigNonDynamicMeta.mro"><code class="docutils literal notranslate"><span class="pre">_SwigNonDynamicMeta.mro()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.add"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.addStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.buildBasis"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.buildInteraction"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.canonicalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.diagonalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getConnections"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getMainStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getNumStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getOverlap"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getStateIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.restrictJ"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.restrictL"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.restrictM"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.restrictN"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.rotate"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.thisown"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneComplex.unitarize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneComplex.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.add"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.addStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.buildBasis"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.buildInteraction"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.canonicalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.diagonalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getConnections"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getMainStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getNumStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getOverlap"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getStateIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.restrictJ"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.restrictL"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.restrictM"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.restrictN"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.rotate"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.thisown"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateOneReal.unitarize"><code class="docutils literal notranslate"><span class="pre">_SystemStateOneReal.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.add"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.addStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.buildBasis"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.buildInteraction"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.canonicalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.diagonalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getConnections"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getMainStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getNumStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getOverlap"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getStateIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.restrictJ"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.restrictL"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.restrictM"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.restrictN"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.rotate"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.thisown"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoComplex.unitarize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoComplex.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.add"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.add()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.addHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.addHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.addStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.addStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.applySchriefferWolffTransformation"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.applySchriefferWolffTransformation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.buildBasis"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.buildBasis()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.buildHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.buildHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.buildInteraction"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.buildInteraction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.canonicalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.canonicalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.constrainBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.constrainBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.diagonalize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.diagonalize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.forgetStatemixing"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.forgetStatemixing()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getBasisvectorIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getBasisvectorIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getConnections"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getConnections()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getHamiltonian"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getHamiltonian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getMainStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getMainStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getNumBasisvectors"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getNumBasisvectors()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getNumStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getNumStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getOverlap"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getOverlap()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getStateIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getStateIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getStates"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getStates()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.getStatesMultiIndex"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.getStatesMultiIndex()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.restrictEnergy"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.restrictEnergy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.restrictJ"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.restrictJ()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.restrictL"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.restrictL()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.restrictM"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.restrictM()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.restrictN"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.restrictN()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.rotate"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.rotate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.setHamiltonianEntry"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.setHamiltonianEntry()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.setMinimalNorm"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.setMinimalNorm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.thisown"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.thisown</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._SystemStateTwoReal.unitarize"><code class="docutils literal notranslate"><span class="pre">_SystemStateTwoReal.unitarize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding._swig_add_metaclass"><code class="docutils literal notranslate"><span class="pre">_swig_add_metaclass()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.computeComplex"><code class="docutils literal notranslate"><span class="pre">computeComplex()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.computeReal"><code class="docutils literal notranslate"><span class="pre">computeReal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.energy_level"><code class="docutils literal notranslate"><span class="pre">energy_level()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.g"><code class="docutils literal notranslate"><span class="pre">g()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.nstar"><code class="docutils literal notranslate"><span class="pre">nstar()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.selectionRulesMomentumNew"><code class="docutils literal notranslate"><span class="pre">selectionRulesMomentumNew()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.html#pairinteraction.binding.selectionRulesMultipoleNew"><code class="docutils literal notranslate"><span class="pre">selectionRulesMultipoleNew()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="development.html" class="btn btn-neutral float-left" title="3. Development" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pairinteraction.html" class="btn btn-neutral float-right" title="pairinteraction package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

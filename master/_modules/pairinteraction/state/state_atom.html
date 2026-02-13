@@ -1,0 +1,444 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction.state.state_atom &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction.state.state_atom</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction.state.state_atom</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_cpp_operator_type</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.ket</span><span class="w"> </span><span class="kn">import</span> <span class="n">KetAtom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.state.state_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityScalar</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">_backend</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.basis</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisAtom</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.database</span><span class="w"> </span><span class="kn">import</span> <span class="n">Database</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">OperatorType</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">PintComplex</span><span class="p">,</span> <span class="n">PintFloat</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="StateAtom">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StateAtom</span><span class="p">(</span><span class="n">StateBase</span><span class="p">[</span><span class="n">KetAtom</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;State of a single atom.</span>
+
+<span class="sd">    A coefficient vector and a list of kets are used to represent an arbitrary single-atom state.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction as pi</span>
+<span class="sd">        &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; basis = pi.BasisAtom(&quot;Rb&quot;, n=(57, 63), l=(0, 3))</span>
+<span class="sd">        &gt;&gt;&gt; state = basis.get_corresponding_state(ket)</span>
+<span class="sd">        &gt;&gt;&gt; print(state)</span>
+<span class="sd">        StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)</span>
+<span class="sd">        &gt;&gt;&gt; ket2 = pi.KetAtom(&quot;Rb&quot;, n=60, l=1, j=0.5, m=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; state2 = pi.StateAtom(ket2, basis)</span>
+<span class="sd">        &gt;&gt;&gt; print((2 * state2 - state).normalize())</span>
+<span class="sd">        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ + -0.45 |Rb:60,S_1/2,1/2⟩)</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisAtomComplex</span>
+    <span class="n">_ket_class</span> <span class="o">=</span> <span class="n">KetAtom</span>
+
+<div class="viewcode-block" id="StateAtom.__init__">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ket</span><span class="p">:</span> <span class="n">KetAtom</span><span class="p">,</span> <span class="n">basis</span><span class="p">:</span> <span class="n">BasisAtom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a state object representing a ket in a given basis.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ket: The ket to represent in the state.</span>
+<span class="sd">            basis: The basis to which the state belongs.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">basis</span><span class="o">.</span><span class="n">get_corresponding_state</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span>
+        <span class="n">ket_idx</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">kets</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span> <span class="o">*</span> <span class="mi">0</span>  <span class="c1"># type: ignore [operator]</span>
+        <span class="n">coeffs</span><span class="p">[</span><span class="n">ket_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">state</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_coefficients</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">_cpp</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add two states together.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: The other state to add.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new state object representing the sum of the two states.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot add </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">ket_self</span> <span class="o">==</span> <span class="n">ket_other</span> <span class="k">for</span> <span class="n">ket_self</span><span class="p">,</span> <span class="n">ket_other</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kets</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">kets</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Cannot add states where the basis does not consist of exactly the same kets.&quot;</span><span class="p">)</span>
+
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span> <span class="o">+</span> <span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span>
+        <span class="n">new_cpp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_cpp</span><span class="o">.</span><span class="n">set_coefficients</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_from_cpp_object</span><span class="p">(</span><span class="n">new_cpp</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Subtract two states.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: The other state to subtract.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new state object representing the difference of the two states.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Multiply the state with a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: The scalar to multiply with.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new state object representing the product of the state and the scalar.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">complex</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cannot multiply </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span>  <span class="c1"># type: ignore [operator]</span>
+        <span class="n">new_cpp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_cpp</span><span class="o">.</span><span class="n">set_coefficients</span><span class="p">(</span><span class="n">coeffs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_from_cpp_object</span><span class="p">(</span><span class="n">new_cpp</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Divide the state by a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: The scalar to divide by.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new state object representing the quotient of the state and the scalar.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__mul__</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span>
+
+    <span class="fm">__rmul__</span> <span class="o">=</span> <span class="fm">__mul__</span>  <span class="c1"># for reverse multiplication, i.e. scalar * state will use state.__rmul__</span>
+
+<div class="viewcode-block" id="StateAtom.normalize">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.normalize">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize the coefficients of the state.&quot;&quot;&quot;</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_coefficients</span><span class="p">(</span><span class="n">coeffs</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">)</span>  <span class="c1"># type: ignore [arg-type]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="StateAtom.is_normalized">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.is_normalized">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_normalized</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check if the state is normalized within a given tolerance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tol: The tolerance for the normalization check. Default is 1e-10.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the state is normalized within the given tolerance, False otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span>  <span class="c1"># type: ignore [return-value] # numpy</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">database</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Database</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The database used for this object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">database</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">species</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The atomic species.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">species</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_canonical</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">())</span> <span class="o">==</span> <span class="mi">1</span>  <span class="c1"># type: ignore [no-any-return]</span>
+
+<div class="viewcode-block" id="StateAtom.get_amplitude">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.get_amplitude">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_amplitude</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span> <span class="o">|</span> <span class="n">KetAtom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the amplitude of the state with respect to another state or ket.</span>
+
+<span class="sd">        This means the inner product &lt;self|other&gt;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Either a state or a ket for which the amplitude should be calculated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The amplitude between self and other.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: get_amplitude is called with a non-normalized state.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetAtom</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># type: ignore [no-any-return]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># type: ignore [no-any-return]</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Incompatible types: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StateAtom.get_overlap">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.get_overlap">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_overlap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Self</span> <span class="o">|</span> <span class="n">KetAtom</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculate the overlap of the state with respect to another state or ket.</span>
+
+<span class="sd">        This means calculate :math:`|\langle \mathrm{self} | \mathrm{other} \rangle|^2`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Either a state or a ket for which the overlap should be calculated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The overlap between self and other.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: get_overlap is called with a non-normalized state.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetAtom</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># type: ignore [no-any-return]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># type: ignore [no-any-return]</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Incompatible types: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_element</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetAtom</span> <span class="o">|</span> <span class="n">Self</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">OperatorType</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintFloat</span> <span class="o">|</span> <span class="n">PintComplex</span><span class="p">:</span> <span class="o">...</span>  <span class="c1"># type: ignore [type-var] # see &quot;PintComplex&quot;</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_element</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetAtom</span> <span class="o">|</span> <span class="n">Self</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">OperatorType</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="StateAtom.get_matrix_element">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.StateAtom.html#pairinteraction.StateAtom.get_matrix_element">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_element</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetAtom</span> <span class="o">|</span> <span class="n">Self</span><span class="p">,</span> <span class="n">operator</span><span class="p">:</span> <span class="n">OperatorType</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintFloat</span> <span class="o">|</span> <span class="n">PintComplex</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the matrix element of the operator with respect to the state and another state or ket.</span>
+
+<span class="sd">        This means the inner product &lt;self|operator|other&gt;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            other: Either a state or a ket for which the matrix element should be calculated.</span>
+<span class="sd">            operator: The operator for which the matrix element should be calculated.</span>
+<span class="sd">            q: The projection quantum number of the operator.</span>
+<span class="sd">            unit: The unit in which the result should be returned.</span>
+<span class="sd">                Default None will return a `pint.Quantity`.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The matrix element between self and other.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other</span><span class="o">.</span><span class="n">is_normalized</span><span class="p">()):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WARNING: get_matrix_element is called with a non-normalized state.&quot;</span><span class="p">)</span>
+
+        <span class="n">cpp_op</span> <span class="o">=</span> <span class="n">get_cpp_operator_type</span><span class="p">(</span><span class="n">operator</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetAtom</span><span class="p">):</span>
+            <span class="n">matrix_elements_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">cpp_op</span><span class="p">,</span> <span class="n">q</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_au</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">StateAtom</span><span class="p">):</span>
+            <span class="n">matrix_elements_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">cpp_op</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_au</span><span class="p">,</span> <span class="n">operator</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">StateAtomReal</span><span class="p">(</span><span class="n">StateAtom</span><span class="p">):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisAtomReal</span>  <span class="c1"># type: ignore [assignment]</span>
+    <span class="n">_ket_class</span> <span class="o">=</span> <span class="n">KetAtom</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: master (dev)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

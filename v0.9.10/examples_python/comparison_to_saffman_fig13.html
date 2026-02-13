@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.2.4. Blockade Interaction in a Magnetic Field &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2.2.5. Rydberg Pair Potentials Under External Fields" href="pair_potential_efield_sensitivity.html" />
+    <link rel="prev" title="2.2.3. Radial Wavefunctions and Quantum Defects" href="wavefunctions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">2. Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#graphical-user-interface">2.1. Graphical User Interface</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#python-api">2.2. Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="introduction.html">2.2.1. Introduction to the pairinteraction Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="matrix_elements.html">2.2.2. Calculation of Matrix Elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wavefunctions.html">2.2.3. Radial Wavefunctions and Quantum Defects</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.4. Blockade Interaction in a Magnetic Field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">2.2.5. Rydberg Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vdw_near_surface.html">2.2.6. Dispersion Coefficients Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_near_surface.html">2.2.7. Rydberg Pair Potentials Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">2.2.8. Rydberg Atom Ion Interaction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html"><span class="section-number">2. </span>Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.2.4. </span>Blockade Interaction in a Magnetic Field</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples_python/comparison_to_saffman_fig13.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="comparison_to_saffman_fig13.ipynb">comparison_to_saffman_fig13.ipynb</a>.
+</div><section id="Blockade-Interaction-in-a-Magnetic-Field">
+<h1><span class="section-number">2.2.4. </span>Blockade Interaction in a Magnetic Field<a class="headerlink" href="#Blockade-Interaction-in-a-Magnetic-Field" title="Link to this heading"></a></h1>
+<p>The interaction between Rydberg atoms is strongly influenced by external electric and magnetic fields. A small magnetic field for instance lifts the Zeeman degeneracy and thus strengthens the Rydberg blockade, especially if there is a non-zero angle between the interatomic and the quantization axis. This has been discussed in M. Saffman, T. G. Walker, and K. Mølmer, “Quantum information with Rydberg atoms”, <a class="reference external" href="https://dx.doi.org/10.1103/RevModPhys.82.2313">Rev. Mod. Phys. 82, 2313 (2010)</a>. Here
+we show how to reproduce <a class="reference external" href="https://journals.aps.org/rmp/article/10.1103/RevModPhys.82.2313/figures/13/medium">Fig. 13</a> using pairinteraction. This <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/doc/sphinx/examples_python/comparison_to_saffman_fig13.ipynb">Jupyter notebook</a> and the final <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/doc/sphinx/examples_python/comparison_to_saffman_fig13.py">Python script</a> are available on GitHub.</p>
+<p>As described in the <a class="reference internal" href="introduction.html"><span class="doc">introduction</span></a>, we start our code with some preparations. We will make use of pairinteraction’s parallel capacities which is why we load the <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code> module if supported by the operating system (in Windows, the module only works with methods defined outside an IPython notebook).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%matplotlib inline
+
+# Arrays
+import numpy as np
+
+# Plotting
+import matplotlib.pyplot as plt
+
+# Operating system interfaces
+import os
+import sys
+
+# Parallel computing
+if sys.platform != &quot;win32&quot;:
+    from multiprocessing import Pool
+from functools import partial
+
+# pairinteraction :-)
+from pairinteraction import pireal as pi
+
+# Create cache for matrix elements
+if not os.path.exists(&quot;./cache&quot;):
+    os.makedirs(&quot;./cache&quot;)
+cache = pi.MatrixElementCache(&quot;./cache&quot;)
+</pre></div>
+</div>
+</div>
+<p>We begin by defining some constants of our calculation: the spatial separation of the Rydberg atoms and a range of magnetic field we want to iterate over. The units of the respective quantities are given as comments.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>distance = 10  # µm
+bfields = np.linspace(0, 20, 200)  # Gauss
+</pre></div>
+</div>
+</div>
+<p>Now, we use pairinteraction’s <code class="docutils literal notranslate"><span class="pre">StateOne</span></code> class to define the single-atom state <span class="math notranslate nohighlight">\(\left|43d_{5/2},m_j=1/2\right\rangle\)</span> of a Rubudium atom.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state_one = pi.StateOne(&quot;Rb&quot;, 43, 2, 2.5, 0.5)
+</pre></div>
+</div>
+</div>
+<p>Next, we define how to set up the single atom system. We do this using a function, so we can easily create systems with the magnetic field as a parameter. Inside the function we create a new system by passing the <code class="docutils literal notranslate"><span class="pre">state_one</span></code> and the cache directory we created to <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code>.</p>
+<p>To limit the size of the basis, we have to choose cutoffs on states which can couple to <code class="docutils literal notranslate"><span class="pre">state_one</span></code>. This is done by means of the <code class="docutils literal notranslate"><span class="pre">restrict...</span></code> functions in <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code>.</p>
+<p>Finally, we set the magnetic field to point in <span class="math notranslate nohighlight">\(z\)</span>-direction with the magnitude given by the argument.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def setup_system_one(bfield):
+    system_one = pi.SystemOne(state_one.getSpecies(), cache)
+    system_one.restrictEnergy(state_one.getEnergy() - 100, state_one.getEnergy() + 100)
+    system_one.restrictN(state_one.getN() - 2, state_one.getN() + 2)
+    system_one.restrictL(state_one.getL() - 2, state_one.getL() + 2)
+    system_one.setBfield([0, 0, bfield])
+    return system_one
+</pre></div>
+</div>
+</div>
+<p>To investigate the <span class="math notranslate nohighlight">\(\left|43d_{5/2},m_j=1/2;43d_{5/2},m_j=1/2\right\rangle\)</span> pair state, we easily combine the same single-atom state twice into a pair state using <code class="docutils literal notranslate"><span class="pre">StateTwo</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state_two = pi.StateTwo(state_one, state_one)
+</pre></div>
+</div>
+</div>
+<p>Akin to the single atom system, we now define how to create a two atom system. We want to parametrize this in terms of the single atom system and the interaction angle.</p>
+<p>We compose a <code class="docutils literal notranslate"><span class="pre">SystemTwo</span></code> from two <code class="docutils literal notranslate"><span class="pre">system_one</span></code> because we are looking at two identical atoms. Again we have to restrict the energy range for coupling. Then we proceed to set the distance between the two atoms and the interaction angle.</p>
+<p>To speed up the calculation, we can tell pairinteraction that this system will have some symmetries.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def setup_system_two(system_one, angle):
+    system_two = pi.SystemTwo(system_one, system_one, cache)
+    system_two.restrictEnergy(state_two.getEnergy() - 5, state_two.getEnergy() + 5)
+    system_two.setDistance(10)
+    system_two.setAngle(angle)
+    if angle == 0:
+        system_two.setConservedMomentaUnderRotation([int(2 * state_one.getM())])
+    system_two.setConservedParityUnderInversion(pi.ODD)
+    system_two.setConservedParityUnderPermutation(pi.ODD)
+    return system_two
+</pre></div>
+</div>
+</div>
+<p>Now, we can use the definitions from above to compose our calculation.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>def getEnergies(bfield, angle):
+    # Set up one atom system
+    system_one = setup_system_one(bfield)
+    system_one.diagonalize(1e-3)
+
+    # Calculate Zeeman shift
+    zeemanshift = (
+        2
+        * system_one.getHamiltonian().diagonal()[
+            system_one.getBasisvectorIndex(state_one)
+        ]
+    )  # GHz
+
+    # Set up two atom system
+    system_two = setup_system_two(system_one, angle)
+    system_two.diagonalize(1e-3)
+
+    # Calculate blockade interaction
+    eigenenergies = (system_two.getHamiltonian().diagonal() - zeemanshift) * 1e3  # MHz
+    overlaps = system_two.getOverlap(state_two)
+    blockade = 1 / np.sqrt(np.sum(overlaps / eigenenergies**2))
+
+    return blockade
+</pre></div>
+</div>
+</div>
+<p>With a little boiler-plate, we can then calculate and plot the result with <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>plt.xlabel(r&quot;$B$ (Gauss)&quot;)
+plt.ylabel(r&quot;Blockade (MHz)&quot;)
+plt.xlim(-0.4, 20.4)
+plt.ylim(0, 0.4)
+
+if sys.platform != &quot;win32&quot;:
+    with Pool() as pool:
+        energies1 = pool.map(partial(getEnergies, angle=0), bfields)
+        energies2 = pool.map(partial(getEnergies, angle=np.pi / 2), bfields)
+else:
+    energies1 = list(map(partial(getEnergies, angle=0), bfields))
+    energies2 = list(map(partial(getEnergies, angle=np.pi / 2), bfields))
+
+plt.plot(bfields, energies1, &quot;b-&quot;, label=r&quot;$\theta = 0$&quot;)
+plt.plot(bfields, energies2, &quot;g-&quot;, label=r&quot;$\theta = \pi/2$&quot;)
+plt.legend(loc=2, bbox_to_anchor=(1.02, 1), borderaxespad=0);
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_comparison_to_saffman_fig13_17_0.png" src="../_images/examples_python_comparison_to_saffman_fig13_17_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="wavefunctions.html" class="btn btn-neutral float-left" title="2.2.3. Radial Wavefunctions and Quantum Defects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pair_potential_efield_sensitivity.html" class="btn btn-neutral float-right" title="2.2.5. Rydberg Pair Potentials Under External Fields" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

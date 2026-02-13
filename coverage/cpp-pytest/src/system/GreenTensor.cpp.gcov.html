@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/system/GreenTensor.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">src/system</a> - GreenTensor.cpp<span style="font-size: 80%;"> (source / <a href="GreenTensor.cpp.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">74</td>
+            <td class="headerCovTableEntry">76</td>
+            <td class="headerCovTableEntryHi">97.4 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-02-13 13:04:16</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntry">22</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : // SPDX-FileCopyrightText: 2025 PairInteraction Developers</a>
+<a name="2"><span class="lineNum">       2 </span>            : // SPDX-License-Identifier: LGPL-3.0-or-later</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span>            : #include &quot;pairinteraction/system/GreenTensor.hpp&quot;</a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span>            : #include &quot;pairinteraction/utils/eigen_assertion.hpp&quot;</a>
+<a name="7"><span class="lineNum">       7 </span>            : #include &quot;pairinteraction/utils/eigen_compat.hpp&quot;</a>
+<a name="8"><span class="lineNum">       8 </span>            : #include &quot;pairinteraction/utils/spherical.hpp&quot;</a>
+<a name="9"><span class="lineNum">       9 </span>            : #include &quot;pairinteraction/utils/traits.hpp&quot;</a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
+<a name="11"><span class="lineNum">      11 </span>            : #include &lt;Eigen/Dense&gt;</a>
+<a name="12"><span class="lineNum">      12 </span>            : #include &lt;Eigen/Sparse&gt;</a>
+<a name="13"><span class="lineNum">      13 </span>            : #include &lt;complex&gt;</a>
+<a name="14"><span class="lineNum">      14 </span>            : #include &lt;map&gt;</a>
+<a name="15"><span class="lineNum">      15 </span>            : #include &lt;spdlog/spdlog.h&gt;</a>
+<a name="16"><span class="lineNum">      16 </span>            : #include &lt;unsupported/Eigen/Splines&gt;</a>
+<a name="17"><span class="lineNum">      17 </span>            : </a>
+<a name="18"><span class="lineNum">      18 </span>            : namespace pairinteraction {</a>
+<a name="19"><span class="lineNum">      19 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="20"><span class="lineNum">      20 </span><span class="lineCov">       1632 : GreenTensor&lt;Scalar&gt;::ConstantEntry::ConstantEntry(int row, int col, Scalar val)</span></a>
+<a name="21"><span class="lineNum">      21 </span><span class="lineCov">       1632 :     : row_(row), col_(col), val_(val) {}</span></a>
+<a name="22"><span class="lineNum">      22 </span>            : </a>
+<a name="23"><span class="lineNum">      23 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="24"><span class="lineNum">      24 </span><span class="lineCov">       1668 : Scalar GreenTensor&lt;Scalar&gt;::ConstantEntry::val() const {</span></a>
+<a name="25"><span class="lineNum">      25 </span><span class="lineCov">       1668 :     return val_;</span></a>
+<a name="26"><span class="lineNum">      26 </span>            : }</a>
+<a name="27"><span class="lineNum">      27 </span>            : </a>
+<a name="28"><span class="lineNum">      28 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="29"><span class="lineNum">      29 </span><span class="lineCov">       3297 : int GreenTensor&lt;Scalar&gt;::ConstantEntry::row() const noexcept {</span></a>
+<a name="30"><span class="lineNum">      30 </span><span class="lineCov">       3297 :     return row_;</span></a>
+<a name="31"><span class="lineNum">      31 </span>            : }</a>
+<a name="32"><span class="lineNum">      32 </span>            : </a>
+<a name="33"><span class="lineNum">      33 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="34"><span class="lineNum">      34 </span><span class="lineCov">       3297 : int GreenTensor&lt;Scalar&gt;::ConstantEntry::col() const noexcept {</span></a>
+<a name="35"><span class="lineNum">      35 </span><span class="lineCov">       3297 :     return col_;</span></a>
+<a name="36"><span class="lineNum">      36 </span>            : }</a>
+<a name="37"><span class="lineNum">      37 </span>            : </a>
+<a name="38"><span class="lineNum">      38 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="39"><span class="lineNum">      39 </span><span class="lineCov">         18 : GreenTensor&lt;Scalar&gt;::OmegaDependentEntry::OmegaDependentEntry(int row, int col,</span></a>
+<a name="40"><span class="lineNum">      40 </span>            :                                                               Eigen::Spline&lt;real_t, 1&gt; real_spline,</a>
+<a name="41"><span class="lineNum">      41 </span>            :                                                               Eigen::Spline&lt;real_t, 1&gt; imag_spline)</a>
+<a name="42"><span class="lineNum">      42 </span><span class="lineCov">         18 :     : row_(row), col_(col), real_spline(std::move(real_spline)),</span></a>
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">         18 :       imag_spline(std::move(imag_spline)) {}</span></a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="46"><span class="lineNum">      46 </span><span class="lineCov">         54 : Scalar GreenTensor&lt;Scalar&gt;::OmegaDependentEntry::val(double omega) const {</span></a>
+<a name="47"><span class="lineNum">      47 </span>            :     if constexpr (traits::NumTraits&lt;Scalar&gt;::is_complex_v) {</a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">         27 :         return {real_spline(omega)(0), imag_spline(omega)(0)};</span></a>
+<a name="49"><span class="lineNum">      49 </span>            :     } else {</a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineCov">         27 :         return real_spline(omega)(0);</span></a>
+<a name="51"><span class="lineNum">      51 </span>            :     }</a>
+<a name="52"><span class="lineNum">      52 </span>            : }</a>
+<a name="53"><span class="lineNum">      53 </span>            : </a>
+<a name="54"><span class="lineNum">      54 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="55"><span class="lineNum">      55 </span><span class="lineCov">         54 : int GreenTensor&lt;Scalar&gt;::OmegaDependentEntry::row() const noexcept {</span></a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">         54 :     return row_;</span></a>
+<a name="57"><span class="lineNum">      57 </span>            : }</a>
+<a name="58"><span class="lineNum">      58 </span>            : </a>
+<a name="59"><span class="lineNum">      59 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="60"><span class="lineNum">      60 </span><span class="lineCov">         54 : int GreenTensor&lt;Scalar&gt;::OmegaDependentEntry::col() const noexcept {</span></a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">         54 :     return col_;</span></a>
+<a name="62"><span class="lineNum">      62 </span>            : }</a>
+<a name="63"><span class="lineNum">      63 </span>            : </a>
+<a name="64"><span class="lineNum">      64 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">        538 : void GreenTensor&lt;Scalar&gt;::create_entries_from_cartesian(</span></a>
+<a name="66"><span class="lineNum">      66 </span>            :     int kappa1, int kappa2, const Eigen::MatrixX&lt;Scalar&gt; &amp;tensor_in_cartesian_coordinates) {</a>
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span><span class="lineCov">        538 :     const real_t scale = tensor_in_cartesian_coordinates.norm();</span></a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">        538 :     const real_t numerical_precision = 100 * scale * std::numeric_limits&lt;real_t&gt;::epsilon();</span></a>
+<a name="70"><span class="lineNum">      70 </span>            : </a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">       1076 :     Eigen::SparseMatrix&lt;complex_t&gt; tensor =</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">        538 :         (spherical::get_transformator&lt;complex_t&gt;(kappa1) * tensor_in_cartesian_coordinates *</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">        538 :          spherical::get_transformator&lt;complex_t&gt;(kappa2).adjoint())</span></a>
+<a name="74"><span class="lineNum">      74 </span><span class="lineCov">        538 :             .sparseView(1, numerical_precision);</span></a>
+<a name="75"><span class="lineNum">      75 </span>            : </a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">        538 :     std::vector&lt;Entry&gt; entries;</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">       2212 :     for (int k = 0; k &lt; tensor.outerSize(); ++k) {</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">       3306 :         for (typename Eigen::SparseMatrix&lt;complex_t&gt;::InnerIterator it(tensor, k); it; ++it) {</span></a>
+<a name="79"><span class="lineNum">      79 </span>            :             if constexpr (traits::NumTraits&lt;Scalar&gt;::is_complex_v) {</a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">        807 :                 entries.emplace_back(ConstantEntry(it.row(), it.col(), it.value()));</span></a>
+<a name="81"><span class="lineNum">      81 </span>            :             } else {</a>
+<a name="82"><span class="lineNum">      82 </span><span class="lineCov">        825 :                 entries.emplace_back(ConstantEntry(it.row(), it.col(), it.value().real()));</span></a>
+<a name="83"><span class="lineNum">      83 </span><span class="lineCov">        825 :                 assert(abs(it.value().imag()) &lt; numerical_precision);</span></a>
+<a name="84"><span class="lineNum">      84 </span>            :             }</a>
+<a name="85"><span class="lineNum">      85 </span>            :         }</a>
+<a name="86"><span class="lineNum">      86 </span>            :     }</a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">        538 :     entries_map[{kappa1, kappa2}] = std::move(entries);</span></a>
+<a name="88"><span class="lineNum">      88 </span><span class="lineCov">        538 : }</span></a>
+<a name="89"><span class="lineNum">      89 </span>            : </a>
+<a name="90"><span class="lineNum">      90 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">          6 : void GreenTensor&lt;Scalar&gt;::create_entries_from_cartesian(</span></a>
+<a name="92"><span class="lineNum">      92 </span>            :     int kappa1, int kappa2,</a>
+<a name="93"><span class="lineNum">      93 </span>            :     const std::vector&lt;Eigen::MatrixX&lt;Scalar&gt;&gt; &amp;tensors_in_cartesian_coordinates,</a>
+<a name="94"><span class="lineNum">      94 </span>            :     const std::vector&lt;double&gt; &amp;omegas) {</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span><span class="lineCov">          6 :     if (tensors_in_cartesian_coordinates.size() != omegas.size()) {</span></a>
+<a name="97"><span class="lineNum">      97 </span><span class="lineNoCov">          0 :         throw std::invalid_argument(&quot;The number of tensors and omegas must match.&quot;);</span></a>
+<a name="98"><span class="lineNum">      98 </span>            :     }</a>
+<a name="99"><span class="lineNum">      99 </span>            : </a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">          6 :     if (tensors_in_cartesian_coordinates.size() &lt; 4) {</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :         throw std::invalid_argument(</span></a>
+<a name="102"><span class="lineNum">     102 </span>            :             &quot;At least 4 tensors are required for the applied cubic spline interpolation.&quot;);</a>
+<a name="103"><span class="lineNum">     103 </span>            :     }</a>
+<a name="104"><span class="lineNum">     104 </span>            : </a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          6 :     auto num_knots = static_cast&lt;int&gt;(omegas.size());</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">          6 :     Eigen::Map&lt;const Eigen::RowVectorXd&gt; knots(omegas.data(), num_knots);</span></a>
+<a name="107"><span class="lineNum">     107 </span>            : </a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">          6 :     constexpr int spline_degree = 3; // cubic spline interpolation</span></a>
+<a name="109"><span class="lineNum">     109 </span>            : </a>
+<a name="110"><span class="lineNum">     110 </span>            :     // Temporary storage wih key = (row, col) and value = vector of one double per omega</a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">          6 :     std::map&lt;std::pair&lt;int, int&gt;, std::pair&lt;Eigen::RowVectorXd, Eigen::RowVectorXd&gt;&gt; temp_map;</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">         30 :     for (int idx = 0; idx &lt; num_knots; ++idx) {</span></a>
+<a name="113"><span class="lineNum">     113 </span>            : </a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">         24 :         const real_t scale = tensors_in_cartesian_coordinates[idx].norm();</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">         24 :         const real_t numerical_precision = 100 * scale * std::numeric_limits&lt;real_t&gt;::epsilon();</span></a>
+<a name="116"><span class="lineNum">     116 </span>            : </a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">         48 :         Eigen::SparseMatrix&lt;complex_t&gt; tensor =</span></a>
+<a name="118"><span class="lineNum">     118 </span><span class="lineCov">         24 :             (spherical::get_transformator&lt;complex_t&gt;(kappa1) *</span></a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">         24 :              tensors_in_cartesian_coordinates[idx] *</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">         24 :              spherical::get_transformator&lt;complex_t&gt;(kappa2).adjoint())</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">         24 :                 .sparseView(1, numerical_precision);</span></a>
+<a name="122"><span class="lineNum">     122 </span>            : </a>
+<a name="123"><span class="lineNum">     123 </span><span class="lineCov">         96 :         for (int k = 0; k &lt; tensor.outerSize(); ++k) {</span></a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineCov">        144 :             for (typename Eigen::SparseMatrix&lt;complex_t&gt;::InnerIterator it(tensor, k); it; ++it) {</span></a>
+<a name="125"><span class="lineNum">     125 </span><span class="lineCov">         72 :                 std::pair&lt;int, int&gt; key{it.row(), it.col()};</span></a>
+<a name="126"><span class="lineNum">     126 </span><span class="lineCov">         72 :                 auto &amp;[vec_real, vec_imag] =</span></a>
+<a name="127"><span class="lineNum">     127 </span>            :                     temp_map</a>
+<a name="128"><span class="lineNum">     128 </span><span class="lineCov">        144 :                         .try_emplace(key, Eigen::RowVectorXd::Zero(num_knots),</span></a>
+<a name="129"><span class="lineNum">     129 </span>            :                                      Eigen::RowVectorXd::Zero(num_knots))</a>
+<a name="130"><span class="lineNum">     130 </span><span class="lineCov">         72 :                         .first-&gt;second;</span></a>
+<a name="131"><span class="lineNum">     131 </span><span class="lineCov">         72 :                 vec_real(idx) = it.value().real();</span></a>
+<a name="132"><span class="lineNum">     132 </span>            :                 if constexpr (traits::NumTraits&lt;Scalar&gt;::is_complex_v) {</a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">         36 :                     vec_imag(idx) = it.value().imag();</span></a>
+<a name="134"><span class="lineNum">     134 </span>            :                 } else {</a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">         36 :                     assert(abs(it.value().imag()) &lt; numerical_precision);</span></a>
+<a name="136"><span class="lineNum">     136 </span>            :                 }</a>
+<a name="137"><span class="lineNum">     137 </span>            :             }</a>
+<a name="138"><span class="lineNum">     138 </span>            :         }</a>
+<a name="139"><span class="lineNum">     139 </span>            :     }</a>
+<a name="140"><span class="lineNum">     140 </span>            : </a>
+<a name="141"><span class="lineNum">     141 </span>            :     // Set the green tensor entries with spline interpolation</a>
+<a name="142"><span class="lineNum">     142 </span><span class="lineCov">          6 :     std::vector&lt;Entry&gt; entries;</span></a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          6 :     entries.reserve(temp_map.size());</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">         24 :     for (const auto &amp;[key, value] : temp_map) {</span></a>
+<a name="145"><span class="lineNum">     145 </span><span class="lineCov">         18 :         const auto &amp;[vec_real, vec_imag] = value;</span></a>
+<a name="146"><span class="lineNum">     146 </span><span class="lineCov">         18 :         const auto &amp;[row, col] = key;</span></a>
+<a name="147"><span class="lineNum">     147 </span>            : </a>
+<a name="148"><span class="lineNum">     148 </span><span class="lineCov">         18 :         Eigen::Spline&lt;real_t, 1&gt; real_spline =</span></a>
+<a name="149"><span class="lineNum">     149 </span>            :             Eigen::SplineFitting&lt;Eigen::Spline&lt;real_t, 1&gt;&gt;::Interpolate(vec_real, spline_degree,</a>
+<a name="150"><span class="lineNum">     150 </span>            :                                                                         knots);</a>
+<a name="151"><span class="lineNum">     151 </span>            : </a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">         18 :         Eigen::Spline&lt;real_t, 1&gt; imag_spline;</span></a>
+<a name="153"><span class="lineNum">     153 </span>            :         if constexpr (traits::NumTraits&lt;Scalar&gt;::is_complex_v) {</a>
+<a name="154"><span class="lineNum">     154 </span><span class="lineCov">          9 :             imag_spline = Eigen::SplineFitting&lt;Eigen::Spline&lt;real_t, 1&gt;&gt;::Interpolate(</span></a>
+<a name="155"><span class="lineNum">     155 </span>            :                 vec_imag, spline_degree, knots);</a>
+<a name="156"><span class="lineNum">     156 </span>            :         }</a>
+<a name="157"><span class="lineNum">     157 </span>            : </a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">         18 :         entries.emplace_back(</span></a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">         36 :             OmegaDependentEntry(row, col, std::move(real_spline), std::move(imag_spline)));</span></a>
+<a name="160"><span class="lineNum">     160 </span>            :     }</a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          6 :     entries_map[{kappa1, kappa2}] = std::move(entries);</span></a>
+<a name="162"><span class="lineNum">     162 </span><span class="lineCov">          6 : }</span></a>
+<a name="163"><span class="lineNum">     163 </span>            : </a>
+<a name="164"><span class="lineNum">     164 </span>            : template &lt;typename Scalar&gt;</a>
+<a name="165"><span class="lineNum">     165 </span>            : const std::vector&lt;typename GreenTensor&lt;Scalar&gt;::Entry&gt; &amp;</a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">       5241 : GreenTensor&lt;Scalar&gt;::get_spherical_entries(int kappa1, int kappa2) const {</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">       5241 :     if (auto it = entries_map.find({kappa1, kappa2}); it != entries_map.end()) {</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">       1602 :         return it-&gt;second;</span></a>
+<a name="169"><span class="lineNum">     169 </span>            :     }</a>
+<a name="170"><span class="lineNum">     170 </span><span class="lineCov">       3639 :     static const std::vector&lt;Entry&gt; empty_entries;</span></a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">       3639 :     return empty_entries;</span></a>
+<a name="172"><span class="lineNum">     172 </span>            : }</a>
+<a name="173"><span class="lineNum">     173 </span>            : </a>
+<a name="174"><span class="lineNum">     174 </span>            : // Explicit instantiations</a>
+<a name="175"><span class="lineNum">     175 </span>            : template class GreenTensor&lt;double&gt;;</a>
+<a name="176"><span class="lineNum">     176 </span>            : template class GreenTensor&lt;std::complex&lt;double&gt;&gt;;</a>
+<a name="177"><span class="lineNum">     177 </span>            : } // namespace pairinteraction</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="https://github.com/linux-test-project/lcov" target="_parent">LCOV version 1.16</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

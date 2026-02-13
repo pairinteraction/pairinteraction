@@ -1,0 +1,502 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction/perturbative/perturbative.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../../../index.html">top level</a> - <a href="index.html">src/pairinteraction/perturbative</a> - perturbative.py<span style="font-size: 80%;"> (source / <a href="perturbative.py.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">112</td>
+            <td class="headerCovTableEntry">145</td>
+            <td class="headerCovTableEntryHi">77.2 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-02-13 12:53:30</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</a>
+<a name="2"><span class="lineNum">       2 </span>            : # SPDX-License-Identifier: LGPL-3.0-or-later</a>
+<a name="3"><span class="lineNum">       3 </span><span class="lineCov">          1 : from __future__ import annotations</span></a>
+<a name="4"><span class="lineNum">       4 </span>            : </a>
+<a name="5"><span class="lineNum">       5 </span><span class="lineCov">          1 : import logging</span></a>
+<a name="6"><span class="lineNum">       6 </span><span class="lineCov">          1 : from collections.abc import Iterable</span></a>
+<a name="7"><span class="lineNum">       7 </span><span class="lineCov">          1 : from typing import TYPE_CHECKING, Union, overload</span></a>
+<a name="8"><span class="lineNum">       8 </span>            : </a>
+<a name="9"><span class="lineNum">       9 </span><span class="lineCov">          1 : import numpy as np</span></a>
+<a name="10"><span class="lineNum">      10 </span><span class="lineCov">          1 : from scipy import sparse</span></a>
+<a name="11"><span class="lineNum">      11 </span><span class="lineCov">          1 : from scipy.sparse import csr_matrix</span></a>
+<a name="12"><span class="lineNum">      12 </span><span class="lineCov">          1 : from typing_extensions import deprecated</span></a>
+<a name="13"><span class="lineNum">      13 </span>            : </a>
+<a name="14"><span class="lineNum">      14 </span><span class="lineCov">          1 : import pairinteraction as pi_complex</span></a>
+<a name="15"><span class="lineNum">      15 </span><span class="lineCov">          1 : import pairinteraction.real as pi_real</span></a>
+<a name="16"><span class="lineNum">      16 </span><span class="lineCov">          1 : from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian</span></a>
+<a name="17"><span class="lineNum">      17 </span><span class="lineCov">          1 : from pairinteraction.units import QuantityArray, QuantityScalar, ureg</span></a>
+<a name="18"><span class="lineNum">      18 </span>            : </a>
+<a name="19"><span class="lineNum">      19 </span>            : if TYPE_CHECKING:</a>
+<a name="20"><span class="lineNum">      20 </span>            :     from collections.abc import Collection</a>
+<a name="21"><span class="lineNum">      21 </span>            : </a>
+<a name="22"><span class="lineNum">      22 </span>            :     from scipy.sparse import csr_matrix</a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span>            :     from pairinteraction.ket import (</a>
+<a name="25"><span class="lineNum">      25 </span>            :         KetAtom,  # noqa: F401  # required for sphinx for KetPairLike</a>
+<a name="26"><span class="lineNum">      26 </span>            :         KetAtomTuple,</a>
+<a name="27"><span class="lineNum">      27 </span>            :         KetPair,  # noqa: F401  # required for sphinx for KetPairLike</a>
+<a name="28"><span class="lineNum">      28 </span>            :         KetPairLike,</a>
+<a name="29"><span class="lineNum">      29 </span>            :     )</a>
+<a name="30"><span class="lineNum">      30 </span>            :     from pairinteraction.units import NDArray, PintArray, PintFloat</a>
+<a name="31"><span class="lineNum">      31 </span>            : </a>
+<a name="32"><span class="lineNum">      32 </span>            :     SystemPair = Union[pi_real.SystemPair, pi_complex.SystemPair]</a>
+<a name="33"><span class="lineNum">      33 </span>            : </a>
+<a name="34"><span class="lineNum">      34 </span><span class="lineCov">          1 : logger = logging.getLogger(__name__)</span></a>
+<a name="35"><span class="lineNum">      35 </span>            : </a>
+<a name="36"><span class="lineNum">      36 </span>            : </a>
+<a name="37"><span class="lineNum">      37 </span>            : @overload</a>
+<a name="38"><span class="lineNum">      38 </span>            : def get_effective_hamiltonian_from_system(</a>
+<a name="39"><span class="lineNum">      39 </span>            :     ket_tuple_list: Collection[KetPairLike],</a>
+<a name="40"><span class="lineNum">      40 </span>            :     system_pair: SystemPair,</a>
+<a name="41"><span class="lineNum">      41 </span>            :     order: int = 2,</a>
+<a name="42"><span class="lineNum">      42 </span>            :     required_overlap: float = 0.9,</a>
+<a name="43"><span class="lineNum">      43 </span>            :     *,</a>
+<a name="44"><span class="lineNum">      44 </span>            :     return_only_specified_order: bool = False,</a>
+<a name="45"><span class="lineNum">      45 </span>            :     unit: None = None,</a>
+<a name="46"><span class="lineNum">      46 </span>            : ) -&gt; tuple[PintArray, csr_matrix]: ...</a>
+<a name="47"><span class="lineNum">      47 </span>            : </a>
+<a name="48"><span class="lineNum">      48 </span>            : </a>
+<a name="49"><span class="lineNum">      49 </span>            : @overload</a>
+<a name="50"><span class="lineNum">      50 </span>            : def get_effective_hamiltonian_from_system(</a>
+<a name="51"><span class="lineNum">      51 </span>            :     ket_tuple_list: Collection[KetPairLike],</a>
+<a name="52"><span class="lineNum">      52 </span>            :     system_pair: SystemPair,</a>
+<a name="53"><span class="lineNum">      53 </span>            :     order: int = 2,</a>
+<a name="54"><span class="lineNum">      54 </span>            :     required_overlap: float = 0.9,</a>
+<a name="55"><span class="lineNum">      55 </span>            :     return_only_specified_order: bool = False,</a>
+<a name="56"><span class="lineNum">      56 </span>            :     *,</a>
+<a name="57"><span class="lineNum">      57 </span>            :     unit: str,</a>
+<a name="58"><span class="lineNum">      58 </span>            : ) -&gt; tuple[NDArray, csr_matrix]: ...</a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<a name="61"><span class="lineNum">      61 </span><span class="lineCov">          1 : @deprecated(&quot;Use EffectiveSystemPair(ket_tuples).get_effective_hamiltonian() instead.&quot;)</span></a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">          1 : def get_effective_hamiltonian_from_system(</span></a>
+<a name="63"><span class="lineNum">      63 </span>            :     ket_tuple_list: Collection[KetPairLike],</a>
+<a name="64"><span class="lineNum">      64 </span>            :     system_pair: SystemPair,</a>
+<a name="65"><span class="lineNum">      65 </span>            :     order: int = 2,</a>
+<a name="66"><span class="lineNum">      66 </span>            :     required_overlap: float = 0.9,</a>
+<a name="67"><span class="lineNum">      67 </span>            :     return_only_specified_order: bool = False,</a>
+<a name="68"><span class="lineNum">      68 </span>            :     unit: str | None = None,</a>
+<a name="69"><span class="lineNum">      69 </span>            : ) -&gt; tuple[NDArray | PintArray, csr_matrix]:</a>
+<a name="70"><span class="lineNum">      70 </span>            :     r&quot;&quot;&quot;Get the perturbative Hamiltonian at a desired order in Rayleigh-Schrödinger perturbation theory.</a>
+<a name="71"><span class="lineNum">      71 </span>            : </a>
+<a name="72"><span class="lineNum">      72 </span>            :     This function takes a list of tuples of ket states, which forms the basis of the model space in which the effective</a>
+<a name="73"><span class="lineNum">      73 </span>            :     Hamiltonian is calculated. The whole Hamiltonian is taken from a pair system.</a>
+<a name="74"><span class="lineNum">      74 </span>            :     The Hamiltonian of the pair system is assumed to be diagonal in the unperturbed Hamiltonian, all off-diagonal</a>
+<a name="75"><span class="lineNum">      75 </span>            :     elements are assumed to belong to the perturbative term.</a>
+<a name="76"><span class="lineNum">      76 </span>            :     The function also checks for resonances between all states and states in the model space.</a>
+<a name="77"><span class="lineNum">      77 </span>            : </a>
+<a name="78"><span class="lineNum">      78 </span>            :     Args:</a>
+<a name="79"><span class="lineNum">      79 </span>            :         ket_tuple_list: List of all pair states that span up the model space.</a>
+<a name="80"><span class="lineNum">      80 </span>            :             The effective Hamiltonian is calculated for these states.</a>
+<a name="81"><span class="lineNum">      81 </span>            :         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</a>
+<a name="82"><span class="lineNum">      82 </span>            :         order: Order up to which the perturbation theory is expanded. Support up to third order.</a>
+<a name="83"><span class="lineNum">      83 </span>            :             Default is second order.</a>
+<a name="84"><span class="lineNum">      84 </span>            :         required_overlap: If set, the code checks for validity of a perturbative treatment.</a>
+<a name="85"><span class="lineNum">      85 </span>            :             Error is thrown if the perturbed eigenstate has less overlap than this value with the</a>
+<a name="86"><span class="lineNum">      86 </span>            :             unperturbed eigenstate.</a>
+<a name="87"><span class="lineNum">      87 </span>            :         return_only_specified_order: If True, the returned effective Hamiltonian will only contain the specified order.</a>
+<a name="88"><span class="lineNum">      88 </span>            :             Default is False, which returns the sum of all orders up to the specified order.</a>
+<a name="89"><span class="lineNum">      89 </span>            :         unit: The unit to which to convert the result. Default None will return a pint quantity.</a>
+<a name="90"><span class="lineNum">      90 </span>            : </a>
+<a name="91"><span class="lineNum">      91 </span>            :     Returns:</a>
+<a name="92"><span class="lineNum">      92 </span>            :         - Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`.</a>
+<a name="93"><span class="lineNum">      93 </span>            :         - Eigenvectors in perturbation theory due to interaction with states out of the model space, returned as</a>
+<a name="94"><span class="lineNum">      94 </span>            :           a sparse matrix in compressed row format. Each row represents the corresponding eigenvector.</a>
+<a name="95"><span class="lineNum">      95 </span>            : </a>
+<a name="96"><span class="lineNum">      96 </span>            :     Raises:</a>
+<a name="97"><span class="lineNum">      97 </span>            :         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.</a>
+<a name="98"><span class="lineNum">      98 </span>            : </a>
+<a name="99"><span class="lineNum">      99 </span>            :     &quot;&quot;&quot;</a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">          1 :     if np.isinf(system_pair.get_distance().magnitude):</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineNoCov">          0 :         raise ValueError(</span></a>
+<a name="102"><span class="lineNum">     102 </span>            :             &quot;Pair system is initialized without a distance. &quot;</a>
+<a name="103"><span class="lineNum">     103 </span>            :             &quot;Please set a distance for calculating an effective Hamiltonian.&quot;</a>
+<a name="104"><span class="lineNum">     104 </span>            :         )</a>
+<a name="105"><span class="lineNum">     105 </span>            : </a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">          1 :     model_inds = _get_model_inds(ket_tuple_list, system_pair)</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">          1 :     h_au = system_pair.get_hamiltonian().to_base_units().magnitude  # Hamiltonian in atomic units</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">          1 :     h_eff_dict_au, eigvec_perturb = calculate_perturbative_hamiltonian(h_au, model_inds, order)</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          1 :     if not 0 &lt;= required_overlap &lt;= 1:</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineNoCov">          0 :         raise ValueError(&quot;Required overlap has to be a positive real number between zero and one.&quot;)</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">          1 :     if required_overlap &gt; 0:</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">          1 :         _check_for_resonances(model_inds, eigvec_perturb, system_pair, required_overlap)</span></a>
+<a name="113"><span class="lineNum">     113 </span>            : </a>
+<a name="114"><span class="lineNum">     114 </span><span class="lineCov">          1 :     if return_only_specified_order:</span></a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          1 :         h_eff_au: NDArray = h_eff_dict_au[order]</span></a>
+<a name="116"><span class="lineNum">     116 </span>            :     else:</a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">          1 :         h_eff_au = sum(h_eff for h_eff in h_eff_dict_au.values())  # type: ignore [assignment]</span></a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span><span class="lineCov">          1 :     h_eff = QuantityArray.convert_au_to_user(h_eff_au, &quot;energy&quot;, unit)</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">          1 :     return h_eff, eigvec_perturb</span></a>
+<a name="121"><span class="lineNum">     121 </span>            : </a>
+<a name="122"><span class="lineNum">     122 </span>            : </a>
+<a name="123"><span class="lineNum">     123 </span>            : @overload</a>
+<a name="124"><span class="lineNum">     124 </span>            : def get_c3_from_system(</a>
+<a name="125"><span class="lineNum">     125 </span>            :     ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, *, unit: None = None</a>
+<a name="126"><span class="lineNum">     126 </span>            : ) -&gt; PintFloat: ...</a>
+<a name="127"><span class="lineNum">     127 </span>            : </a>
+<a name="128"><span class="lineNum">     128 </span>            : </a>
+<a name="129"><span class="lineNum">     129 </span>            : @overload</a>
+<a name="130"><span class="lineNum">     130 </span>            : def get_c3_from_system(ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, unit: str) -&gt; float: ...</a>
+<a name="131"><span class="lineNum">     131 </span>            : </a>
+<a name="132"><span class="lineNum">     132 </span>            : </a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">          1 : @deprecated(&quot;Use C3(ket1, ket2).get() instead.&quot;)</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          1 : def get_c3_from_system(</span></a>
+<a name="135"><span class="lineNum">     135 </span>            :     ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, unit: str | None = None</a>
+<a name="136"><span class="lineNum">     136 </span>            : ) -&gt; float | PintFloat:</a>
+<a name="137"><span class="lineNum">     137 </span>            :     r&quot;&quot;&quot;Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single-atom ket states.</a>
+<a name="138"><span class="lineNum">     138 </span>            : </a>
+<a name="139"><span class="lineNum">     139 </span>            :     This function calculates the :math:`C_3` coefficient in the desired unit. The input is a list of two 2-tuples of</a>
+<a name="140"><span class="lineNum">     140 </span>            :     single-atom ket states. We use the convention :math:`\Delta E = \frac{C_3}{r^3}`.</a>
+<a name="141"><span class="lineNum">     141 </span>            : </a>
+<a name="142"><span class="lineNum">     142 </span>            :     Args:</a>
+<a name="143"><span class="lineNum">     143 </span>            :         ket_tuple_list: The input as a list of tuples of two states [(a,b),(c,d)],</a>
+<a name="144"><span class="lineNum">     144 </span>            :             the :math:`C_3` coefficient is calculated for (a,b)-&gt;(c,d).</a>
+<a name="145"><span class="lineNum">     145 </span>            :             If there are not exactly two tuples in the list, a ValueError is raised.</a>
+<a name="146"><span class="lineNum">     146 </span>            :         system_pair: The pair system that is used for the calculation.</a>
+<a name="147"><span class="lineNum">     147 </span>            :         unit: The unit to which to convert the result. Default None will return a pint quantity.</a>
+<a name="148"><span class="lineNum">     148 </span>            : </a>
+<a name="149"><span class="lineNum">     149 </span>            :     Returns:</a>
+<a name="150"><span class="lineNum">     150 </span>            :         The :math:`C_3` coefficient with its unit.</a>
+<a name="151"><span class="lineNum">     151 </span>            : </a>
+<a name="152"><span class="lineNum">     152 </span>            :     Raises:</a>
+<a name="153"><span class="lineNum">     153 </span>            :         ValueError: If a list of not exactly two tuples of single-atom states is given.</a>
+<a name="154"><span class="lineNum">     154 </span>            : </a>
+<a name="155"><span class="lineNum">     155 </span>            :     &quot;&quot;&quot;</a>
+<a name="156"><span class="lineNum">     156 </span><span class="lineCov">          1 :     if len(ket_tuple_list) != 2:</span></a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineNoCov">          0 :         raise ValueError(&quot;C3 coefficient can be calculated only between two 2-atom states.&quot;)</span></a>
+<a name="158"><span class="lineNum">     158 </span>            : </a>
+<a name="159"><span class="lineNum">     159 </span><span class="lineCov">          1 :     r = system_pair.get_distance()</span></a>
+<a name="160"><span class="lineNum">     160 </span><span class="lineCov">          1 :     if np.isinf(r.magnitude):</span></a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineNoCov">          0 :         logger.warning(</span></a>
+<a name="162"><span class="lineNum">     162 </span>            :             &quot;Pair system is initialized without a distance. &quot;</a>
+<a name="163"><span class="lineNum">     163 </span>            :             &quot;Calculating the C3 coefficient at a distance vector of [0, 0, 20] mum.&quot;</a>
+<a name="164"><span class="lineNum">     164 </span>            :         )</a>
+<a name="165"><span class="lineNum">     165 </span><span class="lineNoCov">          0 :         old_distance_vector = system_pair.get_distance_vector()</span></a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineNoCov">          0 :         system_pair.set_distance_vector([0, 0, 20], &quot;micrometer&quot;)</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineNoCov">          0 :         c3 = get_c3_from_system(ket_tuple_list, system_pair, unit=unit)</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineNoCov">          0 :         system_pair.set_distance_vector(old_distance_vector)</span></a>
+<a name="169"><span class="lineNum">     169 </span><span class="lineNoCov">          0 :         return c3</span></a>
+<a name="170"><span class="lineNum">     170 </span>            : </a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">          1 :     h_eff, _ = get_effective_hamiltonian_from_system(ket_tuple_list, system_pair, order=1)</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">          1 :     c3_pint = h_eff[0, 1] * r**3  # type: ignore [index] # PintArray does not know it can be indexed</span></a>
+<a name="173"><span class="lineNum">     173 </span><span class="lineCov">          1 :     return QuantityScalar.from_pint(c3_pint, &quot;c3&quot;).to_pint_or_unit(unit)</span></a>
+<a name="174"><span class="lineNum">     174 </span>            : </a>
+<a name="175"><span class="lineNum">     175 </span>            : </a>
+<a name="176"><span class="lineNum">     176 </span>            : @overload</a>
+<a name="177"><span class="lineNum">     177 </span>            : def get_c6_from_system(ket_tuple: KetPairLike, system_pair: SystemPair, *, unit: None = None) -&gt; PintFloat: ...</a>
+<a name="178"><span class="lineNum">     178 </span>            : </a>
+<a name="179"><span class="lineNum">     179 </span>            : </a>
+<a name="180"><span class="lineNum">     180 </span>            : @overload</a>
+<a name="181"><span class="lineNum">     181 </span>            : def get_c6_from_system(ket_tuple: KetPairLike, system_pair: SystemPair, unit: str) -&gt; float: ...</a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            : </a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">          1 : @deprecated(&quot;Use C6(ket1, ket2).get() instead.&quot;)</span></a>
+<a name="185"><span class="lineNum">     185 </span><span class="lineCov">          1 : def get_c6_from_system(ket_tuple: KetPairLike, system_pair: SystemPair, unit: str | None = None) -&gt; float | PintFloat:</span></a>
+<a name="186"><span class="lineNum">     186 </span>            :     r&quot;&quot;&quot;Calculate the :math:`C_6` coefficient for a given tuple of ket states.</a>
+<a name="187"><span class="lineNum">     187 </span>            : </a>
+<a name="188"><span class="lineNum">     188 </span>            :     This function calculates the :math:`C_6` coefficient in the desired unit. The input is a 2-tuple of single-atom ket</a>
+<a name="189"><span class="lineNum">     189 </span>            :     states.</a>
+<a name="190"><span class="lineNum">     190 </span>            : </a>
+<a name="191"><span class="lineNum">     191 </span>            :     Args:</a>
+<a name="192"><span class="lineNum">     192 </span>            :         ket_tuple: The input is a tuple repeating the same single-atom state in the format (a,a).</a>
+<a name="193"><span class="lineNum">     193 </span>            :         If a tuple with not exactly two identical states is given, a ValueError is raised.</a>
+<a name="194"><span class="lineNum">     194 </span>            :         system_pair: The pair system that is used for the calculation.</a>
+<a name="195"><span class="lineNum">     195 </span>            :         unit: The unit to which to convert the result. Default None will return a pint quantity.</a>
+<a name="196"><span class="lineNum">     196 </span>            : </a>
+<a name="197"><span class="lineNum">     197 </span>            :     Returns:</a>
+<a name="198"><span class="lineNum">     198 </span>            :         The :math:`C_6` coefficient. If a unit is specified, the value in this unit is returned.</a>
+<a name="199"><span class="lineNum">     199 </span>            : </a>
+<a name="200"><span class="lineNum">     200 </span>            :     Raises:</a>
+<a name="201"><span class="lineNum">     201 </span>            :         ValueError: If a tuple with more than two single-atom states is given.</a>
+<a name="202"><span class="lineNum">     202 </span>            : </a>
+<a name="203"><span class="lineNum">     203 </span>            :     &quot;&quot;&quot;</a>
+<a name="204"><span class="lineNum">     204 </span><span class="lineCov">          1 :     if isinstance(ket_tuple, Iterable):</span></a>
+<a name="205"><span class="lineNum">     205 </span><span class="lineCov">          1 :         if len(ket_tuple) != 2:</span></a>
+<a name="206"><span class="lineNum">     206 </span><span class="lineNoCov">          0 :             raise ValueError(&quot;C6 coefficient can be calculated only for a single 2-atom state.&quot;)</span></a>
+<a name="207"><span class="lineNum">     207 </span><span class="lineCov">          1 :         if ket_tuple[0].species == ket_tuple[1].species and ket_tuple[0] != ket_tuple[1]:</span></a>
+<a name="208"><span class="lineNum">     208 </span><span class="lineNoCov">          0 :             raise ValueError(</span></a>
+<a name="209"><span class="lineNum">     209 </span>            :                 &quot;If you want to calculate 2nd order perturbations of two different states a and b, &quot;</a>
+<a name="210"><span class="lineNum">     210 </span>            :                 &quot;please use the get_effective_hamiltonian_from_system([(a,b), (b,a)], system_pair) function.&quot;</a>
+<a name="211"><span class="lineNum">     211 </span>            :             )</a>
+<a name="212"><span class="lineNum">     212 </span>            : </a>
+<a name="213"><span class="lineNum">     213 </span><span class="lineCov">          1 :     r = system_pair.get_distance()</span></a>
+<a name="214"><span class="lineNum">     214 </span><span class="lineCov">          1 :     if np.isinf(r.magnitude):</span></a>
+<a name="215"><span class="lineNum">     215 </span><span class="lineNoCov">          0 :         logger.warning(</span></a>
+<a name="216"><span class="lineNum">     216 </span>            :             &quot;Pair system is initialized without a distance. &quot;</a>
+<a name="217"><span class="lineNum">     217 </span>            :             &quot;Calculating the C6 coefficient at a distance vector of [0, 0, 20] mum.&quot;</a>
+<a name="218"><span class="lineNum">     218 </span>            :         )</a>
+<a name="219"><span class="lineNum">     219 </span><span class="lineNoCov">          0 :         old_distance_vector = system_pair.get_distance_vector()</span></a>
+<a name="220"><span class="lineNum">     220 </span><span class="lineNoCov">          0 :         system_pair.set_distance_vector([0, 0, 20], &quot;micrometer&quot;)</span></a>
+<a name="221"><span class="lineNum">     221 </span><span class="lineNoCov">          0 :         c6 = get_c6_from_system(ket_tuple, system_pair, unit=unit)</span></a>
+<a name="222"><span class="lineNum">     222 </span><span class="lineNoCov">          0 :         system_pair.set_distance_vector(old_distance_vector)</span></a>
+<a name="223"><span class="lineNum">     223 </span><span class="lineNoCov">          0 :         return c6</span></a>
+<a name="224"><span class="lineNum">     224 </span>            : </a>
+<a name="225"><span class="lineNum">     225 </span><span class="lineCov">          1 :     h_eff, _ = get_effective_hamiltonian_from_system(</span></a>
+<a name="226"><span class="lineNum">     226 </span>            :         [ket_tuple], system_pair, order=2, return_only_specified_order=True</a>
+<a name="227"><span class="lineNum">     227 </span>            :     )</a>
+<a name="228"><span class="lineNum">     228 </span><span class="lineCov">          1 :     c6_pint = h_eff[0, 0] * r**6  # type: ignore [index] # PintArray does not know it can be indexed</span></a>
+<a name="229"><span class="lineNum">     229 </span><span class="lineCov">          1 :     return QuantityScalar.from_pint(c6_pint, &quot;c6&quot;).to_pint_or_unit(unit)</span></a>
+<a name="230"><span class="lineNum">     230 </span>            : </a>
+<a name="231"><span class="lineNum">     231 </span>            : </a>
+<a name="232"><span class="lineNum">     232 </span><span class="lineCov">          1 : def _get_model_inds(ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair) -&gt; list[int]:</span></a>
+<a name="233"><span class="lineNum">     233 </span>            :     &quot;&quot;&quot;Get the indices of all ket tuples in the basis of pair system.</a>
+<a name="234"><span class="lineNum">     234 </span>            : </a>
+<a name="235"><span class="lineNum">     235 </span>            :     This function takes a list of 2-tuples of ket states, and a pair system holding the entire basis.</a>
+<a name="236"><span class="lineNum">     236 </span>            :     It returns an array of indices of the pair system basis in the order of the tuple list.</a>
+<a name="237"><span class="lineNum">     237 </span>            : </a>
+<a name="238"><span class="lineNum">     238 </span>            :     Args:</a>
+<a name="239"><span class="lineNum">     239 </span>            :         ket_tuple_list: List of all pair states that span up the model space.</a>
+<a name="240"><span class="lineNum">     240 </span>            :         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</a>
+<a name="241"><span class="lineNum">     241 </span>            : </a>
+<a name="242"><span class="lineNum">     242 </span>            :     Returns:</a>
+<a name="243"><span class="lineNum">     243 </span>            :         List of indices corresponding to the states that span up the model space.</a>
+<a name="244"><span class="lineNum">     244 </span>            : </a>
+<a name="245"><span class="lineNum">     245 </span>            :     &quot;&quot;&quot;</a>
+<a name="246"><span class="lineNum">     246 </span><span class="lineCov">          1 :     model_inds = []</span></a>
+<a name="247"><span class="lineNum">     247 </span><span class="lineCov">          1 :     for kets in ket_tuple_list:</span></a>
+<a name="248"><span class="lineNum">     248 </span><span class="lineCov">          1 :         overlap = system_pair.basis.get_overlaps(kets)</span></a>
+<a name="249"><span class="lineNum">     249 </span><span class="lineCov">          1 :         index = np.argmax(overlap)</span></a>
+<a name="250"><span class="lineNum">     250 </span><span class="lineCov">          1 :         if overlap[index] == 0:</span></a>
+<a name="251"><span class="lineNum">     251 </span><span class="lineNoCov">          0 :             raise ValueError(f&quot;The pairstate {kets} is not part of the basis of the pair system.&quot;)</span></a>
+<a name="252"><span class="lineNum">     252 </span><span class="lineCov">          1 :         if overlap[index] &lt; 0.5:</span></a>
+<a name="253"><span class="lineNum">     253 </span><span class="lineNoCov">          0 :             raise ValueError(f&quot;The pairstate {kets} cannot be identified uniquely (max overlap: {overlap[index]}).&quot;)</span></a>
+<a name="254"><span class="lineNum">     254 </span><span class="lineCov">          1 :         model_inds.append(int(index))</span></a>
+<a name="255"><span class="lineNum">     255 </span><span class="lineCov">          1 :     return model_inds</span></a>
+<a name="256"><span class="lineNum">     256 </span>            : </a>
+<a name="257"><span class="lineNum">     257 </span>            : </a>
+<a name="258"><span class="lineNum">     258 </span><span class="lineCov">          1 : def _check_for_resonances(</span></a>
+<a name="259"><span class="lineNum">     259 </span>            :     model_inds: list[int],</a>
+<a name="260"><span class="lineNum">     260 </span>            :     eigvec_perturb: csr_matrix,</a>
+<a name="261"><span class="lineNum">     261 </span>            :     system_pair: SystemPair,</a>
+<a name="262"><span class="lineNum">     262 </span>            :     required_overlap: float,</a>
+<a name="263"><span class="lineNum">     263 </span>            : ) -&gt; None:</a>
+<a name="264"><span class="lineNum">     264 </span>            :     r&quot;&quot;&quot;Check for resonance between the states in the model space and other states.</a>
+<a name="265"><span class="lineNum">     265 </span>            : </a>
+<a name="266"><span class="lineNum">     266 </span>            :     This function takes the perturbed eigenvectors of the perturbation theory as an input.</a>
+<a name="267"><span class="lineNum">     267 </span>            :     If the overlap of the perturbed eigenstate with its corresponding unperturbed state are too small,</a>
+<a name="268"><span class="lineNum">     268 </span>            :     this function raises an error, as perturbation theory breaks down.</a>
+<a name="269"><span class="lineNum">     269 </span>            :     In this case, it also prints all states with a relevant admixture that should therefore be also included in the</a>
+<a name="270"><span class="lineNum">     270 </span>            :     model space, to allow perturbation theory.</a>
+<a name="271"><span class="lineNum">     271 </span>            : </a>
+<a name="272"><span class="lineNum">     272 </span>            :     Args:</a>
+<a name="273"><span class="lineNum">     273 </span>            :         model_inds: List of indices corresponding to the states that span up the model space.</a>
+<a name="274"><span class="lineNum">     274 </span>            :         eigvec_perturb: Sparse representation of the perturbed eigenstates in the desired order of</a>
+<a name="275"><span class="lineNum">     275 </span>            :             perturbation theory. Each row corresponds to the eigestate according to `state model indices.`</a>
+<a name="276"><span class="lineNum">     276 </span>            :         system_pair: Two-Atom-System, diagonal in the basis of the unperturbed Hamiltonian.</a>
+<a name="277"><span class="lineNum">     277 </span>            :         order: Order up to which the perturbation theory is expanded. Support up to third order.</a>
+<a name="278"><span class="lineNum">     278 </span>            :             Default is second order.</a>
+<a name="279"><span class="lineNum">     279 </span>            :         required_overlap: If set, the code checks for validity of a perturbative treatment.</a>
+<a name="280"><span class="lineNum">     280 </span>            :             Error is thrown if the perturbed eigenstate has less overlap than this value with the unperturbed eigenstate</a>
+<a name="281"><span class="lineNum">     281 </span>            : </a>
+<a name="282"><span class="lineNum">     282 </span>            :     Returns:</a>
+<a name="283"><span class="lineNum">     283 </span>            :         Effective Hamiltonian as a :math:`m \times m` matrix, where m is the length of `ket_tuple_list`</a>
+<a name="284"><span class="lineNum">     284 </span>            :         Eigenvectors in perturbation theory due to interaction with states out of the model space,</a>
+<a name="285"><span class="lineNum">     285 </span>            :             returned as a sparse matrix in compressed row format. Each row represent the corresponding eigenvector</a>
+<a name="286"><span class="lineNum">     286 </span>            : </a>
+<a name="287"><span class="lineNum">     287 </span>            :     Raises:</a>
+<a name="288"><span class="lineNum">     288 </span>            :         ValueError: If a resonance between a state in the model space and a state not in the model space occurs.</a>
+<a name="289"><span class="lineNum">     289 </span>            : </a>
+<a name="290"><span class="lineNum">     290 </span>            :     &quot;&quot;&quot;</a>
+<a name="291"><span class="lineNum">     291 </span><span class="lineCov">          1 :     overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real</span></a>
+<a name="292"><span class="lineNum">     292 </span><span class="lineCov">          1 :     error_flag = False</span></a>
+<a name="293"><span class="lineNum">     293 </span><span class="lineCov">          1 :     for i, j in zip(range(len(model_inds)), model_inds):</span></a>
+<a name="294"><span class="lineNum">     294 </span><span class="lineCov">          1 :         vector_norm = sparse.linalg.norm(overlaps[i, :])</span></a>
+<a name="295"><span class="lineNum">     295 </span><span class="lineCov">          1 :         overlap = overlaps[i, j] / vector_norm</span></a>
+<a name="296"><span class="lineNum">     296 </span><span class="lineCov">          1 :         if overlap &gt;= required_overlap:</span></a>
+<a name="297"><span class="lineNum">     297 </span><span class="lineCov">          1 :             continue</span></a>
+<a name="298"><span class="lineNum">     298 </span><span class="lineNoCov">          0 :         error_flag = True</span></a>
+<a name="299"><span class="lineNum">     299 </span><span class="lineNoCov">          0 :         print_above_admixture = (1 - required_overlap) * 0.05</span></a>
+<a name="300"><span class="lineNum">     300 </span><span class="lineNoCov">          0 :         indices = sparse.find(overlaps[i, :] &gt;= print_above_admixture * vector_norm)[1]</span></a>
+<a name="301"><span class="lineNum">     301 </span><span class="lineNoCov">          0 :         logger.error(</span></a>
+<a name="302"><span class="lineNum">     302 </span>            :             &quot;The state %s has resonances with the following states, please consider adding them to your model space:&quot;,</a>
+<a name="303"><span class="lineNum">     303 </span>            :             system_pair.basis.kets[j],</a>
+<a name="304"><span class="lineNum">     304 </span>            :         )</a>
+<a name="305"><span class="lineNum">     305 </span><span class="lineNoCov">          0 :         for index in indices:</span></a>
+<a name="306"><span class="lineNum">     306 </span><span class="lineNoCov">          0 :             if index == j:</span></a>
+<a name="307"><span class="lineNum">     307 </span><span class="lineNoCov">          0 :                 continue</span></a>
+<a name="308"><span class="lineNum">     308 </span><span class="lineNoCov">          0 :             admixture = 1 if np.isinf(overlaps[i, index]) else overlaps[i, index] / vector_norm</span></a>
+<a name="309"><span class="lineNum">     309 </span><span class="lineNoCov">          0 :             logger.error(&quot;  - %s with admixture %.3f&quot;, system_pair.basis.kets[index], admixture)</span></a>
+<a name="310"><span class="lineNum">     310 </span><span class="lineCov">          1 :     if error_flag:</span></a>
+<a name="311"><span class="lineNum">     311 </span><span class="lineNoCov">          0 :         raise ValueError(</span></a>
+<a name="312"><span class="lineNum">     312 </span>            :             &quot;Error. Perturbative Calculation not possible due to resonances. &quot;</a>
+<a name="313"><span class="lineNum">     313 </span>            :             &quot;Add more states to the model space or adapt your required overlap.&quot;</a>
+<a name="314"><span class="lineNum">     314 </span>            :         )</a>
+<a name="315"><span class="lineNum">     315 </span>            : </a>
+<a name="316"><span class="lineNum">     316 </span>            : </a>
+<a name="317"><span class="lineNum">     317 </span><span class="lineCov">          1 : @deprecated(&quot;Use EffectiveSystemPair(ket_tuples) instead to create a system for perturbative calculations.&quot;)</span></a>
+<a name="318"><span class="lineNum">     318 </span><span class="lineCov">          1 : def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915</span></a>
+<a name="319"><span class="lineNum">     319 </span>            :     ket_tuple_list: Collection[KetAtomTuple],</a>
+<a name="320"><span class="lineNum">     320 </span>            :     electric_field: PintArray | None = None,</a>
+<a name="321"><span class="lineNum">     321 </span>            :     magnetic_field: PintArray | None = None,</a>
+<a name="322"><span class="lineNum">     322 </span>            :     distance_vector: PintArray | None = None,</a>
+<a name="323"><span class="lineNum">     323 </span>            :     multipole_order: int = 3,</a>
+<a name="324"><span class="lineNum">     324 </span>            :     with_diamagnetism: bool = False,</a>
+<a name="325"><span class="lineNum">     325 </span>            :     perturbation_order: int = 2,</a>
+<a name="326"><span class="lineNum">     326 </span>            :     number_of_considered_pair_kets: int = 2_000,</a>
+<a name="327"><span class="lineNum">     327 </span>            : ) -&gt; SystemPair:</a>
+<a name="328"><span class="lineNum">     328 </span>            :     r&quot;&quot;&quot;Create a good estimate for a system in which to perform perturbative calculations.</a>
+<a name="329"><span class="lineNum">     329 </span>            : </a>
+<a name="330"><span class="lineNum">     330 </span>            :     This function takes a list of 2-tuples of ket states and creates a pair system holding a larger basis.</a>
+<a name="331"><span class="lineNum">     331 </span>            :     The parameters of the basis are adjusted by the electric and magnetic field vectors of the system, as well</a>
+<a name="332"><span class="lineNum">     332 </span>            :     as the distance and the multipole-order of the interaction. For higher-order perturbation theory, larger</a>
+<a name="333"><span class="lineNum">     333 </span>            :     systems can be considered. Diamagnetism can be considered as well.</a>
+<a name="334"><span class="lineNum">     334 </span>            : </a>
+<a name="335"><span class="lineNum">     335 </span>            :     Args:</a>
+<a name="336"><span class="lineNum">     336 </span>            :         ket_tuple_list: List of all pair states that span up the model space. The system is created such that</a>
+<a name="337"><span class="lineNum">     337 </span>            :             the effective Hamiltonian of the model system can be calculated accurately at a later stage.</a>
+<a name="338"><span class="lineNum">     338 </span>            :         electric_field: Electric field in the system.</a>
+<a name="339"><span class="lineNum">     339 </span>            :         magnetic_field: Magnetic field in the system.</a>
+<a name="340"><span class="lineNum">     340 </span>            :         distance_vector: Distance vector between the atoms.</a>
+<a name="341"><span class="lineNum">     341 </span>            :         multipole_order: Multipole-order of the interaction. Default is 3 (dipole-dipole).</a>
+<a name="342"><span class="lineNum">     342 </span>            :         with_diamagnetism: True if diamagnetic term should be considered. Default is False.</a>
+<a name="343"><span class="lineNum">     343 </span>            :         perturbation_order: Order of perturbative calculation the system shall be used for. Default is 2.</a>
+<a name="344"><span class="lineNum">     344 </span>            :         number_of_considered_pair_kets: Number of pair kets that are considered in the system. Default is 2000.</a>
+<a name="345"><span class="lineNum">     345 </span>            : </a>
+<a name="346"><span class="lineNum">     346 </span>            :     Returns:</a>
+<a name="347"><span class="lineNum">     347 </span>            :         Pair system that can be used for perturbative calculations.</a>
+<a name="348"><span class="lineNum">     348 </span>            : </a>
+<a name="349"><span class="lineNum">     349 </span>            :     &quot;&quot;&quot;</a>
+<a name="350"><span class="lineNum">     350 </span><span class="lineCov">          1 :     electric_field = electric_field if electric_field is not None else ureg.Quantity([0, 0, 0], &quot;V/cm&quot;)</span></a>
+<a name="351"><span class="lineNum">     351 </span><span class="lineCov">          1 :     magnetic_field = magnetic_field if magnetic_field is not None else ureg.Quantity([0, 0, 0], &quot;G&quot;)</span></a>
+<a name="352"><span class="lineNum">     352 </span>            : </a>
+<a name="353"><span class="lineNum">     353 </span><span class="lineCov">          1 :     pi = pi_real if electric_field[1] == 0 and magnetic_field[1] == 0 else pi_complex  # type: ignore [index]</span></a>
+<a name="354"><span class="lineNum">     354 </span><span class="lineCov">          1 :     are_fields_along_z = all(x == 0 for x in [*magnetic_field[:2], *electric_field[:2]])  # type: ignore [index]</span></a>
+<a name="355"><span class="lineNum">     355 </span>            : </a>
+<a name="356"><span class="lineNum">     356 </span><span class="lineCov">          1 :     system_atoms: list[pi_real.SystemAtom | pi_complex.SystemAtom] = []</span></a>
+<a name="357"><span class="lineNum">     357 </span>            : </a>
+<a name="358"><span class="lineNum">     358 </span><span class="lineCov">          1 :     delta_n = 7</span></a>
+<a name="359"><span class="lineNum">     359 </span><span class="lineCov">          1 :     delta_l = perturbation_order * (multipole_order - 2)</span></a>
+<a name="360"><span class="lineNum">     360 </span><span class="lineCov">          1 :     for i in range(2):</span></a>
+<a name="361"><span class="lineNum">     361 </span><span class="lineCov">          1 :         kets = [ket_tuple[i] for ket_tuple in ket_tuple_list]</span></a>
+<a name="362"><span class="lineNum">     362 </span><span class="lineCov">          1 :         nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])</span></a>
+<a name="363"><span class="lineNum">     363 </span><span class="lineCov">          1 :         n_range = (int(np.min(nlfm[0])) - delta_n, int(np.max(nlfm[0])) + delta_n)</span></a>
+<a name="364"><span class="lineNum">     364 </span><span class="lineCov">          1 :         l_range = (np.min(nlfm[1]) - delta_l, np.max(nlfm[1]) + delta_l)</span></a>
+<a name="365"><span class="lineNum">     365 </span><span class="lineCov">          1 :         if any(ket.is_calculated_with_mqdt for ket in kets):</span></a>
+<a name="366"><span class="lineNum">     366 </span>            :             # for mqdt we increase delta_l by 1 to take into account the variance ...</a>
+<a name="367"><span class="lineNum">     367 </span><span class="lineNoCov">          0 :             l_range = (np.min(nlfm[1]) - delta_l - 1, np.max(nlfm[1]) + delta_l + 1)</span></a>
+<a name="368"><span class="lineNum">     368 </span><span class="lineCov">          1 :         m_range = None</span></a>
+<a name="369"><span class="lineNum">     369 </span><span class="lineCov">          1 :         if are_fields_along_z:</span></a>
+<a name="370"><span class="lineNum">     370 </span><span class="lineCov">          1 :             m_range = (np.min(nlfm[3]) - delta_l, np.max(nlfm[3]) + delta_l)</span></a>
+<a name="371"><span class="lineNum">     371 </span><span class="lineCov">          1 :         basis = pi.BasisAtom(kets[0].species, n=n_range, l=l_range, m=m_range)</span></a>
+<a name="372"><span class="lineNum">     372 </span><span class="lineCov">          1 :         system = pi.SystemAtom(basis)</span></a>
+<a name="373"><span class="lineNum">     373 </span><span class="lineCov">          1 :         system.set_diamagnetism_enabled(with_diamagnetism)</span></a>
+<a name="374"><span class="lineNum">     374 </span><span class="lineCov">          1 :         system.set_magnetic_field(magnetic_field)</span></a>
+<a name="375"><span class="lineNum">     375 </span><span class="lineCov">          1 :         system.set_electric_field(electric_field)</span></a>
+<a name="376"><span class="lineNum">     376 </span><span class="lineCov">          1 :         system_atoms.append(system)</span></a>
+<a name="377"><span class="lineNum">     377 </span>            : </a>
+<a name="378"><span class="lineNum">     378 </span><span class="lineCov">          1 :     pi.diagonalize(system_atoms)</span></a>
+<a name="379"><span class="lineNum">     379 </span>            : </a>
+<a name="380"><span class="lineNum">     380 </span><span class="lineCov">          1 :     pair_energies_au = [</span></a>
+<a name="381"><span class="lineNum">     381 </span>            :         sum(</a>
+<a name="382"><span class="lineNum">     382 </span>            :             system.get_corresponding_energy(ket).to_base_units().magnitude</a>
+<a name="383"><span class="lineNum">     383 </span>            :             for system, ket in zip(system_atoms, ket_tuple)</a>
+<a name="384"><span class="lineNum">     384 </span>            :         )</a>
+<a name="385"><span class="lineNum">     385 </span>            :         for ket_tuple in ket_tuple_list</a>
+<a name="386"><span class="lineNum">     386 </span>            :     ]</a>
+<a name="387"><span class="lineNum">     387 </span>            : </a>
+<a name="388"><span class="lineNum">     388 </span><span class="lineCov">          1 :     def get_basis_pair(delta_energy_au: float) -&gt; pi_real.BasisPair | pi_complex.BasisPair:</span></a>
+<a name="389"><span class="lineNum">     389 </span><span class="lineCov">          1 :         return pi.BasisPair(  # type: ignore [no-any-return]</span></a>
+<a name="390"><span class="lineNum">     390 </span>            :             system_atoms,</a>
+<a name="391"><span class="lineNum">     391 </span>            :             energy=(min(pair_energies_au) - delta_energy_au, max(pair_energies_au) + delta_energy_au),</a>
+<a name="392"><span class="lineNum">     392 </span>            :             energy_unit=&quot;hartree&quot;,</a>
+<a name="393"><span class="lineNum">     393 </span>            :         )</a>
+<a name="394"><span class="lineNum">     394 </span>            : </a>
+<a name="395"><span class="lineNum">     395 </span><span class="lineCov">          1 :     mhz_au = QuantityScalar.convert_user_to_au(1, &quot;MHz&quot;, &quot;energy&quot;)</span></a>
+<a name="396"><span class="lineNum">     396 </span><span class="lineCov">          1 :     delta_energy_au = mhz_au</span></a>
+<a name="397"><span class="lineNum">     397 </span><span class="lineCov">          1 :     min_delta, max_delta = None, None</span></a>
+<a name="398"><span class="lineNum">     398 </span>            : </a>
+<a name="399"><span class="lineNum">     399 </span>            :     # make a bisect search to get a sensible basis size between:</a>
+<a name="400"><span class="lineNum">     400 </span>            :     # number_of_considered_pair_kets and 1.2 * number_of_considered_pair_kets</a>
+<a name="401"><span class="lineNum">     401 </span><span class="lineCov">          1 :     while delta_energy_au &lt; 1:  # stop if delta_energy_au is 1 and the basis is still very small</span></a>
+<a name="402"><span class="lineNum">     402 </span><span class="lineCov">          1 :         basis_pair = get_basis_pair(delta_energy_au)</span></a>
+<a name="403"><span class="lineNum">     403 </span><span class="lineCov">          1 :         if basis_pair.number_of_kets &lt; number_of_considered_pair_kets:</span></a>
+<a name="404"><span class="lineNum">     404 </span><span class="lineCov">          1 :             min_delta = delta_energy_au</span></a>
+<a name="405"><span class="lineNum">     405 </span><span class="lineCov">          1 :             if max_delta is None:</span></a>
+<a name="406"><span class="lineNum">     406 </span><span class="lineCov">          1 :                 delta_energy_au *= 2</span></a>
+<a name="407"><span class="lineNum">     407 </span>            :             else:</a>
+<a name="408"><span class="lineNum">     408 </span><span class="lineNoCov">          0 :                 delta_energy_au = (delta_energy_au + max_delta) / 2</span></a>
+<a name="409"><span class="lineNum">     409 </span><span class="lineCov">          1 :         elif basis_pair.number_of_kets &gt; number_of_considered_pair_kets * 1.2:</span></a>
+<a name="410"><span class="lineNum">     410 </span><span class="lineCov">          1 :             max_delta = delta_energy_au</span></a>
+<a name="411"><span class="lineNum">     411 </span><span class="lineCov">          1 :             if min_delta is None:</span></a>
+<a name="412"><span class="lineNum">     412 </span><span class="lineNoCov">          0 :                 delta_energy_au /= 2</span></a>
+<a name="413"><span class="lineNum">     413 </span>            :             else:</a>
+<a name="414"><span class="lineNum">     414 </span><span class="lineCov">          1 :                 delta_energy_au = (delta_energy_au + min_delta) / 2</span></a>
+<a name="415"><span class="lineNum">     415 </span>            :         else:</a>
+<a name="416"><span class="lineNum">     416 </span><span class="lineCov">          1 :             break</span></a>
+<a name="417"><span class="lineNum">     417 </span><span class="lineCov">          1 :         if max_delta is not None and min_delta is not None and max_delta - min_delta &lt; mhz_au:</span></a>
+<a name="418"><span class="lineNum">     418 </span><span class="lineNoCov">          0 :             break</span></a>
+<a name="419"><span class="lineNum">     419 </span>            : </a>
+<a name="420"><span class="lineNum">     420 </span><span class="lineCov">          1 :     logger.debug(&quot;The pair basis for the perturbative calculations consists of %d kets.&quot;, basis_pair.number_of_kets)</span></a>
+<a name="421"><span class="lineNum">     421 </span>            : </a>
+<a name="422"><span class="lineNum">     422 </span><span class="lineCov">          1 :     system_pair = pi.SystemPair(basis_pair)</span></a>
+<a name="423"><span class="lineNum">     423 </span><span class="lineCov">          1 :     if distance_vector is not None:</span></a>
+<a name="424"><span class="lineNum">     424 </span><span class="lineCov">          1 :         system_pair.set_distance_vector(distance_vector)</span></a>
+<a name="425"><span class="lineNum">     425 </span><span class="lineCov">          1 :     system_pair.set_interaction_order(multipole_order)</span></a>
+<a name="426"><span class="lineNum">     426 </span><span class="lineCov">          1 :     return system_pair  # type: ignore [no-any-return]</span></a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="https://github.com/linux-test-project/lcov" target="_parent">LCOV version 1.16</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

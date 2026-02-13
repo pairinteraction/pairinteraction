@@ -1,0 +1,651 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Concepts &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Stark Maps" href="stark_map.html" />
+    <link rel="prev" title="Quick Start" href="quick_start.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Concepts</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Structure-of-the-PairInteraction-Library">Structure of the PairInteraction Library</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Modelling-Rydberg-Systems">Modelling Rydberg Systems</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Analyzing-Rydberg-Systems">Analyzing Rydberg Systems</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="stark_map.html">Stark Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potentials.html">Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lifetimes.html">Lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="c3_c6_coefficients.html"><span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_atom_object.html">StateAtom Objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="effective_hamiltonian.html">Effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">Rydberg Atom Ion Interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mqdt.html">MQDT Calculations for Ytterbium</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Concepts</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorials/examples_python/concepts.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+  .nbinput .prompt,
+  .nboutput .prompt {
+    display: none;
+  }
+
+  .rst-content p {
+    margin-bottom: 15px;
+  }
+
+  .rst-content div.nbinput.nblast.docutils.container + p,
+  .rst-content div.nboutput.nblast.docutils.container + p {
+    margin-top: 15px;
+  }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="concepts.ipynb">concepts.ipynb</a>.
+  Open in
+  <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/concepts.ipynb">Google Colab</a>.
+</div><section id="Concepts">
+<h1>Concepts<a class="headerlink" href="#Concepts" title="Link to this heading"></a></h1>
+<p>This tutorial makes you familiar with the basic concepts of PairInteraction’s Python interface. It provides insights into how the PairInteraction library is structured and how to use it.</p>
+<section id="Structure-of-the-PairInteraction-Library">
+<h2>Structure of the PairInteraction Library<a class="headerlink" href="#Structure-of-the-PairInteraction-Library" title="Link to this heading"></a></h2>
+<p>The library is structured around Python classes that can be used to model systems of Rydberg atoms. Typically, we start a simulation by describing in which atomic state we are interested. For this, the following class is available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> (see also Section 5 below): State of a single Rydberg atom, constructed from quantum numbers (if the specified quantum numbers do not match any of the pre-calculated states precisely, the closest state is used). You can display information about a state by using Python’s <code class="docutils literal notranslate"><span class="pre">print</span></code> function on a <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> object. This class also provides methods to get properties of the state such as its energy or lifetime.</p></li>
+</ul>
+<p>For modelling a single atom, the following classes are available:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> (see also Section 6a below): Basis of the single-atom Hilbert space, constructed from ranges of quantum numbers. The basis is initialized as the canonical basis of the Hilbert space, i.e., the basis is made up of basis vectors that each have a single non-zero element corresponding to a particular <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> state.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> (see also Section 6b below): System of a single Rydberg atom, constructed from a <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> and the electric and magnetic fields acting on the atom. The class provides access to the atom’s Hamiltonian.</p></li>
+</ul>
+<p>Two single-atom systems can be combined to model a pair of atoms using the following classes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> (see also Section 7a below): Basis of a pair of atoms, constructed from two <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> objects. For constructing the basis, the eigenstates of the Hamiltonians of the two atoms are used. The basis is initialized as the canonical basis where each basis vector has a single non-zero element corresponding to a tensor product of the eigenstates. The energy of the state, that is described by such a basis vector, is the sum of the eigenenergies. To keep the basis size manageable,
+you can truncate it by specifying an energy range.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">SystemPair</span></code> (see also Section 7b below): System of a pair of atoms, constructed from a <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> and the interaction between the atoms. This class provides access to the two-atom Hamiltonian.</p></li>
+</ul>
+<section id="Helper-Functions">
+<h3>Helper Functions<a class="headerlink" href="#Helper-Functions" title="Link to this heading"></a></h3>
+<p>In addition, the library provides helper functions to improve the visualization of pair potentials, calculate effective Hamiltonians, or properties of a system such as <span class="math notranslate nohighlight">\(C_3\)</span> or <span class="math notranslate nohighlight">\(C_6\)</span> coefficients. Moreover, we provide a helper function that can be used to diagonalize the Hamiltonians of several systems in parallel.</p>
+</section>
+<section id="Convenience-Functionality">
+<h3>Convenience Functionality<a class="headerlink" href="#Convenience-Functionality" title="Link to this heading"></a></h3>
+<p>To make the library easier to use, we have added some convenience functionality:</p>
+<ul class="simple">
+<li><p><strong>Unit Conversions:</strong> Many methods accept a <code class="docutils literal notranslate"><span class="pre">unit</span></code> parameter, such as <code class="docutils literal notranslate"><span class="pre">set_electric_field</span></code> and <code class="docutils literal notranslate"><span class="pre">get_eigenenergies</span></code>. This parameter allows you to choose in which units you want to set or obtain values by specifying the unit as a string, for example, <code class="docutils literal notranslate"><span class="pre">unit=&quot;V/cm&quot;</span></code>. The PairInteraction software automatically performs the required unit conversions. It uses the spectroscopy context of the <a class="reference external" href="https://github.com/hgrecco/pint">pint library</a>, so that energies can also be expressed in
+frequency units or wave numbers.</p></li>
+<li><p><strong>Strict Typing:</strong> The library makes extensive use of Python’s type annotations. This has two advantages for you: First, you can directly see what types of arguments are expected for a function. Second, if you use a Python development environment that supports type checking, you will get warnings in your code editor if you pass the wrong type of argument to a function.</p></li>
+<li><p><strong>Code Completion:</strong> The Python API of PairInteraction is designed so that code completion should work in Python development environments. For example, if you type <code class="docutils literal notranslate"><span class="pre">pi.BasisAtom(</span></code> and then press <code class="docutils literal notranslate"><span class="pre">Ctrl+Space</span></code> in Visual Studio Code, you should see a list of available arguments for the <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> constructor.</p></li>
+</ul>
+</section>
+</section>
+<section id="Modelling-Rydberg-Systems">
+<h2>Modelling Rydberg Systems<a class="headerlink" href="#Modelling-Rydberg-Systems" title="Link to this heading"></a></h2>
+<p>In the following, we show steps for modelling systems of one or two Rydberg atoms using the PairInteraction library.</p>
+<section id="1.-Choose-a-Data-Type">
+<h3>1. Choose a Data Type<a class="headerlink" href="#1.-Choose-a-Data-Type" title="Link to this heading"></a></h3>
+<p>Before you can use the PairInteraction library to study Rydberg atoms, you must decide whether you want to use real or complex numbers to represent the Hamiltonian of your system. In general, real numbers are sufficient if no fields or interactions are applied along the y-direction. After you have chosen a data type, you can import the corresponding backend. In the following, we use the backend for real numbers. Changing the backend might require restarting the Jupyter kernel.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %pip install -q pairinteraction # Uncomment for installation on Colab</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+<span class="c1"># use `import pairinteraction.real as pi` for improved performance and no fields in y-direction</span>
+</pre></div>
+</div>
+</div>
+<p>To improve the output of the Jupyter notebook, we limit the number of values that will be shown if we print a numpy array.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">linewidth</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="2.-Optionally,-Configure-Logging">
+<h3>2. Optionally, Configure Logging<a class="headerlink" href="#2.-Optionally,-Configure-Logging" title="Link to this heading"></a></h3>
+<p>The PairInteraction software supports Python’s logging module. You can adopt the following code to configure the log level and output format:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(levelname)-8s</span><span class="s2"> [</span><span class="si">%(asctime)s</span><span class="s2">.</span><span class="si">%(msecs)03d</span><span class="s2">] [</span><span class="si">%(filename)s</span><span class="s2">:</span><span class="si">%(lineno)d</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">datefmt</span><span class="o">=</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="3.-Set-up-the-Database">
+<h3>3. Set up the Database<a class="headerlink" href="#3.-Set-up-the-Database" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">Database</span></code> object is responsible for storing and looking up the allowed atomic states with their corresponding energies, quantum numbers and electric dipole, etc. matrix elements with other atomic states. These matrix elements are pre-calculated (either via explicit calculation of the overlap integrals and using the Numerov method to get the radial wavefunctions, or alternatively for alkaline-earth atoms via Multichannel Quantum Defect Theory (MQDT)) and stored online in their own github
+repositories [<a class="reference external" href="https://github.com/pairinteraction/database-sqdt/releases">1</a>,<a class="reference external" href="https://github.com/pairinteraction/database-mqdt/releases">2</a>]. The <code class="docutils literal notranslate"><span class="pre">Database</span></code> object is able to download the necessary tables on the fly if <code class="docutils literal notranslate"><span class="pre">download_missing=True</span></code> is passed to the <code class="docutils literal notranslate"><span class="pre">Database</span></code>. Once downloaded, the tables are stored in the cache directory of the user’s computer and are reused in subsequent calculations so that the software can be used without an internet connection.</p>
+<p>You can either create a <code class="docutils literal notranslate"><span class="pre">Database</span></code> object via <code class="docutils literal notranslate"><span class="pre">database</span> <span class="pre">=</span> <span class="pre">pi.Database(download_missing=True)</span></code> and use this database for the creation of the kets and basis objects below, or alternatively you can once create a global instance of the <code class="docutils literal notranslate"><span class="pre">Database</span></code> object via <code class="docutils literal notranslate"><span class="pre">pi.Database.initialize_global_database(download_missing=True)</span></code> and then the ket and basis classes will use this global instance by default.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="4.-Optionally,-Run-a-Self-Test">
+<h3>4. Optionally, Run a Self-Test<a class="headerlink" href="#4.-Optionally,-Run-a-Self-Test" title="Link to this heading"></a></h3>
+<p>The PairInteraction software includes self tests that check if the PairInteraction python module is working correctly. You can run the tests as follows:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_unit_tests</span>
+
+<span class="n">database</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span>
+<span class="k">assert</span> <span class="p">(</span>
+    <span class="n">run_unit_tests</span><span class="p">(</span><span class="n">database</span><span class="o">.</span><span class="n">download_missing</span><span class="p">,</span> <span class="n">database</span><span class="o">.</span><span class="n">use_cache</span><span class="p">,</span> <span class="n">database</span><span class="o">.</span><span class="n">database_dir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="5.-Create-an-Atomic-State-(KetAtom)">
+<h3>5. Create an Atomic State (<code class="docutils literal notranslate"><span class="pre">KetAtom</span></code>)<a class="headerlink" href="#5.-Create-an-Atomic-State-(KetAtom)" title="Link to this heading"></a></h3>
+<p>The simplest object you can create is a simple ket via the <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> class, representing a single-atom state.</p>
+<p>The first argument to the constructor of a <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> object has to be the specifier of the atomic species, for example, ‘Rb’, ‘Sr88_singlet’, ‘Sr88_triplet’, ‘Sr87_mqdt’, ‘Sr88_mqdt’, ‘Yb171_mqdt’, ‘Yb174_mqdt’. Here, the ending `_mqdt’ specifies that the matrix elements were calculated via multi-channel quantum defect theory (MQDT). Matrix elements of other species were calculated via single-channel quantum defect theory (SQDT) using the Numerov method to obtain radial wavefunctions. For a
+full list of supported species, see the “Identifier” column in the “quantum defect references” table of PairInteraction’s <a class="reference external" href="https://www.pairinteraction.org/pairinteraction/stable/index.html#quantum-defects">README</a>.</p>
+<p>In addition, you must pass quantum numbers as keyword arguments to uniquely specify a state. You can pass whatever combination of quantum numbers you like, as long as they uniquely specify exactly one state (e.g. <code class="docutils literal notranslate"><span class="pre">pi.KetAtom(&quot;Rb&quot;,</span> <span class="pre">n=60,</span> <span class="pre">l=0,</span> <span class="pre">j=0.5,</span> <span class="pre">m=0.5)</span></code> and <code class="docutils literal notranslate"><span class="pre">pi.KetAtom(&quot;Rb&quot;,</span> <span class="pre">n=60,</span> <span class="pre">l=0,</span> <span class="pre">m=0.5)</span></code> are both equivalent and specify the same state).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;You successfully created a ket object: </span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2"> &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;with quantum numbers n=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span><span class="si">}</span><span class="s2">, l=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">l</span><span class="si">}</span><span class="s2">, j=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">j</span><span class="si">}</span><span class="s2">, &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;m=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="si">}</span><span class="s2"> and energy=</span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;And getting its energy in GHz is as simple as </span><span class="si">{</span><span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">ket2</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">58</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">delta_energy</span> <span class="o">=</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">ket2</span><span class="o">.</span><span class="n">get_energy</span><span class="p">()</span>  <span class="c1"># this is a pint.Quantity object</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Even the energy difference between two states is easily calculated and converted:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;delta_energy = </span><span class="si">{</span><span class="n">delta_energy</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;GHz&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as frequency)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;cm^-1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as wavenumber)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;eV&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="mi">13</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;= </span><span class="si">{</span><span class="n">delta_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;mm&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;spectroscopy&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2"> (as wavelength)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+You successfully created a ket object: |Rb:60,P_1/2,1/2⟩ with quantum numbers n=60, l=1.0, j=0.5, m=0.5 and energy=0.15335520073991077 bohr ** 2 * electron_mass / atomic_unit_of_time ** 2
+And getting its energy in GHz is as simple as ket.get_energy(unit=&#39;GHz&#39;)=1009028.7484337102
+
+Even the energy difference between two states is easily calculated and converted:
+delta_energy = 1.403362628490945e-05 bohr ** 2 * electron_mass / atomic_unit_of_time ** 2
+             = 92.33682521314954 gigahertz (as frequency)
+             = 3.0800249555694146 / centimeter (as wavenumber)
+             = 0.0003818744252705271 electron_volt
+             = 3.2467269402858667 millimeter (as wavelength)
+</pre></div></div>
+</div>
+</section>
+<section id="6a.-Create-a-Single-Atom-Basis-(BasisAtom)">
+<h3>6a. Create a Single-Atom Basis (<code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code>)<a class="headerlink" href="#6a.-Create-a-Single-Atom-Basis-(BasisAtom)" title="Link to this heading"></a></h3>
+<p>Next, you can create a basis object. A basis object consists of a list of kets which define a canonical basis for the Hilbert space. Furthermore, the basis object defines basis states via its coefficients matrix, where each column in the coefficients matrix corresponds to one basis state. When created, the coefficients matrix is initialized to the identity matrix, i.e. each basis state corresponds to one ket. However, in general a state (and therefore each column of the basis coefficients
+matrix) can be a superposition of multiple kets.</p>
+<p>The list of which kets should be considered in the basis can be restricted by passing to the <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> class tuples of (min, max) values for the quantum numbers and energy.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">3</span><span class="p">),</span> <span class="n">l</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">l</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+<span class="n">coefficients</span> <span class="o">=</span> <span class="n">basis</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span>  <span class="c1"># this is a scipy.sparse.csr_matrix object</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;This basis contains </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">number_of_kets</span><span class="si">}</span><span class="s2"> kets (=atomic states)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The first and last kets are </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The coefficient matrix has shape </span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and the following entries:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+This basis contains 224 kets (=atomic states)
+The first and last kets are |Rb:57,S_1/2,-1/2⟩ and |Rb:63,F_5/2,5/2⟩
+The coefficient matrix has shape (224, 224) and the following entries:
+[[1. 0. 0. ... 0. 0. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 1. 0. 0.]
+ [0. 0. 0. ... 0. 1. 0.]
+ [0. 0. 0. ... 0. 0. 1.]]
+</pre></div></div>
+</div>
+</section>
+<section id="6b.-Create-a-Single-Atom-System-(SystemAtom)">
+<h3>6b. Create a Single-Atom System (<code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code>)<a class="headerlink" href="#6b.-Create-a-Single-Atom-System-(SystemAtom)" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> object describes the single-atom system. It is created by passing a <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> object in, which defines the basis of the Hilbert space. You can now set external fields and enable or disable the diamagnetic term. Then you can inspect the resulting Hamiltonian and diagonalize it to get the eigenstates and eigenenergies of the system.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;V/cm&quot;</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The Hamiltonian of the system with magnetic and electric fields is (in GHz):&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">system</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="n">eigenbasis</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span>
+<span class="n">eigenenergies</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The eigenenergies are (in GHz):&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">eigenenergies</span><span class="p">)</span>
+
+<span class="n">eigenstate_number</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">eigenstate</span> <span class="o">=</span> <span class="n">eigenbasis</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">eigenstate_number</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The eigenstate with index </span><span class="si">{</span><span class="n">eigenstate_number</span><span class="si">}</span><span class="s2"> is: </span><span class="si">{</span><span class="n">eigenstate</span><span class="si">}</span><span class="s2">; &quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;and its coefficients are:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">eigenstate</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;It has the largest overlap with the ket: </span><span class="si">{</span><span class="n">eigenstate</span><span class="o">.</span><span class="n">get_corresponding_ket</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">corresponding_state</span> <span class="o">=</span> <span class="n">eigenbasis</span><span class="o">.</span><span class="n">get_corresponding_state</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The state corresponding to the ket </span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2"> is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">corresponding_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The overlap |&lt;state|ket&gt;|^2 is </span><span class="si">{</span><span class="n">corresponding_state</span><span class="o">.</span><span class="n">get_overlap</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The Hamiltonian of the system with magnetic and electric fields is (in GHz):
+[[1.00889546e+06 0.00000000e+00 2.15041225e+00 ... 0.00000000e+00 0.00000000e+00 0.00000000e+00]
+ [0.00000000e+00 1.00889547e+06 0.00000000e+00 ... 0.00000000e+00 0.00000000e+00 0.00000000e+00]
+ [2.15041225e+00 0.00000000e+00 1.00891525e+06 ... 0.00000000e+00 0.00000000e+00 0.00000000e+00]
+ ...
+ [0.00000000e+00 0.00000000e+00 0.00000000e+00 ... 1.00919985e+06 0.00000000e+00 0.00000000e+00]
+ [0.00000000e+00 0.00000000e+00 0.00000000e+00 ... 0.00000000e+00 1.00919985e+06 0.00000000e+00]
+ [0.00000000e+00 0.00000000e+00 0.00000000e+00 ... 0.00000000e+00 0.00000000e+00 1.00919985e+06]]
+
+The eigenenergies are (in GHz):
+[1008894.79667278 1008894.79947523 1008915.27803518 ... 1009199.85429622 1009199.85536555 1009199.85630439]
+
+The eigenstate with index 2 is: StateAtom(0.99 |Rb:57,P_1/2,-1/2⟩ + ... );
+and its coefficients are:
+
+[0.09730863 0.         0.98920897 ... 0.         0.         0.        ]
+It has the largest overlap with the ket: |Rb:57,P_1/2,-1/2⟩
+
+The state corresponding to the ket |Rb:60,P_1/2,1/2⟩ is:
+StateAtom(0.88 |Rb:60,P_1/2,1/2⟩ + 0.33 |Rb:59,D_3/2,1/2⟩ + -0.18 |Rb:60,P_3/2,1/2⟩ + ... )
+The overlap |&lt;state|ket&gt;|^2 is 0.7817048662479265
+</pre></div></div>
+</div>
+</section>
+<section id="7a.-Create-a-Two-Atom-Basis-(BasisPair)">
+<h3>7a. Create a Two-Atom Basis (<code class="docutils literal notranslate"><span class="pre">BasisPair</span></code>)<a class="headerlink" href="#7a.-Create-a-Two-Atom-Basis-(BasisPair)" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object consists of a list of <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects. Again, we view these KetPair kets as forming a canonical basis for the pair Hilbert space. However, in contrast to the <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code> objects, the <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects are not atomic states (or product states of atomic states), but rather product states of the eigenstates of the single-atom Hamiltonian.</p>
+<p>Again, the <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object has a coefficients matrix, which defines the basis states (with respect to the list of <code class="docutils literal notranslate"><span class="pre">KetPair</span></code> objects). The coefficients matrix is initialized to the identity matrix. This corresponds to the eigenstates of the pair Hamiltonian with external fields but without any interaction between the atoms. In general, when adding interactions, the pair-states (=the columns of the coefficent matrix) can be a superposition of multiple KetPair objects.</p>
+<p>Similar to the <code class="docutils literal notranslate"><span class="pre">BasisAtom</span></code> object, we can restrict the list of kets that should be considered in the basis by passing in tuples of (min, max) values for the energy of the pair states and the quantum number m if it is conserved.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pair_energy</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+<span class="n">delta_energy</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># GHz</span>
+<span class="n">pair_basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">system</span><span class="p">,</span> <span class="n">system</span><span class="p">],</span>
+    <span class="n">m</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">),</span>
+    <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">pair_energy</span> <span class="o">-</span> <span class="n">delta_energy</span><span class="p">,</span> <span class="n">pair_energy</span> <span class="o">+</span> <span class="n">delta_energy</span><span class="p">),</span>
+    <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">coefficients</span> <span class="o">=</span> <span class="n">pair_basis</span><span class="o">.</span><span class="n">get_coefficients</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The pair-basis contains </span><span class="si">{</span><span class="n">pair_basis</span><span class="o">.</span><span class="n">number_of_kets</span><span class="si">}</span><span class="s2"> KetPair (=pair-states)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;The first KetPair corresponds to a pair-state &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;close to the product state </span><span class="si">{</span><span class="n">pair_basis</span><span class="o">.</span><span class="n">kets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The coefficient matrix has shape </span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> and the following entries:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">coefficients</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The pair-basis contains 352 KetPair (=pair-states)
+The first KetPair corresponds to a pair-state close to the product state |Rb:57,S_1/2,-1/2; Rb:63,D_5/2,3/2⟩
+The coefficient matrix has shape (352, 352) and the following entries:
+[[1. 0. 0. ... 0. 0. 0.]
+ [0. 1. 0. ... 0. 0. 0.]
+ [0. 0. 1. ... 0. 0. 0.]
+ ...
+ [0. 0. 0. ... 1. 0. 0.]
+ [0. 0. 0. ... 0. 1. 0.]
+ [0. 0. 0. ... 0. 0. 1.]]
+</pre></div></div>
+</div>
+</section>
+<section id="7b.-Create-a-Two-Atom-System-(SystemPair)">
+<h3>7b. Create a Two-Atom System (<code class="docutils literal notranslate"><span class="pre">SystemPair</span></code>)<a class="headerlink" href="#7b.-Create-a-Two-Atom-System-(SystemPair)" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemPair</span></code> object describes the pair system. Similar to the <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> object, it is created by passing a <code class="docutils literal notranslate"><span class="pre">BasisPair</span></code> object in, which defines the basis of the pair Hilbert space. You can now set the interatomic distance between the atoms and the order of the multipole expansion. Then you can inspect the resulting Hamiltonian and diagonalize it to get the eigenstates and eigenenergies of the system.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pair_system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">pair_basis</span><span class="p">)</span>
+<span class="n">distance</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># micrometer</span>
+<span class="n">pair_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+<span class="n">pair_system</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The Hamiltonian of the SystemPair (in GHz) for the given </span><span class="si">{</span><span class="n">distance</span><span class="si">=}</span><span class="s2">um is:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pair_system</span><span class="o">.</span><span class="n">get_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s1">&#39;GHz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">pair_system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">()</span>
+<span class="n">eigenenergies</span> <span class="o">=</span> <span class="n">pair_system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The eigenenergies in GHz are:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">eigenenergies</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The Hamiltonian of the SystemPair (in GHz) for the given distance=5um is:
+[[ 2.01805691e+06 -1.50501903e-04  1.06486289e-09 ...  1.25246904e-09  0.00000000e+00  0.00000000e+00]
+ [-1.50501903e-04  2.01805740e+06 -2.49059846e-10 ...  4.01258629e-10  0.00000000e+00  0.00000000e+00]
+ [ 1.06486289e-09 -2.49059846e-10  2.01805675e+06 ...  6.42578942e-10  9.02572743e-11  2.89160922e-11]
+ ...
+ [ 1.25246904e-09  4.01258629e-10  6.42578942e-10 ...  2.01805690e+06 -3.38649247e-11 -2.85118877e-09]
+ [ 0.00000000e+00  0.00000000e+00  9.02572743e-11 ... -3.38649247e-11  2.01805691e+06 -1.50501903e-04]
+ [ 0.00000000e+00  0.00000000e+00  2.89160922e-11 ... -2.85118877e-09 -1.50501903e-04  2.01805740e+06]]
+
+The eigenenergies in GHz are:
+[2018046.54203192 2018046.54203914 2018047.03989477 ... 2018065.1183288  2018065.12218846 2018065.12218861]
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Analyzing-Rydberg-Systems">
+<h2>Analyzing Rydberg Systems<a class="headerlink" href="#Analyzing-Rydberg-Systems" title="Link to this heading"></a></h2>
+<p>Once you have created a <code class="docutils literal notranslate"><span class="pre">KetAtom</span></code>, <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code>, or <code class="docutils literal notranslate"><span class="pre">SystemPair</span></code> object, you can use different methods to obtain information about the object.</p>
+<p>For example, you can obtain the eigenenergies of a system to plot Stark maps, Zeeman maps, or pair potentials. Because this requires diagonalizing Hamiltonians of many systems for different parameters, we provide a function <code class="docutils literal notranslate"><span class="pre">diagonalize</span></code> that can be used to diagonalize the Hamiltonians in parallel. This function is implemented in C++ and thus avoids Python’s global interpreter lock (GIL). To accelerate the diagonalization, you can reduce the precision by passing <code class="docutils literal notranslate"><span class="pre">float_type=&quot;float32&quot;</span></code> as an
+argument (<code class="docutils literal notranslate"><span class="pre">&quot;float64&quot;</span></code> is the default). The resulting numerical errors are typically negligible. The relative error in the eigenenergies can be controlled by setting <code class="docutils literal notranslate"><span class="pre">rtol</span></code> (the default is 1e-6, which is usually sufficient and compatible with float32). We provide different methods for diagonalizing the Hamiltonian, that can be set by passing the name of the method to the <code class="docutils literal notranslate"><span class="pre">diagonalizer</span></code> argument:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">diagonalizer=&quot;eigen&quot;</span></code> (default): Algorithm of the Eigen library</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diagonalizer=&quot;lapacke_evd&quot;</span></code>: LAPACKE’s divide-and-conquer algorithm</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diagonalizer=&quot;lapacke_evr&quot;</span></code>: LAPACKE’s algorithm using relatively robust representations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">diagonalizer=&quot;feast&quot;</span></code>: Intel MKL’s FEAST algorithm</p></li>
+</ul>
+<p>For the latter two methods, you should specify the energy range in which the eigenenergies should be computed. This is done by passing, for example, <code class="docutils literal notranslate"><span class="pre">energy_range=(-1,</span> <span class="pre">1),</span> <span class="pre">energy_range_unit=&quot;MHz&quot;</span></code> to the <code class="docutils literal notranslate"><span class="pre">diagonalize</span></code> function.</p>
+<p>In the following, we demonstrate how the <code class="docutils literal notranslate"><span class="pre">diagonalize</span></code> function can be used to obtain pair potentials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.visualization.colormaps</span><span class="w"> </span><span class="kn">import</span> <span class="n">alphamagma</span>
+
+<span class="c1"># Use pair basis from before to construct systems with different distances between atoms</span>
+<span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># micrometer</span>
+<span class="n">pair_systems</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">pair_basis</span><span class="p">)</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distances</span>
+<span class="p">]</span>
+
+<span class="c1"># Diagonalize all systems in parallel and get the eigenenergies and overlaps</span>
+<span class="n">pi</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="n">pair_systems</span><span class="p">,</span> <span class="n">float_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">pair_eigenenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pair_systems</span><span class="p">])</span>
+<span class="n">pair_overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">s</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">([</span><span class="n">ket</span><span class="p">,</span> <span class="n">ket</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">pair_systems</span><span class="p">])</span>
+
+<span class="c1"># Plot the eigenenergies  and overlaps as a function of distance</span>
+<span class="n">distances_repeated</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">pair_eigenenergies</span><span class="p">)]</span>
+<span class="p">)</span>
+<span class="n">pair_eigenenergies_flattened</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">pair_eigenenergies</span><span class="p">)</span>
+<span class="n">pair_overlaps_flattened</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">pair_overlaps</span><span class="p">)</span>
+<span class="n">sorter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">pair_eigenenergies_flattened</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">pair_eigenenergies</span> <span class="o">-</span> <span class="n">pair_energy</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;0.8&quot;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">scat</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">distances_repeated</span><span class="p">[</span><span class="n">sorter</span><span class="p">],</span>
+    <span class="n">pair_eigenenergies_flattened</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span> <span class="o">-</span> <span class="n">pair_energy</span><span class="p">,</span>
+    <span class="n">c</span><span class="o">=</span><span class="n">pair_overlaps_flattened</span><span class="p">[</span><span class="n">sorter</span><span class="p">],</span>
+    <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="n">alphamagma</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Overlap with 2x</span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Distance (μm)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Eigenenergy (GHz)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_concepts_27_0.png" src="../../_images/tutorials_examples_python_concepts_27_0.png" />
+</div>
+</div>
+<p>Example applications and additional ways to analyze systems are described in the next tutorials.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="quick_start.html" class="btn btn-neutral float-left" title="Quick Start" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="stark_map.html" class="btn btn-neutral float-right" title="Stark Maps" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

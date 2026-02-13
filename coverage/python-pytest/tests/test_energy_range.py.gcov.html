@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - tests/test_energy_range.py</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">tests</a> - test_energy_range.py<span style="font-size: 80%;"> (source / <a href="test_energy_range.py.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntry">19</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-02-13 12:53:30</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : # SPDX-FileCopyrightText: 2024 PairInteraction Developers</a>
+<a name="2"><span class="lineNum">       2 </span>            : # SPDX-License-Identifier: LGPL-3.0-or-later</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span><span class="lineCov">          1 : from __future__ import annotations</span></a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span><span class="lineCov">          1 : from typing import TYPE_CHECKING</span></a>
+<a name="7"><span class="lineNum">       7 </span>            : </a>
+<a name="8"><span class="lineNum">       8 </span><span class="lineCov">          1 : import numpy as np</span></a>
+<a name="9"><span class="lineNum">       9 </span>            : </a>
+<a name="10"><span class="lineNum">      10 </span>            : if TYPE_CHECKING:</a>
+<a name="11"><span class="lineNum">      11 </span>            :     from .utils import PairinteractionModule</a>
+<a name="12"><span class="lineNum">      12 </span>            : </a>
+<a name="13"><span class="lineNum">      13 </span>            : </a>
+<a name="14"><span class="lineNum">      14 </span><span class="lineCov">          1 : def test_energy_range(pi_module: PairinteractionModule) -&gt; None:</span></a>
+<a name="15"><span class="lineNum">      15 </span>            :     &quot;&quot;&quot;Test restricting the energy range in the diagonalization.&quot;&quot;&quot;</a>
+<a name="16"><span class="lineNum">      16 </span><span class="lineCov">          1 :     ket = pi_module.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span></a>
+<a name="17"><span class="lineNum">      17 </span><span class="lineCov">          1 :     pair_energy = 2 * ket.get_energy(unit=&quot;GHz&quot;)</span></a>
+<a name="18"><span class="lineNum">      18 </span><span class="lineCov">          1 :     distances = np.linspace(1, 4, 100)</span></a>
+<a name="19"><span class="lineNum">      19 </span>            : </a>
+<a name="20"><span class="lineNum">      20 </span>            :     # Create a single-atom system</a>
+<a name="21"><span class="lineNum">      21 </span><span class="lineCov">          1 :     basis = pi_module.BasisAtom(&quot;Rb&quot;, n=(58, 62), l=(0, 1))</span></a>
+<a name="22"><span class="lineNum">      22 </span><span class="lineCov">          1 :     system = pi_module.SystemAtom(basis)</span></a>
+<a name="23"><span class="lineNum">      23 </span>            : </a>
+<a name="24"><span class="lineNum">      24 </span>            :     # Create two-atom basis</a>
+<a name="25"><span class="lineNum">      25 </span><span class="lineCov">          1 :     basis_pair = pi_module.BasisPair(</span></a>
+<a name="26"><span class="lineNum">      26 </span>            :         [system, system], energy=(pair_energy - 10, pair_energy + 10), energy_unit=&quot;GHz&quot;, m=(1, 1)</a>
+<a name="27"><span class="lineNum">      27 </span>            :     )</a>
+<a name="28"><span class="lineNum">      28 </span>            : </a>
+<a name="29"><span class="lineNum">      29 </span>            :     # Diagonalize the systems for different distances in parallel and get all eigenenergies</a>
+<a name="30"><span class="lineNum">      30 </span><span class="lineCov">          1 :     system_pairs = [pi_module.SystemPair(basis_pair).set_distance(d, unit=&quot;micrometer&quot;) for d in distances]</span></a>
+<a name="31"><span class="lineNum">      31 </span><span class="lineCov">          1 :     pi_module.diagonalize(system_pairs, diagonalizer=&quot;eigen&quot;, sort_by_energy=True)</span></a>
+<a name="32"><span class="lineNum">      32 </span><span class="lineCov">          1 :     eigenenergies_all = [system.get_eigenenergies(unit=&quot;GHz&quot;) for system in system_pairs]</span></a>
+<a name="33"><span class="lineNum">      33 </span>            : </a>
+<a name="34"><span class="lineNum">      34 </span>            :     # Diagonalize the systems for different distances in parallel and get only the eigenenergies in an energy range</a>
+<a name="35"><span class="lineNum">      35 </span><span class="lineCov">          1 :     system_pairs = [pi_module.SystemPair(basis_pair).set_distance(d, unit=&quot;micrometer&quot;) for d in distances]</span></a>
+<a name="36"><span class="lineNum">      36 </span><span class="lineCov">          1 :     pi_module.diagonalize(</span></a>
+<a name="37"><span class="lineNum">      37 </span>            :         system_pairs,</a>
+<a name="38"><span class="lineNum">      38 </span>            :         diagonalizer=&quot;eigen&quot;,</a>
+<a name="39"><span class="lineNum">      39 </span>            :         sort_by_energy=True,</a>
+<a name="40"><span class="lineNum">      40 </span>            :         energy_range=(pair_energy - 5, pair_energy + 5),</a>
+<a name="41"><span class="lineNum">      41 </span>            :         energy_range_unit=&quot;GHz&quot;,</a>
+<a name="42"><span class="lineNum">      42 </span>            :     )</a>
+<a name="43"><span class="lineNum">      43 </span><span class="lineCov">          1 :     eigenenergies_restricted = [system.get_eigenenergies(unit=&quot;GHz&quot;) for system in system_pairs]</span></a>
+<a name="44"><span class="lineNum">      44 </span>            : </a>
+<a name="45"><span class="lineNum">      45 </span>            :     # Check the result</a>
+<a name="46"><span class="lineNum">      46 </span><span class="lineCov">          1 :     eigenenergies_all_restricted = [</span></a>
+<a name="47"><span class="lineNum">      47 </span>            :         eigenenergies[(eigenenergies &lt; pair_energy + 5) &amp; (eigenenergies &gt; pair_energy - 5)]</a>
+<a name="48"><span class="lineNum">      48 </span>            :         for eigenenergies in eigenenergies_all</a>
+<a name="49"><span class="lineNum">      49 </span>            :     ]</a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineCov">          1 :     for e1, e2 in zip(eigenenergies_restricted, eigenenergies_all_restricted):</span></a>
+<a name="51"><span class="lineNum">      51 </span><span class="lineCov">          1 :         np.testing.assert_allclose(e1, e2)</span></a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="https://github.com/linux-test-project/lcov" target="_parent">LCOV version 1.16</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

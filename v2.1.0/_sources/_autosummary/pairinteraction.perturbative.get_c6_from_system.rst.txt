@@ -1,0 +1,6 @@
+﻿get\_c6\_from\_system
+=====================
+
+.. currentmodule:: pairinteraction.perturbative
+
+.. autofunction:: get_c6_from_system

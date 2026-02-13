@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - tests/test_database.py</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">tests</a> - test_database.py<span style="font-size: 80%;"> (source / <a href="test_database.py.func-sort-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">100</td>
+            <td class="headerCovTableEntry">100</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2026-02-13 12:53:30</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</a>
+<a name="2"><span class="lineNum">       2 </span>            : # SPDX-License-Identifier: LGPL-3.0-or-later</a>
+<a name="3"><span class="lineNum">       3 </span>            : </a>
+<a name="4"><span class="lineNum">       4 </span><span class="lineCov">          1 : from __future__ import annotations</span></a>
+<a name="5"><span class="lineNum">       5 </span>            : </a>
+<a name="6"><span class="lineNum">       6 </span><span class="lineCov">          1 : from typing import TYPE_CHECKING</span></a>
+<a name="7"><span class="lineNum">       7 </span>            : </a>
+<a name="8"><span class="lineNum">       8 </span><span class="lineCov">          1 : import duckdb</span></a>
+<a name="9"><span class="lineNum">       9 </span><span class="lineCov">          1 : import numpy as np</span></a>
+<a name="10"><span class="lineNum">      10 </span><span class="lineCov">          1 : import pytest</span></a>
+<a name="11"><span class="lineNum">      11 </span><span class="lineCov">          1 : from packaging.version import Version</span></a>
+<a name="12"><span class="lineNum">      12 </span><span class="lineCov">          1 : from sympy.physics.wigner import wigner_3j</span></a>
+<a name="13"><span class="lineNum">      13 </span>            : </a>
+<a name="14"><span class="lineNum">      14 </span><span class="lineCov">          1 : from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN, SUPPORTED_SPECIES</span></a>
+<a name="15"><span class="lineNum">      15 </span>            : </a>
+<a name="16"><span class="lineNum">      16 </span>            : if TYPE_CHECKING:</a>
+<a name="17"><span class="lineNum">      17 </span>            :     from collections.abc import Generator</a>
+<a name="18"><span class="lineNum">      18 </span>            :     from pathlib import Path</a>
+<a name="19"><span class="lineNum">      19 </span>            : </a>
+<a name="20"><span class="lineNum">      20 </span>            :     from .utils import PairinteractionModule</a>
+<a name="21"><span class="lineNum">      21 </span>            : </a>
+<a name="22"><span class="lineNum">      22 </span>            : </a>
+<a name="23"><span class="lineNum">      23 </span><span class="lineCov">          1 : def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.DuckDBPyConnection, table: str | Path) -&gt; int:</span></a>
+<a name="24"><span class="lineNum">      24 </span><span class="lineCov">          1 :     result = connection.execute(</span></a>
+<a name="25"><span class="lineNum">      25 </span>            :         f&quot;SELECT id FROM '{table}' WHERE n = {n} AND f = {f} ORDER BY (exp_s - {s})^2+(exp_l - {l})^2 LIMIT 1&quot;  # noqa: S608</a>
+<a name="26"><span class="lineNum">      26 </span>            :     ).fetchone()</a>
+<a name="27"><span class="lineNum">      27 </span><span class="lineCov">          1 :     return result[0] if result else -1</span></a>
+<a name="28"><span class="lineNum">      28 </span>            : </a>
+<a name="29"><span class="lineNum">      29 </span>            : </a>
+<a name="30"><span class="lineNum">      30 </span><span class="lineCov">          1 : def fetch_wigner_element(</span></a>
+<a name="31"><span class="lineNum">      31 </span>            :     f_initial: float,</a>
+<a name="32"><span class="lineNum">      32 </span>            :     f_final: float,</a>
+<a name="33"><span class="lineNum">      33 </span>            :     m_initial: float,</a>
+<a name="34"><span class="lineNum">      34 </span>            :     m_final: float,</a>
+<a name="35"><span class="lineNum">      35 </span>            :     kappa: int,</a>
+<a name="36"><span class="lineNum">      36 </span>            :     q: int,</a>
+<a name="37"><span class="lineNum">      37 </span>            :     connection: duckdb.DuckDBPyConnection,</a>
+<a name="38"><span class="lineNum">      38 </span>            :     table: str | Path,</a>
+<a name="39"><span class="lineNum">      39 </span>            : ) -&gt; float:</a>
+<a name="40"><span class="lineNum">      40 </span><span class="lineCov">          1 :     result = connection.execute(</span></a>
+<a name="41"><span class="lineNum">      41 </span>            :         f&quot;SELECT val FROM '{table}' WHERE f_initial = {f_initial} AND f_final = {f_final} AND &quot;  # noqa: S608</a>
+<a name="42"><span class="lineNum">      42 </span>            :         f&quot;m_initial = {m_initial} AND m_final = {m_final} AND kappa = {kappa} AND q = {q}&quot;</a>
+<a name="43"><span class="lineNum">      43 </span>            :     ).fetchone()</a>
+<a name="44"><span class="lineNum">      44 </span><span class="lineCov">          1 :     return result[0] if result else 0</span></a>
+<a name="45"><span class="lineNum">      45 </span>            : </a>
+<a name="46"><span class="lineNum">      46 </span>            : </a>
+<a name="47"><span class="lineNum">      47 </span><span class="lineCov">          1 : def fetch_reduced_matrix_element(</span></a>
+<a name="48"><span class="lineNum">      48 </span>            :     id_initial: int, id_final: int, connection: duckdb.DuckDBPyConnection, table: str | Path</a>
+<a name="49"><span class="lineNum">      49 </span>            : ) -&gt; float:</a>
+<a name="50"><span class="lineNum">      50 </span><span class="lineCov">          1 :     result = connection.execute(</span></a>
+<a name="51"><span class="lineNum">      51 </span>            :         f&quot;SELECT val FROM '{table}' WHERE id_initial = {id_initial} AND id_final = {id_final}&quot;  # noqa: S608</a>
+<a name="52"><span class="lineNum">      52 </span>            :     ).fetchone()</a>
+<a name="53"><span class="lineNum">      53 </span><span class="lineCov">          1 :     return result[0] if result else 0</span></a>
+<a name="54"><span class="lineNum">      54 </span>            : </a>
+<a name="55"><span class="lineNum">      55 </span>            : </a>
+<a name="56"><span class="lineNum">      56 </span><span class="lineCov">          1 : @pytest.fixture(scope=&quot;module&quot;)</span></a>
+<a name="57"><span class="lineNum">      57 </span><span class="lineCov">          1 : def connection() -&gt; Generator[duckdb.DuckDBPyConnection]:</span></a>
+<a name="58"><span class="lineNum">      58 </span><span class="lineCov">          1 :     with duckdb.connect(&quot;:memory:&quot;) as connection:</span></a>
+<a name="59"><span class="lineNum">      59 </span><span class="lineCov">          1 :         yield connection</span></a>
+<a name="60"><span class="lineNum">      60 </span>            : </a>
+<a name="61"><span class="lineNum">      61 </span>            : </a>
+<a name="62"><span class="lineNum">      62 </span><span class="lineCov">          1 : @pytest.mark.parametrize(&quot;swap_states&quot;, [False, True])</span></a>
+<a name="63"><span class="lineNum">      63 </span><span class="lineCov">          1 : def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyConnection, swap_states: bool) -&gt; None:  # noqa: PLR0915</span></a>
+<a name="64"><span class="lineNum">      64 </span>            :     &quot;&quot;&quot;Test receiving matrix elements from the databases.&quot;&quot;&quot;</a>
+<a name="65"><span class="lineNum">      65 </span><span class="lineCov">          1 :     database = pi_module.Database.get_global_database()</span></a>
+<a name="66"><span class="lineNum">      66 </span><span class="lineCov">          1 :     bfield_in_gauss = 1500</span></a>
+<a name="67"><span class="lineNum">      67 </span>            : </a>
+<a name="68"><span class="lineNum">      68 </span>            :     # Define initial and final quantum states</a>
+<a name="69"><span class="lineNum">      69 </span><span class="lineCov">          1 :     n_initial, n_final = 54, 54</span></a>
+<a name="70"><span class="lineNum">      70 </span><span class="lineCov">          1 :     l_initial, l_final = 1, 1</span></a>
+<a name="71"><span class="lineNum">      71 </span><span class="lineCov">          1 :     f_initial, f_final = 1, 0</span></a>
+<a name="72"><span class="lineNum">      72 </span><span class="lineCov">          1 :     m_initial, m_final = 0, 0</span></a>
+<a name="73"><span class="lineNum">      73 </span><span class="lineCov">          1 :     s_initial, s_final = 0.6, 1.0</span></a>
+<a name="74"><span class="lineNum">      74 </span>            : </a>
+<a name="75"><span class="lineNum">      75 </span>            :     # Swap states if required by the test parameter</a>
+<a name="76"><span class="lineNum">      76 </span><span class="lineCov">          1 :     if swap_states:</span></a>
+<a name="77"><span class="lineNum">      77 </span><span class="lineCov">          1 :         n_initial, n_final = n_final, n_initial</span></a>
+<a name="78"><span class="lineNum">      78 </span><span class="lineCov">          1 :         l_initial, l_final = l_final, l_initial</span></a>
+<a name="79"><span class="lineNum">      79 </span><span class="lineCov">          1 :         f_initial, f_final = f_final, f_initial</span></a>
+<a name="80"><span class="lineNum">      80 </span><span class="lineCov">          1 :         m_initial, m_final = m_final, m_initial</span></a>
+<a name="81"><span class="lineNum">      81 </span><span class="lineCov">          1 :         s_initial, s_final = s_final, s_initial</span></a>
+<a name="82"><span class="lineNum">      82 </span>            : </a>
+<a name="83"><span class="lineNum">      83 </span>            :     # Get the Zeeman interaction operator from the database using pairinteraction</a>
+<a name="84"><span class="lineNum">      84 </span><span class="lineCov">          1 :     ket_initial = pi_module.KetAtom(&quot;Yb174_mqdt&quot;, n=n_initial, l=l_initial, f=f_initial, m=m_initial, s=s_initial)</span></a>
+<a name="85"><span class="lineNum">      85 </span><span class="lineCov">          1 :     ket_final = pi_module.KetAtom(&quot;Yb174_mqdt&quot;, n=n_final, l=l_final, f=f_final, m=m_final, s=s_final)</span></a>
+<a name="86"><span class="lineNum">      86 </span><span class="lineCov">          1 :     basis = pi_module.BasisAtom(&quot;Yb174_mqdt&quot;, additional_kets=[ket_initial, ket_final])</span></a>
+<a name="87"><span class="lineNum">      87 </span><span class="lineCov">          1 :     operator = (</span></a>
+<a name="88"><span class="lineNum">      88 </span>            :         pi_module.SystemAtom(basis)</a>
+<a name="89"><span class="lineNum">      89 </span>            :         .set_magnetic_field([0, 0, bfield_in_gauss], unit=&quot;G&quot;)</a>
+<a name="90"><span class="lineNum">      90 </span>            :         .set_diamagnetism_enabled(True)</a>
+<a name="91"><span class="lineNum">      91 </span>            :         .get_hamiltonian(unit=&quot;GHz&quot;)</a>
+<a name="92"><span class="lineNum">      92 </span>            :     ).toarray()</a>
+<a name="93"><span class="lineNum">      93 </span><span class="lineCov">          1 :     operator -= np.diag(np.sort([ket_initial.get_energy(unit=&quot;GHz&quot;), ket_final.get_energy(unit=&quot;GHz&quot;)]))</span></a>
+<a name="94"><span class="lineNum">      94 </span><span class="lineCov">          1 :     expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])</span></a>
+<a name="95"><span class="lineNum">      95 </span><span class="lineCov">          1 :     assert np.allclose(operator, expected_operator, rtol=1e-3)</span></a>
+<a name="96"><span class="lineNum">      96 </span>            : </a>
+<a name="97"><span class="lineNum">      97 </span>            :     # Get the latest parquet files from the database directory</a>
+<a name="98"><span class="lineNum">      98 </span><span class="lineCov">          1 :     parquet_files: dict[str, Path] = {}</span></a>
+<a name="99"><span class="lineNum">      99 </span><span class="lineCov">          1 :     parquet_versions: dict[str, Version] = {}</span></a>
+<a name="100"><span class="lineNum">     100 </span><span class="lineCov">          1 :     for path in (database.database_dir / &quot;tables&quot;).glob(&quot;*/*.parquet&quot;):</span></a>
+<a name="101"><span class="lineNum">     101 </span><span class="lineCov">          1 :         species, version_str = path.parent.name.rsplit(&quot;_v&quot;, 1)</span></a>
+<a name="102"><span class="lineNum">     102 </span><span class="lineCov">          1 :         table = path.stem</span></a>
+<a name="103"><span class="lineNum">     103 </span><span class="lineCov">          1 :         name = f&quot;{species}_{table}&quot;</span></a>
+<a name="104"><span class="lineNum">     104 </span><span class="lineCov">          1 :         version = Version(version_str)</span></a>
+<a name="105"><span class="lineNum">     105 </span><span class="lineCov">          1 :         if name not in parquet_files or version &gt; parquet_versions[name]:</span></a>
+<a name="106"><span class="lineNum">     106 </span><span class="lineCov">          1 :             parquet_files[name] = path</span></a>
+<a name="107"><span class="lineNum">     107 </span><span class="lineCov">          1 :             parquet_versions[name] = version</span></a>
+<a name="108"><span class="lineNum">     108 </span><span class="lineCov">          1 :     assert &quot;misc_wigner&quot; in parquet_files</span></a>
+<a name="109"><span class="lineNum">     109 </span><span class="lineCov">          1 :     assert &quot;Yb174_mqdt_states&quot; in parquet_files</span></a>
+<a name="110"><span class="lineNum">     110 </span><span class="lineCov">          1 :     assert &quot;Yb174_mqdt_matrix_elements_mu&quot; in parquet_files</span></a>
+<a name="111"><span class="lineNum">     111 </span><span class="lineCov">          1 :     assert &quot;Yb174_mqdt_matrix_elements_q&quot; in parquet_files</span></a>
+<a name="112"><span class="lineNum">     112 </span><span class="lineCov">          1 :     assert &quot;Yb174_mqdt_matrix_elements_q0&quot; in parquet_files</span></a>
+<a name="113"><span class="lineNum">     113 </span>            : </a>
+<a name="114"><span class="lineNum">     114 </span>            :     # Obtain the ids of the initial and final states</a>
+<a name="115"><span class="lineNum">     115 </span><span class="lineCov">          1 :     id_initial = fetch_id(n_initial, l_initial, f_initial, s_initial, connection, parquet_files[&quot;Yb174_mqdt_states&quot;])</span></a>
+<a name="116"><span class="lineNum">     116 </span><span class="lineCov">          1 :     id_final = fetch_id(n_final, l_final, f_final, s_final, connection, parquet_files[&quot;Yb174_mqdt_states&quot;])</span></a>
+<a name="117"><span class="lineNum">     117 </span><span class="lineCov">          1 :     assert id_initial == id_final + (-1 if swap_states else +1), f&quot;Got {id_initial=} {id_final=}&quot;</span></a>
+<a name="118"><span class="lineNum">     118 </span>            : </a>
+<a name="119"><span class="lineNum">     119 </span>            :     # Obtain a matrix element of the magnetic dipole operator (for the chosen kets, it is non-zero iff initial != final)</a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">          1 :     kappa, q = 1, 0</span></a>
+<a name="121"><span class="lineNum">     121 </span><span class="lineCov">          1 :     wigner_element = fetch_wigner_element(</span></a>
+<a name="122"><span class="lineNum">     122 </span>            :         f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files[&quot;misc_wigner&quot;]</a>
+<a name="123"><span class="lineNum">     123 </span>            :     )</a>
+<a name="124"><span class="lineNum">     124 </span><span class="lineCov">          1 :     assert np.isclose(</span></a>
+<a name="125"><span class="lineNum">     125 </span>            :         wigner_element,</a>
+<a name="126"><span class="lineNum">     126 </span>            :         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),</a>
+<a name="127"><span class="lineNum">     127 </span>            :     )</a>
+<a name="128"><span class="lineNum">     128 </span>            : </a>
+<a name="129"><span class="lineNum">     129 </span><span class="lineCov">          1 :     me_mu = fetch_reduced_matrix_element(</span></a>
+<a name="130"><span class="lineNum">     130 </span>            :         id_initial, id_final, connection, parquet_files[&quot;Yb174_mqdt_matrix_elements_mu&quot;]</a>
+<a name="131"><span class="lineNum">     131 </span>            :     )</a>
+<a name="132"><span class="lineNum">     132 </span><span class="lineCov">          1 :     matrix_element = -wigner_element * me_mu * bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS * HARTREE_IN_GHZ</span></a>
+<a name="133"><span class="lineNum">     133 </span><span class="lineCov">          1 :     assert np.isclose(matrix_element, operator[0, 1], rtol=1e-3)</span></a>
+<a name="134"><span class="lineNum">     134 </span>            : </a>
+<a name="135"><span class="lineNum">     135 </span>            :     # Obtain a matrix element of the diamagnetic operator (for the chosen kets, it is non-zero iff initial == final)</a>
+<a name="136"><span class="lineNum">     136 </span><span class="lineCov">          1 :     n_final = n_initial</span></a>
+<a name="137"><span class="lineNum">     137 </span><span class="lineCov">          1 :     l_final = l_initial</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          1 :     f_final = f_initial</span></a>
+<a name="139"><span class="lineNum">     139 </span><span class="lineCov">          1 :     m_final = m_initial</span></a>
+<a name="140"><span class="lineNum">     140 </span><span class="lineCov">          1 :     s_final = s_initial</span></a>
+<a name="141"><span class="lineNum">     141 </span><span class="lineCov">          1 :     id_final = id_initial</span></a>
+<a name="142"><span class="lineNum">     142 </span>            : </a>
+<a name="143"><span class="lineNum">     143 </span><span class="lineCov">          1 :     kappa, q = 0, 0</span></a>
+<a name="144"><span class="lineNum">     144 </span><span class="lineCov">          1 :     wigner_element = fetch_wigner_element(</span></a>
+<a name="145"><span class="lineNum">     145 </span>            :         f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files[&quot;misc_wigner&quot;]</a>
+<a name="146"><span class="lineNum">     146 </span>            :     )</a>
+<a name="147"><span class="lineNum">     147 </span><span class="lineCov">          1 :     assert np.isclose(</span></a>
+<a name="148"><span class="lineNum">     148 </span>            :         wigner_element,</a>
+<a name="149"><span class="lineNum">     149 </span>            :         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),</a>
+<a name="150"><span class="lineNum">     150 </span>            :     )</a>
+<a name="151"><span class="lineNum">     151 </span>            : </a>
+<a name="152"><span class="lineNum">     152 </span><span class="lineCov">          1 :     me_q0 = fetch_reduced_matrix_element(</span></a>
+<a name="153"><span class="lineNum">     153 </span>            :         id_initial, id_final, connection, parquet_files[&quot;Yb174_mqdt_matrix_elements_q0&quot;]</a>
+<a name="154"><span class="lineNum">     154 </span>            :     )</a>
+<a name="155"><span class="lineNum">     155 </span><span class="lineCov">          1 :     matrix_element = 1 / 12 * wigner_element * me_q0 * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ</span></a>
+<a name="156"><span class="lineNum">     156 </span>            : </a>
+<a name="157"><span class="lineNum">     157 </span><span class="lineCov">          1 :     kappa, q = 2, 0</span></a>
+<a name="158"><span class="lineNum">     158 </span><span class="lineCov">          1 :     wigner_element = fetch_wigner_element(</span></a>
+<a name="159"><span class="lineNum">     159 </span>            :         f_initial, f_final, m_initial, m_final, kappa, q, connection, parquet_files[&quot;misc_wigner&quot;]</a>
+<a name="160"><span class="lineNum">     160 </span>            :     )</a>
+<a name="161"><span class="lineNum">     161 </span><span class="lineCov">          1 :     assert np.isclose(</span></a>
+<a name="162"><span class="lineNum">     162 </span>            :         wigner_element,</a>
+<a name="163"><span class="lineNum">     163 </span>            :         float((-1) ** (f_final - m_final) * wigner_3j(f_final, kappa, f_initial, -m_final, q, m_initial)),</a>
+<a name="164"><span class="lineNum">     164 </span>            :     )</a>
+<a name="165"><span class="lineNum">     165 </span>            : </a>
+<a name="166"><span class="lineNum">     166 </span><span class="lineCov">          1 :     me_q = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files[&quot;Yb174_mqdt_matrix_elements_q&quot;])</span></a>
+<a name="167"><span class="lineNum">     167 </span><span class="lineCov">          1 :     matrix_element -= 1 / 12 * wigner_element * me_q * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ</span></a>
+<a name="168"><span class="lineNum">     168 </span><span class="lineCov">          1 :     assert np.isclose(matrix_element, operator[0, 0] if swap_states else operator[1, 1], rtol=1e-3)</span></a>
+<a name="169"><span class="lineNum">     169 </span>            : </a>
+<a name="170"><span class="lineNum">     170 </span>            : </a>
+<a name="171"><span class="lineNum">     171 </span><span class="lineCov">          1 : @pytest.mark.parametrize(&quot;species&quot;, SUPPORTED_SPECIES)</span></a>
+<a name="172"><span class="lineNum">     172 </span><span class="lineCov">          1 : def test_obtaining_kets(pi_module: PairinteractionModule, species: str) -&gt; None:</span></a>
+<a name="173"><span class="lineNum">     173 </span>            :     &quot;&quot;&quot;Test obtaining kets from the database.&quot;&quot;&quot;</a>
+<a name="174"><span class="lineNum">     174 </span><span class="lineCov">          1 :     is_mqdt = species.endswith(&quot;_mqdt&quot;)</span></a>
+<a name="175"><span class="lineNum">     175 </span><span class="lineCov">          1 :     is_single_valence_electron = species in [&quot;Rb&quot;]</span></a>
+<a name="176"><span class="lineNum">     176 </span><span class="lineCov">          1 :     is_triplet = species in [&quot;Sr88_triplet&quot;]</span></a>
+<a name="177"><span class="lineNum">     177 </span>            : </a>
+<a name="178"><span class="lineNum">     178 </span><span class="lineCov">          1 :     quantum_number_i = SPECIES_TO_NUCLEAR_SPIN[species] if is_mqdt else 0</span></a>
+<a name="179"><span class="lineNum">     179 </span><span class="lineCov">          1 :     quantum_number_s = 0.5 if is_single_valence_electron else (1 if is_triplet else 0)</span></a>
+<a name="180"><span class="lineNum">     180 </span><span class="lineCov">          1 :     quantum_number_f = quantum_number_i + quantum_number_s</span></a>
+<a name="181"><span class="lineNum">     181 </span><span class="lineCov">          1 :     quantum_number_m = quantum_number_i + quantum_number_s</span></a>
+<a name="182"><span class="lineNum">     182 </span>            : </a>
+<a name="183"><span class="lineNum">     183 </span>            :     # Obtain a ket from the database</a>
+<a name="184"><span class="lineNum">     184 </span><span class="lineCov">          1 :     ket = pi_module.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)</span></a>
+<a name="185"><span class="lineNum">     185 </span>            : </a>
+<a name="186"><span class="lineNum">     186 </span>            :     # Check the result</a>
+<a name="187"><span class="lineNum">     187 </span><span class="lineCov">          1 :     assert ket.species == species</span></a>
+<a name="188"><span class="lineNum">     188 </span><span class="lineCov">          1 :     assert ket.n == 60 if not is_mqdt else abs(ket.n - 60) &lt; 1</span></a>
+<a name="189"><span class="lineNum">     189 </span><span class="lineCov">          1 :     assert ket.l == 0 if not is_mqdt else abs(ket.l - 0) &lt; 1</span></a>
+<a name="190"><span class="lineNum">     190 </span><span class="lineCov">          1 :     assert ket.f == quantum_number_f</span></a>
+<a name="191"><span class="lineNum">     191 </span><span class="lineCov">          1 :     assert ket.m == quantum_number_m</span></a>
+<a name="192"><span class="lineNum">     192 </span><span class="lineCov">          1 :     assert ket.s == quantum_number_s if not is_mqdt else abs(ket.s - quantum_number_s) &lt; 1</span></a>
+<a name="193"><span class="lineNum">     193 </span>            : </a>
+<a name="194"><span class="lineNum">     194 </span>            :     # TODO check repr(ket) (once the mqdt databases are updated)</a>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="https://github.com/linux-test-project/lcov" target="_parent">LCOV version 1.16</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

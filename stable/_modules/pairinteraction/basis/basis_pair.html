@@ -1,0 +1,433 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction.basis.basis_pair &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction.basis.basis_pair</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction.basis.basis_pair</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span><span class="p">,</span> <span class="n">TypeGuard</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.basis.basis_atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisAtom</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.basis.basis_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">OperatorType</span><span class="p">,</span> <span class="n">Parity</span><span class="p">,</span> <span class="n">get_cpp_operator_type</span><span class="p">,</span> <span class="n">get_cpp_parity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.ket</span><span class="w"> </span><span class="kn">import</span> <span class="n">KetPair</span><span class="p">,</span> <span class="n">KetPairReal</span><span class="p">,</span> <span class="n">is_ket_atom_tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.state</span><span class="w"> </span><span class="kn">import</span> <span class="n">StatePair</span><span class="p">,</span> <span class="n">StatePairReal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityArray</span><span class="p">,</span> <span class="n">QuantityScalar</span><span class="p">,</span> <span class="n">QuantitySparse</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csr_matrix</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.basis.basis_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnionCPPBasis</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.enums</span><span class="w"> </span><span class="kn">import</span> <span class="n">OperatorType</span><span class="p">,</span> <span class="n">Parity</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.ket</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">KetAtom</span><span class="p">,</span>  <span class="c1"># noqa: F401  # required for sphinx for KetPairLike</span>
+        <span class="n">KetPairLike</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemAtom</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">PintArray</span><span class="p">,</span> <span class="n">PintFloat</span><span class="p">,</span> <span class="n">PintSparse</span>
+
+<span class="n">BasisPairLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;BasisPair&quot;</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="s2">&quot;BasisAtom&quot;</span><span class="p">,</span> <span class="s2">&quot;BasisAtom&quot;</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">[</span><span class="s2">&quot;BasisAtom&quot;</span><span class="p">]]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_basis_pair_like</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeGuard</span><span class="p">[</span><span class="n">BasisPairLike</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">BasisPair</span><span class="p">)</span> <span class="ow">or</span> <span class="n">is_basis_atom_tuple</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">is_basis_atom_tuple</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TypeGuard</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="n">BasisAtom</span><span class="p">,</span> <span class="n">BasisAtom</span><span class="p">]]:</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">BasisAtom</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BasisPair">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.BasisPair.html#pairinteraction.BasisPair">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BasisPair</span><span class="p">(</span><span class="n">BasisBase</span><span class="p">[</span><span class="n">KetPair</span><span class="p">,</span> <span class="n">StatePair</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Basis for a pair of atoms.</span>
+
+<span class="sd">    Add all product states of the eigenstates of two given SystemAtom objects to the basis,</span>
+<span class="sd">    which pair energy is within the given energy range.</span>
+<span class="sd">    You can also specify which total magnetic quantum number m the pair should have (if it is conserved)</span>
+<span class="sd">    and the product of the parities of the two atoms.</span>
+<span class="sd">    Due to the possible restrictions of the basis states, the BasisPair coefficients matrix will in general</span>
+<span class="sd">    not be square but (n x d),</span>
+<span class="sd">    where n is the number of all involved kets (typically basis1.number_of_kets * basis2.number_of_kets)</span>
+<span class="sd">    and d is the number of basis states (after applying the restrictions).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction as pi</span>
+<span class="sd">        &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; basis = pi.BasisAtom(&quot;Rb&quot;, n=(58, 63), l=(0, 3))</span>
+<span class="sd">        &gt;&gt;&gt; system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit=&quot;G&quot;).diagonalize()</span>
+<span class="sd">        &gt;&gt;&gt; pair_energy = 2 * system.get_corresponding_energy(ket, unit=&quot;GHz&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; pair_basis = pi.BasisPair(</span>
+<span class="sd">        ...     [system, system],</span>
+<span class="sd">        ...     energy=(pair_energy - 3, pair_energy + 3),</span>
+<span class="sd">        ...     energy_unit=&quot;GHz&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; print(pair_basis)</span>
+<span class="sd">        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |~Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisPairComplex</span>
+    <span class="n">_cpp_creator</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisPairCreatorComplex</span>
+    <span class="n">_ket_class</span> <span class="o">=</span> <span class="n">KetPair</span>
+    <span class="n">_state_class</span> <span class="o">=</span> <span class="n">StatePair</span>
+
+    <span class="n">system_atoms</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtom</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The two SystemAtom objects, from which the BasisPair is build.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BasisPair.__init__">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.BasisPair.html#pairinteraction.BasisPair.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">systems</span><span class="p">:</span> <span class="n">Collection</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">],</span>
+        <span class="n">m</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">product_of_parities</span><span class="p">:</span> <span class="n">Parity</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PintFloat</span><span class="p">,</span> <span class="n">PintFloat</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">energy_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a basis for a pair of atoms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            systems: tuple of two SystemAtom objects, which define the two atoms, from which the BasisPair is build.</span>
+<span class="sd">                Both systems have to be diagonalized before creating the BasisPair.</span>
+<span class="sd">            m: tuple of (min, max) values for the total magnetic quantum number m of the pair state.</span>
+<span class="sd">                Default None, i.e. no restriction.</span>
+<span class="sd">            product_of_parities: The product parity of the states to consider.</span>
+<span class="sd">                Default None, i.e. add all available states.</span>
+<span class="sd">            energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.</span>
+<span class="sd">            energy_unit: In which unit the energy values are given, e.g. &quot;GHz&quot;.</span>
+<span class="sd">                Default None, i.e. energy is provided as pint object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">systems</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;BasisPair requires exactly two SystemAtom objects.&quot;</span>
+        <span class="n">creator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp_creator</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">systems</span><span class="p">:</span>
+            <span class="n">creator</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">creator</span><span class="o">.</span><span class="n">restrict_quantum_number_m</span><span class="p">(</span><span class="o">*</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">product_of_parities</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">creator</span><span class="o">.</span><span class="n">restrict_product_of_parities</span><span class="p">(</span><span class="n">get_cpp_parity</span><span class="p">(</span><span class="n">product_of_parities</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">energy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">min_energy_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">energy_unit</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+            <span class="n">max_energy_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">energy_unit</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+            <span class="c1"># in atomic units all energies should be on the order of -0.5 * Z^2 to 0</span>
+            <span class="c1"># so choosing some very large values for the limits should be fine</span>
+            <span class="c1"># (we cant use np.inf here, since this is passed to cpp code)</span>
+            <span class="n">min_energy_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">min_energy_au</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e10</span><span class="p">,</span> <span class="mf">1e10</span><span class="p">)</span>  <span class="c1"># FIXME</span>
+            <span class="n">max_energy_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">max_energy_au</span><span class="p">,</span> <span class="o">-</span><span class="mf">1e10</span><span class="p">,</span> <span class="mf">1e10</span><span class="p">)</span>  <span class="c1"># FIXME</span>
+            <span class="n">creator</span><span class="o">.</span><span class="n">restrict_energy</span><span class="p">(</span><span class="n">min_energy_au</span><span class="p">,</span> <span class="n">max_energy_au</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span> <span class="o">=</span> <span class="n">creator</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_atoms</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">systems</span><span class="p">)</span>  <span class="c1"># type: ignore [assignment]</span></div>
+
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_cpp_object</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">[</span><span class="n">Self</span><span class="p">],</span> <span class="n">cpp_obj</span><span class="p">:</span> <span class="n">UnionCPPBasis</span><span class="p">,</span> <span class="n">system_atoms</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">SystemAtom</span><span class="p">,</span> <span class="n">SystemAtom</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_from_cpp_object</span><span class="p">(</span><span class="n">cpp_obj</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">system_atoms</span> <span class="o">=</span> <span class="n">system_atoms</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_amplitudes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_amplitudes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BasisPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csr_matrix</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="BasisPair.get_amplitudes">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.BasisPair.html#pairinteraction.BasisPair.get_amplitudes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_amplitudes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span> <span class="o">|</span> <span class="n">BasisPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="n">csr_matrix</span><span class="p">:</span>
+        <span class="c1"># KetPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetPair</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">is_ket_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">ket_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="o">*</span><span class="n">ket_cpp</span><span class="p">))</span>
+
+        <span class="c1"># BasisPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BasisPair</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_basis_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">basis_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_amplitudes</span><span class="p">(</span><span class="o">*</span><span class="n">basis_cpp</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_overlaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_overlaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">BasisPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csr_matrix</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="BasisPair.get_overlaps">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.BasisPair.html#pairinteraction.BasisPair.get_overlaps">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_overlaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span> <span class="o">|</span> <span class="n">BasisPairLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="n">csr_matrix</span><span class="p">:</span>
+        <span class="c1"># KetPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetPair</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">is_ket_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">ket_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="o">*</span><span class="n">ket_cpp</span><span class="p">))</span>
+
+        <span class="c1"># BasisPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BasisPair</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_basis_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">basis_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="o">*</span><span class="n">basis_cpp</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span><span class="p">,</span>
+        <span class="n">operators</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OperatorType</span><span class="p">,</span> <span class="n">OperatorType</span><span class="p">],</span>
+        <span class="n">qs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span><span class="p">,</span> <span class="n">operators</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OperatorType</span><span class="p">,</span> <span class="n">OperatorType</span><span class="p">],</span> <span class="n">qs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">other</span><span class="p">:</span> <span class="n">BasisPairLike</span><span class="p">,</span>
+        <span class="n">operators</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OperatorType</span><span class="p">,</span> <span class="n">OperatorType</span><span class="p">],</span>
+        <span class="n">qs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintSparse</span><span class="p">:</span> <span class="o">...</span>  <span class="c1"># type: ignore [type-var] # see PintSparse</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">other</span><span class="p">:</span> <span class="n">BasisPairLike</span><span class="p">,</span>
+        <span class="n">operators</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OperatorType</span><span class="p">,</span> <span class="n">OperatorType</span><span class="p">],</span>
+        <span class="n">qs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csr_matrix</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="BasisPair.get_matrix_elements">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.BasisPair.html#pairinteraction.BasisPair.get_matrix_elements">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_matrix_elements</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">other</span><span class="p">:</span> <span class="n">KetPairLike</span> <span class="o">|</span> <span class="n">BasisPairLike</span><span class="p">,</span>
+        <span class="n">operators</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">OperatorType</span><span class="p">,</span> <span class="n">OperatorType</span><span class="p">],</span>
+        <span class="n">qs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="n">csr_matrix</span> <span class="o">|</span> <span class="n">PintSparse</span><span class="p">:</span>
+        <span class="n">operators_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">get_cpp_operator_type</span><span class="p">(</span><span class="n">operators</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">get_cpp_operator_type</span><span class="p">(</span><span class="n">operators</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="c1"># KetPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">KetPair</span><span class="p">):</span>
+            <span class="n">matrix_elements_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">operators_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">qs</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_au</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_ket_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">ket_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="n">matrix_elements_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="o">*</span><span class="n">ket_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">operators_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">qs</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_au</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+
+        <span class="c1"># BasisPair like</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">BasisPair</span><span class="p">):</span>
+            <span class="n">matrix_elements_sparse_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">operators_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">qs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">QuantitySparse</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_sparse_au</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_basis_atom_tuple</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="n">basis_cpp</span> <span class="o">=</span> <span class="p">(</span><span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+            <span class="n">matrix_elements_sparse_au</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_matrix_elements</span><span class="p">(</span><span class="o">*</span><span class="n">basis_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">operators_cpp</span><span class="p">,</span> <span class="o">*</span><span class="n">qs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">QuantitySparse</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">matrix_elements_sparse_au</span><span class="p">,</span> <span class="n">operators</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BasisPairReal</span><span class="p">(</span><span class="n">BasisPair</span><span class="p">):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisPairReal</span>  <span class="c1"># type: ignore [assignment]</span>
+    <span class="n">_cpp_creator</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">BasisPairCreatorReal</span>  <span class="c1"># type: ignore [assignment]</span>
+    <span class="n">_ket_class</span> <span class="o">=</span> <span class="n">KetPairReal</span>
+    <span class="n">_state_class</span> <span class="o">=</span> <span class="n">StatePairReal</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
