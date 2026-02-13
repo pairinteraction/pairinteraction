@@ -7,66 +7,98 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pairinteraction import ureg
+from pairinteraction.green_tensor import GreenTensorFreeSpace
+from pairinteraction.green_tensor.green_tensor_cavity import GreenTensorCavity
+from pairinteraction.green_tensor.green_tensor_surface import GreenTensorSurface
 
 if TYPE_CHECKING:
+    from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
+    from pairinteraction.units import NDArray
+
     from .utils import PairinteractionModule
 
+DISTANCE_VECTOR_MUM_LIST = [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 3.5]]
 
-@pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_static_green_tensor(pi_module: PairinteractionModule, distance_mum: float) -> None:
-    """Test calculating a pair potential using a user-defined static green tensor."""
-    # Create a single-atom system
-    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
-    system = pi_module.SystemAtom(basis)
 
-    # Create two-atom basis
+@pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
+def test_static_green_tensor(distance_vector_mum: list[float]) -> None:
+    gt_reference = reference_green_tensor_vacuum(distance_vector_mum)
+
+    gt: GreenTensorBase
+    gt = GreenTensorFreeSpace([0, 0, 0], distance_vector_mum, unit="micrometer", static_limit=True)
+    gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
+    np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference)
+
+    gt = GreenTensorSurface([0, 0, 0], distance_vector_mum, z=1000, unit="micrometer", static_limit=True)
+    gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
+    np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference, rtol=1e-6, atol=1e-16)
+
+    gt = GreenTensorCavity([0, 0, 0], distance_vector_mum, z1=-1000, z2=1000, unit="micrometer", static_limit=True)
+    gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
+    np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference, rtol=1e-6, atol=1e-16)
+
+
+@pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
+def test_static_green_tensor_pair_potential(pi_module: PairinteractionModule, distance_vector_mum: list[float]) -> None:
     ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
-    delta_energy = 3  # GHz
-    min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
-    max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
-    basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    basis = pi_module.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, 2))
+    system = pi_module.SystemAtom(basis)
+    system.set_magnetic_field([0, 0, 1], "gauss")
+    system.set_electric_field([0, 0, 1], "V/cm")
+    system.diagonalize()
 
-    # Create a system using a user-defined green tensor for dipole-dipole interaction
-    gt = pi_module.GreenTensor()
-    tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3
-    tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.set_from_cartesian(1, 1, tensor, tensor_unit)
+    pair_energy_ghz = 2 * system.get_corresponding_energy(ket, unit="GHz")
+    energy_range_ghz = (pair_energy_ghz - 3, pair_energy_ghz + 3)
+    basis_pair = pi_module.BasisPair([system, system], energy=energy_range_ghz, energy_unit="GHz")
 
-    tensor_spherical = np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) / distance_mum**3
-    np.testing.assert_allclose(gt.get_spherical(1, 1, unit=tensor_unit), tensor_spherical)
-    np.testing.assert_allclose(gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit), tensor_spherical)
+    system_pair_vacuum = pi_module.SystemPair(basis_pair)
+    system_pair_vacuum.set_distance_vector(distance_vector_mum, unit="micrometer")
+    system_pair_vacuum.set_interaction_order(3)
 
-    system_pairs = pi_module.SystemPair(basis_pair).set_green_tensor(gt)
+    gt = GreenTensorFreeSpace([0, 0, 0], distance_vector_mum, unit="micrometer", interaction_order=3, static_limit=True)
+    gt.set_relative_permittivity(1.0)
+    system_pair_free_space = pi_module.SystemPair(basis_pair).set_green_tensor(gt)
 
-    # Create a reference system using the build in dipole-dipole interaction
-    system_pairs_reference = (
-        pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance_mum, unit="micrometer")
-    )
-
-    # Check that the two systems are equivalent
+    pi_module.diagonalize([system_pair_free_space, system_pair_vacuum], sort_by_energy=True)
     np.testing.assert_allclose(
-        system_pairs.get_hamiltonian(unit="GHz").data, system_pairs_reference.get_hamiltonian(unit="GHz").data
+        system_pair_vacuum.get_eigenenergies("GHz") - pair_energy_ghz,
+        system_pair_free_space.get_eigenenergies("GHz") - pair_energy_ghz,
     )
 
 
-@pytest.mark.parametrize("distance_mum", [1, 2, 11])
-def test_omega_dependent_green_tensor(pi_module: PairinteractionModule, distance_mum: float) -> None:
-    """Test the interpolation for different values of omega."""
-    # Define an simple linear omega-dependent green tensor
-    # note that at least four entries are needed for the applied spline interpolation.
-    gt = pi_module.GreenTensor()
-    omegas = [1, 2, 3, 4]  # GHz
-    tensors = [np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) * i / distance_mum**3 for i in range(1, 5)]
-    tensor_unit = "hartree / (e^2 micrometer^3)"
-    gt.set_from_cartesian(1, 1, tensors, tensor_unit, omegas, omegas_unit="GHz")
+@pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
+def test_vacuum_green_tensor(pi_module: PairinteractionModule, distance_vector_mum: list[float]) -> None:
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
-    # Check the interpolation
-    tensors_spherical = [np.array([[1, 0, 0], [0, -2, 0], [0, 0, 1]]) * i / distance_mum**3 for i in range(1, 5)]
+    basis = pi_module.BasisAtom("Rb", n=(0, 0), additional_kets=[ket1, ket2])
+    system = pi_module.SystemAtom(basis)
+    pair_energy = ket1.get_energy("GHz") + ket2.get_energy("GHz")
+    basis_pair = pi_module.BasisPair((system, system), energy=(pair_energy - 0.1, pair_energy + 0.1), energy_unit="GHz")
 
-    for idx in range(1, len(omegas) - 1):  # the interpolation near the edges is bad, so we only check the middle
-        tensor = gt.get_spherical(1, 1, omega=omegas[idx], omega_unit="GHz", unit=tensor_unit)
-        np.testing.assert_allclose(tensor, tensors_spherical[idx])
+    dd = ket1.get_matrix_element(ket2, "electric_dipole", q=0)
+    gt_reference = reference_green_tensor_vacuum(distance_vector_mum)
+    reference = dd * gt_reference[2, 2] * dd
 
-    tensor = gt.get_spherical(1, 1, omega=2.5, omega_unit="GHz", unit=tensor_unit)
-    reference_tensor = (tensors_spherical[1] + tensors_spherical[2]) / 2
-    np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
+    # test internal vacuum green tensor
+    system_pair = pi_module.SystemPair(basis_pair)
+    system_pair.set_distance_vector(distance_vector_mum, "micrometer")
+    hamiltonian = system_pair.get_hamiltonian("hartree").toarray()
+    np.testing.assert_allclose(hamiltonian[1, 0], reference)
+
+    # test custom free space vacuum green tensor
+    system_pair = pi_module.SystemPair(basis_pair)
+    gt = GreenTensorFreeSpace([0, 0, 0], distance_vector_mum, unit="micrometer", static_limit=True)
+    system_pair.set_green_tensor(gt)
+    hamiltonian = system_pair.get_hamiltonian("hartree").toarray()
+    np.testing.assert_allclose(hamiltonian[1, 0], reference)
+
+
+def reference_green_tensor_vacuum(distance_vector_mum: list[float]) -> NDArray:
+    distance_mum = np.linalg.norm(distance_vector_mum)
+    distance_au = ureg.Quantity(distance_mum, "micrometer").to_base_units().m
+    gt: NDArray = (
+        np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2
+    ) / distance_au**3
+    return gt

@@ -10,19 +10,20 @@ import numpy as np
 from pairinteraction import _backend
 from pairinteraction.basis import BasisPair, BasisPairReal
 from pairinteraction.system.system_base import SystemBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.green_tensor import GreenTensorBase, GreenTensorInterpolator
     from pairinteraction.ket import (
         KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
         KetAtomTuple,
     )
-    from pairinteraction.system.green_tensor import GreenTensor
     from pairinteraction.units import (
         ArrayLike,
-        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
+        NDArray,
+        PintArray,  # needed for sphinx to recognize PintArrayLike
         PintArrayLike,
         PintFloat,
     )
@@ -71,7 +72,7 @@ class SystemPair(SystemBase[BasisPair]):
         """
         self._cpp = self._cpp_type(basis._cpp)
         self._basis = basis
-        self._distance_vector_au = [0, 0, np.inf]
+        self._distance_vector_au = np.array([0, 0, np.inf])
         self._interaction_order = 3
 
     def get_eigenbasis(self) -> BasisPair:
@@ -134,17 +135,17 @@ class SystemPair(SystemBase[BasisPair]):
         """
         distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
-        self._distance_vector_au = distance_au
+        self._distance_vector_au = np.array(distance_au)
         return self
 
     @overload
-    def get_distance_vector(self, unit: None = None) -> list[PintFloat]: ...
+    def get_distance_vector(self, unit: None = None) -> PintArray: ...
 
     @overload
-    def get_distance_vector(self, unit: str) -> list[float]: ...
+    def get_distance_vector(self, unit: str) -> NDArray: ...
 
-    def get_distance_vector(self, unit: str | None = None) -> list[float] | list[PintFloat]:
-        return [QuantityScalar.convert_au_to_user(d, "distance", unit) for d in self._distance_vector_au]  # type: ignore [return-value]
+    def get_distance_vector(self, unit: str | None = None) -> NDArray | PintArray:
+        return QuantityArray.convert_au_to_user(self._distance_vector_au, "distance", unit)
 
     @overload
     def get_distance(self, unit: None = None) -> PintFloat: ...
@@ -156,14 +157,52 @@ class SystemPair(SystemBase[BasisPair]):
         distance = np.linalg.norm(self._distance_vector_au)
         return QuantityScalar.convert_au_to_user(float(distance), "distance", unit)
 
-    def set_green_tensor(self, green_tensor: GreenTensor) -> Self:
+    def _set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
+        """Set the Green tensor interpolator for the pair system.
+
+        Args:
+            green_tensor_interpolator: The Green tensor interpolator to set for the system.
+
+        """
+        self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
+        return self
+
+    def set_green_tensor(self, green_tensor: GreenTensorBase, interpolation_steps: int | None = None) -> Self:
         """Set the Green tensor for the pair system.
 
         Args:
             green_tensor: The Green tensor to set for the system.
+            interpolation_steps: If the Green tensor is in the static limit, this argument must be None.
+                If the Green tensor is not assumed to be in the static limit, define the number of omega steps to use
+                for the interpolation of the Green tensor.
 
         """
-        self._cpp.set_green_tensor(green_tensor._cpp)
+        self._distance_vector_au = green_tensor.pos1_au - green_tensor.pos2_au
+        use_real = isinstance(self, SystemPairReal)
+
+        if green_tensor.static_limit:
+            if interpolation_steps is not None:
+                raise ValueError(
+                    "interpolation_steps must not be provided when using the static limit of the Green tensor."
+                )
+            gti = green_tensor.get_interpolator(use_real=use_real)
+            self._set_green_tensor_interpolator(gti)
+            return self
+
+        if interpolation_steps is None:
+            raise ValueError(
+                "interpolation_steps must be provided when not using the static limit of the Green tensor."
+            )
+        if interpolation_steps <= 0:
+            raise ValueError("interpolation_steps must be a positive integer.")
+
+        # TODO optimize how to choose omegas, for now we just use linear spacing
+        energies_au = [ket.get_energy("hartree") for ket in self.basis.kets]
+        omega_max = max(energies_au) - min(energies_au)
+        omegas = np.linspace(0, omega_max, interpolation_steps)
+
+        gti = green_tensor.get_interpolator(omegas, "hartree", use_real=use_real)
+        self._set_green_tensor_interpolator(gti)
         return self
 
     @overload

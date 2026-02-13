@@ -34,6 +34,13 @@ lifetimes to calculations of pair potentials.
     examples_python/c3_c6_coefficients
     examples_python/state_atom_object
 
+Some examples showcasing the usage of custom green tensors.
+
+.. nbgallery::
+
+    examples_python/green_tensor/green_tensor_example_cavity
+    examples_python/green_tensor/c6_near_surfaces.ipynb
+
 **Examples From Publications**
 
 We show how PairInteraction's Python API can be applied to solve complex problems and reproduce results from literature.

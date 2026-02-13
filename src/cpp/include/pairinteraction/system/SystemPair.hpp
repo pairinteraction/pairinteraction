@@ -31,7 +31,7 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-class GreenTensor;
+class GreenTensorInterpolator;
 
 template <typename Scalar>
 struct traits::CrtpTraits<SystemPair<Scalar>> {
@@ -56,12 +56,13 @@ public:
 
     Type &set_interaction_order(int value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
-    Type &set_green_tensor(std::shared_ptr<const GreenTensor<Scalar>> &green_tensor);
+    Type &set_green_tensor_interpolator(
+        std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator);
 
 private:
     int interaction_order{3};
     std::array<real_t, 3> distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
-    std::shared_ptr<const GreenTensor<Scalar>> user_defined_green_tensor;
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
     void construct_hamiltonian() const override;
 };

@@ -192,6 +192,7 @@ del _setup_logging
 # Import pairinteraction
 # ---------------------------------------------------------------------------------------
 from pairinteraction import (
+    green_tensor,
     perturbative,
     real,
     visualization,
@@ -209,7 +210,7 @@ from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import KetAtom, KetPair
 from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
 from pairinteraction.state import StateAtom, StatePair
-from pairinteraction.system import GreenTensor, SystemAtom, SystemPair
+from pairinteraction.system import SystemAtom, SystemPair
 from pairinteraction.units import ureg
 
 __all__ = [
@@ -219,7 +220,6 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
     "KetAtom",
     "KetPair",
     "StateAtom",
@@ -228,6 +228,7 @@ __all__ = [
     "SystemPair",
     "configure_logging",
     "diagonalize",
+    "green_tensor",
     "perturbative",
     "real",
     "run_unit_tests",

@@ -12,7 +12,7 @@
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/operator/OperatorPair.hpp"
-#include "pairinteraction/system/GreenTensor.hpp"
+#include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
@@ -40,7 +40,7 @@ struct OperatorMatrices {
 };
 
 template <typename Scalar>
-GreenTensor<Scalar> construct_green_tensor(
+GreenTensorInterpolator<Scalar> construct_green_tensor_interpolator(
     const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &distance_vector,
     int interaction_order) {
     // https://doi.org/10.1103/PhysRevA.96.062509
@@ -49,7 +49,7 @@ GreenTensor<Scalar> construct_green_tensor(
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
-    GreenTensor<Scalar> green_tensor;
+    GreenTensorInterpolator<Scalar> green_tensor_interpolator;
 
     // Normalize the distance vector, return zero green tensor if the distance is infinity
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(distance_vector.data(),
@@ -57,7 +57,7 @@ GreenTensor<Scalar> construct_green_tensor(
     real_t distance = vector_map.norm();
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
     if (!std::isfinite(distance)) {
-        return green_tensor;
+        return green_tensor_interpolator;
     }
     Eigen::Vector3<real_t> unitvec = vector_map / distance;
 
@@ -66,7 +66,7 @@ GreenTensor<Scalar> construct_green_tensor(
         Eigen::Matrix3<Scalar> entries =
             Eigen::Matrix3<real_t>::Identity() - 3 * unitvec * unitvec.transpose();
 
-        green_tensor.create_entries_from_cartesian(
+        green_tensor_interpolator.create_entries_from_cartesian(
             1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
     }
 
@@ -87,7 +87,7 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.create_entries_from_cartesian(
+        green_tensor_interpolator.create_entries_from_cartesian(
             1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
@@ -108,7 +108,7 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.create_entries_from_cartesian(
+        green_tensor_interpolator.create_entries_from_cartesian(
             2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
     }
 
@@ -142,16 +142,16 @@ GreenTensor<Scalar> construct_green_tensor(
             }
         }
 
-        green_tensor.create_entries_from_cartesian(
+        green_tensor_interpolator.create_entries_from_cartesian(
             2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
     }
 
-    return green_tensor;
+    return green_tensor_interpolator;
 }
 
 template <typename Scalar>
 OperatorMatrices<Scalar>
-construct_operator_matrices(const GreenTensor<Scalar> &green_tensor,
+construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_interpolator,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis2) {
     // Helper function for constructing matrices of spherical harmonics operators
@@ -171,21 +171,21 @@ construct_operator_matrices(const GreenTensor<Scalar> &green_tensor,
     OperatorMatrices<Scalar> op;
 
     // Operator matrices for Rydberg-Rydberg interaction
-    if (!green_tensor.get_spherical_entries(1, 1).empty() ||
-        !green_tensor.get_spherical_entries(1, 2).empty()) {
+    if (!green_tensor_interpolator.get_spherical_entries(1, 1).empty() ||
+        !green_tensor_interpolator.get_spherical_entries(1, 2).empty()) {
         op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-    if (!green_tensor.get_spherical_entries(1, 1).empty() ||
-        !green_tensor.get_spherical_entries(2, 1).empty()) {
+    if (!green_tensor_interpolator.get_spherical_entries(1, 1).empty() ||
+        !green_tensor_interpolator.get_spherical_entries(2, 1).empty()) {
         op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
-    if (!green_tensor.get_spherical_entries(2, 2).empty() ||
-        !green_tensor.get_spherical_entries(2, 1).empty()) {
+    if (!green_tensor_interpolator.get_spherical_entries(2, 2).empty() ||
+        !green_tensor_interpolator.get_spherical_entries(2, 1).empty()) {
         op.q1 = get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, true);
         op.q1.push_back(get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, true)[0]);
     }
-    if (!green_tensor.get_spherical_entries(2, 2).empty() ||
-        !green_tensor.get_spherical_entries(1, 2).empty()) {
+    if (!green_tensor_interpolator.get_spherical_entries(2, 2).empty() ||
+        !green_tensor_interpolator.get_spherical_entries(1, 2).empty()) {
         op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
             get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
@@ -214,9 +214,9 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
     }
 
-    if (user_defined_green_tensor) {
+    if (green_tensor_interpolator) {
         throw std::invalid_argument(
-            "Cannot set interaction order if a user-defined green tensor is set.");
+            "Cannot set interaction order if a user-defined green tensor interpolator is set.");
     }
 
     interaction_order = value;
@@ -233,9 +233,9 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
-    if (user_defined_green_tensor) {
+    if (green_tensor_interpolator) {
         throw std::invalid_argument(
-            "Cannot set distance vector if a user-defined green tensor is set.");
+            "Cannot set distance vector if a user-defined green tensor interpolator is set.");
     }
 
     distance_vector = vector;
@@ -244,16 +244,17 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
 }
 
 template <typename Scalar>
-SystemPair<Scalar> &
-SystemPair<Scalar>::set_green_tensor(std::shared_ptr<const GreenTensor<Scalar>> &green_tensor) {
+SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
     this->hamiltonian_requires_construction = true;
 
     if (std::isfinite(distance_vector[0]) && std::isfinite(distance_vector[1]) &&
         std::isfinite(distance_vector[2])) {
-        throw std::invalid_argument("Cannot set green tensor if a finite distance vector is set.");
+        throw std::invalid_argument(
+            "Cannot set green tensor interpolator if a finite distance vector is set.");
     }
 
-    user_defined_green_tensor = green_tensor;
+    this->green_tensor_interpolator = green_tensor_interpolator;
 
     return *this;
 }
@@ -264,15 +265,15 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
-    std::shared_ptr<const GreenTensor<Scalar>> green_tensor_ptr;
-    if (user_defined_green_tensor) {
-        green_tensor_ptr = user_defined_green_tensor;
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator_ptr;
+    if (green_tensor_interpolator) {
+        green_tensor_interpolator_ptr = green_tensor_interpolator;
     } else {
-        green_tensor_ptr = std::make_shared<const GreenTensor<Scalar>>(
-            construct_green_tensor<Scalar>(distance_vector, interaction_order));
+        green_tensor_interpolator_ptr = std::make_shared<const GreenTensorInterpolator<Scalar>>(
+            construct_green_tensor_interpolator<Scalar>(distance_vector, interaction_order));
     }
 
-    auto op = construct_operator_matrices(*green_tensor_ptr, basis1, basis2);
+    auto op = construct_operator_matrices(*green_tensor_interpolator_ptr, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorPair<Scalar>>(basis, OperatorType::ENERGY);
@@ -293,7 +294,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             std::visit(
                 overloaded{
                     [this, &basis, &sort_by_quantum_number_m, &op1, &op2,
-                     &delta](const typename GreenTensor<Scalar>::ConstantEntry &ce) {
+                     &delta](const typename GreenTensorInterpolator<Scalar>::ConstantEntry &ce) {
                         this->hamiltonian->get_matrix() += ce.val() *
                             utils::calculate_tensor_product(basis, basis, op1[ce.row()],
                                                             op2[ce.col()]);
@@ -302,8 +303,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                         }
                     },
 
-                    [this, &basis, &energies, &sort_by_quantum_number_m, &op1, &op2,
-                     &delta](const typename GreenTensor<Scalar>::OmegaDependentEntry &oe) {
+                    [this, &basis, &energies, &sort_by_quantum_number_m, &op1, &op2, &delta](
+                        const typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry &oe) {
                         auto tensor_product = utils::calculate_tensor_product(
                             basis, basis, op1[oe.row()], op2[oe.col()]);
                         for (int k = 0; k < tensor_product.outerSize(); ++k) {
@@ -326,16 +327,16 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     };
 
     // Dipole-dipole interaction
-    add_interaction(green_tensor_ptr->get_spherical_entries(1, 1), op.d1, op.d2, 0);
+    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(1, 1), op.d1, op.d2, 0);
 
     // Dipole-quadrupole interaction
-    add_interaction(green_tensor_ptr->get_spherical_entries(1, 2), op.d1, op.q2, -1);
+    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(1, 2), op.d1, op.q2, -1);
 
     // Quadrupole-dipole interaction
-    add_interaction(green_tensor_ptr->get_spherical_entries(2, 1), op.q1, op.d2, +1);
+    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 1), op.q1, op.d2, +1);
 
     // Quadrupole-quadrupole interaction
-    add_interaction(green_tensor_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
+    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();

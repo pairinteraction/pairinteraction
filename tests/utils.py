@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
     import pairinteraction as pi
+    import pint
     from pairinteraction.units import NDArray
 
 
@@ -62,6 +63,7 @@ def no_log_propagation(logger: logging.Logger | str) -> Iterator[None]:
 
 
 class PairinteractionModule(Protocol):
+    ureg: pint.UnitRegistry
     Database: type[pi.Database]
     KetAtom: type[pi.KetAtom]
     BasisAtom: type[pi.BasisAtom]
@@ -69,7 +71,6 @@ class PairinteractionModule(Protocol):
     KetPair: type[pi.KetPair]
     BasisPair: type[pi.BasisPair]
     SystemPair: type[pi.SystemPair]
-    GreenTensor: type[pi.GreenTensor]
     EffectiveSystemPair: type[pi.EffectiveSystemPair]
     C3: type[pi.C3]
     C6: type[pi.C6]

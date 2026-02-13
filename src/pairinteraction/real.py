@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
+from pairinteraction import green_tensor
 from pairinteraction.basis import (
     BasisAtomReal as BasisAtom,
     BasisPairReal as BasisPair,
@@ -21,10 +22,10 @@ from pairinteraction.state import (
     StatePairReal as StatePair,
 )
 from pairinteraction.system import (
-    GreenTensorReal as GreenTensor,
     SystemAtomReal as SystemAtom,
     SystemPairReal as SystemPair,
 )
+from pairinteraction.units import ureg
 
 __all__ = [
     "C3",
@@ -33,7 +34,6 @@ __all__ = [
     "BasisPair",
     "Database",
     "EffectiveSystemPair",
-    "GreenTensor",
     "KetAtom",
     "KetPair",
     "StateAtom",
@@ -41,4 +41,6 @@ __all__ = [
     "SystemAtom",
     "SystemPair",
     "diagonalize",
+    "green_tensor",
+    "ureg",
 ]
