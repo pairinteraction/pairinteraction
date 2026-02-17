@@ -167,17 +167,20 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 ## Contributors
 
-The software is maintained by:
+The software is currently maintained by:
 * [Sebastian Weber]
 * [Johannes Mögerle]
 
-In addition, the following people contributed significantly to the current and/or previous versions of the software:
-* [Henri Menke]
-* [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
-* [Eduard J. Braun] - Perturbative calculations, installation instructions for Windows
-* [Johannes Block] - Calculation of Rydberg pair potentials near surfaces *(not yet in new version)*
+In addition, the following people contributed significantly to the current and/or previous versions of the software (ordered by date of first contribution):
+* [Henri Menke] - Former co-maintainer, Numerov integrator, contributions to the Python interface, continuous integration, packaging and binary builds
+* [Johannes Block] - Calculation of Rydberg pair potentials near surfaces via static Green tensor
+* [Alexander Papageorge] - Julia interface in legacy PairInteraction
+* [Patrick Mischke] - GUI button for fitting c3/c6 coefficients, [archlinux package]
 * [Nicolas Zuber] - Tutorial on Rydberg-ion interaction
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
+* [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
+* [Eduard J. Braun] - Perturbative calculations, installation instructions for Windows
+* [Alicia Keil] - Enhanced and redesigned calculation of Rydberg pair potentials near surfaces
 
 We warmly welcome new contributions! Please see our [contributor guide][contributor-link] for more information!
 
@@ -193,6 +196,7 @@ The development of the PairInteraction software has been supported by the [Insti
 [bmbf-link]: https://www.bmbf.de/EN/
 [atom-jpg]: https://github.com/pairinteraction/pairinteraction/raw/master/docs/_static/logos/atom_computing.svg
 [atom-link]: https://atom-computing.com/
+[archlinux package]: https://aur.archlinux.org/packages/python-pairinteraction
 
 [Institute for Theoretical Physics III]: https://www.itp3.uni-stuttgart.de/
 [QRydDemo]: https://www.quantentechnologien.de/forschung/foerderung/quantenprozessoren-und-technologien-fuer-quantencomputer/qryddemo.html
@@ -206,7 +210,10 @@ The development of the PairInteraction software has been supported by the [Insti
 [Eduard J. Braun]: https://github.com/EduardJBraun
 [Nicolas Zuber]: https://github.com/tripiti
 [Johannes Block]: https://github.com/johblock
+[Alicia Keil]: https://github.com/aliciaa99
 [Simon Hollerith]: https://github.com/SimonHollerith
+[Patrick Mischke]: https://github.com/Patschke
+[Alexander Papageorge]: https://github.com/atombear
 [contributor-link]: https://www.pairinteraction.org/pairinteraction/stable/contribute/getting_started.html
 
 ## License
