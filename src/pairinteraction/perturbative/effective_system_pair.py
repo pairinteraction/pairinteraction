@@ -631,7 +631,7 @@ class EffectiveSystemPair:
 
         return model_inds
 
-    def check_for_resonances(self, required_overlap: float = 0.9) -> None:
+    def check_for_resonances(self, required_overlap: float = 0.95) -> None:
         r"""Check if states of the model space have strong resonances with states outside the model space."""
         # Get the effective eigenvectors without potential warning
         if self._eff_vecs is None:
@@ -643,9 +643,11 @@ class EffectiveSystemPair:
 
         model_inds = self.model_inds
         for i, m_ind in enumerate(model_inds):
-            inf_data_inds = np.isinf(overlaps[i, :].data)
+            overlaps_i = overlaps[i, :]
+
+            inf_data_inds = np.isinf(overlaps_i.data)
             if inf_data_inds.any():
-                indices = overlaps[i, :].indices[np.argwhere(inf_data_inds).flatten()]
+                indices = overlaps_i.indices[np.argwhere(inf_data_inds).flatten()]
                 logger.critical(
                     "Detected 'inf' entries in the effective eigenvectors.\n"
                     " This might happen, if you forgot to include a degenerate state in the model space.\n"
@@ -655,8 +657,8 @@ class EffectiveSystemPair:
                     logger.critical("  - %s has infinite admixture", self.system_pair.basis.kets[index])
                 continue
 
-            overlaps[i, :] /= sparse.linalg.norm(overlaps[i, :])
-            if overlaps[i, m_ind] >= required_overlap:
+            overlaps_i /= np.sum(overlaps_i.data)  # normalize the overlaps to 1
+            if overlaps_i[0, m_ind] >= required_overlap:
                 continue
             logger.error(
                 "The ket %s has only %.3f overlap with its corresponding effective eigenvector.\n"
@@ -664,13 +666,14 @@ class EffectiveSystemPair:
                 " Consider adding the most perturbing states to the model space.\n"
                 " The most perturbing states are:",
                 self.system_pair.basis.kets[m_ind],
-                overlaps[i, m_ind],
+                overlaps_i[0, m_ind],
             )
-            print_above_admixture = (1 - required_overlap) * 0.05
-            indices = sparse.find(overlaps[i, :] >= print_above_admixture)[1]
+            print_above_admixture = (1 - overlaps_i[0, m_ind]) * 0.05
+            indices = list(sparse.find(overlaps_i >= print_above_admixture)[1])
+            indices = sorted(indices, key=lambda index, ov=overlaps_i: ov[0, index], reverse=True)  # type: ignore [misc]
             for index in indices:
                 if index != m_ind:
-                    admixture = overlaps[i, index]
+                    admixture = overlaps_i[0, index]
                     logger.error("  - %s with overlap %.3e", self.system_pair.basis.kets[index], admixture)
 
 
