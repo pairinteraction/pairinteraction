@@ -21,8 +21,8 @@ If you use PairInteraction in your research, please cite the following publicati
             url = {https://doi.org/10.1088/1361-6455/aa743a}
         }
 
-The PairInteraction software relies on quantum defects provided by the community. Please consider citing relevant
-publications for your atomic species alongside PairInteraction:
+PairInteraction relies on quantum defects provided by the community. We encourage users to cite the relevant
+publications for their atomic species alongside PairInteraction.
 
 ======= ==================== ================ =========================================================================
 Element Model                Identifier       References
@@ -42,9 +42,9 @@ Sr88    SQDT, singlet sector ``Sr88_singlet`` `10.1103/PhysRevA.108.022815`_ (20
 Sr88    SQDT, triplet sector ``Sr88_triplet`` `10.1016/j.cpc.2020.107814`_ (2021)
 Sr87    MQDT                 ``Sr87_mqdt``    `10.1088/1361-6455/ab4c22`_ (2019)
 Sr88    MQDT                 ``Sr88_mqdt``    `10.1088/1361-6455/ab4c22`_ (2019)
-Yb171   MQDT                 ``Yb171_mqdt``   `10.48550/arXiv.2406.01482`_ (2024)
+Yb171   MQDT                 ``Yb171_mqdt``   `10.1103/PhysRevX.15.011009`_ (2025); `10.1103/mzsv-rckx`_ (2025)
 Yb173   MQDT                 ``Yb173_mqdt``   MQDT model formulated by us
-Yb174   MQDT                 ``Yb174_mqdt``   `10.48550/arXiv.2406.01482`_ (2024)
+Yb174   MQDT                 ``Yb174_mqdt``   `10.1103/PhysRevX.15.011009`_ (2025); `10.1103/mzsv-rckx`_ (2025)
 ======= ==================== ================ =========================================================================
 
 The identifier can be used to specify an atomic species in the PairInteraction software.
@@ -62,6 +62,8 @@ The identifier can be used to specify an atomic species in the PairInteraction s
 .. _10.1088/0953-4075/30/10/009: https://doi.org/10.1088/0953-4075/30/10/009
 
 .. _10.1088/1361-6455/ab4c22: https://doi.org/10.1088/1361-6455/ab4c22
+
+.. _10.1103/mzsv-rckx: https://doi.org/10.1103/mzsv-rckx
 
 .. _10.1103/physreva.108.022815: https://doi.org/10.1103/PhysRevA.108.022815
 
@@ -83,8 +85,8 @@ The identifier can be used to specify an atomic species in the PairInteraction s
 
 .. _10.1103/physreva.93.013424: https://doi.org/10.1103/PhysRevA.93.013424
 
-.. _10.17169/refubium-34581: https://doi.org/10.17169/refubium-34581
+.. _10.1103/physrevx.15.011009: https://doi.org/10.1103/PhysRevX.15.011009
 
-.. _10.48550/arxiv.2406.01482: https://doi.org/10.48550/arXiv.2406.01482
+.. _10.17169/refubium-34581: https://doi.org/10.17169/refubium-34581
 
 .. _journal-link: https://doi.org/10.1088/1361-6455/aa743a
