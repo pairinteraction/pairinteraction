@@ -9,6 +9,7 @@ from functools import cached_property, lru_cache
 from typing import TYPE_CHECKING, Literal, overload
 
 import numpy as np
+import pint
 from scipy import sparse
 
 from pairinteraction.basis import BasisAtom, BasisAtomReal, BasisPair, BasisPairReal
@@ -204,13 +205,15 @@ class EffectiveSystemPair:
         return self
 
     def _create_basis_atoms(self) -> None:
-        delta_n = self._delta_n if self._delta_n is not None else 7
-        delta_l = self._delta_l
-        if delta_l is None:
-            delta_l = self.perturbation_order * (self.interaction_order - 2)
-        delta_m = self._delta_m
-        if delta_m is None and self._delta_l is None and self._are_fields_along_z:
+        self._delta_n = self._delta_n if self._delta_n is not None else 7
+        if self._delta_l is None:
+            self._delta_l = self.perturbation_order * (self.interaction_order - 2)
+        if self._delta_m is None and self._delta_l is None and self._are_fields_along_z:
             delta_m = self.perturbation_order * (self.interaction_order - 2)
+        # should we rather restrict nu?
+        delta_n = self._delta_n
+        delta_l = self._delta_l
+        delta_m = self._delta_m
 
         basis_atoms: list[BasisAtom] = []
         use_real = isinstance(self, EffectiveSystemPairReal)
@@ -437,7 +440,8 @@ class EffectiveSystemPair:
                 break
 
         self._basis_pair = basis_pair
-        logger.debug("The pair basis for the perturbative calculations consists of %d kets.", basis_pair.number_of_kets)
+        logger.debug("delta_energy_au %e", delta_energy_au)
+        logger.debug("The pair basis for the perturbative calculations consists of %d kets, with delta_energy_au %e.", basis_pair.number_of_kets, delta_energy_au)
 
     # # # SystemPair methods and attributes # # #
     @property
@@ -499,6 +503,9 @@ class EffectiveSystemPair:
                 Default None expects a `pint.Quantity`.
 
         """
+        if isinstance(distance, pint.Quantity) and unit is None:
+            unit = str(distance.units)
+            distance = distance.magnitude
         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
         return self.set_distance_vector(distance_vector, unit)
 
