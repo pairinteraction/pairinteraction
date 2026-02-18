@@ -62,8 +62,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v6
-      with:
-        lfs: true
+
+    - name: Restore Git LFS from cache
+      uses: ./.github/actions/cache-lfs
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'

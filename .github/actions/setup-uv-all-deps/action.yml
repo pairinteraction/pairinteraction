@@ -1,4 +1,4 @@
-name: 'setup-uv-all-deps'
+name: setup-uv-all-deps
 
 inputs:
   python-version:
