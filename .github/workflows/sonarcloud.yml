@@ -23,8 +23,9 @@ jobs:
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
     steps:
       - uses: actions/checkout@v6
-        with:
-          lfs: true
+
+      - name: Restore Git LFS from cache
+        uses: ./.github/actions/cache-lfs
 
       - name: Install dependencies
         run: |

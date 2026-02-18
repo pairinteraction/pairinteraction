@@ -1,4 +1,4 @@
-name: 'setup-uv-build-venv'
+name: setup-uv-build-venv
 
 runs:
   using: "composite"
