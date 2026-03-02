@@ -6,7 +6,7 @@ runs:
     - name: Create LFS file list
       shell: bash
       run: |
-        set -euxo pipefail
+        set -euo pipefail
         git config --global --add safe.directory "$GITHUB_WORKSPACE"
         git lfs ls-files -l | awk '{print $1}' | sort -u > .lfs-assets-id
 
@@ -21,6 +21,29 @@ runs:
     - name: Pull missing Git LFS objects
       shell: bash
       run: |
-        set -euxo pipefail
+        set -euo pipefail
+        progress="$RUNNER_TEMP/git-lfs-progress.log"
+        : > "$progress"
+        export GIT_LFS_PROGRESS="$progress"
+
         git lfs fetch --prune
+
+        if grep -q '^download ' "$progress"; then
+          echo "ℹ️ Git LFS downloaded objects from remote (showing last 20 lines):"
+          grep '^download ' "$progress" | tail -n 20
+        else
+          echo "ℹ️ No Git LFS downloads recorded."
+        fi
+
         git lfs checkout
+
+    - name: Fail if any LFS pointers remain
+      shell: bash
+      run: |
+        set -euo pipefail
+        if git lfs ls-files | awk '$2=="-" {bad=1; print $0} END{exit bad}'; then
+          echo "✅ No LFS pointers remain."
+        else
+          echo "❌ LFS pointers remain after checkout (lines above)."
+          exit 1
+        fi
