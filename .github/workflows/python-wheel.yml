@@ -23,7 +23,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
-    - name: Build SDist
+    - name: Build sdist
       run: pipx run build --sdist
 
     - name: Check metadata
