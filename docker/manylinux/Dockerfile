@@ -35,4 +35,5 @@ RUN yum install -y epel-release \
     libglvnd \
     graphviz-devel \
     libxkbcommon-x11 freeglut-devel \
+    && git lfs install --system \
     && yum clean all
