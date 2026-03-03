@@ -114,10 +114,7 @@ def print_database_info(
     use_cache: bool = True,
     database_dir: str | os.PathLike[str] = "",
 ) -> None:
-    """Print an overview of local and remote database tables.
-
-    Returns the overview string for programmatic use.
-    """
+    """Print an overview of local and remote database tables."""
     db = Database(download_missing, use_cache, database_dir)
     print(f"Database directory: {db.database_dir}")
     print(db.get_versions_info())
