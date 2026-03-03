@@ -1,12 +1,18 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-from pairinteraction import green_tensor
+from pairinteraction import (
+    green_tensor,
+    perturbative,
+    visualization,
+)
+from pairinteraction._backend import run_unit_tests
 from pairinteraction.basis import (
     BasisAtomReal as BasisAtom,
     BasisPairReal as BasisPair,
 )
-from pairinteraction.database import Database
+from pairinteraction.custom_logging import configure_logging
+from pairinteraction.database import Database, print_database_info
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import (
     KetAtom,
@@ -40,7 +46,12 @@ __all__ = [
     "StatePair",
     "SystemAtom",
     "SystemPair",
+    "configure_logging",
     "diagonalize",
     "green_tensor",
+    "perturbative",
+    "print_database_info",
+    "run_unit_tests",
     "ureg",
+    "visualization",
 ]
