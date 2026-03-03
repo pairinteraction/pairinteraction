@@ -1,0 +1,807 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.2.1. Introduction to the pairinteraction Library &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2.2.2. Calculation of Matrix Elements" href="matrix_elements.html" />
+    <link rel="prev" title="2.1.2. Application: Vibrational Spectroscopy of Macrodimer Binding Potentials" href="../examples_gui/macrodimers/macrodimers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">2. Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#graphical-user-interface">2.1. Graphical User Interface</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#python-api">2.2. Python API</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.1. Introduction to the pairinteraction Library</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Units">2.2.1.1. Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Preparations">2.2.1.2. Preparations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Defining-States">2.2.1.3. Defining States</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application-1:-Energy-Levels">2.2.1.4. Application 1: Energy Levels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application-2:-Matrix-Elements">2.2.1.5. Application 2: Matrix Elements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application-3:-Dispersion-Coefficients">2.2.1.6. Application 3: Dispersion Coefficients</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application-4:-Non-perturbative-Calculations">2.2.1.7. Application 4: Non-perturbative Calculations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application-5:-Effective-Hamiltonians">2.2.1.8. Application 5: Effective Hamiltonians</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="matrix_elements.html">2.2.2. Calculation of Matrix Elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wavefunctions.html">2.2.3. Radial Wavefunctions and Quantum Defects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparison_to_saffman_fig13.html">2.2.4. Blockade Interaction in a Magnetic Field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">2.2.5. Rydberg Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vdw_near_surface.html">2.2.6. Dispersion Coefficients Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_near_surface.html">2.2.7. Rydberg Pair Potentials Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">2.2.8. Rydberg Atom Ion Interaction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html"><span class="section-number">2. </span>Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.2.1. </span>Introduction to the pairinteraction Library</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples_python/introduction.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="introduction.ipynb">introduction.ipynb</a>.
+</div><section id="Introduction-to-the-pairinteraction-Library">
+<h1><span class="section-number">2.2.1. </span>Introduction to the pairinteraction Library<a class="headerlink" href="#Introduction-to-the-pairinteraction-Library" title="Link to this heading"></a></h1>
+<p>In addition to the <a class="reference external" href="../_static/slides/screen-win64.png">graphical user interface</a>, the pairinteraction software includes a library. The library can be used to write your own code and have more fine-grained control over what pairinteraction does, e.g. for searching optimal experimental parameters or calculating effective Hamiltonians and simulating Rydberg experiments.</p>
+<p>The library is fully written in C++ to obtain high performance. It provides a Python API generated with <a class="reference external" href="http://www.swig.org">SWIG</a> so that one can work with all the functionality of the library in Python. The Python functions mirror the eponymous wrapped C++ functions. Thus, it is straight forward to transfer code between the two programming languages. The following introduction, which can be
+<a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/doc/sphinx/examples_python/introduction.ipynb">downloaded</a> as a Jupyter notebook, shows the basic usage of the pairinteraction library in Python 3. The physics behind the presented calculations is reviewed in the pairinteraction paper <a class="reference external" href="https://doi.org/10.1088/1361-6455/aa743a">J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)</a>.</p>
+<section id="Units">
+<h2><span class="section-number">2.2.1.1. </span>Units<a class="headerlink" href="#Units" title="Link to this heading"></a></h2>
+<p>In the unit system used by the pairinteraction software, energies are given as frequencies in <span class="math notranslate nohighlight">\(\text{GHz}\)</span>. To obtain actual energies, the frequencies must be multiplied by Planck’s constant <span class="math notranslate nohighlight">\(h\)</span>. Length has the unit <span class="math notranslate nohighlight">\(\mu\text{m}\)</span>, the magnetic field <span class="math notranslate nohighlight">\(\text{G}\)</span>, and the electric field <span class="math notranslate nohighlight">\(\text{V/cm}\)</span>.</p>
+</section>
+<section id="Preparations">
+<h2><span class="section-number">2.2.1.2. </span>Preparations<a class="headerlink" href="#Preparations" title="Link to this heading"></a></h2>
+<section id="Installation">
+<h3><span class="section-number">2.2.1.2.1. </span>Installation<a class="headerlink" href="#Installation" title="Link to this heading"></a></h3>
+<p>For using the Python API of the pairinteraction library, Python 3 must be installed. For Windows or macOS, we recommend the installation of the Python 3 distribution <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a>. Then, the pairinteraction library and all its dependencies can be installed via pip by calling <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pairinteraction</span></code> from the command line.</p>
+<p>Alternatively, we can install the pairinteraction library as part of the binary builds of the pairinteraction software available through <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/releases">GitHub Releases</a>. However, for Windows and macOS, this requires manual <a class="reference internal" href="../installation.html#python-library"><span class="std std-ref">installation of dependencies and modifying the Python path</span></a>. It is also possible to <a class="reference internal" href="../installation.html#building-from-source"><span class="std std-ref">build pairinteraction from source</span></a>.</p>
+</section>
+<section id="Importing-the-Library">
+<h3><span class="section-number">2.2.1.2.2. </span>Importing the Library<a class="headerlink" href="#Importing-the-Library" title="Link to this heading"></a></h3>
+<p>Our code starts with loading the required modules for the calculations. We use the module <code class="docutils literal notranslate"><span class="pre">pireal</span></code> of the pairinteraction library as the calculations shown in this introduction require only real-valued matrix elements (if one considers electric or magnetic fields with a non-zero <span class="math notranslate nohighlight">\(y\)</span>-value, complex matrix elements occur due to the definition of the spherical basis and one must use <code class="docutils literal notranslate"><span class="pre">picomplex</span></code>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># We call an IPython magic function to make the output of plotting commands displayed inline.
+%matplotlib inline
+
+# Arrays
+import numpy as np
+
+# Plotting
+import matplotlib.pyplot as plt
+
+# Operating system interfaces
+import os
+
+# If the pairinteraction library was not installed via pip or using a Linux package manager,
+# we have to manually add the library path to the Python package search path. If the library
+# was for example installed using the Windows or macOS installers from GitHub releases, this
+# can be done by uncomment the following code block:
+#
+# import sys
+# if sys.platform == &quot;darwin&quot;:
+#     sys.path.append(&quot;/Applications/pairinteraction.app/Contents/Resources&quot;)
+# elif sys.platform == &quot;win32&quot;:
+#     sys.path.append(&quot;C:\Program Files\pairinteraction&quot;)
+
+# pairinteraction :-)
+from pairinteraction import pireal as pi
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Creating-a-Cache-for-Matrix-Elements">
+<h3><span class="section-number">2.2.1.2.3. </span>Creating a Cache for Matrix Elements<a class="headerlink" href="#Creating-a-Cache-for-Matrix-Elements" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class provides methods for evaluating matrix elements. Each Python script using the pairinteraction library typically requires one instance of this class. The instance is then passed to every object of the pairinteraction library which needs to evaluates matrix elements. To speed up calculations, the intermediate results of the calculation of matrix elements are cached into memory. If a directory name is passed to the constructor of the class, the specified directory
+is used to store a SQLite database which holds the intermediate results, making them available to future program runs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>if not os.path.exists(&quot;./cache&quot;):
+    os.makedirs(&quot;./cache&quot;)
+cache = pi.MatrixElementCache(&quot;./cache&quot;)
+</pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Defining-States">
+<h2><span class="section-number">2.2.1.3. </span>Defining States<a class="headerlink" href="#Defining-States" title="Link to this heading"></a></h2>
+<p>Rydberg states are defined in the fine structure basis by specifying the <em>species</em> and the quantum numbers <span class="math notranslate nohighlight">\(n\)</span>, <span class="math notranslate nohighlight">\(l\)</span>, <span class="math notranslate nohighlight">\(j\)</span>, <span class="math notranslate nohighlight">\(m_j\)</span>. The pairinteraction software natively supports as species the alkali metals lithium (<code class="docutils literal notranslate"><span class="pre">&quot;Li&quot;</span></code>), sodium (<code class="docutils literal notranslate"><span class="pre">&quot;Na&quot;</span></code>), potassium (<code class="docutils literal notranslate"><span class="pre">&quot;K&quot;</span></code>), rubidium (<code class="docutils literal notranslate"><span class="pre">&quot;Rb&quot;</span></code>), caesium (<code class="docutils literal notranslate"><span class="pre">&quot;Cs&quot;</span></code>). In addition, there is experimental support for the alkaline earth metal strontium in its singlet (<code class="docutils literal notranslate"><span class="pre">&quot;Sr1&quot;</span></code>) and triplet state (<code class="docutils literal notranslate"><span class="pre">&quot;Sr3&quot;</span></code>). The species-specific quantum
+defects and model potential parameters are stored in a database, created from a <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/pairinteraction/databases/quantum_defects.sql">SQL file</a>. Note that we do not differentiate between isotopes as they possess nearly identical quantum defects.</p>
+<p>The user can add further species to pairinteraction by inserting their quantum defects and model potential parameters into the SQL file. In order to make pairinteraction use the new SQL file, its path must be passed to the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> object by executing <code class="docutils literal notranslate"><span class="pre">cache.setDefectDB(&quot;path/to/new_quantum_defects.sql&quot;)</span></code>.</p>
+<section id="Single-Atom-States">
+<h3><span class="section-number">2.2.1.3.1. </span>Single Atom States<a class="headerlink" href="#Single-Atom-States" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">StateOne</span></code> class allows for defining states of single Rydberg atoms. For example, the state with the quantum numbers <span class="math notranslate nohighlight">\(n=61\)</span>, <span class="math notranslate nohighlight">\(l=0\)</span>, <span class="math notranslate nohighlight">\(j=1/2\)</span>, <span class="math notranslate nohighlight">\(m_j=-1/2\)</span> of a rubidium atom is written as:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state = pi.StateOne(&quot;Rb&quot;, 61, 0, 0.5, -0.5)
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Pair-States">
+<h3><span class="section-number">2.2.1.3.2. </span>Pair States<a class="headerlink" href="#Pair-States" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">StateTwo</span></code> class allows for defining states of two Rydberg atoms. Such a pair state can be defined as a combination of two single atom states.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state1 = pi.StateOne(&quot;Rb&quot;, 61, 0, 0.5, -0.5)
+state2 = pi.StateOne(&quot;Cs&quot;, 60, 1, 1.5, 1.5)
+state = pi.StateTwo(state1, state2)
+</pre></div>
+</div>
+</div>
+<p>Alternatively, a pair state can be initialized by specifying all parameters in pairs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state = pi.StateTwo([&quot;Rb&quot;, &quot;Cs&quot;], [61, 60], [0, 1], [0.5, 1.5], [-0.5, 1.5])
+</pre></div>
+</div>
+</div>
+<p>Afte the initialization of a pair state, the state of the first atom can be obtained by <code class="docutils literal notranslate"><span class="pre">StateTwo.getFirstState()</span></code> and the state of the second atom by <code class="docutils literal notranslate"><span class="pre">StateTwo.getSecondState()</span></code>.</p>
+<p>The classes <code class="docutils literal notranslate"><span class="pre">StateOne</span></code> and <code class="docutils literal notranslate"><span class="pre">StateTwo</span></code> own methods for receiving the properties of the states. Species are obtained by <code class="docutils literal notranslate"><span class="pre">State[...].getSpecies()</span></code> and quantum numbers by <code class="docutils literal notranslate"><span class="pre">State[...].getN()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getL()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getJ()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getM()</span></code>.</p>
+</section>
+</section>
+<section id="Application-1:-Energy-Levels">
+<h2><span class="section-number">2.2.1.4. </span>Application 1: Energy Levels<a class="headerlink" href="#Application-1:-Energy-Levels" title="Link to this heading"></a></h2>
+<p>The energy of a single atom state or the total energy of a pair state is received by calling the method <code class="docutils literal notranslate"><span class="pre">State[...].getEnergy()</span></code>. Similarly, effective principal quantum numbers <span class="math notranslate nohighlight">\(n^*\)</span> are obtained by <code class="docutils literal notranslate"><span class="pre">State[...].getNStar()</span></code>. Note that we must pass the previously created instance of the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class to these methods, if we <a class="reference internal" href="#Defining-States"><span class="std std-ref">specified a user-defined database</span></a> for quantum defects and model potential parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define Rydberg state
+state = pi.StateOne(&quot;Rb&quot;, 61, 0, 0.5, 0.5)
+
+# Get the energy of the state
+print(f&quot;The energy of {state} is {state.getEnergy()} GHz.&quot;)
+
+# Get the effective principal quantum number of the state
+print(f&quot;The effective principal quantum number of {state} is {state.getNStar()}.&quot;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The energy of |Rb, 61 S_1/2, mj=1/2&gt; is -982.3898169877917 GHz.
+The effective principal quantum number of |Rb, 61 S_1/2, mj=1/2&gt; is 57.86876593760547.
+</pre></div></div>
+</div>
+</section>
+<section id="Application-2:-Matrix-Elements">
+<h2><span class="section-number">2.2.1.5. </span>Application 2: Matrix Elements<a class="headerlink" href="#Application-2:-Matrix-Elements" title="Link to this heading"></a></h2>
+<p>The instance of the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class can be used directly to calculate matrix elements <span class="math notranslate nohighlight">\(\langle f \rvert A_q \lvert i \rangle\)</span>, where <span class="math notranslate nohighlight">\(A_q\)</span> is an operator in spherical coordinates, <span class="math notranslate nohighlight">\(\lvert i \rangle=\lvert n',l',j',m_j'\rangle\)</span> is the initial Rydberg state, and <span class="math notranslate nohighlight">\(\langle f\rvert =\langle n, l, j, m \rvert\)</span> the final Rydberg state. The order <span class="math notranslate nohighlight">\(q\)</span> of the operator <span class="math notranslate nohighlight">\(A_q\)</span> is assumed to equal <span class="math notranslate nohighlight">\(m_j-m_j'\)</span>. The following matrix elements are supported:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricDipole(state_f,</span> <span class="pre">state_i)</span></code> returns the matrix element of the electric dipole operator <span class="math notranslate nohighlight">\(d_q = \sqrt{\frac{4\pi}{3}} e r Y_{1q}\)</span> in units of <span class="math notranslate nohighlight">\(\text{GHz}^1(\text{V}/\text{cm})^{-1}\)</span>, so that <span class="math notranslate nohighlight">\(\langle f \rvert d~E \lvert i \rangle\)</span> and <span class="math notranslate nohighlight">\(\langle f \rvert \frac{d~d}{4\pi\epsilon_0 R^3} \lvert i \rangle\)</span> have the unit of an energy in the <a class="reference internal" href="#Units"><span class="std std-ref">unit system</span></a> used by the pairinteraction software.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricMultipole(state_f,</span> <span class="pre">state_i,</span> <span class="pre">kappa_radial,</span> <span class="pre">kappa_angular)</span></code> returns the matrix element of a generalized form of the electric multipole operator <span class="math notranslate nohighlight">\(p_{\kappa_\text{radial}, \kappa_\text{angular},q} = \sqrt{\frac{4\pi}{2\kappa_\text{angular}+1}} e r^{\kappa_\text{radial}} Y_{\kappa_\text{angular} q}\)</span> in units of <span class="math notranslate nohighlight">\(\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu\text{m}^{\kappa_\text{radial}-1}\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getMagneticDipole(state_f,</span> <span class="pre">state_i)</span></code> returns the matrix element of the magnetic dipole operator <span class="math notranslate nohighlight">\(\mu_q = - \frac{\mu_B}{\hbar} (g_l l_q + g_s s_q)\)</span> in units of <span class="math notranslate nohighlight">\(GHz^1 G^{-1}\)</span>, so that <span class="math notranslate nohighlight">\(\langle f \rvert \mu ~B \lvert i \rangle\)</span> has the unit of an energy in the used unit system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getRadial(state_f,</span> <span class="pre">state_i,</span> <span class="pre">kappa)</span></code> returns the matrix element of the radial operator <span class="math notranslate nohighlight">\(r^\kappa\)</span> in units of <span class="math notranslate nohighlight">\(\mu\text{m}^\kappa\)</span>.</p></li>
+</ul>
+<p>Note that by default, Numerov’s method is used for calculating radial wave functions. If Whittaker functions should be used instead, call <code class="docutils literal notranslate"><span class="pre">MatrixElementCache.setMethod(pi.WHITTAKER)</span></code>. Take attention that for small principal quantum numbers, these methods are not accurate. In this case, we can call <code class="docutils literal notranslate"><span class="pre">MatrixElementCache.loadElectricDipoleDB(&quot;path/to/database.csv&quot;,</span> <span class="pre">&quot;species&quot;)</span></code> to load <a class="reference external" href="https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator/blob/master/arc/data">literature values</a> of
+electric dipole matrix elements that come with the <a class="reference external" href="https://arc-alkali-rydberg-calculator.readthedocs.io/en/latest/">ARC software</a>.</p>
+<p>The calculation of matrix elements of more complex operators can often be reduced to the calculation of the matrix elements stated above. Sometimes, additional constants occure in the expressions of the operators. The library provides the following constants in the unit system of the pairinteraction software:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">coulombs_constant</span></code> with value <span class="math notranslate nohighlight">\(1/(4\pi\epsilon_0) = 0.5955214763029308~\text{GHz}^{-1}(\text{V}/\text{cm})^2 \mu\text{m}^3\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">electron_rest_mass</span></code> with value <span class="math notranslate nohighlight">\(m_e = 1374779.2437085041~\text{GHz}^1(\text{V}/\text{cm})^{-2}\text{G}^2\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elementary_charge</span></code> with value <span class="math notranslate nohighlight">\(e = 24.17989262349962~\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu \text{m}^{-1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bohr_magneton</span></code> with value <span class="math notranslate nohighlight">\(\mu_B = 0.0013996245041347061~\text{GHz}^1\text{G}^{-1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reduced_planck_constant</span></code> with value <span class="math notranslate nohighlight">\(\hbar = 159.15494309517~\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu \text{m}^{1}\text{G}^{1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">speed_of_light</span></code> with value <span class="math notranslate nohighlight">\(c = 299.79245799420306~(\text{V}/\text{cm})^{1}\text{G}^{-1}\)</span></p></li>
+</ul>
+<p>As an example, we show how to calculate a matrix element of the dipole-dipole interaction operator <span class="math notranslate nohighlight">\(V_{dd} = \frac{-2d_0d_0-d_+d_- - d_-d_+}{4 \pi \epsilon_0 R^3}\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Function for calculating a matrix element of the dipole-dipole interaction operator
+
+
+def getDipoleDipole(state_f, state_i, distance):
+    q = state_f.getM() - state_i.getM()
+
+    if q[0] == 0 and q[1] == 0:
+        prefactor = -2
+    elif q[0] == 1 and q[1] == -1:
+        prefactor = -1
+    elif q[0] == -1 and q[1] == 1:
+        prefactor = -1
+    else:
+        return 0
+
+    return (
+        prefactor
+        * pi.coulombs_constant
+        / distance**3
+        * cache.getElectricDipole(state_f.getFirstState(), state_i.getFirstState())
+        * cache.getElectricDipole(state_f.getSecondState(), state_i.getSecondState())
+    )
+
+
+# Define Rydberg states
+state_i = pi.StateTwo([&quot;Rb&quot;, &quot;Rb&quot;], [61, 61], [0, 1], [0.5, 0.5], [0.5, 0.5])
+state_f = pi.StateTwo([&quot;Rb&quot;, &quot;Rb&quot;], [61, 61], [1, 0], [0.5, 0.5], [0.5, 0.5])
+
+# Get the matrix element at an interatomic distance of 10 um
+distance = 10  # um
+matrixelement = getDipoleDipole(state_f, state_i, distance)
+print(f&quot;The matrix element has the value {matrixelement} GHz.&quot;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The matrix element has the value -0.0032526369083339785 GHz.
+</pre></div></div>
+</div>
+</section>
+<section id="Application-3:-Dispersion-Coefficients">
+<h2><span class="section-number">2.2.1.6. </span>Application 3: Dispersion Coefficients<a class="headerlink" href="#Application-3:-Dispersion-Coefficients" title="Link to this heading"></a></h2>
+<p>We consider two interacting Rydberg atoms. We call the interatomic distance <span class="math notranslate nohighlight">\(R\)</span> and the angle between the interatomic axis and the quantization axis the interaction angle <span class="math notranslate nohighlight">\(\theta\)</span>. At large interatomic distances, the energy shifts of Rydberg pair states due to the interaction can be estimated perturbatively.</p>
+<section id="Non-degenerate-States">
+<h3><span class="section-number">2.2.1.6.1. </span>Non-degenerate States<a class="headerlink" href="#Non-degenerate-States" title="Link to this heading"></a></h3>
+<p>For the beginning, we assume that the Rydberg pair state <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span>, for which we calculate the energy shift, has no degenerate states it can couple to. Thus <em>second order non-degenerate perturbation theory</em> is applicable and the energy shift is <span class="math notranslate nohighlight">\(C_6 / R^6\)</span>, where <span class="math notranslate nohighlight">\(C_6\)</span> is the dispersion coefficient of the van der Waals interaction. For the calculation of the <span class="math notranslate nohighlight">\(C_6\)</span> coefficient, we only consider states that couple significantly to <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span>. We
+ensure this by requiring that the difference between the principal quantum numbers of <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span> and of the considered states is less than or equal to a constant <span class="math notranslate nohighlight">\(\Delta N\)</span>, which can be set by the user to achieve convergence.</p>
+<p>The example show how to use the method <code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC6(state,</span> <span class="pre">deltaN)</span></code> to calculate the <span class="math notranslate nohighlight">\(C_6\)</span> coefficient in units of <span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^6\)</span>, passing the state <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span> and <span class="math notranslate nohighlight">\(\Delta N\)</span> as arguments.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define Rydberg state for which the C6 coefficient should be calculated
+state = pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [0.5, 0.5], [0.5, 0.5])
+
+# Angle between the interatomic axis and the quantization axis
+theta = 0  # rad
+
+# Use only states with similar principal quantum numbers for the calculation
+deltaN = 3
+
+# Get the C6 coefficient
+calculator = pi.PerturbativeInteraction(theta, cache)
+print(f&quot;The C6 coefficient is {calculator.getC6(state, deltaN)} GHz um^6.&quot;)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The C6 coefficient is 1.2105362290320048 GHz um^6.
+</pre></div></div>
+</div>
+</section>
+<section id="Degenerate-States">
+<h3><span class="section-number">2.2.1.6.2. </span>Degenerate States<a class="headerlink" href="#Degenerate-States" title="Link to this heading"></a></h3>
+<p>In case of degenerate states, we must take into account the full subspace of degenerate states and use degenerate perturbation theory. Instead of a scalar dispersion coefficient, we obtain a matrix of the dimension of the degenerate subspace. If the states within the degenerate subspace couple in second order, we are still in the van der Waals regime and must apply <em>second order degenerate perturbation theory</em>. As in the non-degenerate case, we use the method
+<code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC6(degenerate_states,</span> <span class="pre">deltaN)</span></code>, but now passing a list of the degenerate states as its first argument. The entries of the returned matrix are of unit <span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^6\)</span>. If the states within the degenerate subspace couple directly, we are in the resonant dipole-dipole regime and must apply <em>first order degenerate perturbation theory</em>. We use the method <code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC3(degenerate_states)</span></code>, whose returned matrix has the unit
+<span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^3\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define degenerate subspace of Rydberg states that couple in second order
+degenerate_states = [
+    pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [0.5, 0.5], [m1, m2])
+    for m1 in [-0.5, 0.5]
+    for m2 in [-0.5, 0.5]
+]
+print(&quot;Basis of the degenerate subspace:&quot;)
+print(&quot;\n&quot;.join(str(state) for state in degenerate_states))
+
+# Angle between the interatomic axis and the quantization axis
+theta = np.pi / 3  # rad
+
+# Use only states with similar principal quantum numbers for the calculation
+deltaN = 3
+
+# Get the C6 matrix
+calculator = pi.PerturbativeInteraction(theta, cache)
+print(&quot;\nC6 matrix in the basis of the degenerate subspace, in GHz um^6:&quot;)
+print(np.round(calculator.getC6(degenerate_states, deltaN), 2))
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Basis of the degenerate subspace:
+|Cs, 42 S_1/2, mj=-1/2&gt;|Cs, 42 S_1/2, mj=-1/2&gt;
+|Cs, 42 S_1/2, mj=-1/2&gt;|Cs, 42 S_1/2, mj=1/2&gt;
+|Cs, 42 S_1/2, mj=1/2&gt;|Cs, 42 S_1/2, mj=-1/2&gt;
+|Cs, 42 S_1/2, mj=1/2&gt;|Cs, 42 S_1/2, mj=1/2&gt;
+
+C6 matrix in the basis of the degenerate subspace, in GHz um^6:
+[[ 1.25  0.02  0.02 -0.04]
+ [ 0.02  1.21  0.03 -0.02]
+ [ 0.02  0.03  1.21 -0.02]
+ [-0.04 -0.02 -0.02  1.25]]
+</pre></div></div>
+</div>
+</section>
+</section>
+<section id="Application-4:-Non-perturbative-Calculations">
+<h2><span class="section-number">2.2.1.7. </span>Application 4: Non-perturbative Calculations<a class="headerlink" href="#Application-4:-Non-perturbative-Calculations" title="Link to this heading"></a></h2>
+<p>In many recent Rydberg experiments, the measurements are so precise that deviations from the perturbative description are getting significant. In addition, there are Rydberg systems where perturbative calculations are not working at all because splittings between energy levels are smaller than interaction energies. This especially happens for short interatomic distances or in the presence of electric fields. To study these systems, we must diagonalize their Hamiltonians.</p>
+<p>We can apply the pairinteraction library to construct and diagonalize Hamiltonians of Rydberg systems. For systems consisting of one single Rydberg atom, the class <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> is provided. For two Rydberg atoms, the class <code class="docutils literal notranslate"><span class="pre">SystemTwo</span></code> is given. Both of these classes are used in a similar way:</p>
+<ul class="simple">
+<li><p>First, we tell which Rydberg states should be considered, letting the software create a <strong>list of relevant Rydberg states</strong>. The Rydberg states can be obtained by <code class="docutils literal notranslate"><span class="pre">System[...].getStates()</span></code>.</p></li>
+<li><p>Second, we specify whether symmetries of the systems should be taken into account to speed up calculations. The software generates a <strong>list of basis vectors</strong>, where each basis vector is a linear combination of the previously given Rydberg states. If symmetries are specified, they are applied to reduce the size of the basis. The basis vectors can be obtained as the columns of the NumPy <code class="docutils literal notranslate"><span class="pre">csc_matrix</span></code> returned by <code class="docutils literal notranslate"><span class="pre">System[...].getBasisvectors()</span></code>.</p></li>
+<li><p>Third, we set up the interactions. The software builds a <strong>matrix representation of the Hamiltonian</strong> in the previously generated basis. The Hamiltonian can be obtained by <code class="docutils literal notranslate"><span class="pre">System[...].getHamiltonian()</span></code> as a NumPy <code class="docutils literal notranslate"><span class="pre">csc_matrix</span></code>.</p></li>
+</ul>
+<p>Note that some Rydberg states might rarely occur within basis vectors or some basis vectors might have neglectable norm (if we e.g. remove some states which were solely needed for getting Stark shifted energies correct). To accelerate calculations, the software removes states with overlaps <span class="math notranslate nohighlight">\(&lt;0.05\)</span> and basis vectors with norms <span class="math notranslate nohighlight">\(&lt;0.05\)</span>. In order to change the threshold, call <code class="docutils literal notranslate"><span class="pre">System[...].setMinimalNorm()</span></code>.</p>
+<p>After calling the method <code class="docutils literal notranslate"><span class="pre">System[...].diagonalize()</span></code>, the diagonal entries of the Hamiltonian contain the eigenenergies of the system and the list of basis vectors contains the eigenvectors. For speeding up calculations, the method can be called with a threshold. Values smaller than the threshold are pruned of the eigenvectors.</p>
+<section id="Systems-of-One-Rydberg-Atom,-Calculate-Stark-and-Zeeman-Maps">
+<h3><span class="section-number">2.2.1.7.1. </span>Systems of One Rydberg Atom, Calculate Stark and Zeeman Maps<a class="headerlink" href="#Systems-of-One-Rydberg-Atom,-Calculate-Stark-and-Zeeman-Maps" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> class defines systems consisting of single Rydberg atoms. Optionally, an electric field can be passed to <code class="docutils literal notranslate"><span class="pre">SystemOne.setEfield(field)</span></code> as a vector containing the <span class="math notranslate nohighlight">\(x,y,z\)</span>-coordinates of the field in units of <span class="math notranslate nohighlight">\(\text{V}/\text{cm}\)</span> (the quantization axis points along <span class="math notranslate nohighlight">\(z\)</span>). <code class="docutils literal notranslate"><span class="pre">SystemOne.setBfield(field)</span></code> allows for applying a magnetic field in units of <span class="math notranslate nohighlight">\(\text{G}\)</span>.</p>
+<p>As an example, we show how to calculate a Stark map.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define values of E-field pointing into the direction of the quantization axis
+array_efield = np.linspace(0, 10, 100)  # V/cm
+
+# Define state for which the Stark map should be calculated
+state = pi.StateOne(&quot;Rb&quot;, 61, 1, 1.5, 1.5)
+
+# Initialize a system comprising one rubidium Rydberg atom
+system = pi.SystemOne(state.getSpecies(), cache)
+
+# Consider only states with similar energy and quantum numbers as the defined state
+system.restrictEnergy(state.getEnergy() - 100, state.getEnergy() + 100)
+system.restrictN(state.getN() - 2, state.getN() + 2)
+system.restrictL(state.getL() - 2, state.getL() + 2)
+
+# Because E-field points along quantization axis, the magnetic quantum number is conserved
+system.setConservedMomentaUnderRotation([state.getM()])
+
+# Diagonalize the Hamiltonian of the system for different E-fields
+array_eigenvalues = []
+array_overlaps = []
+
+for efield in array_efield:
+    system.setEfield([0, 0, efield])
+
+    # Diagonalize system, pruning values smaller than 1e-3 from eigenvectors
+    system.diagonalize(1e-3)
+
+    # Store the eigenenergies
+    array_eigenvalues.append(system.getHamiltonian().diagonal() - state.getEnergy())
+
+    # Store the overlap of the eigenstates with the defined state
+    array_overlaps.append(system.getOverlap(state))
+
+array_eigenvalues = np.ravel(array_eigenvalues)
+array_overlaps = np.ravel(array_overlaps)
+array_efield = np.repeat(array_efield, system.getNumBasisvectors())
+
+# Plot Stark map, the color code visualizes overlap of eigenstates with defined state
+plt.scatter(array_efield, array_eigenvalues, 20, array_overlaps)
+plt.xlabel(&quot;Electric field (V/cm)&quot;)
+plt.ylabel(&quot;Energy (GHz)&quot;)
+plt.ylim(-50, 50);
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_introduction_29_0.png" src="../_images/examples_python_introduction_29_0.png" />
+</div>
+</div>
+</section>
+<section id="Systems-of-Two-Rydberg-Atoms,-Calculate-Pair-Potentials">
+<h3><span class="section-number">2.2.1.7.2. </span>Systems of Two Rydberg Atoms, Calculate Pair Potentials<a class="headerlink" href="#Systems-of-Two-Rydberg-Atoms,-Calculate-Pair-Potentials" title="Link to this heading"></a></h3>
+<p>Two instances of the class <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> can be passed to the constructor of <code class="docutils literal notranslate"><span class="pre">SystemTwo</span></code> to define a system consisting of two Rydberg atoms. The class provides methods for specifying the interaction between the Rydberg atoms. For example, the interatomic distance in <span class="math notranslate nohighlight">\(\mu\text{m}\)</span> can be set by calling the method <code class="docutils literal notranslate"><span class="pre">SystemTwo.setDistance(distance)</span></code> and the interaction angle in <span class="math notranslate nohighlight">\(\text{rad}\)</span> by <code class="docutils literal notranslate"><span class="pre">SystemTwo.setAngle(theta)</span></code>.</p>
+<p>As an example, we show how to calculate pair potentials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define interatomic distances
+array_distance = np.linspace(8, 2, 100)  # um
+
+# Define interaction angle
+theta = 0  # rad
+
+&quot;&quot;&quot; System containing single atom &quot;&quot;&quot;
+
+# Define single atom state
+state_one = pi.StateOne(&quot;Rb&quot;, 57, 2, 1.5, 1.5)
+
+# Initialize a system comprising one rubidium Rydberg atom
+system_one = pi.SystemOne(state_one.getSpecies(), cache)
+
+# Consider only states with similar energy and quantum numbers as the defined state
+system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40)
+system_one.restrictN(state_one.getN() - 2, state_one.getN() + 2)
+system_one.restrictL(state_one.getL() - 2, state_one.getL() + 2)
+
+# Diagonalize one-atom system, pruning values smaller than 1e-3 from eigenvectors
+system_one.diagonalize(1e-3)
+
+&quot;&quot;&quot; System containing two atoms &quot;&quot;&quot;
+
+# Define pair state, comprising two atoms in the state defined above
+state_two = pi.StateTwo(state_one, state_one)
+
+# Initialize a new system, comprising two of the single atom systems defined above
+system_two = pi.SystemTwo(system_one, system_one, cache)
+
+# Consider only pair states with similar energy as the defined pair state
+system_two.restrictEnergy(state_two.getEnergy() - 4, state_two.getEnergy() + 4)
+
+# Because no electric field, parity under inversion is conserved
+system_two.setConservedParityUnderInversion(pi.ODD)
+
+# Because no multipole interaction of higher order, parity under permutation is conserved
+system_two.setConservedParityUnderPermutation(pi.ODD)
+
+# If the interaction angle is zero, the total magnetic quantum number is conserved
+if theta == 0:
+    system_two.setConservedMomentaUnderRotation([int(np.sum(state_two.getM()))])
+
+# Set interaction angle
+system_two.setAngle(theta)
+
+# Diagonalize the Hamiltonian of the system for different distances
+array_eigenvalues = []
+array_overlaps = []
+
+for distance in array_distance:
+    system_two.setDistance(distance)
+
+    # Diagonalize two-atom system, pruning values smaller than 1e-3 from eigenvectors
+    system_two.diagonalize(1e-3)
+
+    # Store the eigenenergies
+    array_eigenvalues.append(
+        system_two.getHamiltonian().diagonal() - state_two.getEnergy()
+    )
+
+    # Store the overlap of the eigenstates with the defined state
+    array_overlaps.append(system_two.getOverlap(state_two))
+
+array_eigenvalues = np.ravel(array_eigenvalues)
+array_overlaps = np.ravel(array_overlaps)
+array_distance = np.repeat(array_distance, system_two.getNumBasisvectors())
+
+# Plot pair potentials, the color code visualizes overlap of eigenstates with defined state
+plt.scatter(array_distance, array_eigenvalues, 20, array_overlaps)
+plt.xlabel(&quot;Distance (um)&quot;)
+plt.ylabel(&quot;Energy (GHz)&quot;)
+plt.ylim(-0.15, 0.15);
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_introduction_31_0.png" src="../_images/examples_python_introduction_31_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Application-5:-Effective-Hamiltonians">
+<h2><span class="section-number">2.2.1.8. </span>Application 5: Effective Hamiltonians<a class="headerlink" href="#Application-5:-Effective-Hamiltonians" title="Link to this heading"></a></h2>
+<p>Recent experimental progress allows for the realization of many-body systems, such as Ising-models, with Rydberg atoms. In order to obtain systems which are computationally tractable and obey vivid theoretical descriptions, one typically considers only a small subspace of atomic states and describes the interaction between them by an effective Hamiltonian.</p>
+<p>This restriction to a small subspace <span class="math notranslate nohighlight">\(S\)</span> is possible if the Hamiltonian can be written as <span class="math notranslate nohighlight">\(H=H_0 + H'\)</span>, where <span class="math notranslate nohighlight">\(H_0\)</span> leaves <span class="math notranslate nohighlight">\(S\)</span> invariant and <span class="math notranslate nohighlight">\(H'\)</span> is a small perturbation which couples states within <span class="math notranslate nohighlight">\(S\)</span> to states outside of <span class="math notranslate nohighlight">\(S\)</span>. We assume that this coupling is much smaller than the energy separation between states within <span class="math notranslate nohighlight">\(S\)</span> and states outside of <span class="math notranslate nohighlight">\(S\)</span>. In this case, one often applies degenerate perturbation theory of, e.g. second order, to
+obtain an effective Hamiltonian. Here we use a different approach. We calculate the effective Hamiltonian by the Schrieffer-Wolff transformation (<a class="reference external" href="https://doi.org/10.1103/PhysRev.149.491">Phys. Rev. 149, 491 (1966)</a>, <a class="reference external" href="https://doi.org/10.1016/j.aop.2011.06.004">Ann. Phys. 326, 2793 (2011)</a>). It has the benefit to work hassle-free also for complicated systems where standard perturbation theory is very hard to perform.</p>
+<p>In the following, we focus on a relatively simple system, where we already <a class="reference internal" href="#Degenerate-States"><span class="std std-ref">calculated the interaction in second order perturbation theory</span></a>. The system consists of two Caesium atoms in a Rydberg s-level, separated by <span class="math notranslate nohighlight">\(4\,\mathrm{\mu m}\)</span> with an interaction angle of <span class="math notranslate nohighlight">\(\pi/3\)</span>. Here we apply the Schrieffer-Wolff transformation to obtain the effective Hamiltonian that describes the interaction of the s-levels. We start our calculation by defining the subspace
+<span class="math notranslate nohighlight">\(S\)</span> conatining the s-levels.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state_two_subspace = [
+    pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, -1 / 2]),
+    pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+    pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+    pi.StateTwo([&quot;Cs&quot;, &quot;Cs&quot;], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, 1 / 2]),
+]
+</pre></div>
+</div>
+</div>
+<p>The Hamiltonian acting on the full Hilbert space can be split into a unperturbed Hamiltonian which leaves <span class="math notranslate nohighlight">\(S\)</span> invariant and a perturbation which couples <span class="math notranslate nohighlight">\(S\)</span> to other states. We define a system containing the unperturbed Hamiltonian and a system containing the perturbed Hamiltonian.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>state_one = state_two_subspace[0].getFirstState()
+system_one = pi.SystemOne(state_one.getSpecies(), cache)
+system_one.restrictEnergy(state_one.getEnergy() - 200, state_one.getEnergy() + 200)
+system_one.restrictN(state_one.getN() - 3, state_one.getN() + 3)
+system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+system_two = pi.SystemTwo(system_one, system_one, cache)
+system_two.restrictEnergy(
+    state_two_subspace[0].getEnergy() - 20, state_two_subspace[0].getEnergy() + 20
+)
+
+# System containing the unperturbed Hamiltonian, it&#39;s a copy of system_two
+system_two_unperturbed = pi.SystemTwo(system_two)
+
+# System containing the perturbed Hamiltonian
+system_two_perturbed = pi.SystemTwo(system_two)
+system_two_perturbed.setDistance(4)
+system_two_perturbed.setAngle(np.pi / 3)
+</pre></div>
+</div>
+</div>
+<p>We restrict the unperturbed system to <span class="math notranslate nohighlight">\(S\)</span>. As it does not couple the subspace to other states, this restriction can be done easily. Now the unperturbed system contains four basis vectors. The first basis vector represents the first state out of the subspace <span class="math notranslate nohighlight">\(S\)</span>, the second basis vector represents the second state, etc.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>system_two_unperturbed.constrainBasisvectors(
+    system_two_unperturbed.getBasisvectorIndex(state_two_subspace)
+)
+
+# Print the unperturbed Hamiltonian
+print(
+    f&quot;Unperturbed Hamiltonian:\n{system_two_unperturbed.getHamiltonian().todense()}\n&quot;
+)
+
+# Print the corresponding basis vectors as columns (we just show the coefficients that
+# belong to the states contained in the considered subspace)
+print(
+    &quot;Basis vectors:\n{}&quot;.format(
+        np.round(
+            system_two_unperturbed.getBasisvectors()[
+                list(system_two_unperturbed.getStateIndex(state_two_subspace))
+            ],
+            3,
+        ).todense()
+    )
+)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Unperturbed Hamiltonian:
+[[-4568.44788286     0.             0.             0.        ]
+ [    0.         -4568.44788286     0.             0.        ]
+ [    0.             0.         -4568.44788286     0.        ]
+ [    0.             0.             0.         -4568.44788286]]
+
+Basis vectors:
+[[ 1.  0.  0.  0.]
+ [ 0.  1.  0.  0.]
+ [ 0.  0.  1.  0.]
+ [ 0.  0.  0.  1.]]
+</pre></div></div>
+</div>
+<p>The perturbation dresses these four basis vectors by admixing other states. Using the Schrieffer-Wolff transformation, we calculate the dressed basis vectors and unitarily transform the perturbed Hamiltonian into this basis.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Diagonalize the perturbed Hamiltonian, pruning values smaller than 1e-16 from
+# eigenvectors (if we prune too aggressively, the Schrieffer Wolff transformation fails)
+system_two_perturbed.diagonalize(1e-16)
+
+# Apply the Schrieffer Wolff transformation on the perturbed Hamiltonian
+system_two_perturbed.applySchriefferWolffTransformation(system_two_unperturbed)
+
+# Print the effective Hamiltonian
+print(f&quot;Effective Hamiltonian:\n{system_two_perturbed.getHamiltonian().todense()}\n&quot;)
+
+# Print the corresponding basis vectors as columns (we just show the coefficients that
+# belong to the states contained in the considered subspace)
+print(
+    &quot;Dressed basis vectors:\n{}&quot;.format(
+        np.round(
+            system_two_perturbed.getBasisvectors()[
+                list(system_two_perturbed.getStateIndex(state_two_subspace))
+            ],
+            5,
+        ).todense()
+    )
+)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Effective Hamiltonian:
+[[ -4.56844757e+03   5.62138780e-06   5.62138575e-06  -9.73653255e-06]
+ [  5.62138780e-06  -4.56844758e+03   7.57291525e-06  -5.62138007e-06]
+ [  5.62138598e-06   7.57291525e-06  -4.56844758e+03  -5.62138302e-06]
+ [ -9.73653255e-06  -5.62138007e-06  -5.62138314e-06  -4.56844757e+03]]
+
+Dressed basis vectors:
+[[ 0.99997  0.       0.       0.     ]
+ [ 0.       0.99997  0.       0.     ]
+ [ 0.       0.       0.99997  0.     ]
+ [ 0.       0.       0.       0.99997]]
+</pre></div></div>
+</div>
+<p>As the results show, the overlap of the dressed basis vectors with the states of the subspace <span class="math notranslate nohighlight">\(S\)</span> is still very large. Thus, we can neglect the admixture of the other states.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../examples_gui/macrodimers/macrodimers.html" class="btn btn-neutral float-left" title="2.1.2. Application: Vibrational Spectroscopy of Macrodimer Binding Potentials" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="matrix_elements.html" class="btn btn-neutral float-right" title="2.2.2. Calculation of Matrix Elements" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

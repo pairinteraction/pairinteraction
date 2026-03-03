@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction._wrapped.system.system_atom &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction._wrapped.system.system_atom</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction._wrapped.system.system_atom</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.basis.basis_atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisAtomComplex</span><span class="p">,</span> <span class="n">BasisAtomReal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.system.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityScalar</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.basis.basis_atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisAtom</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.ket.ket_atom</span><span class="w"> </span><span class="kn">import</span> <span class="n">KetAtom</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">PintArray</span><span class="p">,</span>  <span class="c1"># noqa: F401  # needed for sphinx to recognize PintArrayLike</span>
+        <span class="n">PintArrayLike</span><span class="p">,</span>
+        <span class="n">PintFloat</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">BasisType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;BasisType&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;BasisAtom[Any]&quot;</span><span class="p">,</span> <span class="n">covariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">UnionCPPSystemAtom</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomReal</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomComplex</span><span class="p">]</span>
+<span class="n">UnionTypeCPPSystemAtom</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomReal</span><span class="p">],</span> <span class="nb">type</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomComplex</span><span class="p">]]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SystemAtom">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemAtom</span><span class="p">(</span><span class="n">SystemBase</span><span class="p">[</span><span class="n">BasisType</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;System of a single atom.</span>
+
+<span class="sd">    Use the given BasisAtom object to create the system object.</span>
+<span class="sd">    You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction.real as pi</span>
+<span class="sd">        &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; basis = pi.BasisAtom(&quot;Rb&quot;, n=(58, 63), l=(0, 3))</span>
+<span class="sd">        &gt;&gt;&gt; system = pi.SystemAtom(basis)</span>
+<span class="sd">        &gt;&gt;&gt; system = system.set_magnetic_field([0, 0, 1], unit=&quot;gauss&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; system = system.set_electric_field([0.1, 0, 0.1], unit=&quot;V/cm&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; system = system.set_diamagnetism_enabled(True)</span>
+<span class="sd">        &gt;&gt;&gt; print(system)</span>
+<span class="sd">        SystemAtom(BasisAtom(n=(58, 63), l=(0, 3)), is_diagonal=False)</span>
+<span class="sd">        &gt;&gt;&gt; system = system.diagonalize()</span>
+<span class="sd">        &gt;&gt;&gt; eigenenergies = system.get_eigenenergies(unit=&quot;GHz&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;{eigenenergies[0] - ket.get_energy(unit=&#39;GHz&#39;):.5f}&quot;)</span>
+<span class="sd">        -75.51823</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">UnionCPPSystemAtom</span>
+    <span class="n">_cpp_type</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">UnionTypeCPPSystemAtom</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SystemAtom.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basis</span><span class="p">:</span> <span class="n">BasisType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a system object for a single atom.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            basis: The :class:`pairinteraction.real.BasisAtom` object that describes the basis of the system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_electric_field">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_electric_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_electric_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+        <span class="n">electric_field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;PintArrayLike&quot;</span><span class="p">,</span> <span class="s2">&quot;ArrayLike&quot;</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the electric field for the system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            electric_field: The electric field to set for the system.</span>
+<span class="sd">            unit: The unit of the electric field, e.g. &quot;V/cm&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">electric_field_au</span> <span class="o">=</span> <span class="p">[</span><span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;electric_field&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">electric_field</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_electric_field</span><span class="p">(</span><span class="n">electric_field_au</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_magnetic_field">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_magnetic_field">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_magnetic_field</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+        <span class="n">magnetic_field</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;PintArrayLike&quot;</span><span class="p">,</span> <span class="s2">&quot;ArrayLike&quot;</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the magnetic field for the system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            magnetic_field: The magnetic field to set for the system.</span>
+<span class="sd">            unit: The unit of the magnetic field, e.g. &quot;gauss&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">magnetic_field_au</span> <span class="o">=</span> <span class="p">[</span><span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;magnetic_field&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">magnetic_field</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">(</span><span class="n">magnetic_field_au</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_diamagnetism_enabled">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_diamagnetism_enabled">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_diamagnetism_enabled</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable diamagnetism for the system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enable: Whether to enable or disable diamagnetism.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="n">enable</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_distance_to_ion">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_distance_to_ion">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_distance_to_ion</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">distance</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">],</span> <span class="n">angle_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+        <span class="n">distance_vector</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_ion_distance_vector</span><span class="p">(</span><span class="n">distance_vector</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_ion_distance_vector">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_ion_distance_vector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_ion_distance_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;PintArrayLike&quot;</span><span class="p">,</span> <span class="s2">&quot;ArrayLike&quot;</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+        <span class="n">distance_au</span> <span class="o">=</span> <span class="p">[</span><span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">distance</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_ion_distance_vector</span><span class="p">(</span><span class="n">distance_au</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_ion_charge">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_ion_charge">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_ion_charge</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">charge</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">],</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+        <span class="n">charge_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">charge</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;charge&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_ion_charge</span><span class="p">(</span><span class="n">charge_au</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemAtom.set_ion_interaction_order">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.set_ion_interaction_order">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_ion_interaction_order</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_ion_interaction_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket</span><span class="p">:</span> <span class="s2">&quot;KetAtom&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket</span><span class="p">:</span> <span class="s2">&quot;KetAtom&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="SystemAtom.get_corresponding_energy">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemAtom.html#pairinteraction._wrapped.SystemAtom.get_corresponding_energy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket</span><span class="p">:</span> <span class="s2">&quot;KetAtom&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span>
+        <span class="n">overlaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;The provided ket states does not correspond to an eigenstate of the system in a unique way.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span>  <span class="c1"># type: ignore [index,no-any-return] # PintArray does not know it can be indexed</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemAtomReal</span><span class="p">(</span><span class="n">SystemAtom</span><span class="p">[</span><span class="n">BasisAtomReal</span><span class="p">]):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomReal</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomReal</span>
+    <span class="n">_TypeBasis</span> <span class="o">=</span> <span class="n">BasisAtomReal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemAtomComplex</span><span class="p">(</span><span class="n">SystemAtom</span><span class="p">[</span><span class="n">BasisAtomComplex</span><span class="p">]):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomComplex</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemAtomComplex</span>
+    <span class="n">_TypeBasis</span> <span class="o">=</span> <span class="n">BasisAtomComplex</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
