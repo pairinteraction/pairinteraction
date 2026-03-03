@@ -1118,6 +1118,8 @@ bool Database::get_use_cache() const { return use_cache_; }
 
 std::filesystem::path Database::get_database_dir() const { return database_dir_; }
 
+std::string Database::get_versions_info() const { return manager->get_versions_info(); }
+
 oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>> &
 Database::get_matrix_elements_cache() {
     static oneapi::tbb::concurrent_unordered_map<std::string,
