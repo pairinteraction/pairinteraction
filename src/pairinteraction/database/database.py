@@ -103,3 +103,21 @@ class Database:
     def database_dir(self) -> Path:
         """The directory where the databases are stored."""
         return self._cpp.get_database_dir()
+
+    def get_versions_info(self) -> str:
+        """Return a formatted table of local and remote database versions."""
+        return self._cpp.get_versions_info()
+
+
+def print_database_info(
+    download_missing: bool = True,
+    use_cache: bool = True,
+    database_dir: str | os.PathLike[str] = "",
+) -> None:
+    """Print an overview of local and remote database tables.
+
+    Returns the overview string for programmatic use.
+    """
+    db = Database(download_missing, use_cache, database_dir)
+    print(f"Database directory: {db.database_dir}")
+    print(db.get_versions_info())

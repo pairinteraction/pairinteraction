@@ -20,10 +20,11 @@ def main() -> int:
             "Examples:\n"
             "  pairinteraction --log-level INFO gui\n"
             "  pairinteraction --log-level INFO test\n"
-            "  pairinteraction download Rb Cs\n"
-            "  pairinteraction download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
-            "  pairinteraction paths\n"
-            "  pairinteraction purge"
+            "  pairinteraction database list\n"
+            "  pairinteraction database download Rb Cs\n"
+            "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
+            "  pairinteraction database purge\n"
+            "  pairinteraction paths"
         ),
     )
     parser.add_argument("--version", action="version", version=f"PairInteraction v{__version__}")
@@ -43,18 +44,39 @@ def main() -> int:
     test_parser = subparsers.add_parser("test", help="run module tests")
     test_parser.set_defaults(func=lambda _args: run_unit_tests())
 
-    # Download command
-    download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
-    download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of urls")
+    # Download command (kept for backwards compatibility, hidden from help)
+    download_parser = subparsers.add_parser("download")
+    download_parser.add_argument("species", nargs="+")
     download_parser.set_defaults(func=lambda args: download_databases(args.species))
 
     # Paths command
     paths_parser = subparsers.add_parser("paths", help="show config and cache directories")
     paths_parser.set_defaults(func=lambda _args: show_paths())
 
-    # Purge command
-    purge_parser = subparsers.add_parser("purge", help="delete all cached data")
+    # Purge command (kept for backwards compatibility, hidden from help)
+    purge_parser = subparsers.add_parser("purge")
     purge_parser.set_defaults(func=lambda _args: purge_cache())
+
+    # Database command group
+    database_parser = subparsers.add_parser("database", help="manage and inspect the database")
+    database_subparsers = database_parser.add_subparsers(dest="database_command")
+
+    # database list command
+    db_list_parser = database_subparsers.add_parser("list", help="list local and remote database table versions")
+    db_list_parser.set_defaults(func=lambda _args: list_databases())
+
+    # database download command
+    db_download_parser = database_subparsers.add_parser(
+        "download", help="download database tables for one or more species"
+    )
+    db_download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of urls")
+    db_download_parser.set_defaults(func=lambda args: download_databases(args.species))
+
+    # database purge command
+    db_purge_parser = database_subparsers.add_parser("purge", help="delete all cached data")
+    db_purge_parser.set_defaults(func=lambda _args: purge_cache())
+
+    database_parser.set_defaults(func=lambda _args: database_parser.print_help())
 
     args = parser.parse_args()
 
@@ -185,6 +207,14 @@ def download_databases(species_list: list[str]) -> int:
             print(Fore.RED + f"Failed: {e}" + Style.RESET_ALL)
 
     return exit_code
+
+
+def list_databases() -> int:
+    """Print a table of local and remote database table versions."""
+    from pairinteraction.database import print_database_info
+
+    print_database_info()
+    return 0
 
 
 def show_paths() -> int:

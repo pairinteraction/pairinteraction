@@ -65,6 +65,7 @@ public:
     bool get_download_missing() const;
     bool get_use_cache() const;
     std::filesystem::path get_database_dir() const;
+    std::string get_versions_info() const;
 
 private:
     struct Table {
