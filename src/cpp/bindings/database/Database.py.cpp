@@ -8,6 +8,7 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
+#include <nanobind/stl/string.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -24,7 +25,8 @@ static void declare_database(nb::module_ &m) {
              "database_dir"_a)
         .def("get_download_missing", &Database::get_download_missing)
         .def("get_use_cache", &Database::get_use_cache)
-        .def("get_database_dir", &Database::get_database_dir);
+        .def("get_database_dir", &Database::get_database_dir)
+        .def("get_versions_info", &Database::get_versions_info);
 }
 
 void bind_database(nb::module_ &m) { declare_database(m); }
