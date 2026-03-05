@@ -80,14 +80,14 @@ guide helps to solve problems with the database.
 
   .. code-block:: bash
 
-      $ pairinteraction download Rb Yb171_mqdt
+      $ pairinteraction database download Rb Yb171_mqdt
 
   or a URL to a table file from https://github.com/pairinteraction/database-sqdt/releases or
   https://github.com/pairinteraction/database-mqdt/releases
 
   .. code-block:: bash
 
-      $ pairinteraction download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip
+      $ pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip
 
 - If you see access errors (e.g., **"Rate limit reached ..."**), GitHub might have temporary blocked the download of
   database tables for unauthenticated users for whom very strict `rate limits`_ apply. The rate limits should typically
@@ -97,7 +97,7 @@ guide helps to solve problems with the database.
 
   .. code-block:: bash
 
-      $ pairinteraction purge
+      $ pairinteraction database purge
 
   helps. Note that this deletes all cached files and database tables must be re-downloaded. To manually inspect the
   content of the cache, you can obtain its path via ``pairinteraction paths``.

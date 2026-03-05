@@ -28,7 +28,7 @@ uv run --no-project dbmanager_optimize --compression {UNCOMPRESSED,SNAPPY,ZSTD}
 To update the local database in "data/database", ensure that you have the most recent database downloaded to your computer and use `dbmanager_shrink` to install it as the local database.
 
 ```bash
-uv run pairinteraction purge
-uv run pairinteraction download Rb Sr87_mqdt Sr88_mqdt Sr88_singlet Sr88_triplet Yb171_mqdt Yb173_mqdt Yb174_mqdt
+uv run pairinteraction database purge
+uv run pairinteraction database download Rb Sr87_mqdt Sr88_mqdt Sr88_singlet Sr88_triplet Yb171_mqdt Yb173_mqdt Yb174_mqdt
 uv run --no-project dbmanager_shrink --out data/database
 ```

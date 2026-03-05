@@ -83,7 +83,7 @@ After the installation, we recommend verifying that everything is working:
     pairinteraction test
 
     # download the databases for the species you want to use (e.g. Rb and Yb174_mqdt)
-    pairinteraction download Rb Yb174_mqdt
+    pairinteraction database download Rb Yb174_mqdt
 
 If the download command fails, you can also download the databases manually from GitHub and place them in the cache
 directory. For more details on this, see the :ref:`database <database>` section of the documentation.
