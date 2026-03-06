@@ -29,6 +29,16 @@ if os.getenv("POLYVERSION_DATA"):
 else:
     html_context = {"current_version": f"dev (>= {pairinteraction.__version__})"}
 
+html_context.update(
+    {
+        "display_github": True,
+        "github_user": "pairinteraction",
+        "github_repo": "pairinteraction",
+        "github_version": "master",
+        "conf_py_path": "/docs/",
+    }
+)
+
 # -- General configuration ---------------------------------------------------
 extensions = [
     "sphinx.ext.autodoc",
@@ -97,9 +107,7 @@ nbsphinx_prolog = """
     </style>
 
     <div class="admonition note">
-      This page was generated from the Jupyter notebook
-      <a class="reference external" href="{{ docname|e }}">{{ docname|e }}</a>.
-      Open in
+      Open as Jupyter notebook in
       <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/{{ docname|e }}">Google Colab</a>.
     </div>
 """  # noqa: E501
