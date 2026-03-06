@@ -26,7 +26,6 @@ from pairinteraction_gui.utils import (
     get_custom_error,
     get_species_type,
 )
-from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
@@ -154,9 +153,6 @@ class KetConfigOneAtom(KetConfig):
 
 
 class KetConfigLifetimes(KetConfig):
-    worker_label: MultiThreadWorker | None = None
-    worker_plot: MultiThreadWorker | None = None
-
     page: LifetimesPage
 
     def setupWidget(self) -> None:
@@ -171,57 +167,21 @@ class KetConfigLifetimes(KetConfig):
             unit="K",
             tooltip="Temperature in Kelvin (0K considers only spontaneous decay)",
         )
-        self.item_temperature.connectAll(self.update_lifetime_label)
         self.layout().addWidget(self.item_temperature)
         self.layout().addSpacing(15)
 
         # Add a label to display the lifetime
-        self.lifetime_label = QLabel()
+        self.lifetime_label = QLabel("Lifetime: \u2014")  # \u2014 = em dash
         self.lifetime_label.setStyleSheet(label_theme)
         self.lifetime_label.setWordWrap(True)
         self.layout().addWidget(self.lifetime_label)
 
-        self.update_lifetime_label()
-
     def get_temperature(self) -> float:
         return self.item_temperature.value(default=0)
 
-    def update_lifetime_label(self) -> None:
-        if self.worker_label and self.worker_label.isRunning():
-            self.worker_label.quit()
-            self.worker_label.wait()
-
-        def get_lifetime() -> float:
-            ket = self.get_ket_atom(0, ask_download=True)
-            temperature = self.get_temperature()
-            return ket.get_lifetime(temperature, temperature_unit="K", unit="mus")
-
-        def update_result(lifetime: float) -> None:
-            self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} μs")
-            self.lifetime_label.setStyleSheet(label_theme)
-
-        def update_error(err: Exception) -> None:
-            self.lifetime_label.setText("Ket not found.")
-            self.lifetime_label.setStyleSheet(label_error_theme)
-            self.page.plotwidget.clear()
-
-        self.worker_label = MultiThreadWorker(get_lifetime)
-        self.worker_label.signals.result.connect(update_result)
-        self.worker_label.signals.error.connect(update_error)
-        self.worker_label.start()
-
-        if self.worker_plot and self.worker_plot.isRunning():
-            self.worker_plot.quit()
-            self.worker_plot.wait()
-
-        self.worker_plot = MultiThreadWorker(self.page.calculate)
-        self.worker_plot.signals.result.connect(self.page.update_plot)
-        self.worker_plot.start()
-
-    def on_qnitem_changed(self, atom: int) -> None:
-        super().on_qnitem_changed(atom)
-        if hasattr(self, "item_temperature"):  # not yet initialized the first time this method is called
-            self.update_lifetime_label()
+    def set_lifetime(self, lifetime: float) -> None:
+        self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} \u03bcs")  # \u03bc = micro
+        self.lifetime_label.setStyleSheet(label_theme)
 
 
 class KetConfigTwoAtoms(KetConfig):
