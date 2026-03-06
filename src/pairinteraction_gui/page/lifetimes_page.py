@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING
@@ -7,51 +8,60 @@ from typing import TYPE_CHECKING
 import mplcursors
 import numpy as np
 
+from pairinteraction_gui.calculate.calculate_lifetimes import ParametersLifetimes, calculate_lifetimes
 from pairinteraction_gui.config import KetConfigLifetimes
-from pairinteraction_gui.page.base_page import SimulationPage
+from pairinteraction_gui.page.base_page import CalculationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import show_status_tip
 
 if TYPE_CHECKING:
-    import pairinteraction as pi
+    from collections.abc import Callable
+
+    from pairinteraction_gui.calculate.calculate_lifetimes import KetData, ResultsLifetimes
 
 logger = logging.getLogger(__name__)
 
 
-class LifetimesPage(SimulationPage):
+class LifetimesPage(CalculationPage):
     """Page for calculating lifetimes."""
 
     title = "Lifetimes"
     tooltip = "Calculate the lifetimes and transition rates for a specified ket."
 
     ket_config: KetConfigLifetimes
+    plotwidget: PlotWidget  # type: ignore[assignment]
 
     def setupWidget(self) -> None:
-        self.plotwidget = PlotWidget(self)
-        self.layout().addWidget(self.plotwidget)
         super().setupWidget()
-
         show_status_tip(self, "Ready", timeout=1)
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
         self.ket_config = KetConfigLifetimes(self)
 
-    def calculate(self) -> None:
-        # since this calculation is rather fast, we can just call it directly and dont have to use a different process
-        ket = self.ket_config.get_ket_atom(0)
-        temperature = self.ket_config.get_temperature()
-        self.kets_sp, self.transition_rates_sp = ket.get_spontaneous_transition_rates(unit="1/ms")
-        self.kets_bbr, self.transition_rates_bbr = ket.get_black_body_transition_rates(temperature, "K", unit="1/ms")
+    def _create_plot_widget(self) -> PlotWidget:  # type: ignore[override]
+        return PlotWidget(self)
 
-    def update_plot(self) -> None:
+    def _get_export_actions(self) -> list[tuple[str, Callable[[], None]]]:
+        return [("Export as PNG", self.export_png)]
+
+    def calculate(self) -> tuple[ParametersLifetimes, ResultsLifetimes]:  # type: ignore[override]
+        params = ParametersLifetimes(
+            species=self.ket_config.get_species(),
+            quantum_numbers=self.ket_config.get_quantum_numbers(),
+            temperature=self.ket_config.get_temperature(),
+        )
+        results = calculate_lifetimes(params)
+        return params, results
+
+    def update_plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:  # type: ignore[override]
         ax = self.plotwidget.canvas.ax
         ax.clear()
 
-        n_list = np.arange(0, np.max([s.n for s in self.kets_bbr]) + 1)
-        sorted_rates: dict[str, dict[int, list[tuple[pi.KetAtom, float]]]] = {}
+        n_list = np.arange(0, np.max([s.n for s in results.kets_bbr + results.kets_sp] + [0]) + 1)
+        sorted_rates: dict[str, dict[int, list[tuple[KetData, float]]]] = {}
         for key, kets, rates in [
-            ("BBR", self.kets_bbr, self.transition_rates_bbr),
-            ("SP", self.kets_sp, self.transition_rates_sp),
+            ("BBR", results.kets_bbr, results.transition_rates_bbr),
+            ("SP", results.kets_sp, results.transition_rates_sp),
         ]:
             sorted_rates[key] = {n: [] for n in n_list}
             for i, s in enumerate(kets):
@@ -70,6 +80,7 @@ class LifetimesPage(SimulationPage):
         self.add_cursor()
 
         self.plotwidget.canvas.draw()
+        self.ket_config.set_lifetime(results.lifetime)
 
     def add_cursor(self) -> None:
         """Add interactive cursor to the plot."""

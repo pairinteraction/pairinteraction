@@ -25,6 +25,8 @@ from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_statu
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from PySide6.QtGui import QHideEvent, QShowEvent
 
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
@@ -90,7 +92,7 @@ class CalculationPage(SimulationPage):
         super().setupWidget()
 
         # Plot Panel
-        self.plotwidget = PlotEnergies(self)
+        self.plotwidget = self._create_plot_widget()
         self.layout().addWidget(self.plotwidget)
 
         # Control panel below the plot
@@ -118,9 +120,8 @@ class CalculationPage(SimulationPage):
         export_button.setObjectName("Export")
         export_button.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_DialogSaveButton))
         export_menu = QMenu(self)
-        export_menu.addAction("Export as PNG", self.export_png)
-        export_menu.addAction("Export as Python script", self.export_python)
-        export_menu.addAction("Export as Jupyter notebook", self.export_notebook)
+        for label, handler in self._get_export_actions():
+            export_menu.addAction(label, handler)
         export_button.setMenu(export_menu)
         export_button.setFixedHeight(50)
         bottom_layout.addWidget(export_button, stretch=1)
@@ -250,3 +251,13 @@ class CalculationPage(SimulationPage):
         MultiThreadWorker.terminate_all()
         self.after_calculate(False)
         show_status_tip(self, "Calculation aborted.", logger=logger)
+
+    def _create_plot_widget(self) -> PlotEnergies:
+        return PlotEnergies(self)
+
+    def _get_export_actions(self) -> list[tuple[str, Callable[[], None]]]:
+        return [
+            ("Export as PNG", self.export_png),
+            ("Export as Python script", self.export_python),
+            ("Export as Jupyter notebook", self.export_notebook),
+        ]
