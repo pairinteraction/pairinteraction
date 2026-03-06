@@ -29,6 +29,16 @@ if os.getenv("POLYVERSION_DATA"):
 else:
     html_context = {"current_version": f"dev (>= {pairinteraction.__version__})"}
 
+html_context.update(
+    {
+        "display_github": True,
+        "github_user": "pairinteraction",
+        "github_repo": "pairinteraction",
+        "github_version": "master",
+        "conf_py_path": "/docs/",
+    }
+)
+
 # -- General configuration ---------------------------------------------------
 extensions = [
     "sphinx.ext.autodoc",
