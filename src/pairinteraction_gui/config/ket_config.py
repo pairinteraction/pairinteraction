@@ -59,6 +59,12 @@ class KetConfig(BaseConfig):
         self.stacked_qn_list: list[NamedStackedWidget[QnBase]] = []
         self.ket_label_list: list[QLabel] = []
 
+    def postSetupWidget(self) -> None:
+        super().postSetupWidget()
+        for atom in range(self.n_atoms):
+            self.on_species_changed(atom, self.get_species(atom))
+            self.on_qnitem_changed(atom)
+
     @property
     def n_atoms(self) -> int:
         """Return the number of atoms configured."""
@@ -93,7 +99,6 @@ class KetConfig(BaseConfig):
         self.species_combo_list.append(species_combo)
         self.stacked_qn_list.append(stacked_qn)
         self.ket_label_list.append(ket_label)
-        self.on_qnitem_changed(atom)
 
     def get_species(self, atom: int = 0) -> str:
         """Return the selected species of the ... atom."""
@@ -167,14 +172,22 @@ class KetConfigLifetimes(KetConfig):
             unit="K",
             tooltip="Temperature in Kelvin (0K considers only spontaneous decay)",
         )
+        self.item_temperature.connectAll(self._reset_results)
         self.layout().addWidget(self.item_temperature)
         self.layout().addSpacing(15)
 
         # Add a label to display the lifetime
-        self.lifetime_label = QLabel("Lifetime: \u2014")  # \u2014 = em dash
-        self.lifetime_label.setStyleSheet(label_theme)
-        self.lifetime_label.setWordWrap(True)
+        self.lifetime_label = QLabel()
         self.layout().addWidget(self.lifetime_label)
+
+    def on_qnitem_changed(self, atom: int) -> None:
+        super().on_qnitem_changed(atom)
+        self._reset_results()
+
+    def _reset_results(self) -> None:
+        self.lifetime_label.setText("Lifetime: \u2014")  # \u2014 = em dash
+        self.lifetime_label.setStyleSheet(label_theme)
+        self.page.plotwidget.clear()
 
     def get_temperature(self) -> float:
         return self.item_temperature.value(default=0)
