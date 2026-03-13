@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QComboBox, QLabel
+from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel
 
 import pairinteraction as pi
 from pairinteraction_gui.app import Application
@@ -72,6 +72,7 @@ class KetConfig(BaseConfig):
         # Species selection
         species_widget = WidgetForm()
         species_combo = QComboBox()
+        species_combo.setObjectName(f"species_{atom}")
         species_combo.addItems(AVAILABLE_SPECIES)  # TODO get available species from pairinteraction
         species_combo.setToolTip("Select the atomic species")
         species_widget.layout().addRow("Species", species_combo)
@@ -121,7 +122,7 @@ class KetConfig(BaseConfig):
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
         if species not in self.stacked_qn_list[atom]._widgets:
-            qn_widget = QnBase.from_species(species, parent=self)
+            qn_widget = QnBase.from_species(atom, species, parent=self)
             self.stacked_qn_list[atom].addNamedWidget(qn_widget, species)
             for item in qn_widget.items.values():
                 item.connectAll(lambda atom=atom: self.on_qnitem_changed(atom))  # type: ignore [misc]
@@ -242,30 +243,36 @@ class QnBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
+    atom: int
     items: dict[str, _QnItem[Any]]
 
     def postSetupWidget(self) -> None:
         for item in self.items.values():
             self.layout().addWidget(item)
 
+        for item in self.items.values():
+            if isinstance(item.checkbox, QCheckBox):
+                item.checkbox.setObjectName(f"atom{self.atom}_{item.checkbox.objectName()}")
+            item.spinbox.setObjectName(f"atom{self.atom}_{item.spinbox.objectName()}")
+
     @classmethod
-    def from_species(cls, species: str, parent: QWidget | None = None) -> QnBase:
+    def from_species(cls, atom: int, species: str, parent: QWidget | None = None) -> QnBase:
         """Create a quantum number configuration from the species name."""
         species_type = get_species_type(species)
         if species_type == "sqdt_duplet":
-            return QnSQDT(parent, s_type="halfint", s=0.5)
+            return QnSQDT(atom, parent, s_type="halfint", s=0.5)
         if species_type == "sqdt_singlet":
-            return QnSQDT(parent, s_type="int", s=0)
+            return QnSQDT(atom, parent, s_type="int", s=0)
         if species_type == "sqdt_triplet":
-            return QnSQDT(parent, s_type="int", s=1)
+            return QnSQDT(atom, parent, s_type="int", s=1)
 
-        element = species.split("_")[0]
+        element = species.split("_", maxsplit=1)[0]
         if species_type == "mqdt_halfint":
             i = CORE_SPIN_DICT.get(element, 0.5)
-            return QnMQDT(parent, f_type="halfint", i=i)
+            return QnMQDT(atom, parent, f_type="halfint", i=i)
         if species_type == "mqdt_int":
             i = CORE_SPIN_DICT.get(element, 0)
-            return QnMQDT(parent, f_type="int", i=i)
+            return QnMQDT(atom, parent, f_type="int", i=i)
 
         raise ValueError(f"Unknown species type: {species_type}")
 
@@ -275,12 +282,14 @@ class QnSQDT(QnBase):
 
     def __init__(
         self,
+        atom: int,
         parent: QWidget | None = None,
         *,
         s_type: Literal["int", "halfint"],
         s: float,
     ) -> None:
         assert s_type in ("int", "halfint"), "s_type must be int or halfint"
+        self.atom = atom
         self.s_type = s_type
         self.s = s
         self.items = {}
@@ -307,12 +316,14 @@ class QnMQDT(QnBase):
 
     def __init__(
         self,
+        atom: int,
         parent: QWidget | None = None,
         *,
         f_type: Literal["int", "halfint"],
         i: float,
     ) -> None:
         assert f_type in ("int", "halfint"), "f_type must be int or halfint"
+        self.atom = atom
         self.f_type = f_type
         self.i = i
         self.items = {}
