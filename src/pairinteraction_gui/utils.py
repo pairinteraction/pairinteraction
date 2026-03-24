@@ -65,3 +65,11 @@ def get_species_type(species: str) -> SpeciesTypes:
     if "triplet" in species:
         return "sqdt_triplet"
     return "sqdt_duplet"
+
+
+def sanitize_name(label: str) -> str:
+    """Convert a display label to an ASCII-safe object name."""
+    label = label.lower()
+    label = label.replace(" ", "_")
+    label = label.replace("Δ", "d").replace("δ", "d")
+    return re.sub(r"[^a-z0-9_]+", "?", label)

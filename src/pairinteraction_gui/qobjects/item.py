@@ -6,19 +6,14 @@ import typing as t
 from typing import TYPE_CHECKING, Callable, Generic, TypeVar
 
 import numpy as np
-from PySide6.QtWidgets import (
-    QCheckBox,
-    QLabel,
-    QSpacerItem,
-)
+from PySide6.QtWidgets import QCheckBox, QLabel, QSpacerItem
 
 from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox, HalfIntSpinBox, IntSpinBox
 from pairinteraction_gui.qobjects.widget import WidgetH
+from pairinteraction_gui.utils import sanitize_name
 
 if TYPE_CHECKING:
-    from PySide6.QtWidgets import (
-        QWidget,
-    )
+    from PySide6.QtWidgets import QWidget
 
     P = TypeVar("P")
 
@@ -49,6 +44,7 @@ class Item(WidgetH):
         checked: bool = True,
     ) -> None:
         self.checkbox = QCheckBox()
+        self.checkbox.setObjectName(f"{sanitize_name(label)}_checkbox")
         self.checkbox.setChecked(checked)
 
         self.label = label
@@ -102,6 +98,7 @@ class _QnItem(WidgetH, Generic[ValueType]):
         self.checkbox: QCheckBox | QSpacerItem
         if checkable:
             self.checkbox = QCheckBox()
+            self.checkbox.setObjectName(f"{sanitize_name(label)}_checkbox")
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
@@ -111,7 +108,7 @@ class _QnItem(WidgetH, Generic[ValueType]):
         self.label.setMinimumWidth(25)
 
         self.spinbox = self._spinbox_class(parent, vmin, vmax, vdefault, vstep, tooltip=tooltip)  # type: ignore [arg-type]
-        self.spinbox.setObjectName(f"{label.lower()}")
+        self.spinbox.setObjectName(sanitize_name(label))
         self.spinbox.setMinimumWidth(100)
 
         self.unit = QLabel(unit)
@@ -207,6 +204,7 @@ class RangeItem(WidgetH):
         self.checkbox: QCheckBox | QSpacerItem
         if checkable:
             self.checkbox = QCheckBox()
+            self.checkbox.setObjectName(f"{sanitize_name(label)}_checkbox")
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
@@ -217,8 +215,8 @@ class RangeItem(WidgetH):
 
         self.min_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[0], tooltip=f"Minimum {tooltip_label} in {unit}")
         self.max_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[1], tooltip=f"Maximum {tooltip_label} in {unit}")
-        self.min_spinbox.setObjectName(f"{label.lower()}_min")
-        self.max_spinbox.setObjectName(f"{label.lower()}_max")
+        self.min_spinbox.setObjectName(f"{sanitize_name(label)}_min")
+        self.max_spinbox.setObjectName(f"{sanitize_name(label)}_max")
 
         self.unit = QLabel(unit)
 

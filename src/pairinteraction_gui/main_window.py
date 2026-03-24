@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
@@ -27,6 +27,7 @@ from pairinteraction_gui.page import (
 )
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.qobjects import NamedStackedWidget
+from pairinteraction_gui.settings import collect_widget_state, load_settings, restore_widget_state, save_settings
 from pairinteraction_gui.theme import main_theme
 from pairinteraction_gui.utils import download_databases_mp
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
@@ -57,6 +58,7 @@ class MainWindow(QMainWindow):
         self.dockwidget = self.setup_dockwidget()
 
         self.stacked_pages = self.setup_stacked_pages()
+        self._restore_settings()
         self.toolbar = self.setup_toolbar()
 
         self.init_keyboard_shortcuts()
@@ -163,9 +165,32 @@ class MainWindow(QMainWindow):
         close_shortcut.activated.connect(lambda: logger.info("Ctrl+W detected. Shutting down gracefully..."))
         close_shortcut.activated.connect(self.close)
 
+    def _save_settings(self) -> None:
+        """Save all interactive widget state to disk."""
+        data: dict[str, Any] = {}
+        for page_name, page in self.stacked_pages.items():
+            if not isinstance(page, SimulationPage):
+                continue
+            page_data: dict[str, Any] = {}
+            for attr_name, attr in vars(page).items():
+                page_data[attr_name] = collect_widget_state(attr)
+            data[page_name] = {k: v for k, v in page_data.items() if len(v) > 0}
+        save_settings(data)
+
+    def _restore_settings(self) -> None:
+        """Restore all interactive widget state from disk."""
+        data = load_settings()
+        for page_name, page in self.stacked_pages.items():
+            page_data = data.get(page_name, None)
+            if page_data is None or not isinstance(page, SimulationPage):
+                continue
+            for attr_name, attr in vars(page).items():
+                restore_widget_state(attr, page_data.get(attr_name, {}))
+
     def closeEvent(self, event: QCloseEvent) -> None:
         """Make sure to also call Application.quit() when closing the window."""
         logger.debug("Close event triggered.")
+        self._save_settings()
         Application.quit()
         event.accept()
 
