@@ -436,7 +436,7 @@ std::string ParquetManager::get_path(const std::string &key, const std::string &
             throw std::runtime_error(
                 "No tables found for species '" + key +
                 "'. Check whether you have allowed downloading missing tables, or download the "
-                "tables manually via `pairinteraction download " +
+                "tables manually via `pairinteraction database download " +
                 key + "`.");
         }
         throw std::runtime_error("No tables found for species '" + key +

@@ -205,7 +205,7 @@ from pairinteraction._backend import (
 )
 from pairinteraction.basis import BasisAtom, BasisPair
 from pairinteraction.custom_logging import configure_logging
-from pairinteraction.database import Database
+from pairinteraction.database import Database, print_database_info
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import KetAtom, KetPair
 from pairinteraction.perturbative import C3, C6, EffectiveSystemPair
@@ -230,6 +230,7 @@ __all__ = [
     "diagonalize",
     "green_tensor",
     "perturbative",
+    "print_database_info",
     "real",
     "run_unit_tests",
     "ureg",

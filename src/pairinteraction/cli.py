@@ -20,10 +20,11 @@ def main() -> int:
             "Examples:\n"
             "  pairinteraction --log-level INFO gui\n"
             "  pairinteraction --log-level INFO test\n"
-            "  pairinteraction download Rb Cs\n"
-            "  pairinteraction download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
-            "  pairinteraction paths\n"
-            "  pairinteraction purge"
+            "  pairinteraction database list\n"
+            "  pairinteraction database download Rb Cs\n"
+            "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
+            "  pairinteraction database remove\n"
+            "  pairinteraction paths"
         ),
     )
     parser.add_argument("--version", action="version", version=f"PairInteraction v{__version__}")
@@ -43,18 +44,30 @@ def main() -> int:
     test_parser = subparsers.add_parser("test", help="run module tests")
     test_parser.set_defaults(func=lambda _args: run_unit_tests())
 
-    # Download command
-    download_parser = subparsers.add_parser("download", help="download database tables for one or more species")
-    download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of urls")
-    download_parser.set_defaults(func=lambda args: download_databases(args.species))
-
     # Paths command
     paths_parser = subparsers.add_parser("paths", help="show config and cache directories")
     paths_parser.set_defaults(func=lambda _args: show_paths())
 
-    # Purge command
-    purge_parser = subparsers.add_parser("purge", help="delete all cached data")
-    purge_parser.set_defaults(func=lambda _args: purge_cache())
+    # Database command group
+    database_parser = subparsers.add_parser("database", help="manage and inspect the database")
+    database_subparsers = database_parser.add_subparsers(dest="database_command")
+
+    # database list command
+    db_list_parser = database_subparsers.add_parser("list", help="list local and remote database table versions")
+    db_list_parser.set_defaults(func=lambda _args: list_databases())
+
+    # database download command
+    db_download_parser = database_subparsers.add_parser(
+        "download", help="download database tables for one or more species"
+    )
+    db_download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of urls")
+    db_download_parser.set_defaults(func=lambda args: download_databases(args.species))
+
+    # database remove command
+    db_remove_parser = database_subparsers.add_parser("remove", help="delete the cached database directory")
+    db_remove_parser.set_defaults(func=lambda _args: remove_database_cache())
+
+    database_parser.set_defaults(func=lambda _args: database_parser.print_help())
 
     args = parser.parse_args()
 
@@ -187,6 +200,14 @@ def download_databases(species_list: list[str]) -> int:
     return exit_code
 
 
+def list_databases() -> int:
+    """Print a table of local and remote database table versions."""
+    from pairinteraction.database import print_database_info
+
+    print_database_info()
+    return 0
+
+
 def show_paths() -> int:
     """Show config and cache directories."""
     from pairinteraction._backend import get_cache_directory, get_config_directory
@@ -197,26 +218,26 @@ def show_paths() -> int:
     return 0
 
 
-def purge_cache() -> int:
-    """Delete all cached data."""
+def remove_database_cache() -> int:
+    """Delete the cached database directory."""
     import shutil
 
     from pairinteraction._backend import get_cache_directory
 
-    cache_dir = get_cache_directory()
+    database_dir = get_cache_directory() / "database"
 
-    confirmation = input("Are you sure you want to delete all cached data? (y/N): ")
+    confirmation = input(f"Are you sure you want to delete all downloaded database tables in {database_dir}? (y/N): ")
     if confirmation.lower() not in ["y", "yes"]:
-        print(Fore.YELLOW + "Aborted deletion of cache." + Style.RESET_ALL)
+        print(Fore.YELLOW + "Aborted deletion of database directory." + Style.RESET_ALL)
         return 0
 
-    print("Deleting cached data...")
+    print(f"Deleting cached database directory {database_dir}...")
     try:
-        shutil.rmtree(cache_dir)
+        shutil.rmtree(database_dir)
     except Exception as e:
-        print(Fore.RED + f"Error while deleting cache: {e}" + Style.RESET_ALL)
+        print(Fore.RED + f"Error while deleting database directory: {e}" + Style.RESET_ALL)
         return 1
-    print(Fore.GREEN + "Cache deleted." + Style.RESET_ALL)
+    print(Fore.GREEN + "Database directory deleted." + Style.RESET_ALL)
     return 0
 
 
