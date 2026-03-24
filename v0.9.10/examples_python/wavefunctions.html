@@ -1,0 +1,399 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.2.3. Radial Wavefunctions and Quantum Defects &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2.2.4. Blockade Interaction in a Magnetic Field" href="comparison_to_saffman_fig13.html" />
+    <link rel="prev" title="2.2.2. Calculation of Matrix Elements" href="matrix_elements.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">2. Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#graphical-user-interface">2.1. Graphical User Interface</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#python-api">2.2. Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="introduction.html">2.2.1. Introduction to the pairinteraction Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="matrix_elements.html">2.2.2. Calculation of Matrix Elements</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.3. Radial Wavefunctions and Quantum Defects</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Coulomb-wavefunctions">2.2.3.1. Coulomb wavefunctions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Numerov's-method-and-model-potentials">2.2.3.2. Numerov’s method and model potentials</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Quantum-defects-and-model-potential-in-pairinteraction">2.2.3.3. Quantum defects and model potential in pairinteraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Radial-wavefunction-in-pairinteraction">2.2.3.4. Radial wavefunction in pairinteraction</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="comparison_to_saffman_fig13.html">2.2.4. Blockade Interaction in a Magnetic Field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">2.2.5. Rydberg Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vdw_near_surface.html">2.2.6. Dispersion Coefficients Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_near_surface.html">2.2.7. Rydberg Pair Potentials Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">2.2.8. Rydberg Atom Ion Interaction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html"><span class="section-number">2. </span>Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.2.3. </span>Radial Wavefunctions and Quantum Defects</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples_python/wavefunctions.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="wavefunctions.ipynb">wavefunctions.ipynb</a>.
+</div><section id="Radial-Wavefunctions-and-Quantum-Defects">
+<h1><span class="section-number">2.2.3. </span>Radial Wavefunctions and Quantum Defects<a class="headerlink" href="#Radial-Wavefunctions-and-Quantum-Defects" title="Link to this heading"></a></h1>
+<p>In this tutorial we show how to access quantum defects and wavefunctions, which are used for the computation of matrix elements, using the Python API. Some aspects of this are discussed in Appendix A of the pairinteraction paper <a class="reference external" href="https://doi.org/10.1088/1361-6455/aa743a">J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)</a>.</p>
+<p>This feature is mostly used internally and therefore the interfaces are not so user-friendly.</p>
+<p>Ahead of our Python code, we call an IPython magic function to make the output of plotting commands displayed inline within the notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%matplotlib inline
+</pre></div>
+</div>
+</div>
+<p>Our code starts with loading the required modules for the computation. It is irrelevant whether we use the <code class="docutils literal notranslate"><span class="pre">pireal</span></code> or <code class="docutils literal notranslate"><span class="pre">picomplex</span></code> modules here, because we do not calculate any matrix elements.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Arrays
+import numpy as np
+
+# Plotting
+import matplotlib.pyplot as plt
+
+# pairinteraction :-)
+from pairinteraction import pireal as pi
+</pre></div>
+</div>
+</div>
+<p>Keep in mind that pairinteraction is a <strong>Rydberg</strong> interaction calculator. All techniques presented below work well for the high-<span class="math notranslate nohighlight">\(n\)</span> states of Rydberg atoms, but fail miserably for low-lying states.</p>
+<p>While the pairinteraction software normally uses the unit system described in the <a class="reference internal" href="introduction.html#Units"><span class="std std-ref">introduction</span></a>, for the wavefunction it has proven advantageous to perform the calculation in atomic units, i.e. all units below are atomic units (in contrast to the presentation in Appendix A of the <a class="reference external" href="https://doi.org/10.1088/1361-6455/aa743a">pairinteraction paper</a>, where we use SI units throughout).</p>
+<section id="Coulomb-wavefunctions">
+<h2><span class="section-number">2.2.3.1. </span>Coulomb wavefunctions<a class="headerlink" href="#Coulomb-wavefunctions" title="Link to this heading"></a></h2>
+<p>Using non-relativistic quantum defect theory it is possible to find radial wavefunctions. Therefore the Schrödinger equation is solved for a <em>given</em> energy eigenvalue, which results in modified radial wavefunctions with an effective (non-integer) quantum number <span class="math notranslate nohighlight">\(n^*\)</span>. The derivation is discussed in more detail in M. J. Seaton, <a class="reference external" href="http://dx.doi.org/10.1088/0034-4885/46/2/002">Reports on Progress in Physics 46, 167 (1983)</a> (around equation 2.77).</p>
+<div class="math notranslate nohighlight">
+\[r\;\Psi^{\text{rad}}_{n^*l}(r) = \frac{1}{\sqrt{n^{*2} \Gamma(n^*+l+1) \Gamma(n^*-l)}}
+W_{n^*,l+1/2}\left( \frac{2 r}{n^*} \right).\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Gamma(z)\)</span> is the Gamma function and <span class="math notranslate nohighlight">\(W_{k,m}(z)\)</span> is the so-called Whittaker function. These wavefunctions are highly accurate for large distances and have the correct binding energy. You can access these wavefunctions in pairinteraction using the <code class="docutils literal notranslate"><span class="pre">Whittaker</span></code> class.</p>
+</section>
+<section id="Numerov's-method-and-model-potentials">
+<h2><span class="section-number">2.2.3.2. </span>Numerov’s method and model potentials<a class="headerlink" href="#Numerov's-method-and-model-potentials" title="Link to this heading"></a></h2>
+<section id="Model-potentials">
+<h3><span class="section-number">2.2.3.2.1. </span>Model potentials<a class="headerlink" href="#Model-potentials" title="Link to this heading"></a></h3>
+<p>Another method to determine the radial wavefunctions is by solving the Schrödinger equation numerically using an <em>effective</em> Coulomb potential. The so-called model potential is usually decomposed into three contributions</p>
+<div class="math notranslate nohighlight">
+\[V_{\text{mod}}(r) = V_{\text{C}}(r) + V_{\text{P}}(r) + V_{\text{s.o.}}(r).\]</div>
+<p>The first term is the charge contribution resulting from the charged core which is screened by the filled electron shells</p>
+<div class="math notranslate nohighlight">
+\[% (18a) in Dalgarno1994
+V_{\mathrm{C}}(r) = - \frac{1 + (Z-1)\mathrm{e}^{-\alpha_1 r} - r(\alpha_3+\alpha_4 r)\mathrm{e}^{-\alpha_2 r}}{r},\]</div>
+<p>with coefficients <span class="math notranslate nohighlight">\(\alpha_{1,2,3,4}\)</span> depending on the atomic species and the orbital angular momentum <span class="math notranslate nohighlight">\(l\)</span>. These coefficients are provided with pairinteraction in an embedded database. It is possible to substitute these coefficients with your own at runtime.</p>
+<p>For the core polarization, only the leading dipole term is considered, which results in:</p>
+<div class="math notranslate nohighlight">
+\[V_{\mathrm{P}}(r) = -\frac{\alpha_d}{2 r^4} \left[ 1 - \mathrm{e}^{-(r/r_c)^6} \right].\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\alpha_d\)</span> is again the core dipole polarizability and <span class="math notranslate nohighlight">\(r_c\)</span> is the effective core size, obtained by comparing the numerical solutions with the experimentally observed energy levels.</p>
+<p>In addition to these two terms, we add an effective expression for the spin-orbit interaction</p>
+<div class="math notranslate nohighlight">
+\[V_{\mathrm{s.o.}}(r &gt; r_c) = \frac{2 \alpha}{r^3} \mathbf{l}\cdot\mathbf{s} = \frac{\alpha}{r^3} [j(j+1) - l(l+1) - s(s+1)].\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha\approx1/137\)</span> is the fine-structure constant.</p>
+</section>
+<section id="Numerov's-method">
+<h3><span class="section-number">2.2.3.2.2. </span>Numerov’s method<a class="headerlink" href="#Numerov's-method" title="Link to this heading"></a></h3>
+<p>Numerov’s method can be used to solve differential equations of the form</p>
+<div class="math notranslate nohighlight">
+\[\frac{d^2 y}{d x^2} - g(x) y(x) = 0.\]</div>
+<p>The iterative solution can be achieved as follows:</p>
+<div class="math notranslate nohighlight">
+\[y_{n+1} \left( 1 - \frac{h^2}{12} g_{n+1} \right)
+= \left( 2 + \frac{5 h^2}{6} g_{n} \right) y_{n}
+- \left( 1 - \frac{h^2}{12} g_{n-1} \right) y_{n-1}
++ \mathcal{O}(h^6).\]</div>
+<p>where <span class="math notranslate nohighlight">\(y_{n}=y(x_{n})\)</span>, <span class="math notranslate nohighlight">\(g_{n}=g(x_{n})\)</span>, <span class="math notranslate nohighlight">\(s_{n}=s(x_{n})\)</span>, and <span class="math notranslate nohighlight">\(h=x_{n+1}-x_{n}\)</span>.</p>
+<p>To save space it is useful to reduce the sampling towards large distances from the core as the periods of osciallations become longer and longer. To this end we introduce the square root scaling:</p>
+<div class="math notranslate nohighlight">
+\[x = \sqrt{r} \;,\quad X^{\text{rad}}_{nlj}(x) = x^{3/2} \Psi^{\text{rad}}_{nlj}(r).\]</div>
+<p>This scaling keeps the number of grid points between nodes of the wave function constant. In this scaling the <span class="math notranslate nohighlight">\(g(r)\)</span> in Numerov’s method is given by</p>
+<div class="math notranslate nohighlight">
+\[g(r) = \frac{(2 l + 1/2)(2 l + 3/2)}{r} + 8 r (V_{\text{mod}}(r) - E).\]</div>
+<p>We integrate the equation from outside to inside. Since the wavefunction has to decay to zero at infinity we choose <span class="math notranslate nohighlight">\(y_0 = 0\)</span>. Now depending on the number of nodes of wavefunction we decide whether to set <span class="math notranslate nohighlight">\(y_1 = \pm\epsilon\)</span>, where <span class="math notranslate nohighlight">\(\epsilon\)</span> is a small number. As the inner cutoff we choose an augmented version of the classical turning point</p>
+<div class="math notranslate nohighlight">
+\[r_{\text{min}} = n^2 - n \sqrt{n^2 - (l-1)^2}.\]</div>
+<p>Other schemes for terminating the integration exist which are based on identifying nodes but for large <span class="math notranslate nohighlight">\(n\)</span> the augmented classical turning point works well and is easy to implement.</p>
+</section>
+</section>
+<section id="Quantum-defects-and-model-potential-in-pairinteraction">
+<h2><span class="section-number">2.2.3.3. </span>Quantum defects and model potential in pairinteraction<a class="headerlink" href="#Quantum-defects-and-model-potential-in-pairinteraction" title="Link to this heading"></a></h2>
+<p>The model potentials and quantum defects are stored in a database which is shipped together with pairinteraction. For performance reasons it is baked into the binary so that it is available in memory at all times. The internal database can also be swapped out with a user-provided one at runtime.</p>
+<p>To obtain the parameters from the database we use the <code class="docutils literal notranslate"><span class="pre">QuantumDefect</span></code> class.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>qd = pi.QuantumDefect(&quot;Rb&quot;, 50, 0, 0.5)
+</pre></div>
+</div>
+</div>
+<p>The parameters of the model potentials can be accessed like member variables of the <code class="docutils literal notranslate"><span class="pre">qd</span></code> object. They have mnemonic names to mirror their meaning in the model potentials presented above.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;Core polarizability: ac =&quot;, qd.ac)
+print(&quot;Effective coulomb potential&quot;)
+print(&quot;    Z =&quot;, qd.Z, &quot;(core charge)&quot;)
+print(&quot;    a1 =&quot;, qd.a1)
+print(&quot;    a2 =&quot;, qd.a2)
+print(&quot;    a3 =&quot;, qd.a3)
+print(&quot;    a4 =&quot;, qd.a4)
+print(&quot;Effective core radius: rc =&quot;, qd.rc)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Core polarizability: ac = 9.076
+Effective coulomb potential
+    Z = 37 (core charge)
+    a1 = 3.69628474
+    a2 = 1.64915255
+    a3 = -9.86069196
+    a4 = 0.19579987
+Effective core radius: rc = 1.66242117
+</pre></div></div>
+</div>
+<p>The effective principal quantum number in quantum defect theory is defined as series expansion</p>
+<div class="math notranslate nohighlight">
+\[n^* = n - \delta_{nlj}
+\quad\text{with}\quad
+\delta_{nlj} = \delta_0
++ \frac{\delta_2}{(n-\delta_0)^2}
++ \frac{\delta_4}{(n-\delta_0)^4}
++ \frac{\delta_6}{(n-\delta_0)^6} .\]</div>
+<p>Similarly the effective energy eigenvalues are given as</p>
+<div class="math notranslate nohighlight">
+\[E_{nlj} = - \frac{1}{2 R_\infty} \frac{R^*}{n^{*2}} .\]</div>
+<p>The parameters <span class="math notranslate nohighlight">\(\delta_{0,2,4,6,\dots}\)</span> and <span class="math notranslate nohighlight">\(R^*\)</span> are also loaded from the database, but since they are only important for the calculation of <span class="math notranslate nohighlight">\(n^*\)</span> and <span class="math notranslate nohighlight">\(E_{nlj}\)</span> there is no interface to query their values. The quantities <span class="math notranslate nohighlight">\(n^*\)</span> and <span class="math notranslate nohighlight">\(E_{nlj}\)</span>, however, can be queried.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>print(&quot;Effective quantum number: n* =&quot;, qd.nstar)
+print(&quot;State energy: E(n*) =&quot;, qd.energy)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Effective quantum number: n* = 46.868737950193115
+State energy: E(n*) = -1497.6342916553963
+</pre></div></div>
+</div>
+<p>Even though these parameters can be accessed like member variables, they are read-only values and attempting to change them will result in an error.</p>
+</section>
+<section id="Radial-wavefunction-in-pairinteraction">
+<h2><span class="section-number">2.2.3.4. </span>Radial wavefunction in pairinteraction<a class="headerlink" href="#Radial-wavefunction-in-pairinteraction" title="Link to this heading"></a></h2>
+<p>Two types of radial wavefunctions are available in pairinteraction:</p>
+<ol class="arabic simple">
+<li><p>The numerical wavefunctions computed using Numerov’s method and the model potentials.</p></li>
+<li><p>The analytical Coulomb wavefunctions based on the Whittaker functions.</p></li>
+</ol>
+<p>Those two schemes can accessed by classes with the names of their underlying method, <code class="docutils literal notranslate"><span class="pre">Numerov</span></code> and <code class="docutils literal notranslate"><span class="pre">Whittaker</span></code>. Merely instatiating an object of either class only allocates memory but does not perform any computations. To actually run the integration, you have to call the <code class="docutils literal notranslate"><span class="pre">integrate()</span></code> member function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>n = pi.Numerov(qd).integrate()
+w = pi.Whittaker(qd).integrate()
+</pre></div>
+</div>
+</div>
+<p>The wavefunctions which we obtain from these methods are unscaled, i.e. they have their original scaling as defined by the calculation. The <span class="math notranslate nohighlight">\(x\)</span>-axes are square root scaled. The result returned by the Coulomb wavefunction method is <span class="math notranslate nohighlight">\(r \;\Psi^{\text{rad}}(r)\)</span>. The result calculated by Numerov’s method is <span class="math notranslate nohighlight">\(X(x)\)</span>, as defined above, and must be multiplied by <span class="math notranslate nohighlight">\(\sqrt{x}\)</span> to get <span class="math notranslate nohighlight">\(r \;\Psi^{\text{rad}}(r)\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>plt.xlabel(&quot;$r$ ($a_0$)&quot;)
+plt.ylabel(r&quot;$r^2|\Psi(r)|^2$ [a.u.]&quot;)
+plt.plot(n[:, 0] ** 2, np.abs(np.sqrt(n[:, 0]) * n[:, 1]) ** 2, &quot;-&quot;, label=&quot;numeric WF&quot;)
+plt.plot(w[:, 0] ** 2, np.abs(w[:, 1]) ** 2, &quot;--&quot;, label=&quot;Coulomb WF&quot;)
+plt.legend()
+plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_wavefunctions_15_0.png" src="../_images/examples_python_wavefunctions_15_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="matrix_elements.html" class="btn btn-neutral float-left" title="2.2.2. Calculation of Matrix Elements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="comparison_to_saffman_fig13.html" class="btn btn-neutral float-right" title="2.2.4. Blockade Interaction in a Magnetic Field" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

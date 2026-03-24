@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2.2.8. Rydberg Atom Ion Interaction &mdash; pairinteraction 0.9.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=2ccb3ee0"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. Development" href="../development.html" />
+    <link rel="prev" title="2.2.7. Rydberg Pair Potentials Near Surfaces" href="pair_potential_near_surface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <p class="caption" role="heading"><span class="caption-text">Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">1. Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">2. Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#graphical-user-interface">2.1. Graphical User Interface</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#python-api">2.2. Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="introduction.html">2.2.1. Introduction to the pairinteraction Library</a></li>
+<li class="toctree-l3"><a class="reference internal" href="matrix_elements.html">2.2.2. Calculation of Matrix Elements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="wavefunctions.html">2.2.3. Radial Wavefunctions and Quantum Defects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="comparison_to_saffman_fig13.html">2.2.4. Blockade Interaction in a Magnetic Field</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">2.2.5. Rydberg Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vdw_near_surface.html">2.2.6. Dispersion Coefficients Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_near_surface.html">2.2.7. Rydberg Pair Potentials Near Surfaces</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">2.2.8. Rydberg Atom Ion Interaction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Import-the-Library">2.2.8.1. Import the Library</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Application:-Potential-Curves">2.2.8.2. Application: Potential Curves</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">3. Development</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html"><span class="section-number">2. </span>Tutorials</a></li>
+      <li class="breadcrumb-item active"><span class="section-number">2.2.8. </span>Rydberg Atom Ion Interaction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples_python/atom_ion_interaction.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="atom_ion_interaction.ipynb">atom_ion_interaction.ipynb</a>.
+</div><section id="Rydberg-Atom-Ion-Interaction">
+<h1><span class="section-number">2.2.8. </span>Rydberg Atom Ion Interaction<a class="headerlink" href="#Rydberg-Atom-Ion-Interaction" title="Link to this heading"></a></h1>
+<p>Here we look at the interacton between a single ion and a Rydberg atom. More details regarding the theory can be found in <a class="reference external" href="https://doi.org/10.1103/PhysRevResearch.3.023114">A. Duspayev et al., Phys. Rev. Research 3, 023114 (2021)</a> or <a class="reference external" href="https://doi.org/10.3390/atoms9020034">M. Deiß et al., Atoms 9, 2 (2021)</a>. The inernuclear axis is aligned with the z-direction and the interaction is expanded in multipolar terms. With this choice of coordinate system, the interaction potential is
+rotationally symmetric around the quantization axis and only states of same <span class="math notranslate nohighlight">\(m_J\)</span> couple with each other, reducing the number of basis states.</p>
+<p>We will reproduce here Fig. 2 (a) and (b) from Phys. Rev. Research 3, 023114 (2021), showing the influence of higher multipole order terms</p>
+<section id="Import-the-Library">
+<h2><span class="section-number">2.2.8.1. </span>Import the Library<a class="headerlink" href="#Import-the-Library" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># We call an IPython magic function to make the output of plotting commands displayed inline.
+%matplotlib inline
+
+# Arrays
+import numpy as np
+
+# Plotting
+import matplotlib.pyplot as plt
+
+# Operating system interfaces
+import os
+
+# pairinteraction :-)
+from pairinteraction import pireal as pi
+
+# Create cache for matrix elements
+if not os.path.exists(&quot;./cache&quot;):
+    os.makedirs(&quot;./cache&quot;)
+cache = pi.MatrixElementCache(&quot;./cache&quot;)
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Application:-Potential-Curves">
+<h2><span class="section-number">2.2.8.2. </span>Application: Potential Curves<a class="headerlink" href="#Application:-Potential-Curves" title="Link to this heading"></a></h2>
+<p>The SystemOne class defines the Rydberg atom and the effect of the electric field of the ion can be included into the calculations. The charge of the ion in units of the elementary charge can be passed by SystemOne.setIonCharge(charge) and the distance between the ion and the Rydberg core with SystemOne.setRydIonDistance(distance) in units of micrometer. The orientatin is fixed such that the internuclear axis points along the z-axis.</p>
+<p>As an example we show how to calculate the energy of the Rydberg state for different internuclear distances and including a different number of multipole orders. Choosing a maximum multipole order of one is equivalent to calculating a StarkMap in a homogenious electric field.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Define the Rydberg state for which the interaction with the ion should be calculated
+state = pi.StateOne(&quot;Rb&quot;, 45, 1, 1.5, 0.5)
+
+# Setup system, considering states only with similar energy and principle quantum number.
+# (if a high accuracy is required, the energy and principle quantum number ranges must be increased)
+LowN = 42
+HighN = 48
+LowEnergy = -100
+HighEnergy = 100
+system = pi.SystemOne(state.getSpecies(), cache)
+system.restrictEnergy(state.getEnergy() + LowEnergy, state.getEnergy() + HighEnergy)
+system.restrictN(LowN, HighN)
+
+# Since the ion and Rydberg atom are placed on the z-axis, the magnetic momentum is conserved
+system.restrictM(0.5, 0.5)
+
+# Define the charge of the ion in units of the elementary charge
+system.setIonCharge(1)
+
+# Define the maximum considered order of the multipole expansion.
+# 1: monopole-dipole, 2: monopole-quadrupole, ...
+system.setRydIonOrder(1)
+
+# Loop over different distances to the ion
+array_distances = np.linspace(1.5, 1.1, 100)  # um
+array_eigenvalues = []
+array_overlaps = []
+
+for distance in array_distances:
+    # Set the ion Rydberg-atom distance in units of um
+    system.setRydIonDistance(distance)
+    # Diagonalize the system
+    system.diagonalize()
+    # Store the eigenenergies
+    array_eigenvalues.append(system.getHamiltonian().diagonal())
+    # Store the overlap of the eigenstates with the defined state
+    array_overlaps.append(system.getOverlap(state))
+
+array_eigenvalues = np.ravel(array_eigenvalues)
+array_overlaps = np.ravel(array_overlaps)
+array_distances = np.repeat(array_distances, system.getNumBasisvectors())
+array_eigenvalues = (
+    array_eigenvalues / 29.9792458
+)  # Convert GHz into inverse cm wavenumber
+
+# Plot the interaction potential, the color code visualizes overlap of eigenstates with defined state
+plt.scatter(array_distances, array_eigenvalues, 8, array_overlaps)
+plt.xlabel(&quot;Distance (um)&quot;)
+plt.ylabel(&quot;Energy (1/cm)&quot;)
+plt.colorbar(label=f&quot;Overlap with {state}&quot;)
+plt.title(&quot;Up to 1st order in the multipole expansion&quot;)
+plt.grid()
+plt.ylim(-61.5, -61.2)
+plt.show()
+
+# Calculate the same but including orders up to 6
+system.setRydIonOrder(6)
+
+# Loop over different distances to the ion
+array_distances = np.linspace(1.5, 1.1, 100)  # um
+array_eigenvalues = []
+array_overlaps = []
+
+for distance in array_distances:
+    # Set the ion Rydberg-atom distance in units of um
+    system.setRydIonDistance(distance)
+    # Diagonalize the system
+    system.diagonalize()
+    # Store the eigenenergies
+    array_eigenvalues.append(system.getHamiltonian().diagonal())
+    # Store the overlap of the eigenstates with the defined state
+    array_overlaps.append(system.getOverlap(state))
+
+array_eigenvalues = np.ravel(array_eigenvalues)
+array_overlaps = np.ravel(array_overlaps)
+array_distances = np.repeat(array_distances, system.getNumBasisvectors())
+array_eigenvalues = (
+    array_eigenvalues / 29.9792458
+)  # Convert GHz into inverse cm wavenumber
+
+# Plot the interaction potential, the color code visualizes overlap of eigenstates with defined state
+plt.scatter(array_distances, array_eigenvalues, 8, array_overlaps)
+plt.xlabel(&quot;Distance (um)&quot;)
+plt.ylabel(&quot;Energy (1/cm)&quot;)
+plt.colorbar(label=f&quot;Overlap with {state}&quot;)
+plt.title(&quot;Up to 6th order in the multipole expansion&quot;)
+plt.grid()
+plt.ylim(-61.5, -61.2);
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_atom_ion_interaction_6_0.png" src="../_images/examples_python_atom_ion_interaction_6_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_atom_ion_interaction_6_1.png" src="../_images/examples_python_atom_ion_interaction_6_1.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pair_potential_near_surface.html" class="btn btn-neutral float-left" title="2.2.7. Rydberg Pair Potentials Near Surfaces" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../development.html" class="btn btn-neutral float-right" title="3. Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Sebastian Weber, Henri Menke.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v0.9.10 (legacy)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
