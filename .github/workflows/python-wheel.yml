@@ -41,7 +41,7 @@ jobs:
         include:
         - os: ubuntu-latest # runs in container anyway
         - os: windows-2022
-        # - os: macos-15-intel  # temporarily disabled until llvmlite build is fixed on macOS 15
+        - os: macos-15-intel
         - os: macos-14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
