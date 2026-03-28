@@ -43,8 +43,8 @@ DiagonalizerEigen<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
 
 template <typename Scalar>
 EigenSystemH<Scalar>
-DiagonalizerEigen<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                double rtol) const {
+DiagonalizerEigen<Scalar>::eigh_full(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                     double rtol) const {
     switch (this->float_type) {
     case FloatType::FLOAT32:
         return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, rtol);
