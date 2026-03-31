@@ -15,6 +15,33 @@
 
 namespace pairinteraction {
 
+std::filesystem::path &ca_bundle_path() {
+    static std::filesystem::path path;
+    return path;
+}
+
+void set_ca_bundle_path(std::filesystem::path path) { ca_bundle_path() = std::move(path); }
+
+std::filesystem::path get_ca_bundle_path() { return ca_bundle_path(); }
+
+bool load_ca_bundle_from_path(httplib::SSLClient &client, const std::filesystem::path &path) {
+    if (path.empty() || !std::filesystem::is_regular_file(path)) {
+        return false;
+    }
+
+    std::ifstream in(path, std::ios::binary);
+    std::string pem((std::istreambuf_iterator<char>(in)), {});
+
+    if (!in || pem.empty()) {
+        SPDLOG_WARN("Failed to read CA bundle from {}.", path.string());
+        return false;
+    }
+
+    client.load_ca_cert_store(pem.data(), pem.size());
+    SPDLOG_INFO("Using CA bundle from {}.", path.string());
+    return true;
+}
+
 void log(const httplib::Request &req, const httplib::Response &res) {
     if (!spdlog::default_logger()->should_log(spdlog::level::debug)) {
         return;
@@ -48,7 +75,10 @@ GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClien
     client->set_read_timeout(60, 0);      // seconds
     client->set_write_timeout(1, 0);      // seconds
     client->set_logger(log);
-    client->load_ca_cert_store(cert.data(), cert.size());
+
+    if (const auto configured_path = get_ca_bundle_path(); !configured_path.empty()) {
+        load_ca_bundle_from_path(*client, configured_path);
+    }
 }
 
 GitHubDownloader::~GitHubDownloader() = default;

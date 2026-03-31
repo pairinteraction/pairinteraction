@@ -141,6 +141,17 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
 _setup_dynamic_libaries()
 
 
+def _setup_ca_bundle() -> None:
+    import certifi
+
+    from pairinteraction._backend import set_ca_bundle_path
+
+    set_ca_bundle_path(certifi.where())
+
+
+_setup_ca_bundle()
+
+
 # ---------------------------------------------------------------------------------------
 # Configure PairInteraction for running tests with a local database if requested
 # ---------------------------------------------------------------------------------------
@@ -187,6 +198,7 @@ def _setup_logging() -> None:
 
 _setup_logging()
 del _setup_logging
+del _setup_ca_bundle
 
 # ---------------------------------------------------------------------------------------
 # Import pairinteraction

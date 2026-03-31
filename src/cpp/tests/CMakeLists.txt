@@ -38,6 +38,22 @@ set(NPROC
     ${NPROC_DEFAULT}
     CACHE STRING "Number of processor cores to use for building the tests")
 
+# Get the path to the certifi CA bundle using Python
+execute_process(
+    COMMAND "${Python_EXECUTABLE}" -c "import certifi; print(certifi.where(), end='')"
+    OUTPUT_VARIABLE CERTIFI_CA_BUNDLE_PATH
+    RESULT_VARIABLE CERTIFI_RESULT
+    ERROR_VARIABLE CERTIFI_ERROR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_STRIP_TRAILING_WHITESPACE
+)
+if(NOT CERTIFI_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to query certifi.where() using ${Python_EXECUTABLE}: ${CERTIFI_ERROR}")
+endif()
+if(NOT EXISTS "${CERTIFI_CA_BUNDLE_PATH}")
+    message(FATAL_ERROR "certifi CA bundle does not exist at ${CERTIFI_CA_BUNDLE_PATH}")
+endif()
+
 # Add test executables
 add_test_executable(unit_tests unit_tests.cpp ${NPROC})
 add_test_executable(test_dipole_operator test_dipole_operator.cpp ${NPROC})
@@ -45,6 +61,9 @@ add_test_executable(test_system_atom test_system_atom.cpp ${NPROC})
 add_test_executable(test_starkmap test_starkmap.cpp ${NPROC})
 add_test_executable(test_pair_potential test_pair_potential.cpp ${NPROC})
 add_test_executable(test_ssl test_ssl.cpp ${NPROC})
+target_compile_definitions(test_ssl PRIVATE
+    CERTIFI_CA_BUNDLE_PATH="${CERTIFI_CA_BUNDLE_PATH}"
+)
 
 # Ensure that not more than one test is build at the same time
 set_tests_properties(${GEN_TEST_NAMES} PROPERTIES RESOURCE_LOCK compiler_access)
