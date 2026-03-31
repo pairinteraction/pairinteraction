@@ -28,7 +28,8 @@ static void declare_diagonalizer_eigen(nb::module_ &m, std::string const &type_n
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerEigen<T>::eigh, nb::const_));
+                 &DiagonalizerEigen<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
@@ -39,11 +40,13 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
     pyclass.def(nb::init<int, FloatType>(), "m0"_a, "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerFeast<T>::eigh, nb::const_))
+                 &DiagonalizerFeast<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>())
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
                                std::optional<real_t>, std::optional<real_t>, double>(
-                 &DiagonalizerFeast<T>::eigh, nb::const_));
+                 &DiagonalizerFeast<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
@@ -54,7 +57,8 @@ static void declare_diagonalizer_lapacke_evd(nb::module_ &m, std::string const &
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerLapackeEvd<T>::eigh, nb::const_));
+                 &DiagonalizerLapackeEvd<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
@@ -65,7 +69,8 @@ static void declare_diagonalizer_lapacke_evr(nb::module_ &m, std::string const &
     pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerLapackeEvr<T>::eigh, nb::const_));
+                 &DiagonalizerLapackeEvr<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
@@ -84,7 +89,10 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
             for (nb::handle_t<T> &&h : pylist) {
                 systems.push_back(nb::cast<T &>(h));
             }
-            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
+            {
+                nb::gil_scoped_release release;
+                diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, rtol);
+            }
         },
         "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a = nb::none(),
         "max_eigenvalue"_a = nb::none(), "rtol"_a = 1e-6);
