@@ -117,7 +117,7 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
         .def("restrict_quantum_number_l_ryd", &BasisAtomCreator<T>::restrict_quantum_number_l_ryd)
         .def("restrict_quantum_number_j_ryd", &BasisAtomCreator<T>::restrict_quantum_number_j_ryd)
         .def("append_ket", &BasisAtomCreator<T>::append_ket)
-        .def("create", &BasisAtomCreator<T>::create);
+        .def("create", &BasisAtomCreator<T>::create, nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
@@ -177,7 +177,7 @@ static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_n
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
         .def("restrict_product_of_parities", &BasisPairCreator<T>::restrict_product_of_parities)
-        .def("create", &BasisPairCreator<T>::create);
+        .def("create", &BasisPairCreator<T>::create, nb::call_guard<nb::gil_scoped_release>());
 }
 
 void bind_basis(nb::module_ &m) {
