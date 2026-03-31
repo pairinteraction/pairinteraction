@@ -6,6 +6,7 @@ function(add_test_executable TARGET_NAME SOURCE_FILE NPROC)
   # Create the test executable
   add_executable(${TARGET_NAME} ${SOURCE_FILE})
   target_link_libraries(${TARGET_NAME} PRIVATE pairinteraction)
+  target_compile_definitions(${TARGET_NAME} PRIVATE CERTIFI_CA_BUNDLE_PATH="${CERTIFI_CA_BUNDLE_PATH}")
 
   # Windows-specific post-build command to copy runtime DLLs
   if(WIN32)
@@ -53,6 +54,7 @@ endif()
 if(NOT EXISTS "${CERTIFI_CA_BUNDLE_PATH}")
     message(FATAL_ERROR "certifi CA bundle does not exist at ${CERTIFI_CA_BUNDLE_PATH}")
 endif()
+file(TO_CMAKE_PATH "${CERTIFI_CA_BUNDLE_PATH}" CERTIFI_CA_BUNDLE_PATH)
 
 # Add test executables
 add_test_executable(unit_tests unit_tests.cpp ${NPROC})
@@ -61,9 +63,6 @@ add_test_executable(test_system_atom test_system_atom.cpp ${NPROC})
 add_test_executable(test_starkmap test_starkmap.cpp ${NPROC})
 add_test_executable(test_pair_potential test_pair_potential.cpp ${NPROC})
 add_test_executable(test_ssl test_ssl.cpp ${NPROC})
-target_compile_definitions(test_ssl PRIVATE
-    CERTIFI_CA_BUNDLE_PATH="${CERTIFI_CA_BUNDLE_PATH}"
-)
 
 # Ensure that not more than one test is build at the same time
 set_tests_properties(${GEN_TEST_NAMES} PROPERTIES RESOURCE_LOCK compiler_access)

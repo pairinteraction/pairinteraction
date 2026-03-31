@@ -15,7 +15,7 @@ constexpr double UM_IN_ATOMIC_UNITS = 1 / 5.29177210544e-5;
 
 int main(int argc, char **argv) {
     // Call the setup function to configure logging
-    pairinteraction::setup();
+    pairinteraction::setup(CERTIFI_CA_BUNDLE_PATH);
 
     // Create a database instance
     std::filesystem::path database_dir;

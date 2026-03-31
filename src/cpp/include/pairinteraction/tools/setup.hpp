@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <filesystem>
+
 namespace pairinteraction {
-void setup();
+void setup(std::filesystem::path ca_bundle_path = {});
 } // namespace pairinteraction
