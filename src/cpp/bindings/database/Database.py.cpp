@@ -4,6 +4,7 @@
 #include "./Database.py.hpp"
 
 #include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/database/GitHubDownloader.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/filesystem.h>
@@ -13,6 +14,8 @@ using namespace nb::literals;
 using namespace pairinteraction;
 
 static void declare_database(nb::module_ &m) {
+    m.def("set_ca_bundle_path", &set_ca_bundle_path, "path"_a);
+
     nb::class_<Database>(m, "Database")
         .def(nb::init<>())
         .def(nb::init<bool>(), "download_missing"_a)

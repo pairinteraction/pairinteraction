@@ -9,6 +9,7 @@ requires = [  # keep this in sync with .build_requirements.txt
   "numpy >= 2.0.2", # required by the cpp backend
   "tbb-devel == 2022.3.0; sys_platform != 'darwin'", # required by the cpp backend
   "mkl-devel == 2025.3.0; sys_platform != 'darwin'", # required by the cpp backend
+  "certifi >= 2024.8.30", # required for testing the cpp backend
 ]
 build-backend = "scikit_build_core.build"
 
@@ -52,6 +53,7 @@ dependencies = [
   "typing_extensions >= 4.7",
   "numpy >= 2.0.2",
   "scipy >= 1.10",
+  "certifi >= 2024.8.30",
   "pint >= 0.24.4, < 0.25.1", # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also .pre-commit-config.yaml)
   "colorama >= 0.4.6",
   "pyside6 >= 6.8.2",
