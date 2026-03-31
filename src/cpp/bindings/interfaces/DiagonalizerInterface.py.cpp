@@ -21,11 +21,13 @@ static void declare_diagonalizer_interface(nb::module_ &m, std::string const &ty
     pyclass
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
-                 &DiagonalizerInterface<T>::eigh, nb::const_))
+                 &DiagonalizerInterface<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>())
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
                                std::optional<real_t>, std::optional<real_t>, double>(
-                 &DiagonalizerInterface<T>::eigh, nb::const_));
+                 &DiagonalizerInterface<T>::eigh, nb::const_),
+             nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>

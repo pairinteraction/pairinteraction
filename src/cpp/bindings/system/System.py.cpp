@@ -26,31 +26,51 @@ using namespace nb::literals;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_system(nb::module_ &m, std::string const &type_name) {
+static void declare_system(nb::module_ &m, const std::string &type_name) {
     using S = System<T>;
     using scalar_t = typename System<T>::scalar_t;
+    using real_t = typename System<T>::real_t;
 
     std::string pyclass_name = "System" + type_name;
 
     nb::class_<System<T>, TransformationBuilderInterface<scalar_t>> pyclass(m,
                                                                             pyclass_name.c_str());
-    pyclass.def("get_basis", &S::get_basis)
-        .def("get_eigenbasis", &S::get_eigenbasis)
-        .def("get_eigenenergies", &S::get_eigenenergies)
-        .def("get_matrix", &S::get_matrix)
-        .def("get_transformation", &S::get_transformation)
-        .def("get_rotator", &S::get_rotator)
-        .def("get_sorter", &S::get_sorter)
-        .def("get_indices_of_blocks", &S::get_indices_of_blocks)
-        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&S::transform))
-        .def("transform", nb::overload_cast<const Sorting &>(&S::transform))
-        .def("diagonalize", &S::diagonalize, "diagonalizer"_a, "min_eigenenergy"_a = nb::none(),
-             "max_eigenenergy"_a = nb::none(), "rtol"_a = 1e-6)
-        .def("is_diagonal", &S::is_diagonal);
+    pyclass.def("get_basis", &S::get_basis, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_eigenbasis", &S::get_eigenbasis, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_eigenenergies", &S::get_eigenenergies, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_matrix", &S::get_matrix, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_transformation", &S::get_transformation, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_rotator", &S::get_rotator, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_sorter", &S::get_sorter, nb::call_guard<nb::gil_scoped_release>())
+        .def("get_indices_of_blocks", &S::get_indices_of_blocks,
+             nb::call_guard<nb::gil_scoped_release>())
+        .def(
+            "transform",
+            [](S &self, const Transformation<scalar_t> &transformation) -> T & {
+                return static_cast<T &>(self.transform(transformation));
+            },
+            nb::call_guard<nb::gil_scoped_release>())
+        .def(
+            "transform",
+            [](S &self, const Sorting &sorting) -> T & {
+                return static_cast<T &>(self.transform(sorting));
+            },
+            nb::call_guard<nb::gil_scoped_release>())
+        .def(
+            "diagonalize",
+            [](S &self, const DiagonalizerInterface<scalar_t> &diagonalizer,
+               std::optional<real_t> min_eigenenergy, std::optional<real_t> max_eigenenergy,
+               double rtol) -> T & {
+                return static_cast<T &>(
+                    self.diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol));
+            },
+            "diagonalizer"_a, "min_eigenenergy"_a = nb::none(), "max_eigenenergy"_a = nb::none(),
+            "rtol"_a = 1e-6, nb::call_guard<nb::gil_scoped_release>())
+        .def("is_diagonal", &S::is_diagonal, nb::call_guard<nb::gil_scoped_release>());
 }
 
 template <typename T>
-static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
+static void declare_system_atom(nb::module_ &m, const std::string &type_name) {
     using S = SystemAtom<T>;
     using basis_t = typename SystemAtom<T>::basis_t;
 
@@ -67,7 +87,7 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
 }
 
 template <typename T>
-static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
+static void declare_system_pair(nb::module_ &m, const std::string &type_name) {
     using S = SystemPair<T>;
     using basis_t = typename SystemPair<T>::basis_t;
 
@@ -81,7 +101,7 @@ static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
 }
 
 template <typename T>
-static void declare_green_tensor_interpolator(nb::module_ &m, std::string const &type_name) {
+static void declare_green_tensor_interpolator(nb::module_ &m, const std::string &type_name) {
     using CE = typename GreenTensorInterpolator<T>::ConstantEntry;
     using OE = typename GreenTensorInterpolator<T>::OmegaDependentEntry;
     using GT = GreenTensorInterpolator<T>;
