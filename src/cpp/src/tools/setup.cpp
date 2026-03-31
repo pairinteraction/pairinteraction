@@ -3,6 +3,7 @@
 
 #include "pairinteraction/tools/setup.hpp"
 
+#include "pairinteraction/database/GitHubDownloader.hpp"
 #include "pairinteraction/utils/paths.hpp"
 
 #include <cstdlib>
@@ -15,7 +16,10 @@
 #include <vector>
 
 namespace pairinteraction {
-void setup() {
+void setup(std::filesystem::path ca_bundle_path) {
+    if (!ca_bundle_path.empty()) {
+        set_ca_bundle_path(std::move(ca_bundle_path));
+    }
 
     // Configure a logger
     std::filesystem::path logdir = paths::get_cache_directory() / "logs";

@@ -9,7 +9,7 @@
 #include <vector>
 
 int main(int argc, char **argv) {
-    pairinteraction::setup();
+    pairinteraction::setup(CERTIFI_CA_BUNDLE_PATH);
 
     std::filesystem::path database_dir;
     bool download_missing = false;
