@@ -4,9 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
-from PySide6.QtWidgets import (
-    QLabel,
-)
+from PySide6.QtWidgets import QCheckBox, QLabel
 
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
@@ -19,9 +17,7 @@ from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QShowEvent
-    from PySide6.QtWidgets import (
-        QWidget,
-    )
+    from PySide6.QtWidgets import QWidget
 
     from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
@@ -127,7 +123,7 @@ class BasisConfig(BaseConfig):
     def on_species_changed(self, atom: int, species: str) -> None:
         """Handle species selection change."""
         if species not in self.stacked_basis_list[atom]._widgets:
-            restrictions_widget = RestrictionsBase.from_species(species, parent=self)
+            restrictions_widget = RestrictionsBase.from_species(atom, species, parent=self)
             self.stacked_basis_list[atom].addNamedWidget(restrictions_widget, species)
             for _, item in restrictions_widget.items.items():
                 item.connectAll(lambda atom=atom: self.update_basis_label(atom))  # type: ignore [misc]
@@ -198,26 +194,32 @@ class RestrictionsBase(WidgetV):
     margin = (10, 0, 10, 0)
     spacing = 5
 
+    atom: int
     items: dict[str, _QnItem[Any]]
 
     def postSetupWidget(self) -> None:
         for _key, item in self.items.items():
             self.layout().addWidget(item)
 
+        for item in self.items.values():
+            if isinstance(item.checkbox, QCheckBox):
+                item.checkbox.setObjectName(f"atom{self.atom}_{item.checkbox.objectName()}")
+            item.spinbox.setObjectName(f"atom{self.atom}_{item.spinbox.objectName()}")
+
     @classmethod
-    def from_species(cls, species: str, parent: QWidget | None = None) -> RestrictionsBase:
+    def from_species(cls, atom: int, species: str, parent: QWidget | None = None) -> RestrictionsBase:
         """Create a quantum number restriction configuration from the species name."""
         species_type = get_species_type(species)
         if species_type == "sqdt_duplet":
-            return RestrictionsSQDT(parent, s_type="halfint", s=0.5)
+            return RestrictionsSQDT(atom, parent, s_type="halfint", s=0.5)
         if species_type == "sqdt_singlet":
-            return RestrictionsSQDT(parent, s_type="int", s=0)
+            return RestrictionsSQDT(atom, parent, s_type="int", s=0)
         if species_type == "sqdt_triplet":
-            return RestrictionsSQDT(parent, s_type="int", s=1)
+            return RestrictionsSQDT(atom, parent, s_type="int", s=1)
         if species_type == "mqdt_halfint":
-            return RestrictionsMQDT(parent, f_type="halfint", i=0.5)
+            return RestrictionsMQDT(atom, parent, f_type="halfint", i=0.5)
         if species_type == "mqdt_int":
-            return RestrictionsMQDT(parent, f_type="int", i=0)
+            return RestrictionsMQDT(atom, parent, f_type="int", i=0)
 
         raise ValueError(f"Unknown species type: {species_type}")
 
@@ -227,12 +229,14 @@ class RestrictionsSQDT(RestrictionsBase):
 
     def __init__(
         self,
+        atom: int,
         parent: QWidget | None = None,
         *,
         s_type: Literal["int", "halfint"],
         s: float,
     ) -> None:
         assert s_type in ("int", "halfint"), "s_type must be int or halfint"
+        self.atom = atom
         self.s_type = s_type
         self.s = s
         self.items = {}
@@ -253,12 +257,14 @@ class RestrictionsMQDT(RestrictionsBase):
 
     def __init__(
         self,
+        atom: int,
         parent: QWidget | None = None,
         *,
         f_type: Literal["int", "halfint"],
         i: float,
     ) -> None:
         assert f_type in ("int", "halfint"), "f_type must be int or halfint"
+        self.atom = atom
         self.f_type = f_type
         self.i = i
         self.items = {}

@@ -12,14 +12,16 @@ from pairinteraction_gui.main_window import MainWindow
 from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from pairinteraction_gui.page import OneAtomPage
     from pairinteraction_gui.page.two_atoms_page import TwoAtomsPage
     from pytestqt.qtbot import QtBot
 
 
 @pytest.fixture
-def base_window(qtbot: QtBot) -> MainWindow:
-    window = MainWindow()
+def base_window(qtbot: QtBot, tmp_path: Path) -> MainWindow:
+    window = MainWindow(cache_dir=tmp_path)
     window.show()
     qtbot.addWidget(window)
     return window
@@ -153,3 +155,23 @@ def _test_calculate_page(
     exec(python_code, locals_globals, locals_globals)  # noqa: S102
     energies = np.array(locals_globals["energies_list"]) + ket_energy_0
     compare_eigensystem_to_reference(REFERENCE_PATHS[reference_name], energies)
+
+
+def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
+    window = MainWindow(cache_dir=tmp_path)
+    window.show()
+    qtbot.addWidget(window)
+    one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    one_atom_page.ket_config.species_combo_list[0].setCurrentText("Cs")
+    ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
+    ket_qn.items["n"].setValue(222)
+    window.close()
+
+    window = MainWindow(cache_dir=tmp_path)
+    window.show()
+    qtbot.addWidget(window)
+    one_atom_page = window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
+
+    assert one_atom_page.ket_config.species_combo_list[0].currentText() == "Cs"
+    assert ket_qn.items["n"].value() == 222

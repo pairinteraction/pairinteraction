@@ -65,3 +65,11 @@ def get_species_type(species: str) -> SpeciesTypes:
     if "triplet" in species:
         return "sqdt_triplet"
     return "sqdt_duplet"
+
+
+def label_to_object_name(label: str) -> str:
+    """Convert a display label to an human readable object name (and QSettings key)."""
+    label = label.lower().strip()
+    label = re.sub(r"\s+", "_", label)
+    label = re.sub(r"[\\/]+", "_", label)
+    return label.replace("δ", "delta")
