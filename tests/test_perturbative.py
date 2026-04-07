@@ -154,7 +154,7 @@ def test_c3_with_sample_system(pi_module: PairinteractionModule, system_pair_sam
     ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     c3_obj = pi_module.C3(ket1, ket2)
     c3_obj._distance_vector = None  # avoid warning due when setting system pair
-    c3_obj.system_pair = system_pair_sample
+    c3_obj.set_system_pair(system_pair_sample)
 
     c3 = c3_obj.get(unit="planck_constant * gigahertz * micrometer^3")
     assert np.isclose(-0.5 * c3, 3.1515)
@@ -178,7 +178,7 @@ def test_c6_with_sample_system(pi_module: PairinteractionModule, system_pair_sam
     ket = pi_module.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     c6_obj = pi_module.C6(ket, ket)
     c6_obj._distance_vector = None  # avoid warning due when setting system pair
-    c6_obj.system_pair = system_pair_sample
+    c6_obj.set_system_pair(system_pair_sample)
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
     assert np.isclose(c6, -167.880)
@@ -203,14 +203,14 @@ def test_exact_resonance_detection(
     ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2)])
-    eff_system.system_pair = system_pair_sample
+    eff_system.set_system_pair(system_pair_sample)
 
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"), np.errstate(invalid="ignore"):
         eff_system.get_effective_hamiltonian()
     captured = capsys.readouterr()
-    assert "Detected 'inf' entries" in captured.err
-    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
+    assert "gets a large dressing (inf overlap)" in captured.err
+    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has admixture inf" in captured.err
 
 
 def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pytest.CaptureFixture[str]) -> None:
@@ -219,12 +219,13 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     ket2 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
-    eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")
+    eff_system.create_basis_pair(number_of_kets=100)
+
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
         eff_system.get_effective_hamiltonian()
-        eff_system.check_for_resonances(0.99)
+        eff_system.check_for_resonances(0.01)
     captured = capsys.readouterr()
     assert "The most perturbing states are" in captured.err
     assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in captured.err

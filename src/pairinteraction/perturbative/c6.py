@@ -44,8 +44,7 @@ class C6(EffectiveSystemPair):
                 "please use the EffectiveSystemPair([(a,b), (b,a)]) class."
             )
 
-        super().__init__([(ket1, ket2)])
-        self.set_perturbation_order(2)
+        super().__init__([(ket1, ket2)], 2)
 
         # Set some default distance. The exact value does not matter for the C6 value,
         # but too small distances result in warnings about the basisvec admixtures
