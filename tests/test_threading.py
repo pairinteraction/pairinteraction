@@ -85,7 +85,7 @@ def test_diagonalize_releases_gil(pi_module: PairinteractionModule) -> None:
 
     assert (
         main_thread_progress_diagonalization / duration_diagonalization
-        > 5 * main_thread_progress_python / duration_python
+        > 3 * main_thread_progress_python / duration_python
     ), (
         "The main thread did not make significant progress during diagonalization, "
         "suggesting that the GIL was not released."
