@@ -42,12 +42,17 @@ def main() -> int:
         "gui",
         help="launch the graphical user interface",
     )
+    gui_parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="watch GUI theme files and reload styles automatically during development",
+    )
     gui_subparsers = gui_parser.add_subparsers(dest="gui_command")
 
     gui_reset_parser = gui_subparsers.add_parser("reset", help="delete GUI settings file to restore defaults")
     gui_reset_parser.set_defaults(func=lambda _args: reset_gui_settings())
 
-    gui_parser.set_defaults(func=lambda _args: start_gui())
+    gui_parser.set_defaults(func=lambda args: start_gui(reload=args.reload))
 
     # Test command
     test_parser = subparsers.add_parser("test", help="run module tests")
@@ -88,12 +93,12 @@ def main() -> int:
     return cast("Callable[[argparse.Namespace], int]", args.func)(args)
 
 
-def start_gui() -> int:
+def start_gui(*, reload: bool = False) -> int:
     """Launch the graphical user interface."""
     from pairinteraction_gui import main as gui_main
 
     print("Launching the graphical user interface...")
-    gui_main()
+    gui_main(enable_theme_hot_reload=reload)
     return 0
 
 

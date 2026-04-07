@@ -11,7 +11,6 @@ import pairinteraction.real as pi_real
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.qobjects.item import RangeItem
-from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
 
@@ -54,13 +53,13 @@ class BasisConfig(BaseConfig):
 
         # Add a label to display the current basis
         basis_label = QLabel()
-        basis_label.setStyleSheet(label_theme)
         basis_label.setWordWrap(True)
         self.layout().addWidget(basis_label)
 
         # Store the widgets for later access
         self.stacked_basis_list.append(stacked_basis)
         self.basis_label_list.append(basis_label)
+        self._set_theme_role(basis_label, "info")
         self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
@@ -68,7 +67,7 @@ class BasisConfig(BaseConfig):
 
         def update_result(basis: pi_real.BasisAtom | pi_complex.BasisAtom) -> None:
             self.basis_label_list[atom].setText(str(basis) + f"\n  ⇒ Basis consists of {basis.number_of_kets} kets")
-            self.basis_label_list[atom].setStyleSheet(label_theme)
+            self._set_theme_role(self.basis_label_list[atom], "info")
 
         worker.signals.result.connect(update_result)
 
@@ -81,7 +80,7 @@ class BasisConfig(BaseConfig):
                 )
             else:
                 self.basis_label_list[atom].setText(str(err))
-            self.basis_label_list[atom].setStyleSheet(label_error_theme)
+            self._set_theme_role(self.basis_label_list[atom], "error")
 
         worker.signals.error.connect(update_error)
 
@@ -136,6 +135,14 @@ class BasisConfig(BaseConfig):
         for i in range(len(self.stacked_basis_list)):
             self.update_basis_label(i)
 
+    @staticmethod
+    def _set_theme_role(label: QLabel, role: str) -> None:
+        label.setProperty("themeRole", role)
+        style = label.style()
+        style.unpolish(label)
+        style.polish(label)
+        label.update()
+
 
 class BasisConfigOneAtom(BasisConfig):
     def setupWidget(self) -> None:
@@ -174,14 +181,14 @@ class BasisConfigTwoAtoms(BasisConfig):
         self.layout().addWidget(self.pair_m_range)
 
         self.basis_pair_label = QLabel()
-        self.basis_pair_label.setStyleSheet(label_theme)
+        self._set_theme_role(self.basis_pair_label, "info")
         self.basis_pair_label.setWordWrap(True)
         self.layout().addWidget(self.basis_pair_label)
 
     def update_basis_pair_label(self, basis_pair_label: str) -> None:
         """Update the quantum state label with current values."""
         self.basis_pair_label.setText(basis_pair_label)
-        self.basis_pair_label.setStyleSheet(label_theme)
+        self._set_theme_role(self.basis_pair_label, "info")
 
     def clear_basis_pair_label(self) -> None:
         """Clear the basis pair label."""
