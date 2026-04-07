@@ -1,9 +1,0 @@
-/* SPDX-FileCopyrightText: 2025 PairInteraction Developers */
-/* SPDX-License-Identifier: LGPL-3.0-or-later */
-
-QLabel {
-    padding: 12px 16px;
-    margin: 12px 24px 0px 24px;
-    border-radius: 8px;
-    border: 2px solid #aaaaaa;
-}

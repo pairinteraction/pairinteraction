@@ -17,7 +17,6 @@ from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
-from pairinteraction_gui.theme import plot_widget_theme
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -44,11 +43,10 @@ class PlotWidget(WidgetV):
         self.page = parent
         super().__init__(parent)
 
-        self.setStyleSheet(plot_widget_theme)
-
     def setupWidget(self) -> None:
         self.canvas = MatplotlibCanvas(self)
         self.navigation_toolbar = CustomNavigationToolbar(self.canvas, self)
+        self.navigation_toolbar.setObjectName("PlotNavigationToolBar")
 
         top_layout = QHBoxLayout()
         top_layout.addStretch(1)

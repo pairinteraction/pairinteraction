@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, TypeVar
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -29,7 +29,7 @@ from pairinteraction_gui.page import (
 from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.settings import SettingsManager
-from pairinteraction_gui.theme import main_theme
+from pairinteraction_gui.theme import theme_manager
 from pairinteraction_gui.utils import download_databases_mp
 from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
 
@@ -49,13 +49,13 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     """Main window for the PairInteraction GUI application."""
 
-    def __init__(self, cache_dir: Path | None = None) -> None:
+    def __init__(self, *, cache_dir: Path | None = None, enable_theme_hot_reload: bool = False) -> None:
         """Initialize the main window."""
         super().__init__()
+        self._theme_hot_reload_enabled = enable_theme_hot_reload
 
         self.setWindowTitle(f"PairInteraction v{pairinteraction.__version__}")
         self.resize(1200, 800)
-        self.setStyleSheet(main_theme)
 
         self.statusbar = self.setup_statusbar()
         self.dockwidget = self.setup_dockwidget()
@@ -69,13 +69,38 @@ class MainWindow(QMainWindow):
         self.init_keyboard_shortcuts()
         self.connect_signals()
 
+        self.apply_theme()
+        if enable_theme_hot_reload:
+            theme_manager.enable_hot_reload()
+
         MultiProcessWorker.create_pool()
 
     def connect_signals(self) -> None:
         """Connect signals to slots."""
         self.signals = Application.instance().signals
-
         self.signals.ask_download_database.connect(self.ask_download_database)
+        theme_manager.signals.themes_reloaded.connect(self.apply_theme)
+
+    def apply_theme(self) -> None:
+        """Apply the current main application theme."""
+        app = Application.instance()
+        app.setPalette(theme_manager.get_palette())
+        self.setStyleSheet(theme_manager.get_theme())
+        self._schedule_theme_screenshot()
+
+    def _schedule_theme_screenshot(self) -> None:
+        if not self._theme_hot_reload_enabled:
+            return
+        QTimer.singleShot(0, self._save_theme_screenshot)
+
+    def _save_theme_screenshot(self) -> None:
+        if not self._theme_hot_reload_enabled or not self.isVisible():
+            return
+        screenshot_path = theme_manager.theme_dir / "theme.png"
+        if self.grab().save(str(screenshot_path)):
+            logger.info("Saved GUI theme screenshot to %s", screenshot_path)
+        else:
+            logger.warning("Failed to save GUI theme screenshot to %s", screenshot_path)
 
     def findChild(  # type: ignore [override] # explicitly override type hints
         self, type_: type[ChildType], name: str, options: Qt.FindChildOption | None = None
@@ -127,6 +152,7 @@ class MainWindow(QMainWindow):
     def setup_toolbar(self) -> QToolBar:
         """Set up the toolbar with icon buttons."""
         toolbar = QToolBar("Sidebar")
+        toolbar.setObjectName("SidebarToolBar")
         toolbar.setMovable(False)
         toolbar.setOrientation(Qt.Orientation.Vertical)
         toolbar.setIconSize(QSize(32, 32))

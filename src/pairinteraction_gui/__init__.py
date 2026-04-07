@@ -11,7 +11,7 @@ from pairinteraction_gui.main_window import MainWindow
 __all__ = ["main"]
 
 
-def main() -> int:
+def main(*, enable_theme_hot_reload: bool = False) -> int:
     """Run the PairInteraction GUI application.
 
     Returns:
@@ -32,7 +32,7 @@ def main() -> int:
 
     app.allow_ctrl_c()
 
-    window = MainWindow()
+    window = MainWindow(enable_theme_hot_reload=enable_theme_hot_reload)
     window.show()
 
     return app.exec()

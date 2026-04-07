@@ -1,0 +1,116 @@
+/* SPDX-FileCopyrightText: 2025 PairInteraction Developers */
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
+
+/* Main window */
+QMainWindow {
+    background-color: palette(window);
+    color: palette(window-text);
+}
+
+/* Status bar */
+QStatusBar {
+    background-color: palette(dark);
+    color: palette(bright-text);
+}
+
+/* Sidebar toolbar */
+QToolBar#SidebarToolBar {
+    background-color: palette(dark);
+    border: none;
+}
+QToolBar#SidebarToolBar QToolButton {
+    background-color: palette(dark);
+    color: palette(bright-text);
+    font-weight: bold;
+    font-size: 15px;
+    border: none;
+    spacing: 15px;
+    padding: 10px;
+    margin: 5px;
+}
+QToolBar#SidebarToolBar QToolButton:hover {
+    background-color: palette(mid);
+}
+QToolBar#SidebarToolBar QToolButton:checked {
+    background-color: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+/* Plot window toolbar */
+QToolBar#PlotNavigationToolBar {
+    background-color: palette(window);
+    color: palette(window-text);
+}
+QToolBar#PlotNavigationToolBar QToolButton {
+    background-color: palette(window);
+    color: palette(window-text);
+}
+QToolBar#PlotNavigationToolBar QToolButton:hover {
+    background-color: palette(midlight);
+}
+QToolBar#PlotNavigationToolBar QToolButton:checked {
+    background-color: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+/* Dockwidget/toolbox */
+QDockWidget QToolBox QWidget  {
+    background-color: palette(base);
+    color: palette(text);
+}
+QDockWidget QToolBox {
+    background-color: palette(base);
+    border: 1px solid palette(dark);
+    border-top-style: none;
+    border-bottom-style: none;
+}
+QDockWidget QToolBox::tab {
+    background-color: palette(dark);
+    border: 2px solid palette(light);
+    border-radius: 5px;
+    color: palette(bright-text);
+    font-weight: bold;
+}
+QDockWidget QToolBox::tab:hover {
+    background-color: palette(mid);
+}
+QDockWidget QToolBox::tab:selected {
+    background-color: palette(highlight);
+    color: palette(highlighted-text);
+}
+
+/* Calc and export buttons */
+QPushButton {
+    background-color: palette(button);
+    color: palette(button-text);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+QPushButton:hover, QPushButton:pressed {
+    background-color: palette(midlight);
+}
+
+/* Export menu */
+QMenu::item:selected {
+    background-color: palette(midlight);
+}
+
+/* Simulation outcomes */
+QLabel[themeRole="info"] {
+    background-color: palette(base);
+    color: palette(text);
+    padding: 12px 16px;
+    margin: 12px 24px 0px 24px;
+    border-radius: 8px;
+    border: 2px solid palette(midlight);
+}
+
+QLabel[themeRole="error"] {
+    background-color: #fee2e2;
+    color: #991b1b;
+    padding: 12px 16px;
+    margin: 12px 24px 0px 24px;
+    border-radius: 8px;
+    border: 2px solid palette(midlight);
+}

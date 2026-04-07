@@ -18,7 +18,6 @@ from pairinteraction_gui.qobjects import (
     WidgetForm,
     WidgetV,
 )
-from pairinteraction_gui.theme import label_error_theme, label_theme
 from pairinteraction_gui.utils import (
     AVAILABLE_SPECIES,
     DatabaseMissingError,
@@ -92,7 +91,6 @@ class KetConfig(BaseConfig):
 
         # Add a label to display the current ket
         ket_label = QLabel()
-        ket_label.setStyleSheet(label_theme)
         ket_label.setWordWrap(True)
         self.layout().addWidget(ket_label)
 
@@ -100,6 +98,7 @@ class KetConfig(BaseConfig):
         self.species_combo_list.append(species_combo)
         self.stacked_qn_list.append(stacked_qn)
         self.ket_label_list.append(ket_label)
+        self._set_theme_role(ket_label, "info")
 
     def get_species(self, atom: int = 0) -> str:
         """Return the selected species of the ... atom."""
@@ -139,7 +138,7 @@ class KetConfig(BaseConfig):
         try:
             ket = self.get_ket_atom(atom, ask_download=True)
             self.ket_label_list[atom].setText(str(ket))
-            self.ket_label_list[atom].setStyleSheet(label_theme)
+            self._set_theme_role(self.ket_label_list[atom], "info")
         except Exception as err:
             if isinstance(err, NoStateFoundError):
                 self.ket_label_list[atom].setText("No ket found. Please select different quantum numbers.")
@@ -149,7 +148,15 @@ class KetConfig(BaseConfig):
                 )
             else:
                 self.ket_label_list[atom].setText(str(err))
-            self.ket_label_list[atom].setStyleSheet(label_error_theme)
+            self._set_theme_role(self.ket_label_list[atom], "error")
+
+    @staticmethod
+    def _set_theme_role(label: QLabel, role: str) -> None:
+        label.setProperty("themeRole", role)
+        style = label.style()
+        style.unpolish(label)
+        style.polish(label)
+        label.update()
 
 
 class KetConfigOneAtom(KetConfig):
@@ -187,7 +194,7 @@ class KetConfigLifetimes(KetConfig):
 
     def _reset_results(self) -> None:
         self.lifetime_label.setText("Lifetime: \u2014")  # \u2014 = em dash
-        self.lifetime_label.setStyleSheet(label_theme)
+        self._set_theme_role(self.lifetime_label, "info")
         self.page.plotwidget.clear()
 
     def get_temperature(self) -> float:
@@ -195,7 +202,7 @@ class KetConfigLifetimes(KetConfig):
 
     def set_lifetime(self, lifetime: float) -> None:
         self.lifetime_label.setText(f"Lifetime: {lifetime:.3f} \u03bcs")  # \u03bc = micro
-        self.lifetime_label.setStyleSheet(label_theme)
+        self._set_theme_role(self.lifetime_label, "info")
 
 
 class KetConfigTwoAtoms(KetConfig):
