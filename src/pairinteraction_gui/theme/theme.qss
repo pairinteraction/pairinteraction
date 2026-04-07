@@ -23,10 +23,11 @@ QToolBar#SidebarToolBar QToolButton {
     color: palette(bright-text);
     font-weight: bold;
     font-size: 15px;
-    border: none;
-    spacing: 15px;
-    padding: 10px;
-    margin: 5px;
+    border: 1px solid palette(base);
+    margin: 15px 10px;
+    width: 80px;
+    height: 60px;
+    border-radius:32px;
 }
 QToolBar#SidebarToolBar QToolButton:hover {
     background-color: palette(mid);
@@ -38,43 +39,52 @@ QToolBar#SidebarToolBar QToolButton:checked {
 
 /* Plot window toolbar */
 QToolBar#PlotNavigationToolBar {
-    background-color: palette(window);
+    background-color: transparent;
+    border-radius: 5px;
     color: palette(window-text);
 }
 QToolBar#PlotNavigationToolBar QToolButton {
-    background-color: palette(window);
+    background-color: palette(button);
     color: palette(window-text);
+    border-radius: 5px;
+    padding: 7px;
+    margin-left: 7px;
+    margin-right: 7px;
 }
 QToolBar#PlotNavigationToolBar QToolButton:hover {
     background-color: palette(midlight);
 }
-QToolBar#PlotNavigationToolBar QToolButton:checked {
+QToolBar#PlotNavigationToolBar QToolButton:checked, QToolBar#PlotNavigationToolBar QToolButton:pressed {
     background-color: palette(highlight);
     color: palette(highlighted-text);
 }
 
-/* Dockwidget/toolbox */
-QDockWidget QToolBox QWidget  {
+/* Toolbox */
+QToolBox QWidget  {
     background-color: palette(base);
     color: palette(text);
 }
-QDockWidget QToolBox {
+QToolBox {
     background-color: palette(base);
     border: 1px solid palette(dark);
     border-top-style: none;
     border-bottom-style: none;
+    border-left-style: none;
+    icon-size: 20px;
+    padding: 7px;
 }
-QDockWidget QToolBox::tab {
+QToolBox::tab {
     background-color: palette(dark);
-    border: 2px solid palette(light);
+    border: none;
     border-radius: 5px;
     color: palette(bright-text);
     font-weight: bold;
+    font-size: 15px;
 }
-QDockWidget QToolBox::tab:hover {
+QToolBox::tab:hover {
     background-color: palette(mid);
 }
-QDockWidget QToolBox::tab:selected {
+QToolBox::tab:selected {
     background-color: palette(highlight);
     color: palette(highlighted-text);
 }
@@ -86,14 +96,28 @@ QPushButton {
     border: none;
     border-radius: 5px;
     font-weight: bold;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
-QPushButton:hover, QPushButton:pressed {
+QPushButton:hover {
     background-color: palette(midlight);
+}
+QPushButton:pressed {
+    background-color: palette(highlight);
+    color: palette(highlighted-text);
 }
 
 /* Export menu */
+QMenu {
+    border: 1px solid palette(dark);
+    border-radius: 5px;
+}
+QMenu::item {
+    padding: 12px;
+}
 QMenu::item:selected {
-    background-color: palette(midlight);
+    background-color: palette(highlight);
+    color: palette(highlighted-text);
 }
 
 /* Simulation outcomes */

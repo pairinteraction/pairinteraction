@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class TwoAtomsPage(CalculationPage):
     """Page for configuring and analyzing pair systems."""
 
-    title = "Two Atoms"
+    title = "Two\nAtoms"
     tooltip = "Configure and analyze pair systems"
 
     def setupWidget(self) -> None:

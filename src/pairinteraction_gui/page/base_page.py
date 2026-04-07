@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 import nbformat
 from nbconvert import PythonExporter
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QFileDialog,
     QHBoxLayout,
@@ -49,7 +51,9 @@ class BasePage(WidgetV):
     def showEvent(self, event: QShowEvent) -> None:
         """Show event."""
         super().showEvent(event)
-        self.window().setWindowTitle(f"PairInteraction v{pairinteraction.__version__} - " + self.title)
+        self.window().setWindowTitle(
+            f"PairInteraction v{pairinteraction.__version__} - " + self.title.replace("\n", " ")
+        )
 
 
 class SimulationPage(BasePage):
@@ -62,10 +66,16 @@ class SimulationPage(BasePage):
     def setupWidget(self) -> None:
         self.toolbox = QToolBox()
 
+        # Create a dummy icon to allow adjusting the height of the toolbox tabs,
+        # see https://stackoverflow.com/questions/48503645/customizing-qtoolbox-tab-height
+        px = QPixmap(1, 1)
+        px.fill(Qt.GlobalColor.transparent)
+        self._toolbox_dummy_icon = QIcon(px)
+
     def postSetupWidget(self) -> None:
         for attr in self.__dict__.values():
             if isinstance(attr, BaseConfig):
-                self.toolbox.addItem(attr, attr.title)
+                self.toolbox.addItem(attr, self._toolbox_dummy_icon, attr.title)
 
         for i, species_combo in enumerate(self.ket_config.species_combo_list):
             self.ket_config.signal_species_changed.emit(i, species_combo.currentText())
