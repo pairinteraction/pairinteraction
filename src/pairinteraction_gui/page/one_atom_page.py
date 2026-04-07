@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class OneAtomPage(CalculationPage):
     """Page for configuring and analyzing single-atom systems."""
 
-    title = "One Atom"
+    title = "One\nAtom"
     tooltip = "Configure and analyze single-atom systems"
 
     def setupWidget(self) -> None:
