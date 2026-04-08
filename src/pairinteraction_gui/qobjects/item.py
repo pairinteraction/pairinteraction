@@ -6,7 +6,7 @@ import typing as t
 from typing import TYPE_CHECKING, Generic, TypeVar
 
 import numpy as np
-from PySide6.QtWidgets import QCheckBox, QLabel, QSpacerItem
+from PySide6.QtWidgets import QCheckBox, QLabel
 
 from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox, HalfIntSpinBox, IntSpinBox
 from pairinteraction_gui.qobjects.widget import WidgetH
@@ -97,14 +97,14 @@ class _QnItem(WidgetH, Generic[ValueType]):
     ) -> None:
         tooltip = tooltip if tooltip is not None else f"{label} in {unit}"
 
-        self.checkbox: QCheckBox | QSpacerItem
+        self.checkbox: QCheckBox | None
         if checkable:
             self.checkbox = QCheckBox()
             self.checkbox.setObjectName(f"{label_to_object_name(label)}_checkbox")
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
-            self.checkbox = QSpacerItem(25, 0)
+            self.checkbox = None
 
         self.label = QLabel(label)
         self.label.setMinimumWidth(25)
@@ -120,8 +120,6 @@ class _QnItem(WidgetH, Generic[ValueType]):
     def setupWidget(self) -> None:
         if isinstance(self.checkbox, QCheckBox):
             self.layout().addWidget(self.checkbox)
-        elif isinstance(self.checkbox, QSpacerItem):
-            self.layout().addItem(self.checkbox)
         self.layout().addWidget(self.label)
         self.layout().addWidget(self.spinbox)
         self.layout().addWidget(self.unit)
@@ -142,17 +140,15 @@ class _QnItem(WidgetH, Generic[ValueType]):
 
     def isChecked(self) -> bool:
         """Return the state of the checkbox."""
-        if isinstance(self.checkbox, QSpacerItem):
-            return True
-        return self.checkbox.isChecked()
+        if isinstance(self.checkbox, QCheckBox):
+            return self.checkbox.isChecked()
+        return True
 
     def setChecked(self, checked: bool) -> None:
         """Set the state of the checkbox."""
-        if isinstance(self.checkbox, QSpacerItem):
-            if checked:
-                return
-            raise ValueError("Cannot uncheck a non-checkable item.")
-        self.checkbox.setChecked(checked)
+        if isinstance(self.checkbox, QCheckBox):
+            return self.checkbox.setChecked(checked)
+        raise ValueError("Cannot (un)check a non-checkable item.")
 
     def value(
         self,
@@ -203,14 +199,14 @@ class RangeItem(WidgetH):
     ) -> None:
         tooltip_label = tooltip_label if tooltip_label is not None else label
 
-        self.checkbox: QCheckBox | QSpacerItem
+        self.checkbox: QCheckBox | None
         if checkable:
             self.checkbox = QCheckBox()
             self.checkbox.setObjectName(f"{label_to_object_name(label)}_checkbox")
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
-            self.checkbox = QSpacerItem(25, 0)
+            self.checkbox = None
 
         self.label = QLabel(label)
         self.label.setMinimumWidth(25)
@@ -227,8 +223,6 @@ class RangeItem(WidgetH):
     def setupWidget(self) -> None:
         if isinstance(self.checkbox, QCheckBox):
             self.layout().addWidget(self.checkbox)
-        elif isinstance(self.checkbox, QSpacerItem):
-            self.layout().addItem(self.checkbox)
         self.layout().addWidget(self.label)
 
         self.layout().addWidget(self.min_spinbox)
@@ -260,17 +254,15 @@ class RangeItem(WidgetH):
 
     def isChecked(self) -> bool:
         """Return the state of the checkbox."""
-        if isinstance(self.checkbox, QSpacerItem):
-            return True
-        return self.checkbox.isChecked()
+        if isinstance(self.checkbox, QCheckBox):
+            return self.checkbox.isChecked()
+        return True
 
     def setChecked(self, checked: bool) -> None:
         """Set the state of the checkbox."""
-        if isinstance(self.checkbox, QSpacerItem):
-            if checked:
-                return
-            raise ValueError("Cannot uncheck a non-checkable item.")
-        self.checkbox.setChecked(checked)
+        if isinstance(self.checkbox, QCheckBox):
+            return self.checkbox.setChecked(checked)
+        raise ValueError("Cannot (un)check a non-checkable item.")
 
     def values(self, default: tuple[float, float] | P | NotSet = NotSet) -> tuple[float, float] | P:
         """Return the values of the min and max spinboxes."""
