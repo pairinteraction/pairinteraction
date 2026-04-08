@@ -105,7 +105,7 @@ class SystemConfigTwoAtoms(SystemConfig):
         label = QLabel("<b>Angle</b> (0° = z-axis, 90° = x-axis)")
         self.layout().addWidget(label)
 
-        self.angle = RangeItem(self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree")
+        self.angle = RangeItem(self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree", checkable=False)
         self.layout().addWidget(self.angle)
 
     def setupOrder(self) -> None:

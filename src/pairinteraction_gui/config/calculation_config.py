@@ -26,6 +26,7 @@ class CalculationConfig(BaseConfig):
             vmax=9999,
             vdefault=100,
             tooltip="Number of steps for the calculation",
+            checkable=False,
         )
         self.layout().addWidget(self.steps)
 
