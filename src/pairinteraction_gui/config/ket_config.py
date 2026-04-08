@@ -188,9 +188,20 @@ class KetConfigLifetimes(KetConfig):
         self.lifetime_label = QLabel()
         self.layout().addWidget(self.lifetime_label)
 
+        mqdt_warning_text = "WARNING: Use lifetimes for MQDT with care, as some low-lying states might be missing!"
+        self.mqdt_warning_label = QLabel(mqdt_warning_text)
+        self.mqdt_warning_label.setWordWrap(True)
+        self._set_theme_role(self.mqdt_warning_label, "error")
+        self.mqdt_warning_label.hide()
+        self.layout().addWidget(self.mqdt_warning_label)
+
     def on_qnitem_changed(self, atom: int) -> None:
         super().on_qnitem_changed(atom)
         self._reset_results()
+
+    def on_species_changed(self, atom: int, species: str) -> None:
+        super().on_species_changed(atom, species)
+        self.mqdt_warning_label.setVisible("mqdt" in species.lower())
 
     def _reset_results(self) -> None:
         self.lifetime_label.setText("Lifetime: \u2014")  # \u2014 = em dash
