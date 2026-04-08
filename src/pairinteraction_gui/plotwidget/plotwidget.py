@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import mplcursors
 import numpy as np
 from matplotlib.colors import Normalize
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QHBoxLayout
 from scipy.optimize import curve_fit
 
@@ -17,6 +18,7 @@ from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
+from pairinteraction_gui.theme import theme_manager
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -74,6 +76,9 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
+        window_color = theme_manager.get_palette().color(QPalette.ColorRole.Window).name()
+
+        self.canvas.fig.set_facecolor(window_color)
         self.canvas.fig.set_layout_engine(
             "constrained",
             w_pad=0.2,

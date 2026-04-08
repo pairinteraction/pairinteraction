@@ -7,12 +7,14 @@ from typing import TYPE_CHECKING
 
 import mplcursors
 import numpy as np
+from PySide6.QtGui import QPalette
 
 from pairinteraction_gui.calculate.calculate_lifetimes import ParametersLifetimes, calculate_lifetimes
 from pairinteraction_gui.config import KetConfigLifetimes
 from pairinteraction_gui.page.base_page import CalculationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import show_status_tip
+from pairinteraction_gui.theme import theme_manager
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -35,6 +37,9 @@ class LifetimesPage(CalculationPage):
         super().setupWidget()
         show_status_tip(self, "Ready", timeout=1)
 
+        window_color = theme_manager.get_palette().color(QPalette.ColorRole.Window).name()
+
+        self.plotwidget.canvas.fig.set_facecolor(window_color)
         self.plotwidget.canvas.fig.set_layout_engine(
             "constrained",
             w_pad=0.2,
