@@ -74,14 +74,21 @@ class PlotEnergies(PlotWidget):
     def setupWidget(self) -> None:
         super().setupWidget()
 
+        self.canvas.fig.set_layout_engine(
+            "constrained",
+            w_pad=0.2,
+            h_pad=0.2,
+            wspace=0.0,
+            hspace=0.0,
+        )
         mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
-        self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest")
-        self.canvas.fig.tight_layout()
+        self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest", aspect=60)
 
     def plot(self, parameters: Parameters[Any], results: Results) -> None:
         self.reset_fit()
         ax = self.canvas.ax
         ax.clear()
+        ax.set_xmargin(0)
 
         # store data to allow fitting later on
         self.parameters = parameters
@@ -121,9 +128,7 @@ class PlotEnergies(PlotWidget):
             )
 
         ax.set_xlabel(parameters.get_x_label())
-        ax.set_ylabel("Energy [GHz]")
-
-        self.canvas.fig.tight_layout()
+        ax.set_ylabel("Energy (GHz)")
 
     def add_cursor(self, parameters: Parameters[Any], results: Results) -> None:
         # Remove any existing cursors to avoid duplicates

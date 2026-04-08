@@ -176,7 +176,7 @@ class Parameters(ABC, Generic[PageType]):
     def get_x_label(self) -> str:
         """Return the x values for the plot."""
         max_key = self._get_ranges_max_diff_key()
-        x_label = f"{max_key} [{UnitFromRangeKey[max_key]}]"
+        x_label = f"{max_key} ({UnitFromRangeKey[max_key]})"
 
         non_constant_keys = [key for key, values in self.ranges.items() if key != max_key and values[0] != values[-1]]
         if non_constant_keys:
