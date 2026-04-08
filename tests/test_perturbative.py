@@ -221,10 +221,9 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
     eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")
-    eff_system.get_effective_hamiltonian()
-
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
+        eff_system.get_effective_hamiltonian()
         eff_system.check_for_resonances(0.99)
     captured = capsys.readouterr()
     assert "The most perturbing states are" in captured.err
