@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from PySide6.QtCore import QObject, QSocketNotifier, QTimer, Signal
 from PySide6.QtWidgets import QApplication
 
-from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from types import FrameType
@@ -66,7 +66,6 @@ class Application(QApplication):
     def quit() -> None:
         """Quit the application."""
         logger.debug("Calling Application.quit().")
-        MultiProcessWorker.terminate_all(create_new_pool=False)
         MultiThreadWorker.terminate_all()
         QApplication.quit()
         logger.debug("Application.quit() done.")

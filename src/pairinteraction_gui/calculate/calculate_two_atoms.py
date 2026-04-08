@@ -11,7 +11,6 @@ from attr import dataclass
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
-from pairinteraction_gui.worker import run_in_other_process
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -54,7 +53,6 @@ class ResultsTwoAtoms(Results):
     basis_0_label: str | None = None
 
 
-@run_in_other_process
 def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     """Calculate the energy plot for two atoms.
 

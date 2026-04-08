@@ -9,7 +9,6 @@ from attr import dataclass
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
-from pairinteraction_gui.worker import run_in_other_process
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage  # noqa: F401  # related to ruff extend-generics
@@ -27,7 +26,6 @@ class ResultsOneAtom(Results):
     """Results for the single-atom calculation."""
 
 
-@run_in_other_process
 def calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
     """Calculate the energy plot for one atom.
 
