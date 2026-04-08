@@ -1,12 +1,6 @@
 /* SPDX-FileCopyrightText: 2025 PairInteraction Developers */
 /* SPDX-License-Identifier: LGPL-3.0-or-later */
 
-/* Main window */
-QMainWindow {
-    background-color: palette(window);
-    color: palette(window-text);
-}
-
 /* Status bar */
 QStatusBar {
     background-color: palette(dark);
@@ -28,8 +22,8 @@ QToolBar#SidebarToolBar QToolButton {
     font-size: 14px;
     border: 1px solid palette(mid);
     margin: 15px 10px;
-    width: 70px;
-    height: 60px;
+    min-width: 70px;
+    min-height: 60px;
     border-radius:30px;
 }
 QToolBar#SidebarToolBar QToolButton:hover {
@@ -45,11 +39,9 @@ QToolBar#SidebarToolBar QToolButton:checked {
 QToolBar#PlotNavigationToolBar {
     background-color: transparent;
     border-radius: 5px;
-    color: palette(window-text);
 }
 QToolBar#PlotNavigationToolBar QToolButton {
     background-color: palette(button);
-    color: palette(window-text);
     border-radius: 5px;
     padding: 7px;
     margin-left: 14px;
@@ -58,11 +50,11 @@ QToolBar#PlotNavigationToolBar QToolButton:hover {
     background-color: palette(midlight);
 }
 QToolBar#PlotNavigationToolBar QToolButton:checked, QToolBar#PlotNavigationToolBar QToolButton:pressed {
-    background-color: palette(highlight);
+    background-color: palette(accent);
     color: palette(highlighted-text);
 }
 
-/* Toolbox */
+/* Toolboxes */
 QToolBox QWidget  {
     background-color: palette(window);
     color: palette(text);
@@ -92,7 +84,7 @@ QToolBox::tab:selected {
     color: palette(highlighted-text);
 }
 
-/* Calc and export buttons */
+/* Buttons */
 QPushButton {
     background-color: palette(button);
     color: palette(button-text);
@@ -107,11 +99,11 @@ QPushButton:hover {
     background-color: palette(midlight);
 }
 QPushButton:pressed {
-    background-color: palette(highlight);
+    background-color: palette(accent);
     color: palette(highlighted-text);
 }
 
-/* Export menu */
+/* Menus */
 QMenu {
     border: 1px solid palette(dark);
     border-radius: 5px;

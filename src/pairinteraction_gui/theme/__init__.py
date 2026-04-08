@@ -2,13 +2,20 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import importlib.util
 import logging
+import sys
 from pathlib import Path
-from types import ModuleType
-from typing import Protocol, cast
+from typing import TYPE_CHECKING
 
 from PySide6.QtCore import QFileSystemWatcher, QObject, QTimer, Signal
-from PySide6.QtGui import QPalette
+
+from pairinteraction_gui.theme.palette import build_application_palette
+
+if TYPE_CHECKING:
+    from types import ModuleType
+
+    from PySide6.QtGui import QPalette
 
 logger = logging.getLogger(__name__)
 
@@ -22,83 +29,91 @@ class ThemeSignals(QObject):
     themes_reloaded = Signal()
 
 
-class PaletteModule(Protocol):
-    def build_application_palette(self) -> QPalette: ...
-
-
 class ThemeManager(QObject):
     """Load theme files and optionally watch them for development reloads."""
 
     def __init__(self, theme_dir: Path | None = None) -> None:
         super().__init__()
-        self.signals = ThemeSignals(self)
         self.theme_dir = theme_dir or Path(__file__).parent
-        self._theme = ""
-        self._palette_source = ""
-        self._palette = QPalette()
+        self._theme = (self.theme_dir / _THEME_FILE_NAME).read_text()
+        self._palette = build_application_palette()
+
+        # Variables for hot reload functionality, initialized when hot reload is enabled
+        self._palette_source: str | None = None
         self._watcher: QFileSystemWatcher | None = None
-        self._reload_timer = QTimer(self)
-        self._reload_timer.setSingleShot(True)
-        self._reload_timer.setInterval(75)
-        self._reload_timer.timeout.connect(self.reload)
-        self.reload(emit_signal=False)
+        self._reload_timer: QTimer | None = None
+
+        # Signal for hot reload notifications
+        self.signals = ThemeSignals(self)
 
     def get_theme(self) -> str:
         """Return the current stylesheet content."""
         return self._theme
 
     def get_palette(self) -> QPalette:
-        """Return a copy of the configured palette."""
-        return QPalette(self._palette)
+        """Return the configured palette."""
+        return self._palette
 
-    def reload(self, *, emit_signal: bool = True) -> None:
+    def reload(self) -> None:
         """Reload the stylesheet and palette configuration from disk."""
         try:
             updated_theme = (self.theme_dir / _THEME_FILE_NAME).read_text()
-            updated_palette_source = (self.theme_dir / _PALETTE_FILE_NAME).read_text()
         except OSError:
             logger.debug("Theme reload deferred because a theme file is temporarily unavailable")
-            if self._watcher is not None:
+            if self._watcher is not None and self._reload_timer is not None:
                 self._reload_timer.start()
             return
 
         try:
+            updated_palette_source = (self.theme_dir / _PALETTE_FILE_NAME).read_text()
             palette_module = self._load_palette_module(self.theme_dir / _PALETTE_FILE_NAME, updated_palette_source)
             updated_palette = palette_module.build_application_palette()
         except Exception:
-            logger.exception("Theme reload deferred because the palette configuration is invalid")
-            if self._watcher is not None:
+            logger.exception("Theme reload deferred because the palette configuration is unavailable or invalid")
+            if self._watcher is not None and self._reload_timer is not None:
                 self._reload_timer.start()
             return
 
-        if updated_theme == self._theme and updated_palette_source == self._palette_source:
-            self._refresh_watched_paths()
-            return
-
-        self._theme = updated_theme
-        self._palette_source = updated_palette_source
-        self._palette = updated_palette
         self._refresh_watched_paths()
-        logger.info("Reloaded GUI theme files from %s", self.theme_dir)
-        if emit_signal:
+
+        updated = False
+
+        if updated_palette_source != self._palette_source:
+            self._palette_source = updated_palette_source
+            self._palette = updated_palette
+            updated = True
+
+        if updated_theme != self._theme:
+            self._theme = updated_theme
+            updated = True
+
+        if updated:
+            logger.info("Reloaded GUI theme files from %s", self.theme_dir)
             self.signals.themes_reloaded.emit()
 
     def enable_hot_reload(self) -> None:
         """Watch the theme directory and reload stylesheets when files change."""
+        if self._palette_source is None:
+            self._palette_source = (self.theme_dir / _PALETTE_FILE_NAME).read_text()
+
         if self._watcher is None:
             self._watcher = QFileSystemWatcher(self)
             self._watcher.fileChanged.connect(self._schedule_reload)
             self._watcher.directoryChanged.connect(self._schedule_reload)
 
+        if self._reload_timer is None:
+            self._reload_timer = QTimer(self)
+            self._reload_timer.setSingleShot(True)
+            self._reload_timer.setInterval(100)
+            self._reload_timer.timeout.connect(self.reload)
+
         self._refresh_watched_paths()
         logger.info("Enabled GUI theme hot reload for development")
 
-    def set_theme_dir(self, theme_dir: Path) -> None:
-        """Update the theme directory. Intended for tests and development tooling."""
-        self.theme_dir = theme_dir
-        self.reload()
-
     def _schedule_reload(self, _path: str) -> None:
+        if self._reload_timer is None:
+            return
+
         self._reload_timer.start()
 
     def _refresh_watched_paths(self) -> None:
@@ -125,11 +140,19 @@ class ThemeManager(QObject):
             self._watcher.addPath(expected_directory)
 
     @staticmethod
-    def _load_palette_module(module_path: Path, source: str) -> PaletteModule:
-        module = ModuleType("pairinteraction_gui_theme_palette_runtime")
-        module.__file__ = str(module_path)
-        exec(compile(source, str(module_path), "exec"), module.__dict__)  # noqa: S102
-        return cast("PaletteModule", module)
+    def _load_palette_module(module_path: Path, source: str) -> ModuleType:
+        module_name = "pairinteraction_gui_theme_palette_runtime"
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"Could not load palette module from {module_path}")
+
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        try:
+            spec.loader.exec_module(module)
+            return module
+        finally:
+            sys.modules.pop(module_name, None)
 
 
 theme_manager = ThemeManager()
