@@ -64,11 +64,11 @@ QToolBar#PlotNavigationToolBar QToolButton:checked, QToolBar#PlotNavigationToolB
 
 /* Toolbox */
 QToolBox QWidget  {
-    background-color: palette(base);
+    background-color: palette(window);
     color: palette(text);
 }
 QToolBox {
-    background-color: palette(base);
+    background-color: palette(window);
     border: 1px solid palette(midlight);
     border-top-style: none;
     border-bottom-style: none;
@@ -127,7 +127,7 @@ QMenu::item:selected {
 
 /* Simulation outcomes */
 QLabel[themeRole="info"] {
-    background-color: palette(base);
+    background-color: palette(window);
     color: palette(text);
     padding: 12px 16px;
     margin: 12px 0px 12px 0px;
