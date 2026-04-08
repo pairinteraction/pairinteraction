@@ -9,20 +9,31 @@ import numpy as np
 import pytest
 
 if TYPE_CHECKING:
-    from pairinteraction import BasisPair
+    from pairinteraction import BasisAtom, BasisPair, KetAtom, SystemAtom
 
     from .utils import PairinteractionModule
 
 
 @pytest.fixture
-def basis(pi_module: PairinteractionModule) -> BasisPair:
-    """Create a test basis with a few states around Rb 60S."""
+def basis_atom(pi_module: PairinteractionModule) -> BasisAtom:
+    """Create a BasisAtom around Rb 60S."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     energy_min = ket.get_energy(unit="GHz") - 100
     energy_max = ket.get_energy(unit="GHz") + 100
-    basis_atom = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
-    system_atom = pi_module.SystemAtom(basis_atom).set_electric_field([0.1, 0, 0.2], unit="V/cm")
+    return pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
+
+
+@pytest.fixture
+def system_atom(pi_module: PairinteractionModule, basis_atom: BasisAtom) -> SystemAtom:
+    """Create a diagonalized SystemAtom around Rb 60S."""
+    system_atom = pi_module.SystemAtom(basis_atom)
     system_atom.diagonalize()
+    return system_atom
+
+
+@pytest.fixture
+def basis(pi_module: PairinteractionModule, system_atom: SystemAtom) -> BasisPair:
+    """Create a test basis with a few states around Rb 60S."""
     return pi_module.BasisPair([system_atom, system_atom])
 
 
@@ -92,3 +103,44 @@ def test_error_handling(basis: BasisPair) -> None:
 
     with pytest.raises(TypeError):
         basis.get_matrix_elements("not a ket", ("energy", "energy"), (0, 0))  # type: ignore [arg-type]
+
+
+def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:
+    """Test BasisPair.from_ket_atoms."""
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket1 = pi_module.KetAtom("Rb", n=59, l=1, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+    ket_atoms_dict: dict[str, tuple[KetAtom, KetAtom] | list[tuple[KetAtom, KetAtom]]] = {
+        "single_ket": (ket, ket),
+        "multiple_kets": [(ket, ket), (ket1, ket2), (ket2, ket1)],
+    }
+
+    for ket_atoms in ket_atoms_dict.values():
+        # delta_energy restriction
+        pair_basis = pi_module.BasisPair.from_ket_atoms(
+            ket_atoms, [system_atom, system_atom], delta_energy=3, delta_energy_unit="GHz", delta_m=1
+        )
+        assert pair_basis.number_of_kets > 0
+
+        # number_of_kets
+        ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+        for target in [50, 100, 1000]:
+            pair_basis = pi_module.BasisPair.from_ket_atoms(
+                ket_atoms, [system_atom, system_atom], number_of_kets=target, delta_m=1
+            )
+            assert pair_basis.number_of_kets >= target
+            assert pair_basis.number_of_kets < target + 20  # allow some extra due to degeneracies
+
+    # test error cases
+    with pytest.raises(ValueError, match="empty"):
+        pi_module.BasisPair.from_ket_atoms([], [system_atom, system_atom])
+
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    with pytest.raises(ValueError, match="number_of_kets"):
+        pi_module.BasisPair.from_ket_atoms(
+            (ket, ket),
+            [system_atom, system_atom],
+            delta_energy=3,
+            delta_energy_unit="GHz",
+            number_of_kets=10,
+        )

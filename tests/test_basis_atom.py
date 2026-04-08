@@ -103,3 +103,54 @@ def test_error_handling(basis: BasisAtom) -> None:
 
     with pytest.raises(TypeError):
         basis.get_matrix_elements("not a ket", "energy", 0)  # type: ignore [call-overload]
+
+
+def test_from_kets(pi_module: PairinteractionModule) -> None:
+    """Test BasisAtom.from_kets."""
+    # single ket
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom.from_kets(
+        ket,
+        delta_n=2,
+        delta_nu=3,
+        delta_nui=3,
+        delta_l=2,
+        delta_s=1,
+        delta_j=3,
+        delta_l_ryd=2,
+        delta_j_ryd=3,
+        delta_f=3,
+        delta_m=2,
+        delta_energy=100,
+        delta_energy_unit="GHz",
+    )
+    assert basis.species == "Rb"
+    assert all(58 <= k.n <= 62 for k in basis.kets)
+    assert any(k.n == 62 for k in basis.kets)
+    assert any(k.n == 58 for k in basis.kets)
+    assert any(k == ket for k in basis.kets)
+
+    # multiple kets
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom.from_kets([ket1, ket2], delta_n=2)
+    assert all(58 <= k.n <= 63 for k in basis.kets)
+    assert any(k.n == 63 for k in basis.kets)
+    assert any(k.n == 58 for k in basis.kets)
+    assert any(k == ket1 for k in basis.kets)
+    assert any(k == ket2 for k in basis.kets)
+
+    # test that from_kets is consistent with direct constructor
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    basis_from = pi_module.BasisAtom.from_kets(ket, delta_n=2)
+    basis_direct = pi_module.BasisAtom("Rb", n=(58, 62))
+    assert basis_from.number_of_kets == basis_direct.number_of_kets
+
+    # test error cases
+    with pytest.raises(ValueError, match="empty"):
+        pi_module.BasisAtom.from_kets([])
+
+    ket_rb = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket_sr = pi_module.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
+    with pytest.raises(ValueError, match="species"):
+        pi_module.BasisAtom.from_kets([ket_rb, ket_sr])
