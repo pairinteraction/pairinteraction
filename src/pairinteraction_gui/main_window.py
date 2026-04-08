@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, TypeVar
 
-from PySide6.QtCore import QSize, Qt, QTimer
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -86,21 +86,6 @@ class MainWindow(QMainWindow):
         app = Application.instance()
         app.setPalette(theme_manager.get_palette())
         self.setStyleSheet(theme_manager.get_theme())
-        self._schedule_theme_screenshot()
-
-    def _schedule_theme_screenshot(self) -> None:
-        if not self._theme_hot_reload_enabled:
-            return
-        QTimer.singleShot(0, self._save_theme_screenshot)
-
-    def _save_theme_screenshot(self) -> None:
-        if not self._theme_hot_reload_enabled or not self.isVisible():
-            return
-        screenshot_path = theme_manager.theme_dir / "theme.png"
-        if self.grab().save(str(screenshot_path)):
-            logger.info("Saved GUI theme screenshot to %s", screenshot_path)
-        else:
-            logger.warning("Failed to save GUI theme screenshot to %s", screenshot_path)
 
     def findChild(  # type: ignore [override] # explicitly override type hints
         self, type_: type[ChildType], name: str, options: Qt.FindChildOption | None = None
