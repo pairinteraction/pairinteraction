@@ -28,3 +28,11 @@ class CustomNavigationToolbar(NavigationToolbar):
     def __init__(self, canvas: FigureCanvasQTAgg, parent: QWidget | None = None) -> None:
         """Initialize the custom navigation toolbar."""
         super().__init__(canvas, parent, coordinates=False)
+
+    def reset_home_view(self) -> None:
+        """Reset the home view to the current axes state.
+
+        I.e. if a user afterwards clicks the home/reset button, the view will be reset to the current view.
+        """
+        self.update()
+        self.push_current()

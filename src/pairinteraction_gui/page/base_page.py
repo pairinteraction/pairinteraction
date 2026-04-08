@@ -178,6 +178,7 @@ class CalculationPage(SimulationPage):
         self.plotwidget.plot(parameters, results)
         self.plotwidget.add_cursor(parameters, results)
         self.plotwidget.canvas.draw()
+        self.plotwidget.navigation_toolbar.reset_home_view()
         show_status_tip(self, "Finished updating plot.", logger=logger)
 
     def export_png(self) -> None:

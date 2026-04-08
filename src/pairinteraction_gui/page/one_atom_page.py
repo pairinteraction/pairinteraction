@@ -46,7 +46,6 @@ class OneAtomPage(CalculationPage):
     def update_plot(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
         super().update_plot(parameters, results)
         self.add_short_labels(results)
-        self.plotwidget.canvas.draw()
 
     def add_short_labels(
         self,
@@ -70,6 +69,9 @@ class OneAtomPage(CalculationPage):
                 continue
             used.add(short_label)
             self.plotwidget.canvas.ax.text(x_lim[0], energy, short_label, va="center", ha="right")
+
+        self.plotwidget.canvas.draw()
+        self.plotwidget.navigation_toolbar.reset_home_view()
 
     def _get_export_notebook_template_name(self) -> str:
         return "one_atom.ipynb"
