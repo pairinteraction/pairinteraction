@@ -72,6 +72,7 @@ class MainWindow(QMainWindow):
         self.apply_theme()
         if enable_theme_hot_reload:
             theme_manager.enable_hot_reload()
+            theme_manager.signals.themes_reloaded.connect(self.apply_theme)
 
         MultiProcessWorker.create_pool()
 
@@ -79,7 +80,6 @@ class MainWindow(QMainWindow):
         """Connect signals to slots."""
         self.signals = Application.instance().signals
         self.signals.ask_download_database.connect(self.ask_download_database)
-        theme_manager.signals.themes_reloaded.connect(self.apply_theme)
 
     def apply_theme(self) -> None:
         """Apply the current main application theme."""
