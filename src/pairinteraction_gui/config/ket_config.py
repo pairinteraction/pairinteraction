@@ -119,7 +119,7 @@ class KetConfig(BaseConfig):
         except Exception as err:
             err = get_custom_error(err)
             if ask_download and isinstance(err, DatabaseMissingError):
-                Application.signals.ask_download_database.emit(err.species)
+                Application.signals.ask_download_database.emit(species)
             raise err
 
     def on_species_changed(self, atom: int, species: str) -> None:
@@ -141,7 +141,7 @@ class KetConfig(BaseConfig):
             self._set_theme_role(self.ket_label_list[atom], "info")
         except Exception as err:
             if isinstance(err, NoStateFoundError):
-                self.ket_label_list[atom].setText("No ket found. Please select different quantum numbers.")
+                self.ket_label_list[atom].setText("No state found. Please select different quantum numbers.")
             elif isinstance(err, DatabaseMissingError):
                 self.ket_label_list[atom].setText(
                     "Database required but not downloaded. Please select a different species."

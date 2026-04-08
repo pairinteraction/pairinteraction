@@ -162,9 +162,9 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     window.show()
     qtbot.addWidget(window)
     one_atom_page: OneAtomPage = window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
-    one_atom_page.ket_config.species_combo_list[0].setCurrentText("Cs")
     ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
     ket_qn.items["n"].setValue(222)
+    ket_qn.items["l"].setValue(999)
     window.close()
 
     window = MainWindow(cache_dir=tmp_path)
@@ -173,5 +173,5 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     one_atom_page = window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
     ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
 
-    assert one_atom_page.ket_config.species_combo_list[0].currentText() == "Cs"
     assert ket_qn.items["n"].value() == 222
+    assert ket_qn.items["l"].value() == 999

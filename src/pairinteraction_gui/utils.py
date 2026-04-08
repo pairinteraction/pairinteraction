@@ -24,8 +24,6 @@ SpeciesTypes = Literal["sqdt_duplet", "sqdt_singlet", "sqdt_triplet", "mqdt_half
 class DatabaseMissingError(Exception):
     def __init__(self, err: RuntimeError) -> None:
         super().__init__(str(err))
-        table = next(w for w in str(err).split(" ") if "states" in w)
-        self.species = table.replace("_states", "")
 
 
 class NoStateFoundError(Exception):
@@ -35,7 +33,7 @@ class NoStateFoundError(Exception):
 
 def get_custom_error(err: Exception) -> Exception:
     """Get a custom error message based on the type of error."""
-    if isinstance(err, RuntimeError) and "Table" in str(err) and "not found" in str(err):
+    if isinstance(err, RuntimeError) and "No tables found for" in str(err):
         return DatabaseMissingError(err)
     if isinstance(err, ValueError) and ("No state found" in str(err) or "quantum number m must be" in str(err)):
         return NoStateFoundError(err)
