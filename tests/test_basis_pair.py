@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
     from .utils import PairinteractionModule
 
+from .utils import no_log_propagation
+
 
 @pytest.fixture
 def basis_atom(pi_module: PairinteractionModule) -> BasisAtom:
@@ -125,9 +127,10 @@ def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAto
         # number_of_kets
         ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
         for target in [50, 100, 1000]:
-            pair_basis = pi_module.BasisPair.from_ket_atoms(
-                ket_atoms, [system_atom, system_atom], number_of_kets=target, delta_m=1
-            )
+            with no_log_propagation("pairinteraction.basis.basis_pair"):  # surpress number_of_kets warning
+                pair_basis = pi_module.BasisPair.from_ket_atoms(
+                    ket_atoms, [system_atom, system_atom], number_of_kets=target, delta_m=1
+                )
             assert pair_basis.number_of_kets >= target
             assert pair_basis.number_of_kets < target + 20  # allow some extra due to degeneracies
 
