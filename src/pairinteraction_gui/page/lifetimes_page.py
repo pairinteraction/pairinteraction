@@ -26,7 +26,7 @@ class LifetimesPage(CalculationPage):
     """Page for calculating lifetimes."""
 
     title = "Lifetimes"
-    tooltip = "Calculate the lifetimes and transition rates for a specified ket."
+    tooltip = "Calculate the lifetimes and transition rates for a specified ket"
 
     ket_config: KetConfigLifetimes
     plotwidget: PlotWidget  # type: ignore[assignment]
@@ -34,6 +34,14 @@ class LifetimesPage(CalculationPage):
     def setupWidget(self) -> None:
         super().setupWidget()
         show_status_tip(self, "Ready", timeout=1)
+
+        self.plotwidget.canvas.fig.set_layout_engine(
+            "constrained",
+            w_pad=0.2,
+            h_pad=0.2,
+            wspace=0.0,
+            hspace=0.0,
+        )
 
         # all attributes of instance BaseConfig will be added to the toolbox in postSetupWidget
         self.ket_config = KetConfigLifetimes(self)

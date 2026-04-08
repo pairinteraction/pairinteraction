@@ -16,25 +16,29 @@ QStatusBar {
 /* Sidebar toolbar */
 QToolBar#SidebarToolBar {
     background-color: palette(dark);
-    border: none;
+    border: 1px solid palette(mid);
+    border-left-style: none;
+    border-right-style: none;
+    border-top-style: none;
 }
 QToolBar#SidebarToolBar QToolButton {
     background-color: palette(dark);
-    color: palette(bright-text);
+    color: palette(mid);
     font-weight: bold;
-    font-size: 15px;
-    border: 1px solid palette(base);
+    font-size: 14px;
+    border: 1px solid palette(mid);
     margin: 15px 10px;
-    width: 80px;
+    width: 70px;
     height: 60px;
-    border-radius:32px;
+    border-radius:30px;
 }
 QToolBar#SidebarToolBar QToolButton:hover {
-    background-color: palette(mid);
+    color: palette(bright-text);
+    border: 1px solid palette(bright-text);
 }
 QToolBar#SidebarToolBar QToolButton:checked {
-    background-color: palette(highlight);
-    color: palette(highlighted-text);
+    color: palette(bright-text);
+    border: 1px solid palette(bright-text);
 }
 
 /* Plot window toolbar */
@@ -48,8 +52,7 @@ QToolBar#PlotNavigationToolBar QToolButton {
     color: palette(window-text);
     border-radius: 5px;
     padding: 7px;
-    margin-left: 7px;
-    margin-right: 7px;
+    margin-left: 14px;
 }
 QToolBar#PlotNavigationToolBar QToolButton:hover {
     background-color: palette(midlight);
@@ -66,23 +69,23 @@ QToolBox QWidget  {
 }
 QToolBox {
     background-color: palette(base);
-    border: 1px solid palette(dark);
+    border: 1px solid palette(midlight);
     border-top-style: none;
     border-bottom-style: none;
     border-left-style: none;
     icon-size: 20px;
-    padding: 7px;
+    padding: 10px;
 }
 QToolBox::tab {
-    background-color: palette(dark);
+    background-color: palette(button);
     border: none;
     border-radius: 5px;
-    color: palette(bright-text);
+    color: palette(button-text);
     font-weight: bold;
-    font-size: 15px;
+    font-size: 14px;
 }
 QToolBox::tab:hover {
-    background-color: palette(mid);
+    background-color: palette(midlight);
 }
 QToolBox::tab:selected {
     background-color: palette(highlight);
@@ -98,6 +101,7 @@ QPushButton {
     font-weight: bold;
     margin-top: 5px;
     margin-bottom: 5px;
+    padding: 3px;
 }
 QPushButton:hover {
     background-color: palette(midlight);
@@ -114,6 +118,7 @@ QMenu {
 }
 QMenu::item {
     padding: 12px;
+    border-radius: 5px;
 }
 QMenu::item:selected {
     background-color: palette(highlight);
@@ -125,16 +130,16 @@ QLabel[themeRole="info"] {
     background-color: palette(base);
     color: palette(text);
     padding: 12px 16px;
-    margin: 12px 24px 0px 24px;
-    border-radius: 8px;
-    border: 2px solid palette(midlight);
+    margin: 12px 0px 12px 0px;
+    border-radius: 5px;
+    border: 1px solid palette(midlight);
 }
 
 QLabel[themeRole="error"] {
     background-color: #fee2e2;
     color: #991b1b;
     padding: 12px 16px;
-    margin: 12px 24px 0px 24px;
-    border-radius: 8px;
-    border: 2px solid palette(midlight);
+    margin: 12px 0px 12px 0px;
+    border-radius: 5px;
+    border: 1px solid palette(midlight);
 }
