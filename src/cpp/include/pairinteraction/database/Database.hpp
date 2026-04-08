@@ -9,6 +9,7 @@
 #include <Eigen/SparseCore>
 #include <complex>
 #include <filesystem>
+#include <future>
 #include <memory>
 #include <oneapi/tbb.h>
 #include <string>
@@ -92,9 +93,11 @@ private:
     static constexpr bool default_use_cache{true};
     static const std::filesystem::path default_database_dir;
 
-    static oneapi::tbb::concurrent_unordered_map<std::string,
-                                                 Eigen::SparseMatrix<double, Eigen::RowMajor>> &
-    get_matrix_elements_cache();
+    using cached_matrix_t = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+    using matrix_elements_cache_t = oneapi::tbb::concurrent_unordered_map<
+        std::string, std::shared_future<std::shared_ptr<const cached_matrix_t>>>;
+
+    static matrix_elements_cache_t &get_matrix_elements_cache();
 
     static Database &get_global_instance_without_checks(bool download_missing, bool use_cache,
                                                         std::filesystem::path database_dir);
