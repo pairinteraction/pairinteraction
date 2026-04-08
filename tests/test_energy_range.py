@@ -10,6 +10,8 @@ import numpy as np
 if TYPE_CHECKING:
     from .utils import PairinteractionModule
 
+from .utils import no_log_propagation
+
 
 def test_energy_range(pi_module: PairinteractionModule) -> None:
     """Test restricting the energy range in the diagonalization."""
@@ -28,7 +30,8 @@ def test_energy_range(pi_module: PairinteractionModule) -> None:
 
     # Diagonalize the systems for different distances in parallel and get all eigenenergies
     system_pairs = [pi_module.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
-    pi_module.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
+    with no_log_propagation("cpp"):  # surpress warning: "A bijective map between states and kets could not be found."
+        pi_module.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
     eigenenergies_all = [system.get_eigenenergies(unit="GHz") for system in system_pairs]
 
     # Diagonalize the systems for different distances in parallel and get only the eigenenergies in an energy range
