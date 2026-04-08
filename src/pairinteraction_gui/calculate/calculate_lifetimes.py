@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import pairinteraction as pi
-from pairinteraction_gui.worker import run_in_other_process
 
 if TYPE_CHECKING:
     import numpy as np
@@ -49,7 +48,6 @@ class ResultsLifetimes:
     lifetime: float
 
 
-@run_in_other_process
 def calculate_lifetimes(parameters: ParametersLifetimes) -> ResultsLifetimes:
     """Calculate the transition rates for a given ket."""
     return _calculate_lifetimes(parameters)

@@ -24,7 +24,7 @@ import pairinteraction
 from pairinteraction_gui.config import BaseConfig
 from pairinteraction_gui.plotwidget.plotwidget import PlotEnergies
 from pairinteraction_gui.qobjects import NamedStackedWidget, WidgetV, show_status_tip
-from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -257,7 +257,6 @@ class CalculationPage(SimulationPage):
     def abort_clicked(self) -> None:
         """Handle abort button click."""
         logger.debug("Aborting calculation.")
-        MultiProcessWorker.terminate_all(create_new_pool=True)
         MultiThreadWorker.terminate_all()
         self.after_calculate(False)
         show_status_tip(self, "Calculation aborted.", logger=logger)

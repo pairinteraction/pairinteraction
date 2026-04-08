@@ -31,7 +31,7 @@ from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.settings import SettingsManager
 from pairinteraction_gui.theme import theme_manager
 from pairinteraction_gui.utils import download_databases_mp
-from pairinteraction_gui.worker import MultiProcessWorker, MultiThreadWorker
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -73,8 +73,6 @@ class MainWindow(QMainWindow):
         if enable_theme_hot_reload:
             theme_manager.enable_hot_reload()
             theme_manager.signals.themes_reloaded.connect(self.apply_theme)
-
-        MultiProcessWorker.create_pool()
 
     def connect_signals(self) -> None:
         """Connect signals to slots."""
@@ -223,7 +221,6 @@ class MainWindow(QMainWindow):
             msg = "Successfully downloaded database table for " + species
             worker.signals.result.connect(lambda _result: self.statusbar.showMessage(msg, timeout=0))
             worker.signals.result.connect(lambda _result: setattr(Database, "_global_database", None))
-            worker.signals.result.connect(lambda _result: MultiProcessWorker.terminate_all(create_new_pool=True))
             page = self.stacked_pages.currentWidget()
             if isinstance(page, SimulationPage):
                 ket_config = page.ket_config

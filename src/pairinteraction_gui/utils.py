@@ -5,7 +5,6 @@ import re
 from typing import Literal
 
 from pairinteraction.cli import download_databases
-from pairinteraction_gui.worker import run_in_other_process
 
 AVAILABLE_SPECIES = [
     "Rb",
@@ -45,7 +44,6 @@ def get_custom_error(err: Exception) -> Exception:
     return err
 
 
-@run_in_other_process
 def download_databases_mp(species: list[str]) -> None:
     """Download the databases in a separate process."""
     download_databases(species)
