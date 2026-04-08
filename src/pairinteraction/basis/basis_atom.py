@@ -15,6 +15,8 @@ from pairinteraction.state import StateAtom, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
@@ -64,7 +66,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         energy_unit: str | None = None,
         parity: Parity | None = None,
         database: Database | None = None,
-        additional_kets: list[KetAtom] | None = None,
+        additional_kets: Sequence[KetAtom] | None = None,
     ) -> None:
         """Create a basis for a single atom.
 
@@ -142,6 +144,122 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 creator.append_ket(ket._cpp)
             self._parameters_creator["additional_kets"] = additional_kets
         self._cpp = creator.create(database._cpp)
+
+    @classmethod
+    def from_kets(
+        cls: type[Self],
+        kets: KetAtom | Sequence[KetAtom],
+        delta_n: int | None = None,
+        delta_nu: float | None = None,
+        delta_nui: float | None = None,
+        delta_l: float | None = None,
+        delta_s: float | None = None,
+        delta_j: float | None = None,
+        delta_l_ryd: float | None = None,
+        delta_j_ryd: float | None = None,
+        delta_f: int | None = None,
+        delta_m: int | None = None,
+        delta_energy: float | PintFloat | None = None,
+        delta_energy_unit: str | None = None,
+        parity: Parity | None = None,
+        database: Database | None = None,
+        additional_kets: Sequence[KetAtom] | None = None,
+    ) -> Self:
+        """Create a BasisAtom from one or more kets and quantum number deltas.
+
+        Currently a single big basis including all kets for the quantum numbers
+        from min_value - delta to max_value + delta is returned.
+        In the future this might change to return a basis including all states around the given kets +/- delta,
+        but not necessarily all states between the given kets.
+
+        For each quantum number, pass the corresponding ``delta_*`` argument to include
+        all states within ``[min_value - delta, max_value + delta]``, where
+        ``min_value`` / ``max_value`` are the extremes across all provided kets.
+        If no ``delta_*`` is given for a quantum number, that quantum number is left
+        unrestricted.
+
+        Args:
+            kets: The ket(s) around which the basis should be centered.
+            delta_n: Half-width of the n window (integer steps).
+                Default None means no restriction on n.
+            delta_nu: Half-width of the nu window.
+                Default None means no restriction on nu.
+            delta_nui: Half-width of the nui window.
+                Default None means no restriction on nui.
+            delta_l: Half-width of the l window.
+                Default None means no restriction on l.
+            delta_s: Half-width of the s window.
+                Default None means no restriction on s.
+            delta_j: Half-width of the j window.
+                Default None means no restriction on j.
+            delta_l_ryd: Half-width of the l_ryd window.
+                Default None means no restriction on l_ryd.
+            delta_j_ryd: Half-width of the j_ryd window.
+                Default None means no restriction on j_ryd.
+            delta_f: Half-width of the f window (integer steps).
+                Default None means no restriction on f.
+            delta_m: Half-width of the m window (integer steps).
+                Default None means no restriction on m.
+            delta_energy: Half-width of the energy window around the energies of the
+                provided kets. Default None means no energy restriction.
+            delta_energy_unit: Unit for ``delta_energy`` (e.g. ``"GHz"``).
+                Default None means pint quantities are used.
+            parity: Restrict to states with this parity.
+                Default None means no parity restriction.
+            database: Database instance to use.
+                Default None uses the global database.
+            additional_kets: Extra kets to force-include in the basis.
+                Default None.
+
+        Returns:
+            A new :class:`BasisAtom` centered around the provided kets.
+
+        Examples:
+            >>> import pairinteraction as pi
+            >>> ket1 = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> ket2 = pi.KetAtom("Rb", n=59, l=0, m=0.5)
+            >>> basis = pi.BasisAtom.from_kets([ket1, ket2], delta_n=2, delta_l=1)
+            >>> basis.species
+            'Rb'
+            >>> all(57 <= k.n <= 62 for k in basis.kets)
+            True
+
+        """
+        if isinstance(kets, KetAtom):
+            kets = [kets]
+        kets = list(kets)
+        if len(kets) == 0:
+            raise ValueError("kets must not be empty.")
+        if len({ket.species for ket in kets}) > 1:
+            raise ValueError(f"All kets must have the same species, but got: {sorted({ket.species for ket in kets})}.")
+
+        def get_range(name: str, delta: float | None) -> tuple[float, float] | None:
+            if delta is None:
+                return None
+            if name == "energy":
+                values = [ket.get_energy(unit=delta_energy_unit) for ket in kets]
+            else:
+                values = [getattr(ket, name) for ket in kets]
+            return (min(values) - delta, max(values) + delta)
+
+        return cls(
+            species=kets[0].species,
+            n=get_range("n", delta_n),  # type: ignore [arg-type]
+            nu=get_range("nu", delta_nu),
+            nui=get_range("nui", delta_nui),
+            l=get_range("l", delta_l),
+            s=get_range("s", delta_s),
+            j=get_range("j", delta_j),
+            l_ryd=get_range("l_ryd", delta_l_ryd),
+            j_ryd=get_range("j_ryd", delta_j_ryd),
+            f=get_range("f", delta_f),
+            m=get_range("m", delta_m),
+            energy=get_range("energy", delta_energy),  # type: ignore [arg-type]
+            energy_unit=delta_energy_unit,
+            parity=parity,
+            database=database,
+            additional_kets=additional_kets,
+        )
 
     def __repr__(self) -> str:
         if self._parameters_creator is None:
