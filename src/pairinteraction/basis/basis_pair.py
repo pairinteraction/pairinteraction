@@ -17,7 +17,7 @@ from pairinteraction.state import StatePair, StatePairReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Sequence
+    from collections.abc import Sequence
 
     from scipy.sparse import csr_matrix
 
@@ -82,7 +82,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     def __init__(
         self,
-        systems: Collection[SystemAtom],
+        systems: Sequence[SystemAtom],
         m: tuple[float, float] | None = None,
         product_of_parities: Parity | None = None,
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
@@ -127,7 +127,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     def from_ket_atoms(
         cls: type[Self],
         ket_atom_tuples: KetAtomTuple | Sequence[KetAtomTuple],
-        system_atoms: Collection[SystemAtom],
+        system_atoms: Sequence[SystemAtom],
         delta_m: float | None = None,
         product_of_parities: Parity | None = None,
         delta_energy: float | PintFloat | None = None,

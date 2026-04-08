@@ -17,7 +17,7 @@ from pairinteraction.perturbative.perturbation_theory import calculate_perturbat
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Sequence
 
     from scipy.sparse import csr_matrix
 
@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 @overload
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: Collection[KetPairLike],
+    ket_tuple_list: Sequence[KetPairLike],
     system_pair: SystemPair,
     order: int = 2,
     required_overlap: float = 0.9,
@@ -48,7 +48,7 @@ def get_effective_hamiltonian_from_system(
 
 @overload
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: Collection[KetPairLike],
+    ket_tuple_list: Sequence[KetPairLike],
     system_pair: SystemPair,
     order: int = 2,
     required_overlap: float = 0.9,
@@ -60,7 +60,7 @@ def get_effective_hamiltonian_from_system(
 
 @deprecated("Use EffectiveSystemPair(ket_tuples).get_effective_hamiltonian() instead.")
 def get_effective_hamiltonian_from_system(
-    ket_tuple_list: Collection[KetPairLike],
+    ket_tuple_list: Sequence[KetPairLike],
     system_pair: SystemPair,
     order: int = 2,
     required_overlap: float = 0.9,
@@ -122,17 +122,17 @@ def get_effective_hamiltonian_from_system(
 
 @overload
 def get_c3_from_system(
-    ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, *, unit: None = None
+    ket_tuple_list: Sequence[KetPairLike], system_pair: SystemPair, *, unit: None = None
 ) -> PintFloat: ...
 
 
 @overload
-def get_c3_from_system(ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, unit: str) -> float: ...
+def get_c3_from_system(ket_tuple_list: Sequence[KetPairLike], system_pair: SystemPair, unit: str) -> float: ...
 
 
 @deprecated("Use C3(ket1, ket2).get() instead.")
 def get_c3_from_system(
-    ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair, unit: str | None = None
+    ket_tuple_list: Sequence[KetPairLike], system_pair: SystemPair, unit: str | None = None
 ) -> float | PintFloat:
     r"""Calculate the :math:`C_3` coefficient for a list of two 2-tuples of single-atom ket states.
 
@@ -229,7 +229,7 @@ def get_c6_from_system(ket_tuple: KetPairLike, system_pair: SystemPair, unit: st
     return QuantityScalar.from_pint(c6_pint, "c6").to_pint_or_unit(unit)
 
 
-def _get_model_inds(ket_tuple_list: Collection[KetPairLike], system_pair: SystemPair) -> list[int]:
+def _get_model_inds(ket_tuple_list: Sequence[KetPairLike], system_pair: SystemPair) -> list[int]:
     """Get the indices of all ket tuples in the basis of pair system.
 
     This function takes a list of 2-tuples of ket states, and a pair system holding the entire basis.
@@ -316,7 +316,7 @@ def _check_for_resonances(
 
 @deprecated("Use EffectiveSystemPair(ket_tuples) instead to create a system for perturbative calculations.")
 def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
-    ket_tuple_list: Collection[KetAtomTuple],
+    ket_tuple_list: Sequence[KetAtomTuple],
     electric_field: PintArray | None = None,
     magnetic_field: PintArray | None = None,
     distance_vector: PintArray | None = None,

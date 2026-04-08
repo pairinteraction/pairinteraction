@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from collections.abc import Collection, Iterable
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, Union
 
 import numpy as np
@@ -17,10 +17,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self, TypeAlias
 
     NDArray: TypeAlias = npt.NDArray[Any]
-    ArrayLike: TypeAlias = Union[npt.NDArray[Any], Collection[float]]
+    ArrayLike: TypeAlias = Union[npt.NDArray[Any], Sequence[float]]
     PintFloat: TypeAlias = PlainQuantity[float]
     PintArray: TypeAlias = PlainQuantity[NDArray]
-    PintArrayLike: TypeAlias = Union["PintArray", Collection[Union[float, "PintFloat"]]]
+    PintArrayLike: TypeAlias = Union["PintArray", Sequence[Union[float, "PintFloat"]]]
     # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
     PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
     # and also for complex
@@ -253,8 +253,8 @@ class QuantityScalar(QuantityAbstract[float, float]):
 class QuantityArray(QuantityAbstract["ArrayLike", "NDArray"]):
     def check_value_type(self) -> None:
         magnitude = self._quantity.magnitude
-        if not isinstance(magnitude, Collection):
-            raise TypeError(f"value must be an np.ndarray (or a Collection), not {type(magnitude)}")
+        if not isinstance(magnitude, Sequence) and not isinstance(magnitude, np.ndarray):
+            raise TypeError(f"value must be an np.ndarray (or a Sequence), not {type(magnitude)}")
 
 
 class QuantitySparse(QuantityAbstract["csr_matrix", "csr_matrix"]):
