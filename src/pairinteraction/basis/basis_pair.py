@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from collections.abc import Collection, Sequence
-from typing import TYPE_CHECKING, Any, Union, overload
+import logging
+from typing import TYPE_CHECKING, Any, Union, cast, overload
 
 import numpy as np
 from typing_extensions import Self, TypeGuard
@@ -17,20 +17,23 @@ from pairinteraction.state import StatePair, StatePairReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Collection, Sequence
 
     from scipy.sparse import csr_matrix
 
     from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.ket import (
-        KetAtom,  # noqa: F401  # required for sphinx for KetPairLike
+        KetAtom,  # noqa: F401  # required for sphinx
+        KetAtomTuple,
         KetPairLike,
     )
     from pairinteraction.system import SystemAtom
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-BasisPairLike = Union["BasisPair", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+    BasisPairLike = Union["BasisPair", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+
+logger = logging.getLogger(__name__)
 
 
 def is_basis_pair_like(obj: Any) -> TypeGuard[BasisPairLike]:
@@ -119,6 +122,129 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         self._cpp = creator.create()
 
         self.system_atoms = tuple(systems)  # type: ignore [assignment]
+
+    @classmethod
+    def from_ket_atoms(
+        cls: type[Self],
+        ket_atom_tuples: KetAtomTuple | Sequence[KetAtomTuple],
+        system_atoms: Collection[SystemAtom],
+        delta_m: float | None = None,
+        product_of_parities: Parity | None = None,
+        delta_energy: float | PintFloat | None = None,
+        delta_energy_unit: str | None = None,
+        number_of_kets: int | None = None,
+    ) -> Self:
+        """Create a BasisPair from one or more pairs of kets with optional energy/m windows.
+
+        Each element of ``ket_atom_tuples`` is a pair ``(ket1, ket2)`` of
+        :class:`~pairinteraction.KetAtom` objects.
+
+        Currently a single big basis including all kets for the quantum numbers
+        from min_value - delta to max_value + delta is returned.
+        In the future this might change to return a basis including all states around the given kets +/- delta,
+        but not necessarily all states between the given kets.
+
+        You can either give a ``delta_energy`` to restrict the basis size in energy,
+        or give an (approximate) number_of_kets, which is used to construct a basis centered around
+        the provided ket pairs with approximately that many kets. If there are multiple states with the same energy,
+        the actual number of kets may be a bit higher than the specified number.
+
+        Args:
+            ket_atom_tuples: A single pair ``(ket1, ket2)`` of
+                :class:`~pairinteraction.KetAtom` objects, or a list of such pairs.
+                Must not be empty.
+            system_atoms: A collection of exactly two diagonalized
+                :class:`~pairinteraction.SystemAtom` objects, one per atom.
+            delta_m: Half-width of the total magnetic quantum number window
+                ``m = m1 + m2``. Default None means no m restriction.
+            product_of_parities: Restrict to pair states with this product of
+                single-atom parities. Default None means no parity restriction.
+            delta_energy: Half-width of the energy window. Mutually exclusive with
+                ``number_of_kets``. Default None means no energy restriction.
+            delta_energy_unit: Unit for ``delta_energy`` and the pair energies
+                (e.g. ``"GHz"``). Default None means pint quantities are used.
+            number_of_kets: Target number of pair kets to include. The method
+                keeps the ``number_of_kets`` states closest in energy to the
+                reference ket pairs. Mutually exclusive with ``delta_energy``.
+                Default None means no count restriction.
+
+        Returns:
+            A new :class:`BasisPair` whose energy (and optionally m) range is
+            determined by the provided ket pairs and the chosen restrictions.
+
+        Examples:
+            >>> import pairinteraction as pi
+            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> basis_atom = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+            >>> system = pi.SystemAtom(basis_atom).diagonalize()
+            >>> pair_basis = pi.BasisPair.from_ket_atoms(
+            ...     (ket, ket), [system, system], delta_energy=3, delta_energy_unit="GHz"
+            ... )
+
+        """
+        if number_of_kets is not None:
+            if delta_energy is not None:
+                raise ValueError("Cannot specify both number_of_kets and delta_energy. Please choose one of them.")
+            if number_of_kets <= 0:
+                raise ValueError("number_of_kets must be positive.")
+            logger.warning(
+                "Use number_of_kets with caution and only if you know what you are doing! "
+                "It might lead to unexpected results. "
+                "E.g. loosening other restrictions while keeping number_of_kets fixed can lead to worse results!"
+            )
+
+        if len(ket_atom_tuples) == 0:
+            raise ValueError("ket_atom_tuples must not be empty.")
+        if is_ket_atom_tuple(ket_atom_tuples):
+            ket_atom_tuples = [ket_atom_tuples]
+        if not all(is_ket_atom_tuple(t) for t in ket_atom_tuples):
+            raise ValueError("ket_atom_tuples must be a KetAtomTuple or a list of KetAtomTuple.")
+        ket_atom_tuples = cast("Sequence[KetAtomTuple]", ket_atom_tuples)
+
+        energy_range = None
+        if delta_energy is not None:
+            pair_energies = [
+                sum(
+                    system.get_corresponding_energy(ket, delta_energy_unit)
+                    for ket, system in zip(ket_atoms, system_atoms)
+                )
+                for ket_atoms in ket_atom_tuples
+            ]
+            energy_range = (min(pair_energies) - delta_energy, max(pair_energies) + delta_energy)
+
+        m_range = None
+        if delta_m is not None:
+            pair_ms = [sum(ket.m for ket in ket_atoms) for ket_atoms in ket_atom_tuples]
+            m_range = (min(pair_ms) - delta_m, max(pair_ms) + delta_m)
+
+        basis_pair = cls(
+            system_atoms,
+            m=m_range,
+            product_of_parities=product_of_parities,
+            energy=energy_range,
+            energy_unit=delta_energy_unit,
+        )
+        if number_of_kets is None or number_of_kets >= basis_pair.number_of_kets:
+            return basis_pair
+
+        pair_energies_au = [
+            sum(system.get_corresponding_energy(ket, "hartree") for ket, system in zip(ket_atoms, system_atoms))
+            for ket_atoms in ket_atom_tuples
+        ]
+        min_energy_au, max_energy_au = min(pair_energies_au), max(pair_energies_au)
+
+        cpp_kets = basis_pair._cpp.get_kets()
+        all_energies_au = np.array([ket_cpp.get_energy() for ket_cpp in cpp_kets])
+        deltas = np.maximum(np.maximum(min_energy_au - all_energies_au, all_energies_au - max_energy_au), 0)
+        delta_energy = float(np.partition(deltas, number_of_kets - 1)[number_of_kets - 1]) + 1e-10
+
+        return cls(
+            system_atoms,
+            m=m_range,
+            product_of_parities=product_of_parities,
+            energy=(min_energy_au - delta_energy, max_energy_au + delta_energy),
+            energy_unit="hartree",
+        )
 
     @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, system_atoms: tuple[SystemAtom, SystemAtom]) -> Self:
