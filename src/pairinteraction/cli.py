@@ -19,6 +19,7 @@ def main() -> int:
         epilog=(
             "Examples:\n"
             "  pairinteraction --log-level INFO gui\n"
+            "  pairinteraction gui reset\n"
             "  pairinteraction --log-level INFO test\n"
             "  pairinteraction database list\n"
             "  pairinteraction database download Rb Cs\n"
@@ -36,8 +37,16 @@ def main() -> int:
     )
     subparsers = parser.add_subparsers(dest="command", title="Available Commands")
 
-    # GUI command
-    gui_parser = subparsers.add_parser("gui", help="launch the graphical user interface")
+    # GUI command group
+    gui_parser = subparsers.add_parser(
+        "gui",
+        help="launch the graphical user interface",
+    )
+    gui_subparsers = gui_parser.add_subparsers(dest="gui_command")
+
+    gui_reset_parser = gui_subparsers.add_parser("reset", help="delete GUI settings file to restore defaults")
+    gui_reset_parser.set_defaults(func=lambda _args: reset_gui_settings())
+
     gui_parser.set_defaults(func=lambda _args: start_gui())
 
     # Test command
@@ -85,6 +94,31 @@ def start_gui() -> int:
 
     print("Launching the graphical user interface...")
     gui_main()
+    return 0
+
+
+def reset_gui_settings() -> int:
+    """Delete the GUI settings file to restore default values."""
+    from pairinteraction._backend import get_cache_directory
+
+    settings_file = get_cache_directory() / "gui_settings.ini"
+
+    if not settings_file.exists():
+        print("No GUI settings file found. Nothing to delete.")
+        return 0
+
+    confirmation = input(f"Are you sure you want to delete the GUI settings file {settings_file}? (y/N): ")
+    if confirmation.lower() not in ["y", "yes"]:
+        print(Fore.YELLOW + "Aborted deletion of GUI settings." + Style.RESET_ALL)
+        return 0
+
+    try:
+        settings_file.unlink()
+    except Exception as e:
+        print(Fore.RED + f"Error while deleting GUI settings file: {e}" + Style.RESET_ALL)
+        return 1
+
+    print(Fore.GREEN + "GUI settings deleted. Default values will be used on next launch." + Style.RESET_ALL)
     return 0
 
 
