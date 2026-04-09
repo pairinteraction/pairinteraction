@@ -26,6 +26,8 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+namespace {
+
 std::string format_time(std::time_t time_val) {
     std::tm *ptm = std::localtime(&time_val);
     std::ostringstream oss;
@@ -49,6 +51,8 @@ void save_json(const fs::path &file, const json &doc) {
     out << doc;
     out.close();
 }
+
+} // namespace
 
 namespace pairinteraction {
 void ParquetManager::react_on_exception(const std::string &context, const std::exception &e) {

@@ -13,6 +13,8 @@ uv sync --inexact --no-build-isolation -v \
   -Ccmake.define.CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```
 
+Do not use `cmake` directly but always use `uv sync` to build the project!
+
 ## Tips for Testing the Code
 
 If you changed C++ code, recompile and run:
