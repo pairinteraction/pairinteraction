@@ -10,6 +10,7 @@ import numpy as np
 from attr import dataclass
 
 import pairinteraction as pi
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -249,9 +250,13 @@ class Results(ABC):
         energy_offset: float,
     ) -> Self:
         """Create Results object from ket, basis, and diagonalized systems."""
+        MultiThreadWorker.task_checkpoint("Collecting eigenenergies...")
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
+
+        MultiThreadWorker.task_checkpoint("Calculating state overlaps...")
         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]
 
+        MultiThreadWorker.task_checkpoint("Preparing state labels...")
         steps_with_labels = [int(i) for i in np.linspace(0, parameters.steps - 1, parameters.number_state_labels)]
         states_dict = {i: system_list[i].get_eigenbasis().states for i in steps_with_labels}
         state_labels = {i: [s.get_label() for s in states] for i, states in states_dict.items()}

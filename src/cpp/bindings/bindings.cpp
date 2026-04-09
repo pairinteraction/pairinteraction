@@ -17,6 +17,7 @@
 #include "./system/System.py.hpp"
 #include "./tools/run_unit_tests.py.hpp"
 #include "./version.py.hpp"
+#include "pairinteraction/utils/TaskControl.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
@@ -37,6 +38,15 @@ NB_MODULE(_backend, m) // NOLINT
             return nb::bytes(e.message.data(), e.message.size());
         });
     m.def("get_pending_logs", []() { return bridge.get_pending_logs(); });
+
+    // wrap task control functions
+    static nb::exception<pairinteraction::TaskAbortedError> task_aborted_error(m,
+                                                                               "TaskAbortedError");
+    m.def("request_task_abort", &pairinteraction::request_task_abort);
+    m.def("clear_task_abort", &pairinteraction::clear_task_abort);
+    m.def("get_task_status", &pairinteraction::get_task_status);
+    m.def("task_checkpoint",
+          [](const std::string &message) { pairinteraction::task_checkpoint(message); });
 
     // enums
     bind_operator_type(m);

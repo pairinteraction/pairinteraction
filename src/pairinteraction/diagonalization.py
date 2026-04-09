@@ -131,11 +131,14 @@ def diagonalize(
     for i, energy in enumerate(energy_range):
         if energy is not None:
             energy_range_au[i] = QuantityScalar.convert_user_to_au(energy, energy_range_unit, "energy")
+
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:
+            _backend.task_checkpoint("Sorting diagonalized systems...")
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
+            _backend.task_checkpoint("Applying energy sorting...")
             cpp_system.transform(sorter)
         system._cpp = cpp_system
 

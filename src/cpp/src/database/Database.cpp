@@ -11,6 +11,7 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/hash.hpp"
 #include "pairinteraction/utils/id_in_database.hpp"
 #include "pairinteraction/utils/paths.hpp"
@@ -318,6 +319,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     }
 
     // Ask the database for the described state
+    task_checkpoint("Loading atomic ket from database...");
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
         exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
@@ -574,6 +576,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
     }
     {
+        task_checkpoint("Selecting atomic basis states...");
         auto result = con->Query(fmt::format(
             R"(CREATE TEMP TABLE '{}' AS SELECT *, {} AS ketid FROM (
                 SELECT *,
@@ -590,6 +593,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
     // Ask the table for the extreme values of the quantum numbers
     {
+        task_checkpoint("Validating atomic basis coverage...");
         std::string select;
         std::string separator;
         if (description.range_energy.is_finite()) {
@@ -813,6 +817,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     }
 
     // Ask the table for the described states
+    task_checkpoint("Loading atomic basis states...");
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, m, parity, ketid, n, nu, exp_nui, std_nui, exp_l, std_l,
         exp_s, std_s, exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution FROM '{}' ORDER BY ketid ASC)",
@@ -855,6 +860,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
+        task_checkpoint("Constructing atomic basis...");
 
         auto *chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
         auto *chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
@@ -1010,6 +1016,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                 }
 
                 // Ask the database for the operator
+                task_checkpoint("Loading matrix elements from database...");
                 std::string species = initial_basis->get_species();
                 duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
                 if (specifier != "energy") {
@@ -1072,6 +1079,8 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                     }
                 }
 
+                task_checkpoint("Constructing matrix elements...");
+
                 // Construct the matrix
                 int num_entries = static_cast<int>(result->RowCount());
                 outerIndexPtr.reserve(dim + 1);
@@ -1081,7 +1090,6 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                 int last_row = -1;
 
                 for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
-
                     auto *chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
                     auto *chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
                     auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
@@ -1116,6 +1124,8 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
             throw;
         }
     }
+
+    task_checkpoint("Projecting matrix elements onto basis...");
 
     // Construct the operator and return it
     auto cached_matrix = cache_it->second.get();

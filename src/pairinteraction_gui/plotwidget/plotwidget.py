@@ -19,6 +19,7 @@ from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
 from pairinteraction_gui.theme import theme_manager
+from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -95,6 +96,8 @@ class PlotEnergies(PlotWidget):
         ax.clear()
         ax.set_xmargin(0)
 
+        MultiThreadWorker.task_checkpoint("Plotting energy curves...")
+
         # store data to allow fitting later on
         self.parameters = parameters
         self.results = results
@@ -110,6 +113,8 @@ class PlotEnergies(PlotWidget):
                     ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
             else:
                 raise err
+
+        MultiThreadWorker.task_checkpoint("Plotting overlaps...")
 
         # Flatten the arrays for scatter plot and repeat x value for each energy
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
@@ -147,6 +152,7 @@ class PlotEnergies(PlotWidget):
 
         artists = []
         for idx, labels in results.state_labels.items():
+            MultiThreadWorker.task_checkpoint("Adding plot annotations...")
             x = x_values[idx]
             for energy, label in zip(energies[idx], labels):
                 artist = self.canvas.ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
