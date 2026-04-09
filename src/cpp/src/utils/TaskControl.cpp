@@ -7,6 +7,8 @@
 #include <mutex>
 
 namespace pairinteraction {
+namespace {
+
 std::atomic_bool &task_abort_requested() {
     static std::atomic_bool value = false;
     return value;
@@ -21,6 +23,8 @@ std::string &task_status() {
     static std::string value;
     return value;
 }
+
+} // namespace
 
 TaskAbortedError::TaskAbortedError() : std::runtime_error("Task aborted.") {}
 

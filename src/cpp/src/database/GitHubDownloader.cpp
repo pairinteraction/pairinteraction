@@ -14,15 +14,12 @@
 #include <stdexcept>
 
 namespace pairinteraction {
+namespace {
 
 std::filesystem::path &ca_bundle_path() {
     static std::filesystem::path path;
     return path;
 }
-
-void set_ca_bundle_path(std::filesystem::path path) { ca_bundle_path() = std::move(path); }
-
-std::filesystem::path get_ca_bundle_path() { return ca_bundle_path(); }
 
 bool load_ca_bundle_from_path(httplib::SSLClient &client, const std::filesystem::path &path) {
     if (path.empty() || !std::filesystem::is_regular_file(path)) {
@@ -68,6 +65,12 @@ void log(const httplib::Request &req, const httplib::Response &res) {
     }
     SPDLOG_DEBUG("[httplib]   {}", res.body.substr(0, 1024));
 }
+
+} // namespace
+
+void set_ca_bundle_path(std::filesystem::path path) { ca_bundle_path() = std::move(path); }
+
+std::filesystem::path get_ca_bundle_path() { return ca_bundle_path(); }
 
 GitHubDownloader::GitHubDownloader() : client(std::make_unique<httplib::SSLClient>(host)) {
     client->set_follow_location(true);
