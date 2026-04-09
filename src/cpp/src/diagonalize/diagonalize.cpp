@@ -6,6 +6,7 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/TaskControl.hpp"
 
 #include <complex>
 #include <oneapi/tbb.h>
@@ -21,6 +22,7 @@ void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
+                task_checkpoint("Diagonalizing systems...");
                 system.get().diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
             }
         });
@@ -34,6 +36,7 @@ void diagonalize(std::vector<Derived> &systems,
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
+                task_checkpoint("Diagonalizing systems...");
                 system.diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
             }
         });
@@ -47,6 +50,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
+                task_checkpoint("Diagonalizing systems...");
                 system.get().diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
             }
         });

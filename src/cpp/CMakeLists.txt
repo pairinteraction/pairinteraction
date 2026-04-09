@@ -39,6 +39,7 @@ add_library(
   ./include/pairinteraction/tools/run_unit_tests.hpp
   ./include/pairinteraction/tools/setup.hpp
   ./include/pairinteraction/utils/args.hpp
+  ./include/pairinteraction/utils/TaskControl.hpp
   ./include/pairinteraction/utils/eigen_assertion.hpp
   ./include/pairinteraction/utils/eigen_compat.hpp
   ./include/pairinteraction/utils/euler.hpp
@@ -94,6 +95,7 @@ add_library(
   ./src/system/SystemPair.test.cpp
   ./src/tools/setup.cpp
   ./src/tools/run_unit_tests.cpp
+  ./src/utils/TaskControl.cpp
   ./src/utils/euler.test.cpp
   ./src/utils/spherical.cpp
   ./src/utils/spherical.test.cpp

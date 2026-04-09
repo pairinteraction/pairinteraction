@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 import pairinteraction
 from pairinteraction import Database
+from pairinteraction.cli import download_databases
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.page import (
@@ -30,7 +31,6 @@ from pairinteraction_gui.page.base_page import SimulationPage
 from pairinteraction_gui.qobjects import NamedStackedWidget
 from pairinteraction_gui.settings import SettingsManager
 from pairinteraction_gui.theme import theme_manager
-from pairinteraction_gui.utils import download_databases_mp
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
         if download:
             self.statusbar.showMessage("Downloading database table ...", timeout=0)
 
-            worker = MultiThreadWorker(lambda: download_databases_mp([species]))
+            worker = MultiThreadWorker(lambda: download_databases([species]))
             worker.enable_busy_indicator(self.stacked_pages.currentWidget())
 
             msg = "Successfully downloaded database table for " + species

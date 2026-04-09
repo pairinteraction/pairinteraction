@@ -4,8 +4,6 @@
 import re
 from typing import Literal
 
-from pairinteraction.cli import download_databases
-
 AVAILABLE_SPECIES = [
     "Rb",
     "Li",
@@ -42,11 +40,6 @@ def get_custom_error(err: Exception) -> Exception:
     if isinstance(err, ValueError) and ("No state found" in str(err) or "quantum number m must be" in str(err)):
         return NoStateFoundError(err)
     return err
-
-
-def download_databases_mp(species: list[str]) -> None:
-    """Download the databases in a separate process."""
-    download_databases(species)
 
 
 def get_species_type(species: str) -> SpeciesTypes:

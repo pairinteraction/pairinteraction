@@ -6,9 +6,11 @@ import logging
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar
 
-from PySide6.QtCore import QObject, QSize, Qt, QThread, Signal
+from PySide6.QtCore import QObject, QSize, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QMovie
 from PySide6.QtWidgets import QApplication, QLabel
+
+from pairinteraction import _backend
 
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
@@ -21,8 +23,9 @@ class WorkerSignals(QObject):
     """Signals to be used by the Worker class."""
 
     started = Signal()
-    finished = Signal(bool)
+    finished = Signal(str)
     error = Signal(Exception)
+    progress = Signal(str)
     result = Signal(object)
 
 
@@ -48,7 +51,40 @@ class MultiThreadWorker(QThread):
         self.kwargs = kwargs
 
         self.signals = WorkerSignals()
+
+        self._last_progress_message = ""
+        self._progress_timer = QTimer(self)
+        self._progress_timer.setInterval(75)
+        self._progress_timer.timeout.connect(lambda: self.report_progress(_backend.get_task_status()))
+        self.started.connect(self._progress_timer.start)
+        self.finished.connect(self._progress_timer.stop)
         self.finished.connect(self.finish_up)
+
+    @classmethod
+    def current_worker(cls) -> MultiThreadWorker | None:
+        current_thread = QThread.currentThread()
+        if isinstance(current_thread, cls):
+            return current_thread
+        return None
+
+    @classmethod
+    def task_checkpoint(cls, progress_message: str | None = None) -> None:
+        worker = cls.current_worker()
+
+        if progress_message is not None and worker is not None:
+            worker.report_progress(progress_message)
+
+        if worker is not None and worker.isInterruptionRequested():
+            raise _backend.TaskAbortedError
+
+        _backend.task_checkpoint(progress_message or "")
+
+    def report_progress(self, message: str) -> None:
+        if not message or message == self._last_progress_message:
+            return
+
+        self._last_progress_message = message
+        self.signals.progress.emit(message)
 
     def enable_busy_indicator(self, widget: QWidget) -> None:
         """Run a loading gif while the worker is running."""
@@ -67,7 +103,7 @@ class MultiThreadWorker(QThread):
         self.busy_label.show()
         self.busy_movie.start()
 
-    def _stop_gif(self, _success: bool = True) -> None:
+    def _stop_gif(self) -> None:
         if hasattr(self, "busy_movie"):
             self.busy_movie.stop()
         if hasattr(self, "busy_label"):
@@ -76,17 +112,29 @@ class MultiThreadWorker(QThread):
     def run(self) -> None:
         """Initialise the runner function with passed args, kwargs."""
         logger.debug("Run on thread %s", self)
-        success = False
+        status = None
         self.signals.started.emit()
         try:
             result = self.fn(*self.args, **self.kwargs)
-            success = True
+            status = "Calculation succeeded"
+        except _backend.TaskAbortedError:
+            logger.debug("Calculation thread %s aborted.", self)
+            status = "Calculation aborted"
         except Exception as err:
             self.signals.error.emit(err)
         else:
             self.signals.result.emit(result)
         finally:
-            self.signals.finished.emit(success)
+            if status is None:
+                status = "Calculation failed"
+            _backend.clear_task_abort()
+            self.signals.finished.emit(status)
+
+    def request_abort(self) -> None:
+        """Request a cooperative abort for the running task."""
+        logger.debug("Requesting abort for thread %s.", self)
+        self.requestInterruption()
+        _backend.request_task_abort()
 
     def finish_up(self) -> None:
         """Perform any final cleanup or actions before the thread exits."""
@@ -101,9 +149,11 @@ class MultiThreadWorker(QThread):
         all_threads = list(cls.all_threads)
         for thread in all_threads:
             if thread.isRunning():
-                logger.debug("Terminating thread %s.", thread)
-                thread.terminate()
-                thread.signals.finished.emit(False)
+                thread.request_abort()
+
+        for thread in all_threads:
+            if thread.isRunning():
+                logger.debug("Waiting for thread %s to be aborted.", thread)
                 thread.wait()
 
         cls.all_threads.clear()

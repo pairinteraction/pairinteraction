@@ -147,14 +147,16 @@ class CalculationPage(SimulationPage):
             parameters_and_results: tuple[Parameters[Any], Results],
         ) -> None:
             worker_plot = MultiThreadWorker(self.update_plot, *parameters_and_results)
+            worker_plot.signals.progress.connect(lambda message: show_status_tip(self, message))
+            worker_plot.signals.finished.connect(lambda _: setattr(self, "_plot_finished", True))
             worker_plot.start()
-            worker_plot.signals.finished.connect(lambda _sucess: setattr(self, "_plot_finished", True))
 
         worker = MultiThreadWorker(self.calculate)
         worker.enable_busy_indicator(self)
+        worker.signals.progress.connect(lambda message: show_status_tip(self, message))
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
-        worker.signals.finished.connect(lambda _sucess: setattr(self, "_calculation_finished", True))
+        worker.signals.finished.connect(lambda _: setattr(self, "_calculation_finished", True))
         worker.start()
 
     def before_calculate(self) -> None:
@@ -164,14 +166,9 @@ class CalculationPage(SimulationPage):
 
         self._start_time = time.perf_counter()
 
-    def after_calculate(self, success: bool) -> None:
+    def after_calculate(self, status: str) -> None:
         time_needed = time.perf_counter() - self._start_time
-
-        if success:
-            show_status_tip(self, f"Calculation finished after {time_needed:.2f} seconds.", logger=logger)
-        else:
-            show_status_tip(self, f"Calculation failed after {time_needed:.2f} seconds.", logger=logger)
-
+        show_status_tip(self, f"{status} after {time_needed:.2f} seconds.", logger=logger)
         self.calculate_and_abort.setCurrentNamedWidget("Calculate")
 
     def calculate(self) -> tuple[Parameters[Any], Results]:
@@ -181,6 +178,7 @@ class CalculationPage(SimulationPage):
         self.plotwidget.plot(parameters, results)
         self.plotwidget.add_cursor(parameters, results)
         self.plotwidget.canvas.draw()
+        show_status_tip(self, "Finished updating plot.", logger=logger)
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""
@@ -258,8 +256,7 @@ class CalculationPage(SimulationPage):
         """Handle abort button click."""
         logger.debug("Aborting calculation.")
         MultiThreadWorker.terminate_all()
-        self.after_calculate(False)
-        show_status_tip(self, "Calculation aborted.", logger=logger)
+        self.after_calculate("Calculation aborted.")
 
     def _create_plot_widget(self) -> PlotEnergies:
         return PlotEnergies(self)
