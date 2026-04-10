@@ -47,3 +47,6 @@ ba3e8ac4953ba12854407fd1398e6b613b6eb9c3
 
 # Ruff formatting after future-annotations = true
 32d7459376f48a9ba0da9edf4b662e0f98bf7502
+
+# Ruff and docstrfmt formatting after updating the tools
+45563796a8cdb5912a220ce005d45f0031b1a974
