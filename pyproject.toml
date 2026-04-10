@@ -155,10 +155,10 @@ result = "{major}.{minor}.{patch}"
 
 [tool.cibuildwheel]
 build = [  # for python >= 3.12 only one stable abi wheel is built, which is then tested against all specified python versions
-  "cp3{9,10,11,12,13}-manylinux_x86_64",
-  "cp3{9,10,11,12,13}-win_amd64",
-  "cp3{9,10,11,12,13}-macosx_x86_64",
-  "cp3{9,10,11,12,13}-macosx_arm64",
+  "cp3{10,11,12,13}-manylinux_x86_64",
+  "cp3{10,11,12,13}-win_amd64",
+  "cp3{10,11,12,13}-macosx_x86_64",
+  "cp3{10,11,12,13}-macosx_arm64",
 ]
 build-frontend = "build[uv]"
 build-verbosity = 1
@@ -234,7 +234,7 @@ sources = ["src"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py310"
 extend-include = ["*.ipynb"]
 extend-exclude = ["src/pairinteraction_gui/export_templates/"]
 

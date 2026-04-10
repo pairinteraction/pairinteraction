@@ -77,7 +77,7 @@ jobs:
 
     - uses: pypa/cibuildwheel@v3.4
       env:
-        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
+        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{10,11}*' || '' }}
         CIBW_ENVIRONMENT_WINDOWS: CMAKE_ARGS='-DVCPKG_INSTALLED_DIR="${{ env.VCPKG_INSTALLED_DIR }}"'
         MACOSX_DEPLOYMENT_TARGET: ${{ matrix.os == 'macos-15-intel' && '15.0' || '14.0' }}
 
