@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import mplcursors
 import numpy as np
 from matplotlib.colors import Normalize
 from PySide6.QtGui import QPalette
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.state import StateBase
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+    from pairinteraction_gui.calculate.calculate_lifetimes import KetData, ParametersLifetimes, ResultsLifetimes
     from pairinteraction_gui.page import SimulationPage
 
 logger = logging.getLogger(__name__)
@@ -335,6 +337,88 @@ class PlotEnergies(PlotWidget):
         # and also remove any previous highlighting/fit display
         self.fit_data_highlight = None
         self.fit_curve = None
+
+
+class PlotLifetimes(PlotWidget):
+    """Plotwidget for plotting lifetime/transition rate bar charts."""
+
+    _mpl_cursor: Any | None = None
+
+    def setupWidget(self) -> None:
+        super().setupWidget()
+
+        window_color = theme_manager.get_palette().color(QPalette.ColorRole.Window).name()
+        self.canvas.fig.set_facecolor(window_color)
+        self.canvas.fig.set_layout_engine(
+            "constrained",
+            w_pad=0.2,
+            h_pad=0.2,
+            wspace=0.0,
+            hspace=0.0,
+        )
+
+    def plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
+        ax = self.canvas.ax
+        ax.clear()
+
+        n_list = np.arange(0, np.max([s.n for s in results.kets_bbr + results.kets_sp] + [0]) + 1)
+        sorted_rates: dict[str, dict[int, list[tuple[KetData, float]]]] = {}
+        for key, kets, rates in [
+            ("BBR", results.kets_bbr, results.transition_rates_bbr),
+            ("SP", results.kets_sp, results.transition_rates_sp),
+        ]:
+            sorted_rates[key] = {n: [] for n in n_list}
+            for i, s in enumerate(kets):
+                show_status_tip(self, "Preparing transition rates...")
+                sorted_rates[key][s.n].append((s, rates[i]))
+        self.sorted_rates = sorted_rates
+
+        show_status_tip(self, "Plotting transition rates...")
+        rates_summed = {key: [sum(r for _, r in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}
+        bar_sp = ax.bar(n_list, rates_summed["SP"], label="Spontaneous Decay", color="blue", alpha=0.8)
+        bar_bbr = ax.bar(n_list, rates_summed["BBR"], label="Black Body Radiation", color="red", alpha=0.8)
+        self.artists = (bar_sp, bar_bbr)
+        ax.legend()
+
+        ax.set_xlabel("Principal Quantum Number $n$")
+        ax.set_ylabel(r"Transition Rates (1 / ms)")
+
+    def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
+        """Add interactive cursor to the plot."""
+        show_status_tip(self, "Adding transition rate annotations...")
+        if self._mpl_cursor is not None:
+            if hasattr(self._mpl_cursor, "remove"):
+                self._mpl_cursor.remove()
+            self._mpl_cursor = None
+
+        self._mpl_cursor = mplcursors.cursor(
+            self.artists,
+            hover=mplcursors.HoverMode.Transient,
+            annotation_kwargs={
+                "bbox": {"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
+                "arrowprops": {"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+            },
+        )
+
+        @self._mpl_cursor.connect("add")
+        def on_add(sel: mplcursors.Selection) -> None:
+            label = sel.artist.get_label()
+            x, y, width, height = sel.artist[sel.index].get_bbox().bounds
+
+            n = round(x + width / 2)
+            key = "BBR" if "Black Body" in label else "SP"
+            state_text = "\n".join(f"{s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[key][n])
+            text = f"{label} to n={n}:\n{state_text}"
+
+            sel.annotation.set(text=text, position=(0, 20), anncoords="offset points")
+            sel.annotation.xy = (x + width / 2, y + height / 2)
+
+    def clear(self) -> None:
+        if self._mpl_cursor is not None:
+            if hasattr(self._mpl_cursor, "remove"):
+                self._mpl_cursor.remove()
+            self._mpl_cursor = None
+        super().clear()
 
 
 def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -> NDArray[Any]:
