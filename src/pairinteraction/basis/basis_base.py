@@ -61,11 +61,12 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     @property  # not cached_property since State objects are mutable
     def states(self) -> list[StateType]:
         """Return a list containing the states of the basis."""
-        states: list[StateType] = []
-        for i in range(self.number_of_states):
-            state_cpp = self._cpp.get_state(i)
-            states.append(self._state_class._from_cpp_object(state_cpp))
-        return states
+        return [self.get_state(i) for i in range(self.number_of_states)]
+
+    def get_state(self, index: int) -> StateType:
+        """Return the state at the given index."""
+        state_cpp = self._cpp.get_state(index)
+        return self._state_class._from_cpp_object(state_cpp)
 
     @property
     def number_of_kets(self) -> int:
