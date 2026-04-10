@@ -36,7 +36,7 @@ std::string KetPair<Scalar>::get_label() const {
         const auto &basis = atomic_bases[atom_index];
         size_t idx = atomic_indices[atom_index];
         Scalar coefficient =
-            basis->get_coefficients().coeff(idx, basis->get_corresponding_ket_index(idx));
+            basis->get_coefficients().coeff(basis->get_corresponding_ket_index(idx), idx);
         std::string optional_tilde = (std::abs(coefficient - 1.0) > numerical_precision) ? "~" : "";
         label += separator + optional_tilde + basis->get_corresponding_ket(idx)->get_label();
         separator = "; ";
