@@ -175,11 +175,18 @@ class CalculationPage(SimulationPage):
         raise NotImplementedError("Subclasses must implement this method")
 
     def update_plot(self, parameters: Parameters[Any], results: Results) -> None:
+        self.plotwidget.canvas.draw()  # draw once before, to avoid displaying artifacts during plotting
         self.plotwidget.plot(parameters, results)
         self.plotwidget.setup_annotations(parameters, results)
+        self._plot_function(parameters, results)
         self.plotwidget.canvas.draw()
         self.plotwidget.navigation_toolbar.reset_home_view()
         show_status_tip(self, "Finished updating plot. Tip: Click on the plot to see state information.", logger=logger)
+
+    def _plot_function(self, parameters: Parameters[Any], results: Results) -> None:
+        # This method can be overridden by subclasses to provide a custom plotting function
+        # that is called after the default plotting and before drawing the canvas.
+        pass
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""
