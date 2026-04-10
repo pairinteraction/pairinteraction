@@ -1,12 +1,14 @@
-Overview of PairInteraction's Architecture
-==========================================
+############################################
+ Overview of PairInteraction's Architecture
+############################################
 
 This page provides an overview of how the PairInteraction software is structured and how it is working internally. The
 information is intended for developers and advanced users who want to understand the software's architecture in more
 detail.
 
-Code Structure
---------------
+****************
+ Code Structure
+****************
 
 The PairInteraction software consists of three parts. Each part is implemented in a separate directory in the
 PairInteraction repository:
@@ -25,15 +27,16 @@ PairInteraction repository:
 - :github:`src/pairinteraction_gui <tree/master/src/pairinteraction_gui>` - A graphical user interface (GUI) that allows
   users to perform common calculations without writing any code. The GUI is built on top of the Python library.
 
-Control Flow
-------------
+**************
+ Control Flow
+**************
 
 Calculations with the PairInteraction software typically involve three steps that we describe in the following. Hereby,
 the result of one step is used as input for the next step. Note that, regardless of whether you use the Python library
 or the GUI, the steps are always the same and eventually performed by the C++ backend:
 
 1. Constructing a Basis
-~~~~~~~~~~~~~~~~~~~~~~~
+=======================
 
 A user can specify a basis by restricting the energies and quantum numbers of the states to be included. If a basis for
 a single atom should be constructed, the PairInteraction software uses these restrictions internally to search its
@@ -42,7 +45,7 @@ PairInteraction software combines eigenstates of two single-atom Hamiltonians so
 the criteria.
 
 2. Constructing a Hamiltonian
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=============================
 
 Independent of whether a Hamiltonian for one or two atoms should be constructed, the first step is always to obtain
 matrix elements of fundamental operators within a single-atom basis (for example, matrix elements for the dipole
@@ -54,7 +57,7 @@ required. To accelerate the calculation of the tensor products, we take into acc
 basis, ensuring that only matrix elements are constructed that belong to pair states that are energetically allowed.
 
 3. Diagonalizing the Hamiltonian
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================
 
 The Hamiltonian is diagonalized using Intel's MKL library. If multiple Hamiltonians have been constructed, for example,
 for different interatomic distances, they can be diagonalized in parallel by passing a list of Hamiltonians to the

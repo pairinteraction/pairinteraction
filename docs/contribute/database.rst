@@ -1,7 +1,8 @@
 .. _database:
 
-Database Format
-===============
+#################
+ Database Format
+#################
 
 The PairInteraction software constructs Hamiltonians from matrix elements that are stored in databases. This design
 enables the inclusion of new atomic species and even molecules into the software without requiring modification of the

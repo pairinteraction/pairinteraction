@@ -142,7 +142,7 @@ class CustomCommandBuilder(Builder[Environment, None]):  # type: ignore [misc]
         env["POLYVERSION_DATA"] = self.encoder.encode(data)
 
         # create output directory
-        output_dir.mkdir(exist_ok=True, parents=True)
+        await asyncio.to_thread(os.makedirs, output_dir, exist_ok=True)
 
         for key in ["patch_cmds", "pre_cmds", "cmds", "post_cmds"]:
             cmds = commands[key]

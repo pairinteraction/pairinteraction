@@ -1,8 +1,10 @@
-FAQs
-====
+######
+ FAQs
+######
 
-How to use PairInteraction's command line interface?
-----------------------------------------------------
+******************************************************
+ How to use PairInteraction's command line interface?
+******************************************************
 
 PairInteraction's command line interface (CLI) can run the graphical user interface (GUI), tests, and manage the
 database. To see documentation of all available commands, run the following command in the terminal:
@@ -13,8 +15,9 @@ database. To see documentation of all available commands, run the following comm
 
 This requires that the CLI is found by the terminal, otherwise use ``python -m pairinteraction --help``.
 
-How to speed up calculations?
------------------------------
+*******************************
+ How to speed up calculations?
+*******************************
 
 There are several ways to speed up calculations:
 
@@ -61,8 +64,9 @@ There are several ways to speed up calculations:
   ``l`` for the single-atom basis and the ``energy`` for the two-atom basis). Then, loosen the restrictions until
   calculations have converged.
 
-How to fix database problems?
------------------------------
+*******************************
+ How to fix database problems?
+*******************************
 
 PairInteraction uses a database of states and matrix elements to construct Hamiltonians. Because the database tables are
 large, they are not included in the PairInteraction installation but are downloaded once they are needed. The following
@@ -106,8 +110,9 @@ guide helps to solve problems with the database.
 
 .. _rate limits: https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api
 
-How to obtain debug information?
---------------------------------
+**********************************
+ How to obtain debug information?
+**********************************
 
 If a problem occurs and you want to investigate it further, the following steps can be useful. They produce output that
 can help tracking down a bug and :github:`opening an issue on GitHub <issues>`.

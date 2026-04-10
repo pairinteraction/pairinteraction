@@ -1,7 +1,8 @@
 .. _advanced:
 
-Advanced Installation
-=====================
+#######################
+ Advanced Installation
+#######################
 
 Advanced users, especially those who want to :ref:`contribute to the development of PairInteraction
 <getting_started_as_a_contributor>`, can build the software from source. The source code is available on :github:`GitHub
