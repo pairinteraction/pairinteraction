@@ -1,21 +1,21 @@
 # AGENTS.md
 
-## Building the Code
+## Building
 
 Building from scratch can take a long time. Use the following commands to take advantage of caching. If `uv` options are unavailable, update `uv`. If `ccache` is not found, omit the `CMAKE_CXX_COMPILER_LAUNCHER` option.
 
 ```bash
 uv venv
 uv pip install -r .build_requirements.txt
-uv sync --inexact --no-build-isolation -v \
+uv sync --reinstall --inexact --no-build-isolation -v \
   -Cbuild.verbose=true \
   -Cbuild-dir=build_pip \
   -Ccmake.define.CMAKE_CXX_COMPILER_LAUNCHER=ccache
 ```
 
-Do not use `cmake` directly but always use `uv sync` to build the project!
+Always build via `uv sync`, do not use `cmake` directly.
 
-## Tips for Testing the Code
+## Tips for Testing
 
 If you changed C++ code, recompile and run:
 
