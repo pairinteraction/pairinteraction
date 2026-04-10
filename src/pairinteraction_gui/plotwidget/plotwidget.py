@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -22,10 +22,10 @@ from pairinteraction_gui.theme import theme_manager
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
+    from collections.abc import Callable, Sequence
+    from typing import Concatenate
 
     from numpy.typing import NDArray
-    from typing_extensions import Concatenate
 
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
     from pairinteraction_gui.page import SimulationPage
@@ -109,7 +109,7 @@ class PlotEnergies(PlotWidget):
             ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
         except ValueError as err:
             if "inhomogeneous shape" in str(err):
-                for x_value, es in zip(x_values, energies):
+                for x_value, es in zip(x_values, energies, strict=False):
                     ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
             else:
                 raise err
@@ -118,7 +118,7 @@ class PlotEnergies(PlotWidget):
 
         # Flatten the arrays for scatter plot and repeat x value for each energy
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
-        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies)])
+        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies, strict=False)])
         energies_flattened = np.hstack(energies)
         overlaps_flattened = np.hstack(results.ket_overlaps)
 
@@ -154,7 +154,7 @@ class PlotEnergies(PlotWidget):
         for idx, labels in results.state_labels.items():
             MultiThreadWorker.task_checkpoint("Adding plot annotations...")
             x = x_values[idx]
-            for energy, label in zip(energies[idx], labels):
+            for energy, label in zip(energies[idx], labels, strict=False):
                 artist = self.canvas.ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
                 artists.extend(artist)
 
@@ -246,7 +246,7 @@ class PlotEnergies(PlotWidget):
 
         # this could be a call to np.take_along_axis if the sizes match, but the handling of inhomogeneous shapes
         # in the plot() function makes me worry they won't, so I go for a slower python for loop...
-        energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs)])
+        energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs, strict=False)])
 
         # stop highlighting the previous fit
         if hasattr(self, "fit_data_highlight"):

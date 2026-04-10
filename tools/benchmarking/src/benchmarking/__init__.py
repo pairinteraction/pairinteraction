@@ -147,11 +147,12 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
     other_softwares = [
         s for s in unique_softwares if s not in ["Alkali.ne Rydberg Calculator", "Legacy PairInteraction (v0.9.10)"]
     ]
-    palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)))))
+    palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)), strict=False)))
 
     # Set up a split plot if necessary
-    largest = sorted(data["duration_in_sec"])[-1]
-    second_largest = sorted(data["duration_in_sec"])[-2]
+    sorted_data = sorted(data["duration_in_sec"])
+    largest = sorted_data[-1]
+    second_largest = sorted_data[-2]
     is_split = largest > 3 * second_largest
 
     fig, axes = plt.subplots(

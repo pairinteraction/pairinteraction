@@ -17,13 +17,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor.green_tensor_base import PermittivityLike
-    from pairinteraction.units import (
-        ArrayLike,
-        NDArray,
-        PintArray,  # noqa: F401  # required for sphinx
-        PintArrayLike,
-        PintFloat,
-    )
+    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
 
 
 class GreenTensorCavity(GreenTensorBase):

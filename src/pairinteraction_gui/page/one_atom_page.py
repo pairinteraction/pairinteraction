@@ -60,7 +60,7 @@ class OneAtomPage(CalculationPage):
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(results.state_labels[0], results.energies[0]):
+        for ket_label, energy in zip(results.state_labels[0], results.energies[0], strict=False):
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")

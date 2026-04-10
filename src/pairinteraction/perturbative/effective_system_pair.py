@@ -23,10 +23,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction.ket import (
-        KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
-        KetAtomTuple,
-    )
+    from pairinteraction.ket import KetAtomTuple
     from pairinteraction.units import ArrayLike, NDArray, PintArray, PintFloat
 
 
@@ -352,7 +349,10 @@ class EffectiveSystemPair:
 
         """
         return [  # type: ignore [return-value]
-            sum(system.get_corresponding_energy(ket, unit=unit) for system, ket in zip(self.system_atoms, ket_tuple))
+            sum(
+                system.get_corresponding_energy(ket, unit=unit)
+                for system, ket in zip(self.system_atoms, ket_tuple, strict=False)
+            )
             for ket_tuple in self.ket_tuples
         ]
 

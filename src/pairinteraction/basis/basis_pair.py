@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Union, cast, overload
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard, cast, overload
 
 import numpy as np
-from typing_extensions import Self, TypeGuard
+from typing_extensions import Self
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom
@@ -23,15 +23,11 @@ if TYPE_CHECKING:
 
     from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
-    from pairinteraction.ket import (
-        KetAtom,  # noqa: F401  # required for sphinx
-        KetAtomTuple,
-        KetPairLike,
-    )
+    from pairinteraction.ket import KetAtomTuple, KetPairLike
     from pairinteraction.system import SystemAtom
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-    BasisPairLike = Union["BasisPair", tuple["BasisAtom", "BasisAtom"], Sequence["BasisAtom"]]
+    BasisPairLike: TypeAlias = "BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom]"
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +202,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             pair_energies = [
                 sum(
                     system.get_corresponding_energy(ket, delta_energy_unit)
-                    for ket, system in zip(ket_atoms, system_atoms)
+                    for ket, system in zip(ket_atoms, system_atoms, strict=False)
                 )
                 for ket_atoms in ket_atom_tuples
             ]
@@ -228,7 +224,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             return basis_pair
 
         pair_energies_au = [
-            sum(system.get_corresponding_energy(ket, "hartree") for ket, system in zip(ket_atoms, system_atoms))
+            sum(
+                system.get_corresponding_energy(ket, "hartree")
+                for ket, system in zip(ket_atoms, system_atoms, strict=False)
+            )
             for ket_atoms in ket_atom_tuples
         ]
         min_energy_au, max_energy_au = min(pair_energies_au), max(pair_energies_au)

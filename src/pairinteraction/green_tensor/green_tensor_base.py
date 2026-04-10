@@ -4,16 +4,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Callable, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
-
-    from typing_extensions import TypeAlias
+    from collections.abc import Callable, Collection
+    from typing import TypeAlias
 
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
@@ -25,7 +24,7 @@ if TYPE_CHECKING:
         PintFloat,
     )
 
-    PermittivityLike: TypeAlias = complex | Callable[[PintFloat], complex]
+    PermittivityLike: TypeAlias = "complex | Callable[[PintFloat], complex]"
 
 
 class GreenTensorBase(ABC):

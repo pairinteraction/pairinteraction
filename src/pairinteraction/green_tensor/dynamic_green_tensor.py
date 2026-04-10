@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING, Callable, Literal, TypeVar
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 import numpy as np
 import scipy.constants as const
@@ -20,6 +20,8 @@ from pairinteraction.green_tensor.bessel_function import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from pairinteraction.units import NDArray
 
     Entries = Literal["xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz"]

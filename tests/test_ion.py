@@ -103,6 +103,6 @@ def test_ion_angle_dependence() -> None:
     pi_module.diagonalize(systems_x + systems_y + systems_z, diagonalizer="eigen", sort_by_energy=True)
 
     # Ensure that all eigenenergies are the same
-    for system_x, system_y, system_z in zip(systems_x, systems_y, systems_z):
+    for system_x, system_y, system_z in zip(systems_x, systems_y, systems_z, strict=False):
         np.testing.assert_allclose(system_x.get_eigenenergies(unit="GHz"), system_y.get_eigenenergies(unit="GHz"))
         np.testing.assert_allclose(system_x.get_eigenenergies(unit="GHz"), system_z.get_eigenenergies(unit="GHz"))

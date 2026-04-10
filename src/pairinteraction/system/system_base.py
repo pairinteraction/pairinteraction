@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, overload
 
 import numpy as np
 from typing_extensions import deprecated
 
-from pairinteraction import _backend
 from pairinteraction.basis.basis_pair import BasisPair
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.units import QuantityArray, QuantitySparse
@@ -17,6 +16,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.basis import BasisBase
     from pairinteraction.diagonalization import Diagonalizer
     from pairinteraction.enums import FloatType
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 BasisType = TypeVar("BasisType", bound="BasisBase[Any, Any]")
-UnionCPPSystem = Union[_backend.SystemAtomComplex, _backend.SystemPairComplex]
+UnionCPPSystem: TypeAlias = "_backend.SystemAtomComplex | _backend.SystemPairComplex"
 
 
 class SystemBase(ABC, Generic[BasisType]):

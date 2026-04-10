@@ -127,6 +127,19 @@ autodoc_default_options: dict[str, Any] = {
     "undoc-members": True,  # include members without docstrings
     "class-doc-from": "class",
 }
+autodoc_type_aliases = {
+    "NDArray": "pairinteraction.units.NDArray",
+    "ArrayLike": "pairinteraction.units.ArrayLike",
+    "PintFloat": "pairinteraction.units.PintFloat",
+    "PintArray": "pairinteraction.units.PintArray",
+    "PintArrayLike": "pairinteraction.units.PintArrayLike",
+    "PintSparse": "pairinteraction.units.PintSparse",
+    "PintComplex": "pairinteraction.units.PintComplex",
+    "KetPairLike": "pairinteraction.ket.ket_pair.KetPairLike",
+    "KetAtomTuple": "pairinteraction.ket.ket_pair.KetAtomTuple",
+    "KetAtom": "pairinteraction.ket.ket_atom.KetAtom",
+    "PermittivityLike": "pairinteraction.green_tensor.green_tensor_base.PermittivityLike",
+}
 
 
 # -- Options for extlinks -------------------------------------------------
