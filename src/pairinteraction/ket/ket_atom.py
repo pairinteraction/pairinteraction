@@ -240,7 +240,7 @@ class KetAtom(KetBase):
     @overload
     def get_matrix_element(
         self, ket: Self, operator: OperatorType, q: int, unit: None = None
-    ) -> PintFloat | PintComplex: ...  # type: ignore [type-var] # see "PintComplex"
+    ) -> PintFloat | PintComplex: ...
 
     @overload
     def get_matrix_element(self, ket: Self, operator: OperatorType, q: int, unit: str) -> float | complex: ...

@@ -319,7 +319,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
-    ) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
+    ) -> PintSparse: ...
 
     @overload
     def get_matrix_elements(
