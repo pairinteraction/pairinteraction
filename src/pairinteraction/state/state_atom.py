@@ -202,7 +202,7 @@ class StateAtom(StateBase[KetAtom]):
     @overload
     def get_matrix_element(
         self, other: KetAtom | Self, operator: OperatorType, q: int, unit: None = None
-    ) -> PintFloat | PintComplex: ...  # type: ignore [type-var] # see "PintComplex"
+    ) -> PintFloat | PintComplex: ...
 
     @overload
     def get_matrix_element(

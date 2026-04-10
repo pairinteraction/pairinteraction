@@ -53,12 +53,16 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
         except Exception as e:
             warn(f"Unable to load {candidate.name}: {e}", RuntimeWarning, stacklevel=2)
 
+    add_dll_directory: Callable[[str], object] | None = getattr(os, "add_dll_directory", None)
+
     # ---------------------------------------------------------------------------------------
     # Load shared libraries
     # ---------------------------------------------------------------------------------------
 
     def fix_ssl() -> None:
         """Fix SSL library loading issues under Windows."""
+        assert add_dll_directory is not None
+
         # If PairInteraction was installed, the SSL library might have been installed together with it
         if (
             is_package_installed("pairinteraction")
@@ -85,7 +89,7 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
         possible_paths = [d / "vcpkg_installed" / "x64-windows" / "bin" for d in possible_dirs]
         for path in possible_paths:
             if path.is_dir():
-                os.add_dll_directory(str(path))  # type: ignore [attr-defined]
+                add_dll_directory(str(path))
 
     def load_mkl(system: str) -> None:
         import ctypes
@@ -126,15 +130,17 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
                 tbb_lib_file = find_library_file_in_package("tbb", "pairinteraction")
             if tbb_lib_file is None:
                 raise RuntimeError("The 'tbb' library could not be found.")
-            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
+            load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
 
             for lib in mkl_lib_file_names:
                 candidate = mkl_lib_dir / f"lib{lib}.so.2"
-                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
+                load_candidate(candidate, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))
 
         elif system == "Windows":
+            assert add_dll_directory is not None
+
             # Modify the dll search path
-            os.add_dll_directory(str(mkl_lib_dir))  # type: ignore [attr-defined]
+            add_dll_directory(str(mkl_lib_dir))
 
         else:
             warn(f"Cannot load MKL libraries on unsupported system {system}.", RuntimeWarning, stacklevel=2)

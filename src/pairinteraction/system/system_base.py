@@ -165,7 +165,7 @@ class SystemBase(ABC, Generic[BasisType]):
         return QuantityArray.convert_au_to_user(eigenenergies_au, "energy", unit)
 
     @overload
-    def get_hamiltonian(self, unit: None = None) -> PintSparse: ...  # type: ignore [type-var] # see PintSparse
+    def get_hamiltonian(self, unit: None = None) -> PintSparse: ...
 
     @overload
     def get_hamiltonian(self, unit: str) -> csr_matrix: ...
