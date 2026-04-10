@@ -7,10 +7,10 @@ from __future__ import annotations
 import os
 
 
-def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
-    import os
+def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
     import platform
-    from importlib.metadata import PackageNotFoundError, files
+    import sys
+    from importlib.metadata import PackageNotFoundError, files, version
     from pathlib import Path
     from typing import Callable
     from warnings import warn
@@ -20,23 +20,34 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
     # ---------------------------------------------------------------------------------------
     # Helper functions
     # ---------------------------------------------------------------------------------------
-    def get_library_file(package: str, substring: str) -> Path:
+    def is_package_installed(package: str) -> bool:
+        """Check whether a package is installed."""
         try:
-            package_files = files(package)
-            if package_files is None:
-                raise RuntimeError(f"Installation database records of '{package}' are missing.")
-            file_path = Path(next(p for p in package_files if substring in p.stem).locate())
-            return file_path.resolve()
-        except PackageNotFoundError as err:
-            # Also look in the current directory for the library (used by pyinstaller)
-            for p in Path(__file__).parent.glob("*"):
-                if substring in p.stem:
-                    return p.resolve()
-            raise RuntimeError(f"The '{package}' package could not be found.") from err
-        except StopIteration as err:
-            raise RuntimeError(f"The '{substring}' library could not be found.") from err
+            version(package)
+        except PackageNotFoundError:
+            return False
+        else:
+            return True
 
-    def load_candidate(candidate: Path, loader: Callable[..., None]) -> None:
+    def is_running_under_pyinstaller() -> bool:
+        return getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS")
+
+    def find_library_file_in_package(substring: str, package: str) -> Path | None:
+        """Find the library file if it got installed together with the package."""
+        if (package_files := files(package)) is not None:
+            for p in package_files:
+                if substring in p.stem:
+                    return Path(p.locate()).resolve()
+        return None
+
+    def find_library_file_in_directory(substring: str, directory: Path = Path(__file__).parent) -> Path | None:
+        """Find the library file if it is in the specified directory."""
+        for p in directory.glob("*"):
+            if substring in p.stem:
+                return p.resolve()
+        return None
+
+    def load_candidate(candidate: Path, loader: Callable[[str], object]) -> None:
         try:
             loader(str(candidate))
         except Exception as e:
@@ -45,15 +56,22 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
     # ---------------------------------------------------------------------------------------
     # Load shared libraries
     # ---------------------------------------------------------------------------------------
+
     def fix_ssl() -> None:
-        try:
-            get_library_file("pairinteraction", "ssl")
-        except RuntimeError as err:
-            if "library could not be found" not in str(err):
-                raise
-        else:
+        """Fix SSL library loading issues under Windows."""
+        # If PairInteraction was installed, the SSL library might have been installed together with it
+        if (
+            is_package_installed("pairinteraction")
+            and find_library_file_in_package("ssl", "pairinteraction") is not None
+        ):
             return
 
+        # If PairInteraction is running under PyInstaller, the SSL library might have been bundled with the executable
+        if is_running_under_pyinstaller() and find_library_file_in_directory("ssl", Path(__file__).parent) is not None:
+            return
+
+        # Else, PairInteraction is probably running in development mode and we add a bunch of directories to
+        # the DLL search path to avoid loading issues
         possible_dirs = [
             Path.cwd(),
             # look in cwd.parents
@@ -71,11 +89,16 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
 
     def load_mkl(system: str) -> None:
         import ctypes
-        import platform
-        import sys
         from functools import partial
 
-        mkl_lib_dir = get_library_file("mkl", "mkl_core").parent
+        if not is_package_installed("mkl"):
+            raise RuntimeError("The 'mkl' library is not installed.")
+
+        path = find_library_file_in_package("mkl_core", "mkl")
+        if path is None:
+            raise RuntimeError("The 'mkl_core' library could not be found.")
+
+        mkl_lib_dir = path.parent
 
         mkl_lib_file_names = [
             "mkl_core",  # must be loaded first
@@ -96,10 +119,13 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
 
         if system == "Linux":
             # Under linux, the libraries must always be loaded manually in the address space
-            try:
-                tbb_lib_file = get_library_file("tbb", "tbb")
-            except RuntimeError:
-                tbb_lib_file = get_library_file("pairinteraction", "tbb")
+            tbb_lib_file: Path | None = None
+            if is_package_installed("tbb"):
+                tbb_lib_file = find_library_file_in_package("tbb", "tbb")
+            if tbb_lib_file is None and is_package_installed("pairinteraction"):
+                tbb_lib_file = find_library_file_in_package("tbb", "pairinteraction")
+            if tbb_lib_file is None:
+                raise RuntimeError("The 'tbb' library could not be found.")
             load_candidate(tbb_lib_file, partial(ctypes.CDLL, mode=os.RTLD_LAZY | os.RTLD_GLOBAL))  # type: ignore [arg-type]
 
             for lib in mkl_lib_file_names:
@@ -109,24 +135,6 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
         elif system == "Windows":
             # Modify the dll search path
             os.add_dll_directory(str(mkl_lib_dir))  # type: ignore [attr-defined]
-
-            is_conda_cpython = platform.python_implementation() == "CPython" and (
-                hasattr(ctypes.pythonapi, "Anaconda_GetVersion") or "packaged by conda-forge" in sys.version
-            )
-
-            if sys.version_info[:2] >= (3, 10) or not is_conda_cpython:
-                return
-
-            # If conda python <= 3.9 is used, the libraries must be loaded manually in the address space
-            # https://github.com/adang1345/delvewheel/blob/c37a82f0f66dd73e0169ff637f7c0ba5b33032c6/delvewheel/_wheel_repair.py#L56-L77
-            from ctypes import WinDLL, wintypes  # type: ignore [attr-defined]
-
-            kernel32 = WinDLL("kernel32", use_last_error=True)
-            kernel32.LoadLibraryExW.restype = wintypes.HMODULE
-            kernel32.LoadLibraryExW.argtypes = wintypes.LPCWSTR, wintypes.HANDLE, wintypes.DWORD
-            for lib in mkl_lib_file_names:
-                candidate = mkl_lib_dir / f"{lib}.2.dll"
-                load_candidate(candidate, partial(kernel32.LoadLibraryExW, None, 8))
 
         else:
             warn(f"Cannot load MKL libraries on unsupported system {system}.", RuntimeWarning, stacklevel=2)
@@ -138,7 +146,7 @@ def _setup_dynamic_libaries() -> None:  # noqa: C901, PLR0915
         load_mkl(system)
 
 
-_setup_dynamic_libaries()
+_setup_dynamic_libraries()
 
 
 def _setup_ca_bundle() -> None:
@@ -172,10 +180,13 @@ def _setup_test_mode(download_missing: bool = False, database_dir: str | None = 
         ]
         possible_paths = [d / "data" / "database" for d in possible_dirs]
 
-        try:
-            database_dir = next(str(path) for path in possible_paths if any(path.rglob("wigner.parquet")))
-        except StopIteration:
-            raise FileNotFoundError("Could not find database directory") from None
+        for path in possible_paths:
+            if any(path.rglob("wigner.parquet")):
+                database_dir = str(path)
+                break
+
+        if database_dir is None:
+            raise FileNotFoundError("Could not find database directory")
 
     Database.initialize_global_database(download_missing, True, database_dir)
 
@@ -256,4 +267,4 @@ __version__ = f"{_VERSION_MAJOR}.{_VERSION_MINOR}.{_VERSION_PATCH}"
 # Clean up namespace
 # ---------------------------------------------------------------------------------------
 del _VERSION_MAJOR, _VERSION_MINOR, _VERSION_PATCH
-del _setup_dynamic_libaries  # don't delete _setup_test_mode, since it is used in tests/conftest.py
+del _setup_dynamic_libraries  # don't delete _setup_test_mode, since it is used in tests/conftest.py
