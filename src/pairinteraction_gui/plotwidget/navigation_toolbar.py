@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Callable
 
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 
@@ -28,6 +28,13 @@ class CustomNavigationToolbar(NavigationToolbar):
     def __init__(self, canvas: FigureCanvasQTAgg, parent: QWidget | None = None) -> None:
         """Initialize the custom navigation toolbar."""
         super().__init__(canvas, parent, coordinates=False)
+        self._home_callbacks: list[Callable[[], None]] = []
+
+    def home(self, *args: Any) -> None:
+        """Reset view and notify registered callbacks."""
+        super().home(*args)
+        for cb in self._home_callbacks:
+            cb()
 
     def reset_home_view(self) -> None:
         """Reset the home view to the current axes state.

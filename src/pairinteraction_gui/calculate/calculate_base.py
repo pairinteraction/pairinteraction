@@ -6,18 +6,17 @@ import logging
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-import numpy as np
 from attr import dataclass
 
 import pairinteraction as pi
 from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, Sequence
 
     from typing_extensions import Self
 
-    from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
+    from pairinteraction.system import SystemBase
     from pairinteraction.units import NDArray
     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
     from pairinteraction_gui.config.ket_config import QuantumNumbers
@@ -60,7 +59,6 @@ class Parameters(ABC, Generic[PageType]):
     diamagnetism_enabled: bool
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: tuple[float, float] | None
-    number_state_labels: int
 
     def __post_init__(self) -> None:
         """Post-initialization processing."""
@@ -106,7 +104,6 @@ class Parameters(ABC, Generic[PageType]):
             diamagnetism_enabled,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
-            page.calculation_config.number_state_labels.value(default=0),
         )
 
     @property
@@ -239,13 +236,13 @@ class Results(ABC):
     energies: list[NDArray]
     energy_offset: float
     ket_overlaps: list[NDArray]
-    state_labels: dict[int, list[str]]
+    systems: list[SystemBase[Any]]
 
     @classmethod
     def from_calculate(
         cls,
         parameters: Parameters[Any],
-        system_list: list[SystemPairReal] | list[SystemPair] | list[SystemAtomReal] | list[SystemAtom],
+        system_list: Sequence[SystemBase[Any]],
         ket: pi.KetAtom | tuple[pi.KetAtom, ...],
         energy_offset: float,
     ) -> Self:
@@ -254,14 +251,9 @@ class Results(ABC):
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
 
         MultiThreadWorker.task_checkpoint("Calculating state overlaps...")
-        ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]  # type: ignore [arg-type]
+        ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]
 
-        MultiThreadWorker.task_checkpoint("Preparing state labels...")
-        steps_with_labels = [int(i) for i in np.linspace(0, parameters.steps - 1, parameters.number_state_labels)]
-        states_dict = {i: system_list[i].get_eigenbasis().states for i in steps_with_labels}
-        state_labels = {i: [s.get_label() for s in states] for i, states in states_dict.items()}
-
-        return cls(energies, energy_offset, ket_overlaps, state_labels)
+        return cls(energies, energy_offset, ket_overlaps, list(system_list))
 
 
 def as_string(value: str, *, raw_string: bool = False) -> str:

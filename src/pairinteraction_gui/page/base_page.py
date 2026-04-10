@@ -176,10 +176,10 @@ class CalculationPage(SimulationPage):
 
     def update_plot(self, parameters: Parameters[Any], results: Results) -> None:
         self.plotwidget.plot(parameters, results)
-        self.plotwidget.add_cursor(parameters, results)
+        self.plotwidget.setup_annotations(parameters, results)
         self.plotwidget.canvas.draw()
         self.plotwidget.navigation_toolbar.reset_home_view()
-        show_status_tip(self, "Finished updating plot.", logger=logger)
+        show_status_tip(self, "Finished updating plot. Tip: Click on the plot to see state information.", logger=logger)
 
     def export_png(self) -> None:
         """Export the current plot as a PNG file."""

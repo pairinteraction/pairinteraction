@@ -15,6 +15,7 @@ from pairinteraction_gui.config import (
 from pairinteraction_gui.page.base_page import CalculationPage
 
 if TYPE_CHECKING:
+    from pairinteraction.state import StateBase
     from pairinteraction_gui.calculate.calculate_one_atom import ResultsOneAtom
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class OneAtomPage(CalculationPage):
         self,
         results: ResultsOneAtom,
     ) -> None:
-        if 0 not in results.state_labels:
+        if not results.systems:
             return
 
         ax = self.plotwidget.canvas.ax
@@ -59,7 +60,9 @@ class OneAtomPage(CalculationPage):
         ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
 
         used = set()
-        for ket_label, energy in zip(results.state_labels[0], results.energies[0], strict=False):
+        states0: list[StateBase[Any]] = results.systems[0].get_eigenbasis().states
+        for state, energy in zip(states0, results.energies[0]):
+            ket_label = state.get_label()
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]
             components = short_label.split(",")

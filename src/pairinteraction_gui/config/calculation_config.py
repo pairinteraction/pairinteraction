@@ -34,17 +34,6 @@ class CalculationConfig(BaseConfig):
         self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
         self.layout().addWidget(self.fast_mode)
 
-        self.layout().addWidget(QLabel("<b>State Annotations</b> (click on the diamond shaped markers)"))
-        self.number_state_labels = QnItemInt(
-            self,
-            "Annotate",
-            unit="state labels",
-            vdefault=10,
-            tooltip="Number of steps, for which the overlap is calculated and the corresponding state labels"
-            " can be shown by clicking on the info circles.",
-        )
-        self.layout().addWidget(self.number_state_labels)
-
         self.layout().addWidget(QLabel("<b>Energy Range</b>"))
         self.layout().addWidget(QLabel("Calculate eigenenergies in the range"))
         self.energy_range = RangeItem(

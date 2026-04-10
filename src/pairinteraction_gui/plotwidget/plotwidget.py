@@ -2,12 +2,12 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import contextlib
 import logging
 from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mplcursors
 import numpy as np
 from matplotlib.colors import Normalize
 from PySide6.QtGui import QPalette
@@ -18,6 +18,7 @@ from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
 from pairinteraction_gui.qobjects import WidgetV
+from pairinteraction_gui.qobjects.events import show_status_tip
 from pairinteraction_gui.theme import theme_manager
 from pairinteraction_gui.worker import MultiThreadWorker
 
@@ -27,6 +28,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from pairinteraction.state import StateBase
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
     from pairinteraction_gui.page import SimulationPage
 
@@ -69,10 +71,16 @@ class PlotEnergies(PlotWidget):
     parameters: Parameters[Any] | None = None
     results: Results | None = None
 
-    fit_idx: int = 0
-    fit_type: str = ""
-    fit_data_highlight: mpl.collections.PathCollection
-    fit_curve: Sequence[mpl.lines.Line2D]
+    def __init__(self, parent: SimulationPage) -> None:
+        super().__init__(parent)
+
+        self._annotations: dict[int, mpl.text.Annotation] = {}
+        self._click_cid: int | None = None
+
+        self.fit_idx = 0
+        self.fit_type = ""
+        self.fit_data_highlight: mpl.collections.PathCollection | None = None
+        self.fit_curve: Sequence[mpl.lines.Line2D] | None = None
 
     def setupWidget(self) -> None:
         super().setupWidget()
@@ -94,6 +102,7 @@ class PlotEnergies(PlotWidget):
         self.reset_fit()
         ax = self.canvas.ax
         ax.clear()
+        self.clear_annotations()
         ax.set_xmargin(0)
 
         MultiThreadWorker.task_checkpoint("Plotting energy curves...")
@@ -140,37 +149,71 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(parameters.get_x_label())
         ax.set_ylabel("Energy (GHz)")
 
-    def add_cursor(self, parameters: Parameters[Any], results: Results) -> None:
-        # Remove any existing cursors to avoid duplicates
-        if hasattr(self, "mpl_cursor"):
-            if hasattr(self.mpl_cursor, "remove"):  # type: ignore
-                self.mpl_cursor.remove()  # type: ignore
-            del self.mpl_cursor  # type: ignore
+    def clear_annotations(self) -> None:
+        for ann in self._annotations.values():
+            with contextlib.suppress(NotImplementedError):
+                ann.remove()  # artist may already be gone if ax.clear() was called
+        self._annotations.clear()
+        self.canvas.draw_idle()
+
+    def setup_annotations(self, parameters: Parameters[Any], results: Results) -> None:
+        """Connect click-based state annotation to the energy plot."""
+        if self._click_cid is not None:
+            self.canvas.mpl_disconnect(self._click_cid)
+            self._click_cid = None
+        self.clear_annotations()
 
         energies = results.energies
         x_values = parameters.get_x_values()
 
-        artists = []
-        for idx, labels in results.state_labels.items():
-            MultiThreadWorker.task_checkpoint("Adding plot annotations...")
+        self._point_index_map: list[tuple[int, int]] = []
+        all_x: list[float] = []
+        all_y: list[float] = []
+        for idx in range(len(energies)):
             x = x_values[idx]
-            for energy, label in zip(energies[idx], labels, strict=False):
-                artist = self.canvas.ax.plot(x, energy, "d", c="0.93", alpha=0.5, ms=7, label=label, zorder=-20)
-                artists.extend(artist)
+            for idstate, energy in enumerate(energies[idx]):
+                all_x.append(x)
+                all_y.append(float(energy))
+                self._point_index_map.append((idx, idstate))
+        pts_data = np.column_stack([all_x, all_y]) if all_x else np.empty((0, 2))
 
-        self.mpl_cursor = mplcursors.cursor(
-            artists,
-            hover=False,
-            annotation_kwargs={
-                "bbox": {"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
-                "arrowprops": {"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
-            },
-        )
+        def on_click(event: mpl.backend_bases.MouseEvent) -> None:
+            if event.inaxes is not self.canvas.ax or event.button != 1 or len(pts_data) == 0:
+                return
+            pts_disp = self.canvas.ax.transData.transform(pts_data)
+            click_disp = np.array([event.x, event.y])
+            dists = np.hypot(pts_disp[:, 0] - click_disp[0], pts_disp[:, 1] - click_disp[1])
+            nearest = int(np.argmin(dists))
+            if dists[nearest] > 20:  # pixel threshold
+                return
+            if nearest in self._annotations:
+                self._annotations[nearest].remove()
+                del self._annotations[nearest]
+                self.canvas.draw_idle()
+                return
+            show_status_tip(self, "Calculating state annotation...")
+            idstep, idstate = self._point_index_map[nearest]
+            state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)
+            label = state.get_label().replace(" + ", "\n + ")
+            xlim = self.canvas.ax.get_xlim()
+            ylim = self.canvas.ax.get_ylim()
+            x_frac = (pts_data[nearest, 0] - xlim[0]) / (xlim[1] - xlim[0])
+            y_frac = (pts_data[nearest, 1] - ylim[0]) / (ylim[1] - ylim[0])
+            ann = self.canvas.ax.annotate(
+                label,
+                xy=(pts_data[nearest, 0], pts_data[nearest, 1]),
+                xytext=(-80 if x_frac > 0.75 else 15, -30 if y_frac > 0.75 else 15),
+                textcoords="offset points",
+                bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
+                arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+            )
+            ann.set_in_layout(False)
+            self._annotations[nearest] = ann
+            self.canvas.draw_idle()
+            show_status_tip(self, "State annotation calculated.")
 
-        @self.mpl_cursor.connect("add")
-        def on_add(sel: mplcursors.Selection) -> None:
-            label = sel.artist.get_label()
-            sel.annotation.set_text(label.replace(" + ", "\n + "))
+        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
+        self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
     def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, PLR0915, C901
         """Fits a potential curve and displays the fit values.
@@ -249,9 +292,9 @@ class PlotEnergies(PlotWidget):
         energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs, strict=False)])
 
         # stop highlighting the previous fit
-        if hasattr(self, "fit_data_highlight"):
+        if self.fit_data_highlight is not None:
             self.fit_data_highlight.remove()
-        if hasattr(self, "fit_curve"):
+        if self.fit_curve is not None:
             for curve in self.fit_curve:
                 curve.remove()
 
@@ -283,10 +326,8 @@ class PlotEnergies(PlotWidget):
         # restart at first potential curve
         self.fit_idx = 0
         # and also remove any previous highlighting/fit display
-        if hasattr(self, "fit_data_highlight"):
-            del self.fit_data_highlight
-        if hasattr(self, "fit_curve"):
-            del self.fit_curve
+        self.fit_data_highlight = None
+        self.fit_curve = None
 
 
 def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -> NDArray[Any]:
