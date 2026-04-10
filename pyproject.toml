@@ -38,17 +38,17 @@ classifiers = [
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Scientific/Engineering",
   "Topic :: Scientific/Engineering :: Physics",
   "Typing :: Typed",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "typing_extensions >= 4.7",
   "numpy >= 2.0.2",
@@ -64,14 +64,19 @@ dependencies = [
   "nbformat >= 5.10",
   "scipy-stubs >= 1.15; python_version >= '3.10'",
   "mkl == 2025.3.0; sys_platform != 'darwin'",
-  "numba >= 0.55.0",
+  "numba == 0.62.1; sys_platform == 'darwin' and platform_machine == 'x86_64'", # FIXME: unpin once newer macOS Intel wheels are available again, see https://github.com/numba/llvmlite/issues/1357
+<<<<<<< HEAD
+  "numba >= 0.55.0; not (sys_platform == 'darwin' and platform_machine == 'x86_64')",
+=======
+  "numba >= 0.55.0; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+>>>>>>> d8ade50e (Use python 3.10 as the minimum required version because 3.9 has reached end-of-life, update dependencies, make macos-15-intel work)
 ]
 
 [dependency-groups]
 docs = [
   "sphinx > 7",
   "sphinx-rtd-theme >= 2.0",
-  "sphinx-tabs @ git+https://github.com/executablebooks/sphinx-tabs.git@143083f922aab49e26638611dce4754d43b29310", # FIXME: install from pypi once https://github.com/executablebooks/sphinx-tabs/pull/207 is included
+  "sphinx-tabs >= 3.5.0",
   "sphinx-copybutton>=0.5.2",
   "nbsphinx >= 0.9",
   "jupyter >= 1.1",
@@ -90,7 +95,7 @@ tests = [
   "sympy >= 1.13.3",
 ]
 mypy = [
-  "mypy == 1.17",  # FIXME: update this regularly
+  "mypy == 1.20",  # FIXME: update this regularly
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
 ]
