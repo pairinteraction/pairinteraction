@@ -2,11 +2,13 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from matplotlib.backends.backend_qt import NavigationToolbar2QT as NavigationToolbar
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
     from PySide6.QtWidgets import QWidget
 
