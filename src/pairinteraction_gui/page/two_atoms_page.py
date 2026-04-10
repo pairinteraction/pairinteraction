@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from PySide6.QtWidgets import QHBoxLayout, QMenu, QPushButton, QStyle
 
@@ -70,7 +70,7 @@ class TwoAtomsPage(CalculationPage):
         if results.basis_0_label is not None:
             self.basis_config.update_basis_pair_label(results.basis_0_label)
 
-    def _get_export_replacements(self) -> dict[str, Any]:
+    def _get_export_replacements(self) -> dict[str, str]:
         parameters = ParametersTwoAtoms.from_page(self)
         return parameters.to_replacement_dict()
 

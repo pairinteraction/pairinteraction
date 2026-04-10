@@ -12,8 +12,6 @@ from pairinteraction_gui.plotwidget.plotwidget import PlotLifetimes
 from pairinteraction_gui.qobjects import show_status_tip
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from pairinteraction_gui.calculate.calculate_lifetimes import ResultsLifetimes
 
 logger = logging.getLogger(__name__)
@@ -38,15 +36,8 @@ class LifetimesPage(CalculationPage):
     def _create_plot_widget(self) -> PlotLifetimes:  # type: ignore[override]
         return PlotLifetimes(self)
 
-    def _get_export_actions(self) -> list[tuple[str, Callable[[], None]]]:
-        return [("Export as PNG", self.export_png)]
-
     def calculate(self) -> tuple[ParametersLifetimes, ResultsLifetimes]:  # type: ignore[override]
-        params = ParametersLifetimes(
-            species=self.ket_config.get_species(),
-            quantum_numbers=self.ket_config.get_quantum_numbers(),
-            temperature=self.ket_config.get_temperature(),
-        )
+        params = ParametersLifetimes.from_page(self)
         results = calculate_lifetimes(params)
         return params, results
 
@@ -54,3 +45,10 @@ class LifetimesPage(CalculationPage):
         super().update_plot(parameters, results)  # type: ignore[arg-type]
         self.ket_config.set_lifetime(results.lifetime)
         show_status_tip(self, "Finished updating plot. Tip: Click on a bar to see transition details.", logger=logger)
+
+    def _get_export_notebook_template_name(self) -> str:
+        return "lifetimes.ipynb"
+
+    def _get_export_replacements(self) -> dict[str, str]:
+        parameters = ParametersLifetimes.from_page(self)
+        return parameters.to_replacement_dict()

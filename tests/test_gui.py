@@ -14,7 +14,7 @@ from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from pairinteraction_gui.page import OneAtomPage
+    from pairinteraction_gui.page import LifetimesPage, OneAtomPage
     from pairinteraction_gui.page.two_atoms_page import TwoAtomsPage
     from pytestqt.qtbot import QtBot
 
@@ -75,6 +75,18 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
     return base_window
 
 
+@pytest.fixture
+def window_lifetimes(base_window: MainWindow) -> MainWindow:
+    lifetimes_page: LifetimesPage = base_window.stacked_pages.getNamedWidget("LifetimesPage")  # type: ignore [assignment]
+    lifetimes_page.ket_config.species_combo_list[0].setCurrentText("Rb")
+    ket_qn = lifetimes_page.ket_config.stacked_qn_list[0].currentWidget()
+    ket_qn.items["n"].setValue(60)
+    ket_qn.items["l"].setValue(0)
+    ket_qn.items["m"].setValue(0.5)
+    lifetimes_page.ket_config.item_temperature.setValue(300)
+    return base_window
+
+
 def test_main_window_basic(qtbot: QtBot, window_starkmap: MainWindow) -> None:
     """Test basic main window functionality."""
     one_atom_page: OneAtomPage = window_starkmap.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
@@ -109,6 +121,31 @@ def test_one_atom_page(window_starkmap: MainWindow) -> None:
 
 def test_two_atoms_page(window_pair_potential: MainWindow) -> None:
     _test_calculate_page(window_pair_potential, "TwoAtomsPage", "pair_potential")
+
+
+def test_lifetimes_page(window_lifetimes: MainWindow) -> None:
+    page: LifetimesPage = window_lifetimes.stacked_pages.getNamedWidget("LifetimesPage")  # type: ignore [assignment]
+    parameters, results = page.calculate()
+    page.plotwidget.plot(parameters, results)
+
+    assert results.lifetime > 0
+    assert len(results.kets_sp) == len(results.transition_rates_sp)
+    assert len(results.kets_bbr) == len(results.transition_rates_bbr)
+
+    python_code = page._create_python_code()
+    python_code = python_code.replace("plt.show()", "plt.close()")  # HACK, otherwise it will block the test
+
+    locals_globals: dict[str, Any] = {}
+    exec(python_code, locals_globals, locals_globals)  # noqa: S102
+
+    rates_dict = {
+        key: [sum(r for _, r in page.plotwidget.sorted_rates[label][n]) for n in locals_globals["n_list"]]
+        for key, label in [("SP", "Spontaneous Decay"), ("BBR", "Black Body Radiation")]
+    }
+
+    assert np.isclose(locals_globals["lifetime"], results.lifetime)
+    for key, rates in rates_dict.items():
+        assert np.allclose(locals_globals["rates_summed"][key], rates)
 
 
 def _test_calculate_page(
@@ -148,7 +185,7 @@ def _test_calculate_page(
 
     # Test export to Python code
     python_code = page._create_python_code()
-    python_code = python_code.replace("plt.show()", "")  # HACK, otherwise it will block the test
+    python_code = python_code.replace("plt.show()", "plt.close()")  # HACK, otherwise it will block the test
 
     # HACK, see also https://stackoverflow.com/questions/45132645/list-comprehension-in-exec-with-empty-locals-nameerror
     locals_globals: dict[str, Any] = {}

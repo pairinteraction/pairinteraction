@@ -7,12 +7,14 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import pairinteraction as pi
+from pairinteraction_gui.calculate.calculate_base import as_string, dict_to_repl
 
 if TYPE_CHECKING:
     import numpy as np
     from numpy.typing import NDArray
 
     from pairinteraction_gui.config.ket_config import QuantumNumbers
+    from pairinteraction_gui.page import LifetimesPage
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,23 @@ class ParametersLifetimes:
     species: str
     quantum_numbers: QuantumNumbers
     temperature: float
+
+    @classmethod
+    def from_page(cls, page: LifetimesPage) -> ParametersLifetimes:
+        """Create ParametersLifetimes from the GUI page state."""
+        return cls(
+            species=page.ket_config.get_species(),
+            quantum_numbers=page.ket_config.get_quantum_numbers(),
+            temperature=page.ket_config.get_temperature(),
+        )
+
+    def to_replacement_dict(self) -> dict[str, str]:
+        """Return a dictionary with the parameters for template replacement."""
+        return {
+            "$SPECIES_0": as_string(self.species),
+            "$QUANTUM_NUMBERS_0": dict_to_repl(self.quantum_numbers),
+            "$TEMPERATURE": str(self.temperature),
+        }
 
 
 @dataclass

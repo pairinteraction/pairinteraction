@@ -75,6 +75,6 @@ class OneAtomPage(CalculationPage):
     def _get_export_notebook_template_name(self) -> str:
         return "one_atom.ipynb"
 
-    def _get_export_replacements(self) -> dict[str, Any]:
+    def _get_export_replacements(self) -> dict[str, str]:
         parameters = ParametersOneAtom.from_page(self)
         return parameters.to_replacement_dict()
