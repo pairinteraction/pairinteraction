@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import typing as t
-from typing import TYPE_CHECKING, Callable, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 import numpy as np
 from PySide6.QtWidgets import QCheckBox, QLabel, QSpacerItem
@@ -13,6 +13,8 @@ from pairinteraction_gui.qobjects.widget import WidgetH
 from pairinteraction_gui.utils import label_to_object_name
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from PySide6.QtWidgets import QWidget
 
     P = TypeVar("P")

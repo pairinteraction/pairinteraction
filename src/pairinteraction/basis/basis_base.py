@@ -4,20 +4,19 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
-
-from pairinteraction import _backend
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.state import StateBase
 
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
-UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
+UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
 
 
 class BasisBase(ABC, Generic[KetType, StateType]):

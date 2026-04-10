@@ -141,7 +141,7 @@ class GreenTensorInterpolator:
             prefactors = [GreenTensorBase._get_prefactor_au(kappa1, kappa2, omega) for omega in omegas_au]
         dimension = GreenTensorBase._get_dimension(kappa1, kappa2, scaled=scaled)
         tensors_au = [QuantityArray.convert_user_to_au(t, tensors_unit, dimension) for t in tensors]
-        scaled_tensors_au = [prefactor * t for prefactor, t in zip(prefactors, tensors_au)]
+        scaled_tensors_au = [prefactor * t for prefactor, t in zip(prefactors, tensors_au, strict=False)]
         self._cpp.create_entries_from_cartesian(kappa1, kappa2, scaled_tensors_au, omegas_au)  # type: ignore [arg-type]
         return self
 

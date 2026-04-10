@@ -7,13 +7,15 @@ import inspect
 import logging
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Callable, ClassVar, TypeVar
+from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from colorama import Fore, Style, just_fix_windows_console
 
 from pairinteraction._backend import get_pending_logs
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from typing_extensions import ParamSpec
 
     P = ParamSpec("P")

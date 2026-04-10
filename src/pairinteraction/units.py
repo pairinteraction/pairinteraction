@@ -12,19 +12,21 @@ from pint.facets.plain import PlainQuantity
 from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
+    from typing import TypeAlias
+
     import numpy.typing as npt
     from pint.facets.plain import PlainUnit
-    from typing_extensions import Self, TypeAlias
+    from typing_extensions import Self
 
-    NDArray: TypeAlias = npt.NDArray[Any]
-    ArrayLike: TypeAlias = Union[npt.NDArray[Any], Sequence[float]]
-    PintFloat: TypeAlias = PlainQuantity[float]
-    PintArray: TypeAlias = PlainQuantity[NDArray]
-    PintArrayLike: TypeAlias = Union["PintArray", Sequence[Union[float, "PintFloat"]]]
+    NDArray: TypeAlias = "npt.NDArray[Any]"
+    ArrayLike: TypeAlias = "npt.NDArray[Any] | Sequence[float]"
+    PintFloat: TypeAlias = "PlainQuantity[float]"
+    PintArray: TypeAlias = "PlainQuantity[NDArray]"
+    PintArrayLike: TypeAlias = "PintArray | Sequence[float | PintFloat]"
     # type ignore here and also below for PlainQuantity[ValueType] because pint has no type support for scipy.csr_matrix
-    PintSparse: TypeAlias = PlainQuantity[csr_matrix]  # type: ignore [type-var]
+    PintSparse: TypeAlias = "PlainQuantity[csr_matrix]"
     # and also for complex
-    PintComplex: TypeAlias = PlainQuantity[complex]  # type: ignore [type-var]
+    PintComplex: TypeAlias = "PlainQuantity[complex]"
 
 ureg = UnitRegistry(system="atomic")
 
@@ -52,7 +54,7 @@ Dimension = Literal[
     "arbitrary",
     "zero",
 ]
-DimensionLike = Union[Dimension, Iterable[Dimension]]
+DimensionLike = Dimension | Iterable[Dimension]
 
 # some abbreviations: au_time: atomic_unit_of_time; au_current: atomic_unit_of_current; m_e: electron_mass
 _CommonUnits: dict[Dimension, str] = {

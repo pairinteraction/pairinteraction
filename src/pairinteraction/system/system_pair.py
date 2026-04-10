@@ -16,10 +16,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor import GreenTensorBase, GreenTensorInterpolator
-    from pairinteraction.ket import (
-        KetAtom,  # noqa: F401  # needed for sphinx to recognize KetAtomTuple
-        KetAtomTuple,
-    )
+    from pairinteraction.ket import KetAtomTuple
     from pairinteraction.units import (
         ArrayLike,
         NDArray,

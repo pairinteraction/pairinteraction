@@ -2,21 +2,20 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Literal, Union
-
-from typing_extensions import TypeGuard
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeGuard
 
 from pairinteraction.ket.ket_atom import KetAtom
 from pairinteraction.ket.ket_base import KetBase
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from pairinteraction import _backend
     from pairinteraction.state import StateAtom
 
 
-KetAtomTuple = Union[tuple["KetAtom", "KetAtom"], Sequence["KetAtom"]]
-KetPairLike = Union["KetPair", KetAtomTuple]
+KetAtomTuple: TypeAlias = "tuple[KetAtom, KetAtom] | Sequence[KetAtom]"
+KetPairLike: TypeAlias = "KetPair | KetAtomTuple"
 
 
 def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:

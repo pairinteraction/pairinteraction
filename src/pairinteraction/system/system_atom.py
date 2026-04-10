@@ -16,12 +16,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.ket import KetAtom
-    from pairinteraction.units import (
-        ArrayLike,
-        PintArray,  # noqa: F401  # needed for sphinx to recognize PintArrayLike
-        PintArrayLike,
-        PintFloat,
-    )
+    from pairinteraction.units import ArrayLike, PintArrayLike, PintFloat
 
 
 logger = logging.getLogger(__name__)

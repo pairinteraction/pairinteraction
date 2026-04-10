@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, overload
 
 from typing_extensions import deprecated
 
@@ -18,12 +18,12 @@ if TYPE_CHECKING:
     from pairinteraction.system import SystemBase
     from pairinteraction.units import PintFloat
 
-    Quantity = TypeVar("Quantity", bound=Union[float, "PintFloat"])
+    Quantity = TypeVar("Quantity", bound="float | PintFloat")
 
 
 Diagonalizer = Literal["eigen", "lapacke_evd", "lapacke_evr", "feast"]
-UnionCPPDiagonalizer = Union[_backend.DiagonalizerInterfaceReal, _backend.DiagonalizerInterfaceComplex]
-UnionCPPDiagonalizerType = Union[type[_backend.DiagonalizerInterfaceReal], type[_backend.DiagonalizerInterfaceComplex]]
+UnionCPPDiagonalizer: TypeAlias = "_backend.DiagonalizerInterfaceReal | _backend.DiagonalizerInterfaceComplex"
+UnionCPPDiagonalizerType: TypeAlias = "type[_backend.DiagonalizerInterfaceReal | _backend.DiagonalizerInterfaceComplex]"
 
 _DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
     "real": {
@@ -134,7 +134,7 @@ def diagonalize(
 
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
-    for system, cpp_system in zip(systems, cpp_systems):
+    for system, cpp_system in zip(systems, cpp_systems, strict=False):
         if sort_by_energy:
             _backend.task_checkpoint("Sorting diagonalized systems...")
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])

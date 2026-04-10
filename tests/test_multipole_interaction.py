@@ -43,11 +43,11 @@ def test_pair_potential(pi_module: PairinteractionModule, species: str) -> None:
     # Separate the contributions of the different multipole orders
     order_3 = [
         a.get_hamiltonian(unit="GHz").todense() - b.get_hamiltonian(unit="GHz").todense()
-        for a, b in zip(system_pairs_3, system_pairs_0)
+        for a, b in zip(system_pairs_3, system_pairs_0, strict=False)
     ]
     order_4 = [
         a.get_hamiltonian(unit="GHz").todense() - b.get_hamiltonian(unit="GHz").todense()
-        for a, b in zip(system_pairs_4, system_pairs_3)
+        for a, b in zip(system_pairs_4, system_pairs_3, strict=False)
     ]
 
     # Check that each order of the multipole expansion of the interaction has a significant contribution

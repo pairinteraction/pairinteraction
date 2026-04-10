@@ -3,20 +3,19 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 import numpy as np
-
-from pairinteraction import _backend
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
 
 KetType = TypeVar("KetType", bound="KetBase")
-UnionCPPBasis = Union[_backend.BasisAtomComplex, _backend.BasisPairComplex]
+UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
 
 
 class StateBase(ABC, Generic[KetType]):

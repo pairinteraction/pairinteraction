@@ -3,19 +3,19 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import TYPE_CHECKING, Literal, Union, overload
+from typing import TYPE_CHECKING, Literal, TypeAlias, overload
 
-from pairinteraction import _backend
 from pairinteraction.enums import get_python_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.enums import Parity
     from pairinteraction.units import PintFloat
 
-UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex]
+UnionCPPKet: TypeAlias = "_backend.KetAtom | _backend.KetPairComplex"
 
 
 class KetBase(ABC):

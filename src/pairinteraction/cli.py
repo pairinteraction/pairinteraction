@@ -4,11 +4,14 @@
 import argparse
 import sys
 from pathlib import Path
-from typing import Callable, cast
+from typing import TYPE_CHECKING, cast
 
 from colorama import Fore, Style
 
 from pairinteraction import __version__, configure_logging
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def main() -> int:

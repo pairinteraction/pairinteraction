@@ -5,6 +5,10 @@
 from __future__ import annotations
 
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
@@ -12,7 +16,6 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
     import sys
     from importlib.metadata import PackageNotFoundError, files, version
     from pathlib import Path
-    from typing import Callable
     from warnings import warn
 
     from pairinteraction._info import Info
