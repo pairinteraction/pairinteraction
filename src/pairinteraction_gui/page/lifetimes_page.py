@@ -53,4 +53,4 @@ class LifetimesPage(CalculationPage):
     def update_plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:  # type: ignore[override]
         super().update_plot(parameters, results)  # type: ignore[arg-type]
         self.ket_config.set_lifetime(results.lifetime)
-        show_status_tip(self, "Finished updating plot. Tip: Hover over bars to see transition details.", logger=logger)
+        show_status_tip(self, "Finished updating plot. Tip: Click on a bar to see transition details.", logger=logger)

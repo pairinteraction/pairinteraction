@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import mplcursors
 import numpy as np
 from matplotlib.colors import Normalize
 from PySide6.QtGui import QPalette
@@ -41,13 +40,16 @@ class PlotWidget(WidgetV):
 
     margin = (0, 0, 0, 0)
     spacing = 15
+    _annotations: dict[Any, mpl.text.Annotation]
 
     def __init__(self, parent: SimulationPage) -> None:
         """Initialize the base section."""
         mpl.use("Qt5Agg")
-
         self.page = parent
         super().__init__(parent)
+
+        self._annotations = {}
+        self._click_cid: int | None = None
 
     def setupWidget(self) -> None:
         self.canvas = MatplotlibCanvas(self)
@@ -65,18 +67,28 @@ class PlotWidget(WidgetV):
         self.canvas.ax.clear()
         self.canvas.draw()
 
+    def clear_annotations(self) -> None:
+        for ann in self._annotations.values():
+            with contextlib.suppress(NotImplementedError):
+                ann.remove()  # artist may already be gone if ax.clear() was called
+        self._annotations.clear()
+        self.canvas.draw_idle()
+
+    def disconnect_click(self) -> None:
+        if self._click_cid is not None:
+            self.canvas.mpl_disconnect(self._click_cid)
+            self._click_cid = None
+
 
 class PlotEnergies(PlotWidget):
     """Plotwidget for plotting energy levels."""
 
     parameters: Parameters[Any] | None = None
     results: Results | None = None
+    _annotations: dict[int, mpl.text.Annotation]
 
     def __init__(self, parent: SimulationPage) -> None:
         super().__init__(parent)
-
-        self._annotations: dict[int, mpl.text.Annotation] = {}
-        self._click_cid: int | None = None
 
         self.fit_idx = 0
         self.fit_type = ""
@@ -149,18 +161,9 @@ class PlotEnergies(PlotWidget):
         ax.set_xlabel(parameters.get_x_label())
         ax.set_ylabel("Energy (GHz)")
 
-    def clear_annotations(self) -> None:
-        for ann in self._annotations.values():
-            with contextlib.suppress(NotImplementedError):
-                ann.remove()  # artist may already be gone if ax.clear() was called
-        self._annotations.clear()
-        self.canvas.draw_idle()
-
     def setup_annotations(self, parameters: Parameters[Any], results: Results) -> None:
         """Connect click-based state annotation to the energy plot."""
-        if self._click_cid is not None:
-            self.canvas.mpl_disconnect(self._click_cid)
-            self._click_cid = None
+        self.disconnect_click()
         self.clear_annotations()
 
         energies = results.energies
@@ -180,9 +183,9 @@ class PlotEnergies(PlotWidget):
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
             if event.inaxes is not self.canvas.ax or event.button != 1 or len(pts_data) == 0:
                 return
-            pts_disp = self.canvas.ax.transData.transform(pts_data)
-            click_disp = np.array([event.x, event.y])
-            dists = np.hypot(pts_disp[:, 0] - click_disp[0], pts_disp[:, 1] - click_disp[1])
+            pts_pos = self.canvas.ax.transData.transform(pts_data)
+            click_pos = np.array([event.x, event.y])
+            dists = np.hypot(pts_pos[:, 0] - click_pos[0], pts_pos[:, 1] - click_pos[1])
             nearest = int(np.argmin(dists))
             if dists[nearest] > 20:  # pixel threshold
                 self.clear_annotations()
@@ -342,7 +345,7 @@ class PlotEnergies(PlotWidget):
 class PlotLifetimes(PlotWidget):
     """Plotwidget for plotting lifetime/transition rate bar charts."""
 
-    _mpl_cursor: Any | None = None
+    _annotations: dict[tuple[str, int], mpl.text.Annotation]
 
     def setupWidget(self) -> None:
         super().setupWidget()
@@ -361,63 +364,103 @@ class PlotLifetimes(PlotWidget):
         ax = self.canvas.ax
         ax.clear()
 
+        show_status_tip(self, "Preparing transition rates...")
+        labels = ["Spontaneous Decay", "Black Body Radiation"]
         n_list = np.arange(0, np.max([s.n for s in results.kets_bbr + results.kets_sp] + [0]) + 1)
         sorted_rates: dict[str, dict[int, list[tuple[KetData, float]]]] = {}
         for key, kets, rates in [
-            ("BBR", results.kets_bbr, results.transition_rates_bbr),
-            ("SP", results.kets_sp, results.transition_rates_sp),
+            (labels[0], results.kets_sp, results.transition_rates_sp),
+            (labels[1], results.kets_bbr, results.transition_rates_bbr),
         ]:
             sorted_rates[key] = {n: [] for n in n_list}
             for i, s in enumerate(kets):
-                show_status_tip(self, "Preparing transition rates...")
                 sorted_rates[key][s.n].append((s, rates[i]))
         self.sorted_rates = sorted_rates
+        rates_summed = {key: [sum(r for _, r in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}
 
         show_status_tip(self, "Plotting transition rates...")
-        rates_summed = {key: [sum(r for _, r in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}
-        bar_sp = ax.bar(n_list, rates_summed["SP"], label="Spontaneous Decay", color="blue", alpha=0.8)
-        bar_bbr = ax.bar(n_list, rates_summed["BBR"], label="Black Body Radiation", color="red", alpha=0.8)
-        self.artists = (bar_sp, bar_bbr)
+        self.artists: list[mpl.container.BarContainer] = []
+        for label, color in zip(labels, ["blue", "red"], strict=True):
+            bar = ax.bar(n_list, rates_summed[label], label=label, color=color, alpha=0.8)
+            self.artists.append(bar)
         ax.legend()
 
         ax.set_xlabel("Principal Quantum Number $n$")
         ax.set_ylabel(r"Transition Rates (1 / ms)")
 
     def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
-        """Add interactive cursor to the plot."""
+        """Add click-based annotations to the plot."""
         show_status_tip(self, "Adding transition rate annotations...")
-        if self._mpl_cursor is not None:
-            if hasattr(self._mpl_cursor, "remove"):
-                self._mpl_cursor.remove()
-            self._mpl_cursor = None
+        self.disconnect_click()
+        self.clear_annotations()
 
-        self._mpl_cursor = mplcursors.cursor(
-            self.artists,
-            hover=mplcursors.HoverMode.Transient,
-            annotation_kwargs={
-                "bbox": {"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
-                "arrowprops": {"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
-            },
-        )
+        self._bar_data: list[tuple[str, int, mpl.patches.Rectangle]] = []
+        for container in reversed(self.artists):
+            label = container.get_label()
+            if label is None:
+                continue
+            for rect in container.patches:
+                n = round(rect.get_x() + rect.get_width() / 2)
+                self._bar_data.append((label, n, rect))
 
-        @self._mpl_cursor.connect("add")
-        def on_add(sel: mplcursors.Selection) -> None:
-            label = sel.artist.get_label()
-            x, y, width, height = sel.artist[sel.index].get_bbox().bounds
+        def on_click(event: mpl.backend_bases.MouseEvent) -> None:
+            if event.inaxes is not self.canvas.ax or event.button != 1:
+                return
 
-            n = round(x + width / 2)
-            key = "BBR" if "Black Body" in label else "SP"
-            state_text = "\n".join(f"{s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[key][n])
+            if event.xdata is None or event.ydata is None:
+                return
+            click_coords = np.array([event.xdata, event.ydata])
+
+            for _label, _n, rect in self._bar_data:
+                x, y = rect.get_x(), rect.get_y()
+                if x <= click_coords[0] <= x + rect.get_width() and y <= click_coords[1] <= y + rect.get_height():
+                    label, n = _label, _n
+                    break
+            else:  # no break -> no bar found
+                self.clear_annotations()
+                return
+
+            # if we click the same bar again, remove the annotation
+            if (label, n) in self._annotations:
+                self._annotations[(label, n)].remove()
+                del self._annotations[(label, n)]
+                self.canvas.draw_idle()
+                return
+
+            state_text = "\n".join(f"  - {s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[label][n])
             text = f"{label} to n={n}:\n{state_text}"
+            xlim = self.canvas.ax.get_xlim()
+            ylim = self.canvas.ax.get_ylim()
+            bar_cx = rect.get_x() + rect.get_width() / 2
+            bar_top = rect.get_y() + rect.get_height()
+            x_frac = (bar_cx - xlim[0]) / (xlim[1] - xlim[0])
+            y_frac = (bar_top - ylim[0]) / (ylim[1] - ylim[0])
+            ha = "right" if x_frac > 0.5 else "left"
+            va = "top" if y_frac > 0.5 else "bottom"
+            x_offset = -15 if x_frac > 0.5 else 15
+            y_offset = -10 if y_frac > 0.5 else 10
+            ann = self.canvas.ax.annotate(
+                text,
+                xy=(bar_cx, bar_top),
+                xytext=(x_offset, y_offset),
+                textcoords="offset points",
+                ha=ha,
+                va=va,
+                bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
+                arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+                clip_on=False,
+                annotation_clip=False,
+            )
+            ann.set_in_layout(False)
+            self._annotations[(label, n)] = ann
+            self.canvas.draw_idle()
 
-            sel.annotation.set(text=text, position=(0, 20), anncoords="offset points")
-            sel.annotation.xy = (x + width / 2, y + height / 2)
+        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
+        self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
     def clear(self) -> None:
-        if self._mpl_cursor is not None:
-            if hasattr(self._mpl_cursor, "remove"):
-                self._mpl_cursor.remove()
-            self._mpl_cursor = None
+        self.disconnect_click()
+        self.clear_annotations()
         super().clear()
 
 
