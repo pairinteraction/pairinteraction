@@ -114,14 +114,11 @@ class PlotEnergies(PlotWidget):
         x_values = parameters.get_x_values()
         energies = results.energies
 
-        try:
+        if len({len(es) for es in energies}) <= 1:  # check if homogeneous shape
             ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
-        except ValueError as err:
-            if "inhomogeneous shape" in str(err):
-                for x_value, es in zip(x_values, energies, strict=False):
-                    ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
-            else:
-                raise err
+        else:
+            for x_value, es in zip(x_values, energies, strict=False):
+                ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
 
         MultiThreadWorker.task_checkpoint("Plotting overlaps...")
 
