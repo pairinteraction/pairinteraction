@@ -4,7 +4,7 @@ Installation
 ============
 
 The PairInteraction software runs on Linux, macOS (version 14 or later on Apple Silicon & version 15 or later on Intel),
-and Windows. It is compatible with Python ≥ 3.9.
+and Windows. It is compatible with Python ≥ 3.10.
 
 Installing from PyPI
 --------------------

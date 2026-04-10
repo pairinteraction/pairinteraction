@@ -28,7 +28,7 @@
 
 **Note: This is a completely new version of the PairInteraction software that is not backward compatible to versions below v1.0.**
 
-The *PairInteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. For a more detailed description of the software that is written to be accessible also to non-specialists, see the [About page][about-link] of the project. The software can be installed via pip (requires Python >= 3.9, for tips see our [extended installation instructions][installation-link]):
+The *PairInteraction* software calculates properties of Rydberg atoms. The software consists of a Python library and a graphical user interface for obtaining single-atom properties and calculating pair potentials, making use of a high-performance C++ backend. For a more detailed description of the software that is written to be accessible also to non-specialists, see the [About page][about-link] of the project. The software can be installed via pip (requires Python >= 3.10, for tips see our [extended installation instructions][installation-link]):
 
 ```bash
 pip install pairinteraction

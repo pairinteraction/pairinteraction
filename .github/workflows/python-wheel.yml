@@ -41,7 +41,7 @@ jobs:
         include:
         - os: ubuntu-latest # runs in container anyway
         - os: windows-2022
-        # - os: macos-15-intel  # temporarily disabled until llvmlite build is fixed on macOS 15
+        - os: macos-15-intel
         - os: macos-14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
@@ -142,7 +142,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
       with:
-        python-version: 3.9
+        python-version: 3.10
 
     - name: Download the sdist
       uses: actions/download-artifact@v8

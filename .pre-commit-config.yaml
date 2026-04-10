@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -17,7 +17,7 @@ repos:
         args: ["-i", "--style=file"]
 
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.5.5
+    rev: v1.5.6
     hooks:
       - id: remove-tabs
 
@@ -28,20 +28,20 @@ repos:
         args: ["--first-comment-is-literal"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+    rev: v0.15.10
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: ["--fix", "--exit-non-zero-on-fix"]
       - id: ruff-format
 
   - repo: https://github.com/PyCQA/doc8
-    rev: 'v1.1.2'
+    rev: 'v2.0.0'
     hooks:
       - id: doc8
         args: ["--max-line-length=120", "--ignore-path=docs/_templates", "--ignore-path=docs/index.rst"]
 
   - repo: https://github.com/LilSpazJoekp/docstrfmt
-    rev: 'v1.10.0'
+    rev: 'v2.0.2'
     hooks:
       - id: docstrfmt
         args: ["--line-length", "120"]
@@ -49,14 +49,14 @@ repos:
         types_or: [rst]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.20.0
     hooks:
       - id: mypy
         additional_dependencies: ["numpy >= 1.24", "typing_extensions >= 4.7", "pyside6 >= 6.8.2", "pyside6-stubs >= 6.7.3.0", "pint >= 0.24.4, < 0.25.1", "attrs >= 24.0"]  # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also pyproject.toml)
         args: ["--ignore-missing-imports"]
 
   - repo: https://github.com/fsfe/reuse-tool
-    rev: v5.0.2
+    rev: v6.2.0
     hooks:
       - id: reuse-lint-file
         exclude: '^(?!CMakeLists\.txt$|.*\.(cmake|toml|py|cpp|hpp|qss)$)'
