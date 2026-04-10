@@ -1,7 +1,8 @@
 .. _documentation:
 
-Building the Documentation
-==========================
+############################
+ Building the Documentation
+############################
 
 For building the documentation, we are using Sphinx_. In order to build the documentation, you first need to set up your
 :ref:`development environment <system_setup>` and create a :ref:`Python environment <python_setup>`. If not stated

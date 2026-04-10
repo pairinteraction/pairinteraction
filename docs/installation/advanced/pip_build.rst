@@ -1,7 +1,8 @@
 .. _automatic:
 
-Build using pip
-===============
+#################
+ Build using pip
+#################
 
 **1. Setup**
 
@@ -31,7 +32,7 @@ After cloning the repository and creating the virtual environment, you can build
 
 This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. In
 order for pip to find CMake and VCPKG, make sure you have adjusted your environment variables as discussed in our
-section on :ref:`setting up your development environment<system_setup>`. The option ``-e`` installs the software in
+section on :ref:`setting up your development environment <system_setup>`. The option ``-e`` installs the software in
 editable mode, which means that changes to the Python source code are directly reflected in the installed package. If
 you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual
 environment.

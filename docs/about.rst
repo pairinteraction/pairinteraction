@@ -1,8 +1,10 @@
-About
-=====
+#######
+ About
+#######
 
-What are Rydberg atoms?
------------------------
+*************************
+ What are Rydberg atoms?
+*************************
 
 Rydberg atoms are atoms with one electron excited to a very high energy level. These atoms have exaggerated properties,
 such as a large size, long lifetimes, and strong interactions with other Rydberg atoms, ions, and electric fields. The
@@ -14,8 +16,9 @@ simulators and to build quantum gates for quantum computing. Although quantum co
 are still a rather young technology, they already achieve fidelities on par with other leading quantum computing
 platforms, and offer the potential for scalable architectures.
 
-For what is the PairInteraction software?
------------------------------------------
+*******************************************
+ For what is the PairInteraction software?
+*******************************************
 
 To use Rydberg atoms, it is necessary to understand the interactions between them and how they can be tuned to fulfill
 the needs of the desired application. The PairInteraction software package provides a Python library and graphical user
@@ -44,8 +47,9 @@ of high electric and magnetic fields.
 To get started with the software, visit the user guide of our documentation. It contains :ref:`tutorials <tutorials>`
 such as a quick start guide, Jupyter notebooks with example applications, and an :ref:`API reference <api_reference>`.
 
-Can I contribute to the software?
----------------------------------
+***********************************
+ Can I contribute to the software?
+***********************************
 
 The software is open source and licensed under LGPL v3. We are always happy to receive contributions such as pull
 requests, bug reports, and new examples for our documentation. Our contributor guide shows :ref:`how to get started as a

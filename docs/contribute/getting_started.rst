@@ -1,14 +1,16 @@
 .. _getting_started_as_a_contributor:
 
-Getting Started as a Contributor
-================================
+##################################
+ Getting Started as a Contributor
+##################################
 
 The PairInteraction software has greatly benefited from the contributions of our community. If you're also interested in
 enhancing PairInteraction, this guide is for you. Don't hesitate to reach out to the maintainers for any questions or
 further assistance.
 
-Ways to Contribute
-------------------
+********************
+ Ways to Contribute
+********************
 
 Reporting Issues
     Encountered a bug or have a suggestion? Help us improve by submitting an issue on :github:`our GitHub issue page
@@ -36,8 +38,9 @@ Developing Features or Resolving Bugs
     :github:`perturbative calculation of dispersion coefficients and effective Hamiltonians
     <tree/master/src/pairinteraction/perturbative>`).
 
-Making Changes to the Repository
---------------------------------
+**********************************
+ Making Changes to the Repository
+**********************************
 
 If you're interested in creating tutorials, adding features, or addressing bugs, and want to make changes to the
 PairInteraction repository, this guide is for you. It assumes a basic familiarity with Git and GitHub. For newcomers, we
@@ -46,7 +49,7 @@ encourage exploring `GitHub's educational resources`_.
 .. _github's educational resources: https://docs.github.com/en/get-started
 
 1. Fork and Clone the Repository
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+================================
 
 Start by forking the PairInteraction repository to your GitHub account by clicking the :github:`"Fork" <fork>` button on
 the repository's page. This action creates your own version of the repository, enabling you to perform changes freely.
@@ -70,7 +73,7 @@ Hamiltonians.
 .. _git lfs: https://git-lfs.com
 
 2. Set Up a Development Environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+===================================
 
 Before implementing any changes, :ref:`set up a development environment and build the software from source <advanced>`
 to guarantee the build system is functioning on your computer. In the following we provide a brief summary of the
@@ -134,7 +137,7 @@ execute:
 .. _pre-commit tool: https://pre-commit.com
 
 3. Implement, Test, and Document Your Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=============================================
 
 After applying your changes, run our test cases to ensure that the software is still working. If built the software via
 ``pip``, make sure your virtual environment is activated, then run:
@@ -156,7 +159,7 @@ If you added new features, consider writing tests to validate their functionalit
 usage.
 
 4. Commit and Push
-~~~~~~~~~~~~~~~~~~
+==================
 
 With successful testing and having added some documentation, commit your changes and push them to your fork (if you are
 working on multiple different features, consider creating a new branch for each feature; otherwise, you can commit
@@ -169,7 +172,7 @@ directly to the master branch of your fork).
     git push
 
 5. Submit a Pull Request
-~~~~~~~~~~~~~~~~~~~~~~~~
+========================
 
 Finally, initiate a pull request to merge your contributions with the main repository. From the main repository page, go
 to the :github:`"Pull requests" <pull>` page, and click the :github:`"New pull request" <compare>` button to compare

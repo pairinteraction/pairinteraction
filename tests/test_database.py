@@ -172,8 +172,8 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
 def test_obtaining_kets(pi_module: PairinteractionModule, species: str) -> None:
     """Test obtaining kets from the database."""
     is_mqdt = species.endswith("_mqdt")
-    is_single_valence_electron = species in ["Rb"]
-    is_triplet = species in ["Sr88_triplet"]
+    is_single_valence_electron = species == "Rb"
+    is_triplet = species == "Sr88_triplet"
 
     quantum_number_i = SPECIES_TO_NUCLEAR_SPIN[species] if is_mqdt else 0
     quantum_number_s = 0.5 if is_single_valence_electron else (1 if is_triplet else 0)

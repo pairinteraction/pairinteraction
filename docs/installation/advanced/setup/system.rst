@@ -1,14 +1,16 @@
 .. _system_setup:
 
-Setup of the Development Environment
-====================================
+######################################
+ Setup of the Development Environment
+######################################
 
 This section described how to set up your system for a :ref:`manual build <manual>` of the C++ backend from source. This
 is highly platform dependent, and is described below for each operating system individually. In order to create a Python
 environment for the Python backend, refer to our :ref:`Python <python_setup>` setup instructions.
 
-Windows
--------
+*********
+ Windows
+*********
 
 In order to be able to compile the source code, you have to install the following tools and dependencies:
 
@@ -51,8 +53,9 @@ prompt. If you want to only change your environment variabels temporarily, you c
     Even though the command `setx` allows you to permanently override your path variable from the command line, we
     highly disencourage you from using it, as it might permamently delete parts of your system environment variable.
 
-OS X
-----
+******
+ OS X
+******
 
 Before compiling the source code, you have to install the following tools and dependencies:
 
@@ -62,8 +65,9 @@ Build tools
 
 You can obtain the C++ dependencies from the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>`.
 
-GNU/Linux
----------
+***********
+ GNU/Linux
+***********
 
 Before compiling the source code, you have to install the following tools and dependencies:
 
@@ -91,8 +95,9 @@ integration. The Dockerfiles are located in the :github:`docker branch <tree/doc
 
 .. _visual studio: https://visualstudio.microsoft.com/downloads/
 
-Tips independent of the OS
---------------------------
+****************************
+ Tips independent of the OS
+****************************
 
 .. note::
 

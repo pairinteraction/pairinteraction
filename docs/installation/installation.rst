@@ -1,13 +1,15 @@
 .. _installation:
 
-Installation
-============
+##############
+ Installation
+##############
 
 The PairInteraction software runs on Linux, macOS (version 14 or later on Apple Silicon & version 15 or later on Intel),
 and Windows. It is compatible with Python ≥ 3.10.
 
-Installing from PyPI
---------------------
+**********************
+ Installing from PyPI
+**********************
 
 For most users, we recommend installing PairInteraction from the `Python Package Index (PyPI)`_. You can install
 PairInteraction from the command line via the pip_ package manager:
@@ -70,7 +72,7 @@ PairInteraction from the command line via the pip_ package manager:
 .. _uv: https://docs.astral.sh/uv/
 
 Next Steps
-~~~~~~~~~~
+==========
 
 After the installation, we recommend verifying that everything is working:
 
@@ -102,8 +104,9 @@ section of the documentation.
 from the command line. This allows you to do some common and basic calculations without writing any code. For more
 information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.
 
-Installing from Flathub (Linux only)
-------------------------------------
+**************************************
+ Installing from Flathub (Linux only)
+**************************************
 
 If you are on Linux and only interested in the graphical user interface, you can install PairInteraction as a Flatpak_
 package. For the installation, you have to first install Flatpak (follow the `setup guide`_ for your Linux distribution)
@@ -124,8 +127,9 @@ Afterwards, you can start the GUI with:
 
 .. _setup guide: https://flathub.org/setup
 
-Building from Source
---------------------
+**********************
+ Building from Source
+**********************
 
 For developers and experienced users who want to adjust the source code to their own needs, or want :ref:`to contribute
 to the package <getting_started_as_a_contributor>` we recommend building the software from source. Some instructions on

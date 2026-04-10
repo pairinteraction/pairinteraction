@@ -1,5 +1,6 @@
-Publications
-============
+##############
+ Publications
+##############
 
 If you use PairInteraction in your research, please cite the following publication:
 

@@ -1,5 +1,6 @@
-Style Guide
-===========
+#############
+ Style Guide
+#############
 
 This guide outlines the coding style and conventions used in the project.
 
@@ -32,8 +33,9 @@ For manual checks at any time, execute:
 While this fixes a lot of formatting issues automatically and enforces some coding rules, there are still some rules
 that need to be followed manually and are described in the following.
 
-Naming Conventions for Python and C++
--------------------------------------
+***************************************
+ Naming Conventions for Python and C++
+***************************************
 
 - Use descriptive names! Explicit is always better than implicit (for example, don't name a Hamiltonian ``h`` but
   ``hamiltonian``). The only allowed exceptions to this rule are the names of loop variables or variables in list
@@ -48,11 +50,12 @@ Naming Conventions for Python and C++
   matrix of objects (such as a list of overlaps), we use the plural form. If a method returns a single object, we use
   the singular form.
 
-File and Folder Names
----------------------
+***********************
+ File and Folder Names
+***********************
 
 C++
-~~~
+===
 
 - Use ``snake_case`` for folders. Files are named after the class/function they contain. Thus, we use ``CamelCase`` for
   file names containing classes and ``snake_case`` for file names containing functions. Note that most of the time, each
@@ -61,7 +64,7 @@ C++
   (``src/cpp/include/pairinteraction/**/*.hpp``).
 
 Python
-~~~~~~
+======
 
 - Always use ``snake_case`` for folders and files. It is common to have multiple classes in one file if they are closely
   related.
@@ -76,14 +79,15 @@ Python
   require much code) or create a new folder in ``src/pairinteraction/`` with multiple files (if the feature is more
   complex).
 
-Type Annotations
-----------------
+******************
+ Type Annotations
+******************
 
 To avoid bugs, make the code more readable, and help with code completion, we use strict typing. Avoid ``void`` pointers
 and ``dynamic_casts`` in C++. Use type annotations in Python.
 
 Python
-~~~~~~
+======
 
 **Argument types** ``def my_func(arg1: ArgumentType1, arg2: ArgumentType2) -> ...:``
 
@@ -107,8 +111,9 @@ Python
   ``"pairinteraction.units.PintSparse"`` for scalar, dense matrix and sparse matrix respectively. These are aliases for
   ``PlainQuantity[float]``, ``PlainQuantity[NDArray]`` or ``PlainQuantity[csr_matrix]``.
 
-Adding License Information
---------------------------
+****************************
+ Adding License Information
+****************************
 
 The PairInteraction software is licensed under LGPL v3. Code files should contain the following license header:
 

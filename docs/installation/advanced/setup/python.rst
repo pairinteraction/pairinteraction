@@ -1,15 +1,17 @@
 .. _python_setup:
 
-Python Setup
-============
+##############
+ Python Setup
+##############
 
 In order to install the Python library, it is recommended to create a Python virtual environment where you can install
 all dependencies. Therefore, you will first need a package management system to create the Python environment. This way,
 you can avoid package conflicts with packages you may need for different software projects. In general, we recommend
 using uv_ due to its speed, but as many users are familiar with conda_, we also describe its usage as well.
 
-uv
---
+****
+ uv
+****
 
 To install uv_ please follow the instructions on the `uv installation page
 <https://docs.astral.sh/uv/getting-started/installation/>`_. No further requirements (like installing python) are
@@ -51,8 +53,9 @@ If in addition you want to install all dependencies from the `pyproject.toml` fi
 
 .. _uv: https://docs.astral.sh/uv/
 
-Conda
------
+*******
+ Conda
+*******
 
 To install conda_ please follow the instructions on the `conda installation page
 <https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html>`_.

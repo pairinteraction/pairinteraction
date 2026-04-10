@@ -1,10 +1,12 @@
 .. _manual:
 
-Build using cmake
-=================
+###################
+ Build using cmake
+###################
 
-Build process
--------------
+***************
+ Build process
+***************
 
 If you want to build only the C++ part and want to have more control over the build process, you can manually run the
 tasks that have been automatically executed by pip_ in the :ref:`automatic build <automatic>`. For this, you have to
@@ -81,8 +83,9 @@ speed up the compilation process significantly.
 
     cmake --build . -j 8
 
-Tips and Tricks
----------------
+*****************
+ Tips and Tricks
+*****************
 
 **1. Compiler Optimizations**
 
