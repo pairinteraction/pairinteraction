@@ -7,7 +7,7 @@ runs:
       uses: astral-sh/setup-uv@v7
       with:
         version: "0.7"
-        python-version: 3.12
+        python-version: "3.12"
         enable-cache: true
         cache-dependency-glob: |
           ./.build_requirements.txt
