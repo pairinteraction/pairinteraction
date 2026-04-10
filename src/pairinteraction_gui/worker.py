@@ -3,22 +3,64 @@
 from __future__ import annotations
 
 import logging
-from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+import math
+from collections.abc import Callable
+from typing import Any, ClassVar
 
-from PySide6.QtCore import QObject, QSize, Qt, QThread, QTimer, Signal
-from PySide6.QtGui import QMovie
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtCore import QObject, Qt, QThread, QTimer, Signal
+from PySide6.QtGui import QColor, QPainter
+from PySide6.QtWidgets import QApplication, QWidget
 
 from pairinteraction import _backend
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from PySide6.QtWidgets import QWidget
-
-
 logger = logging.getLogger(__name__)
+
+
+class SpinnerWidget(QWidget):
+    """Spinning wheel indicator similar to the OS busy cursor, but larger."""
+
+    def __init__(self, parent: QWidget, size: int = 80, n_dots: int = 12, dot_radius: int = 5) -> None:
+        super().__init__(parent)
+        self._step = 0
+        self._n_dots = n_dots
+        self._dot_radius = dot_radius
+        self._timer = QTimer(self)
+        self._timer.setInterval(80)
+        self._timer.timeout.connect(self._advance)
+        self.setFixedSize(size, size)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.hide()
+
+    def _advance(self) -> None:
+        self._step = (self._step + 1) % self._n_dots
+        self.update()
+
+    def start(self) -> None:
+        self._timer.start()
+        self.show()
+
+    def stop(self) -> None:
+        self._timer.stop()
+        self.hide()
+
+    def paintEvent(self, event: Any) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        center = self.width() / 2
+        orbit = center - self._dot_radius - 4
+        for i in range(self._n_dots):
+            opacity = ((i - self._step) % self._n_dots) / (self._n_dots - 1)
+            painter.setBrush(QColor(128, 128, 128, int(opacity * 220)))
+            painter.setPen(Qt.PenStyle.NoPen)
+            angle = 2 * math.pi * i / self._n_dots
+            x = center + orbit * math.sin(angle)
+            y = center - orbit * math.cos(angle)
+            painter.drawEllipse(
+                int(x - self._dot_radius),
+                int(y - self._dot_radius),
+                self._dot_radius * 2,
+                self._dot_radius * 2,
+            )
 
 
 class WorkerSignals(QObject):
@@ -89,27 +131,13 @@ class MultiThreadWorker(QThread):
         self.signals.progress.emit(message)
 
     def enable_busy_indicator(self, widget: QWidget) -> None:
-        """Run a loading gif while the worker is running."""
-        self.busy_label = QLabel(widget)
-        gif_path = Path(__file__).parent / "images" / "loading.gif"
-        self.busy_movie = QMovie(str(gif_path))
-        self.busy_movie.setScaledSize(QSize(100, 100))  # Make the gif larger
-        self.busy_label.setMovie(self.busy_movie)
-        self.busy_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.busy_label.setGeometry((widget.width() - 100) // 2, (widget.height() - 100) // 2, 100, 100)
+        """Show a spinning wheel overlay while the worker is running."""
+        size = 80
+        self.busy_spinner = SpinnerWidget(widget, size=size)
+        self.busy_spinner.setGeometry((widget.width() - size) // 2, (widget.height() - size) // 2, size, size)
 
-        self.signals.started.connect(self._start_gif)
-        self.signals.finished.connect(self._stop_gif)
-
-    def _start_gif(self) -> None:
-        self.busy_label.show()
-        self.busy_movie.start()
-
-    def _stop_gif(self) -> None:
-        if hasattr(self, "busy_movie"):
-            self.busy_movie.stop()
-        if hasattr(self, "busy_label"):
-            self.busy_label.hide()
+        self.signals.started.connect(self.busy_spinner.start)
+        self.signals.finished.connect(self.busy_spinner.stop)
 
     def run(self) -> None:
         """Initialise the runner function with passed args, kwargs."""
