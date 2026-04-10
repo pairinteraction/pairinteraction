@@ -96,7 +96,9 @@ class PlotEnergies(PlotWidget):
             hspace=0.0,
         )
         mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
-        self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest", aspect=60)
+        cbar = self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest", aspect=60)
+        cbar.ax.set_zorder(0)
+        self.canvas.ax.set_zorder(1)
 
     def plot(self, parameters: Parameters[Any], results: Results) -> None:
         self.reset_fit()
@@ -182,6 +184,7 @@ class PlotEnergies(PlotWidget):
             dists = np.hypot(pts_disp[:, 0] - click_disp[0], pts_disp[:, 1] - click_disp[1])
             nearest = int(np.argmin(dists))
             if dists[nearest] > 20:  # pixel threshold
+                self.clear_annotations()
                 return
             if nearest in self._annotations:
                 self._annotations[nearest].remove()
@@ -191,18 +194,26 @@ class PlotEnergies(PlotWidget):
             show_status_tip(self, "Calculating state annotation...")
             idstep, idstate = self._point_index_map[nearest]
             state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)
-            label = state.get_label().replace(" + ", "\n + ")
+            label = state.get_label().replace(" + ", "\n + ").replace("+ -", " - ")
             xlim = self.canvas.ax.get_xlim()
             ylim = self.canvas.ax.get_ylim()
             x_frac = (pts_data[nearest, 0] - xlim[0]) / (xlim[1] - xlim[0])
             y_frac = (pts_data[nearest, 1] - ylim[0]) / (ylim[1] - ylim[0])
+            ha = "right" if x_frac > 0.5 else "left"
+            va = "top" if y_frac > 0.5 else "bottom"
+            x_offset = -15 if x_frac > 0.5 else 15
+            y_offset = -10 if y_frac > 0.5 else 10
             ann = self.canvas.ax.annotate(
                 label,
                 xy=(pts_data[nearest, 0], pts_data[nearest, 1]),
-                xytext=(-80 if x_frac > 0.75 else 15, -30 if y_frac > 0.75 else 15),
+                xytext=(x_offset, y_offset),
                 textcoords="offset points",
+                ha=ha,
+                va=va,
                 bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
                 arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+                clip_on=False,
+                annotation_clip=False,
             )
             ann.set_in_layout(False)
             self._annotations[nearest] = ann
