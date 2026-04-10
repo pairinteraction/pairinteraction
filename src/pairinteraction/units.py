@@ -258,6 +258,23 @@ class QuantityArray(QuantityAbstract["ArrayLike", "NDArray"]):
         if not isinstance(magnitude, Sequence) and not isinstance(magnitude, np.ndarray):
             raise TypeError(f"value must be an np.ndarray (or a Sequence), not {type(magnitude)}")
 
+    @classmethod
+    def from_pint_or_unit(
+        cls: type[Self],
+        value: PlainQuantity[NDArray] | ArrayLike,
+        unit: str | None,
+        dimension: DimensionLike,
+    ) -> Self:
+        if (
+            unit is None
+            and not isinstance(value, PlainQuantity)
+            and all(v == 0 or isinstance(v, PlainQuantity) for v in value)
+        ):
+            values_au = [QuantityScalar.convert_user_to_au(v, None, dimension) for v in value]
+            unit = cls.get_atomic_unit(dimension)
+            return cls.from_unit(values_au, unit, dimension)
+        return super().from_pint_or_unit(value, unit, dimension)
+
 
 class QuantitySparse(QuantityAbstract["csr_matrix", "csr_matrix"]):
     def check_value_type(self) -> None:
