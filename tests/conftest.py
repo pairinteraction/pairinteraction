@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import multiprocessing
 import os
 from typing import TYPE_CHECKING
 
@@ -62,9 +61,6 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if database_dir is not None:
         os.environ["PAIRINTERACTION_TEST_DOWNLOAD_MISSING"] = str(int(download_missing))
         os.environ["PAIRINTERACTION_TEST_DATABASE_DIR"] = database_dir
-
-    # For pairinteraction_gui set the multiprocessing start method to "spawn" (see also pairinteraction_gui/__init__.py)
-    multiprocessing.set_start_method("spawn")
 
 
 @pytest.fixture(scope="session")
