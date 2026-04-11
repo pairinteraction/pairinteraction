@@ -99,7 +99,7 @@ section of the documentation.
 
 .. code-block:: bash
 
-    pairinteraction gui
+    pairinteraction
 
 from the command line. This allows you to do some common and basic calculations without writing any code. For more
 information on how to use the graphical user interface, visit the :ref:`tutorial-gui` section of the documentation.

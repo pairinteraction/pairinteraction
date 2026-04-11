@@ -14,93 +14,141 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 
+class HelpFormatter(argparse.ArgumentDefaultsHelpFormatter, argparse.RawDescriptionHelpFormatter):
+    """Show default arguments and keep manual line breaks in the epilog."""
+
+
 def main() -> int:
     """Entry point for the PairInteraction CLI."""
     parser = argparse.ArgumentParser(
-        description="PairInteraction CLI: launch the GUI, run tests, or manage the cache",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=("PairInteraction CLI\n\nRun 'pairinteraction' without a command to launch the GUI."),
+        formatter_class=HelpFormatter,
         epilog=(
             "Examples:\n"
-            "  pairinteraction --log-level INFO gui\n"
-            "  pairinteraction gui reset\n"
+            "  pairinteraction\n"
+            "  pairinteraction --log-level INFO\n"
             "  pairinteraction --log-level INFO test\n"
             "  pairinteraction database list\n"
             "  pairinteraction database download Rb Cs\n"
             "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
             "  pairinteraction database remove\n"
-            "  pairinteraction paths"
+            "  pairinteraction config reset-gui\n"
+            "  pairinteraction config paths\n"
+            "\n"
+            "Command-specific help:\n"
+            "  pairinteraction test --help\n"
+            "  pairinteraction database --help\n"
+            "  pairinteraction config --help"
         ),
     )
     parser.add_argument("--version", action="version", version=f"PairInteraction v{__version__}")
     parser.add_argument(
+        "--reload",
+        action="store_true",
+        help="launch the GUI with automatic theme reload during development",
+    )
+    parser.add_argument(
         "--log-level",
         default="WARNING",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        help="set the logging level (default: WARNING)",
+        help="set the logging level",
     )
-    subparsers = parser.add_subparsers(dest="command", title="Available Commands")
 
-    # GUI command group
-    gui_parser = subparsers.add_parser(
-        "gui",
-        help="launch the graphical user interface",
-    )
-    gui_parser.add_argument(
-        "--reload",
-        action="store_true",
-        help="watch GUI theme files and reload styles automatically during development",
-    )
-    gui_subparsers = gui_parser.add_subparsers(dest="gui_command")
+    # Launch GUI (default action)
+    parser.set_defaults(func=lambda args: start_gui(reload=args.reload))
 
-    gui_reset_parser = gui_subparsers.add_parser("reset", help="delete GUI settings file to restore defaults")
-    gui_reset_parser.set_defaults(func=lambda _args: reset_gui_settings())
-
-    gui_parser.set_defaults(func=lambda args: start_gui(reload=args.reload))
+    subparsers = parser.add_subparsers(dest="command", title="commands")
 
     # Test command
-    test_parser = subparsers.add_parser("test", help="run module tests")
+    test_parser = subparsers.add_parser(
+        "test",
+        formatter_class=HelpFormatter,
+        help="run tests",
+    )
     test_parser.set_defaults(func=lambda _args: run_unit_tests())
 
-    # Paths command
-    paths_parser = subparsers.add_parser("paths", help="show config and cache directories")
-    paths_parser.set_defaults(func=lambda _args: show_paths())
-
     # Database command group
-    database_parser = subparsers.add_parser("database", help="manage and inspect the database")
-    database_subparsers = database_parser.add_subparsers(dest="database_command")
+    database_parser = subparsers.add_parser(
+        "database",
+        formatter_class=HelpFormatter,
+        help="manage and inspect the database",
+    )
+    database_subparsers = database_parser.add_subparsers(dest="database_command", title="database commands")
 
-    # database list command
-    db_list_parser = database_subparsers.add_parser("list", help="list local and remote database table versions")
+    # Database list command
+    db_list_parser = database_subparsers.add_parser(
+        "list",
+        formatter_class=HelpFormatter,
+        help="list local and remote database table versions",
+    )
     db_list_parser.set_defaults(func=lambda _args: list_databases())
 
-    # database download command
+    # Database download command
     db_download_parser = database_subparsers.add_parser(
-        "download", help="download database tables for one or more species"
+        "download",
+        formatter_class=HelpFormatter,
+        help="download database tables for one or more species",
     )
-    db_download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of urls")
+    db_download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of URLs")
     db_download_parser.set_defaults(func=lambda args: download_databases(args.species))
 
-    # database remove command
-    db_remove_parser = database_subparsers.add_parser("remove", help="delete the cached database directory")
+    # Database remove command
+    db_remove_parser = database_subparsers.add_parser(
+        "remove",
+        formatter_class=HelpFormatter,
+        help="delete the cached database directory",
+    )
     db_remove_parser.set_defaults(func=lambda _args: remove_database_cache())
 
-    database_parser.set_defaults(func=lambda _args: database_parser.print_help())
+    database_parser.set_defaults(func=lambda _args: print_help(database_parser))
+
+    # Config command group
+    config_parser = subparsers.add_parser(
+        "config",
+        formatter_class=HelpFormatter,
+        help="manage GUI settings and inspect paths",
+    )
+    config_subparsers = config_parser.add_subparsers(dest="config_command", title="config commands")
+
+    # Config reset gui command
+    config_reset_gui_parser = config_subparsers.add_parser(
+        "reset-gui",
+        formatter_class=HelpFormatter,
+        help="delete GUI settings file to restore defaults",
+    )
+    config_reset_gui_parser.set_defaults(func=lambda _args: reset_gui_settings())
+
+    # Config list paths command
+    config_list_paths_parser = config_subparsers.add_parser(
+        "paths",
+        formatter_class=HelpFormatter,
+        help="show config and cache directories",
+    )
+    config_list_paths_parser.set_defaults(func=lambda _args: show_paths())
+
+    config_parser.set_defaults(func=lambda _args: print_help(config_parser))
 
     args = parser.parse_args()
 
+    if args.command is not None and args.reload:
+        parser.error("--reload can only be used when launching the GUI")
+
     configure_logging(args.log_level)
-    if not args.command:
-        parser.print_help()
-        return 0
 
     return cast("Callable[[argparse.Namespace], int]", args.func)(args)
 
 
+def print_help(parser: argparse.ArgumentParser) -> int:
+    """Print help."""
+    parser.print_help()
+    return 0
+
+
 def start_gui(*, reload: bool = False) -> int:
-    """Launch the graphical user interface."""
+    """Launch the GUI."""
     from pairinteraction_gui import main as gui_main
 
-    print("Launching the graphical user interface...")
+    print("Launching the GUI...")
     gui_main(enable_theme_hot_reload=reload)
     return 0
 
@@ -279,6 +327,7 @@ def remove_database_cache() -> int:
     except Exception as e:
         print(Fore.RED + f"Error while deleting database directory: {e}" + Style.RESET_ALL)
         return 1
+
     print(Fore.GREEN + "Database directory deleted." + Style.RESET_ALL)
     return 0
 
