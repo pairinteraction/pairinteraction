@@ -34,7 +34,7 @@ directory:
 
 .. code-block:: bash
 
-    pairinteraction paths
+    pairinteraction config paths
 
 Your final directory structure should look like this:
 

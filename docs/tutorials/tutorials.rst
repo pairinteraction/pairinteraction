@@ -64,7 +64,7 @@ The graphical user interface (GUI) of PairInteraction can be started by executin
 
 .. code-block:: bash
 
-    pairinteraction gui
+    pairinteraction
 
 from the command line. Below we show a few examples of how one can use the GUI.
 

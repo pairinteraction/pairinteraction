@@ -37,7 +37,7 @@ pip install pairinteraction
 You can use the PairInteraction software as a Python library, see our [quick start guide to get started in 5 minutes][tutorial-link], or you can launch its graphical user interface from the command line:
 
 ```bash
-pairinteraction gui
+pairinteraction
 ```
 
 [about-link]: https://www.pairinteraction.org/pairinteraction/stable/about.html

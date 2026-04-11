@@ -104,7 +104,7 @@ guide helps to solve problems with the database.
       $ pairinteraction database remove
 
   Note that this removes the ``database`` directory inside PairInteraction's cache. To manually inspect the content of
-  the cache, you can obtain its path via ``pairinteraction paths``.
+  the cache, you can obtain its path via ``pairinteraction config paths``.
 
 .. _github personal access token: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 
@@ -121,7 +121,7 @@ can help tracking down a bug and :github:`opening an issue on GitHub <issues>`.
 
   .. code-block:: bash
 
-      pairinteraction --log-level DEBUG gui
+      pairinteraction --log-level DEBUG
 
   If you are using the Python API, add the following code to the beginning of your program:
 
