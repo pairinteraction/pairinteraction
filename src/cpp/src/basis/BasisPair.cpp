@@ -177,8 +177,8 @@ BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final, Operat
         initial1->get_database().get_matrix_elements(initial1, final1, type1, q1);
     auto matrix_elements2 =
         initial2->get_database().get_matrix_elements(initial2, final2, type2, q2);
-    auto matrix_elements = utils::calculate_tensor_product(this->shared_from_this(), final,
-                                                           matrix_elements1, matrix_elements2);
+    auto matrix_elements = utils::calculate_tensor_product_in_canonical_basis(
+        this->shared_from_this(), final, matrix_elements1, matrix_elements2);
     assert(static_cast<size_t>(matrix_elements.rows()) == final->get_number_of_kets());
     assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_kets());
 

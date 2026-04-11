@@ -24,6 +24,7 @@
 
 #include <Eigen/SparseCore>
 #include <array>
+#include <cmath>
 #include <complex>
 #include <limits>
 #include <memory>
@@ -203,6 +204,29 @@ template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
 
 template <typename Scalar>
+bool is_diagonal_matrix(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+                            &matrix) { // TODO remove the need of this function
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
+
+    real_t scale = 1;
+    if (matrix.rows() > 0) {
+        scale = std::max<real_t>(scale, matrix.diagonal().cwiseAbs().maxCoeff());
+    }
+    real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
+
+    for (int row = 0; row < matrix.outerSize(); ++row) {
+        for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(matrix, row);
+             it; ++it) {
+            if (it.row() != it.col() && std::abs(it.value()) > numerical_precision) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+template <typename Scalar>
 SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
 
@@ -275,8 +299,19 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     auto op = construct_operator_matrices(*green_tensor_interpolator_ptr, basis1, basis2);
 
-    // Construct the unperturbed Hamiltonian
-    this->hamiltonian = std::make_unique<OperatorPair<Scalar>>(basis, OperatorType::ENERGY);
+    // Construct the unperturbed Hamiltonian in the canonical pair basis
+    this->hamiltonian =
+        std::make_unique<OperatorPair<Scalar>>(basis); // TODO remove the OperatorPair class
+    this->hamiltonian->get_matrix().resize(static_cast<Eigen::Index>(basis->get_number_of_kets()),
+                                           static_cast<Eigen::Index>(basis->get_number_of_kets()));
+    this->hamiltonian->get_matrix().reserve(
+        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(basis->get_number_of_kets()), 1));
+    for (Eigen::Index idx = 0; idx < this->hamiltonian->get_matrix().rows(); ++idx) {
+        this->hamiltonian->get_matrix().insert(idx, idx) =
+            basis->get_ket(static_cast<size_t>(idx))->get_energy();
+    }
+    this->hamiltonian->get_matrix().makeCompressed();
+
     this->hamiltonian_is_diagonal = true;
     bool sort_by_quantum_number_f = basis->has_quantum_number_f();
     bool sort_by_quantum_number_m = basis->has_quantum_number_m();
@@ -296,8 +331,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                     [this, &basis, &sort_by_quantum_number_m, &op1, &op2,
                      &delta](const typename GreenTensorInterpolator<Scalar>::ConstantEntry &ce) {
                         this->hamiltonian->get_matrix() += ce.val() *
-                            utils::calculate_tensor_product(basis, basis, op1[ce.row()],
-                                                            op2[ce.col()]);
+                            utils::calculate_tensor_product_in_canonical_basis(basis, basis,
+                                                                               op1[ce.row()],
+                                                                               op2[ce.col()]);
                         if (ce.row() != ce.col() + delta) {
                             sort_by_quantum_number_m = false;
                         }
@@ -305,7 +341,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
                     [this, &basis, &energies, &sort_by_quantum_number_m, &op1, &op2, &delta](
                         const typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry &oe) {
-                        auto tensor_product = utils::calculate_tensor_product(
+                        auto tensor_product = utils::calculate_tensor_product_in_canonical_basis(
                             basis, basis, op1[oe.row()], op2[oe.col()]);
                         for (int k = 0; k < tensor_product.outerSize(); ++k) {
                             for (typename Eigen::SparseMatrix<
@@ -337,6 +373,13 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Quadrupole-quadrupole interaction
     add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
+
+    // Transform from the canonical basis into the actual basis
+    this->hamiltonian->get_matrix() = basis->get_coefficients().adjoint() *
+        this->hamiltonian->get_matrix() * basis->get_coefficients();
+    if (this->hamiltonian_is_diagonal) {
+        this->hamiltonian_is_diagonal = is_diagonal_matrix(this->hamiltonian->get_matrix());
+    }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();

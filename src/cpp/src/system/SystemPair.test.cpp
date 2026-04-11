@@ -17,6 +17,7 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
+#include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
 
@@ -56,6 +57,52 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     auto eigenenergies = system_pair.get_eigenenergies();
     DOCTEST_MESSAGE("Lowest energy: ", eigenenergies.minCoeff());
     DOCTEST_MESSAGE("Highest energy: ", eigenenergies.maxCoeff());
+}
+
+DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") {
+    auto &database = Database::get_global_instance();
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(60, 61)
+                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number_m(-0.5, 0.5)
+                     .create(database);
+
+    auto diagonalizer = DiagonalizerEigen<double>();
+    SystemAtom<double> system1(basis);
+    SystemAtom<double> system2(basis);
+    system1.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    system2.set_electric_field({0, 0, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
+
+    auto pair_basis = BasisPairCreator<double>().add(system1).add(system2).create();
+    DOCTEST_REQUIRE(pair_basis->get_number_of_states() >= 2);
+
+    SystemPair<double> reference_system(pair_basis);
+    reference_system.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
+    const auto &reference_matrix = reference_system.get_matrix();
+
+    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation(
+        static_cast<Eigen::Index>(pair_basis->get_number_of_states()),
+        static_cast<Eigen::Index>(pair_basis->get_number_of_states()));
+    transformation.setIdentity();
+
+    double inverse_sqrt_two = 1 / std::sqrt(2.0);
+    transformation.coeffRef(0, 0) = inverse_sqrt_two;
+    transformation.coeffRef(1, 0) = inverse_sqrt_two;
+    transformation.coeffRef(0, 1) = inverse_sqrt_two;
+    transformation.coeffRef(1, 1) = -inverse_sqrt_two;
+    transformation.makeCompressed();
+
+    auto transformed_pair_basis = pair_basis->transformed(transformation);
+    SystemPair<double> transformed_system(transformed_pair_basis);
+    transformed_system.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
+
+    Eigen::SparseMatrix<double, Eigen::RowMajor> expected_matrix =
+        transformation.adjoint() * reference_matrix * transformation;
+
+    DOCTEST_CHECK(transformed_system.get_matrix().isApprox(expected_matrix, 1e-11));
 }
 
 #ifdef WITH_LAPACKE
