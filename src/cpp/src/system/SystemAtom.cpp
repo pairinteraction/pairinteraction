@@ -3,9 +3,11 @@
 
 #include "pairinteraction/system/SystemAtom.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/spherical.hpp"
@@ -91,17 +93,32 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
 
 template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
-    auto basis = this->hamiltonian->get_basis();
+    auto get_operator_matrix = [this](OperatorType type, int q = 0) {
+        return this->basis->get_database().get_matrix_elements(this->basis, this->basis, type, q);
+    };
 
     // Construct the unperturbed Hamiltonian
-    this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> canonical_matrix(
+        static_cast<Eigen::Index>(this->basis->get_number_of_kets()),
+        static_cast<Eigen::Index>(this->basis->get_number_of_kets()));
+    canonical_matrix.reserve(
+        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(this->basis->get_number_of_kets()), 1));
+    size_t idx = 0;
+    for (const auto &ket : this->basis->get_kets()) {
+        canonical_matrix.insert(static_cast<Eigen::Index>(idx), static_cast<Eigen::Index>(idx)) =
+            ket->get_energy();
+        ++idx;
+    }
+    canonical_matrix.makeCompressed();
+    this->matrix = this->basis->get_coefficients().adjoint() * canonical_matrix *
+        this->basis->get_coefficients();
     this->hamiltonian_is_diagonal = true;
     bool sort_by_quantum_number_f = true;
     bool sort_by_quantum_number_m = true;
     bool sort_by_parity = true;
 
     // Estimate the numerical precision so that we can decide which terms to keep
-    Eigen::VectorX<real_t> diag = this->hamiltonian->get_matrix().diagonal().real();
+    Eigen::VectorX<real_t> diag = this->matrix.diagonal().real();
     real_t scale = (diag - diag.mean() * Eigen::VectorX<real_t>::Ones(diag.size())).norm();
     real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
 
@@ -128,8 +145,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
         for (int q = -1; q <= 1; ++q) {
             if (std::abs(vector_dipole_order[q + 1]) * typical_electric_dipole >
                 numerical_precision) {
-                *this->hamiltonian -= ion_charge * vector_dipole_order[q + 1] *
-                    OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
+                this->matrix -= ion_charge * vector_dipole_order[q + 1] *
+                    get_operator_matrix(OperatorType::ELECTRIC_DIPOLE, q);
                 this->hamiltonian_is_diagonal = false;
                 sort_by_quantum_number_f = false;
                 sort_by_parity = false;
@@ -151,8 +168,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
         for (int q = -2; q <= 2; ++q) {
             if (std::abs(vector_quadrupole_order[q + 2]) * typical_electric_quadrupole >
                 numerical_precision) {
-                *this->hamiltonian -= ion_charge * vector_quadrupole_order[q + 2] *
-                    OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, q);
+                this->matrix -= ion_charge * vector_quadrupole_order[q + 2] *
+                    get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, q);
                 this->hamiltonian_is_diagonal = false;
                 sort_by_quantum_number_f = false;
                 sort_by_quantum_number_m &= (q == 0);
@@ -179,8 +196,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     for (int q = -1; q <= 1; ++q) {
         if (std::abs(electric_field_spherical[q + 1]) * typical_electric_dipole >
             numerical_precision) {
-            *this->hamiltonian -= electric_field_spherical[q + 1] *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, q);
+            this->matrix -= electric_field_spherical[q + 1] *
+                get_operator_matrix(OperatorType::ELECTRIC_DIPOLE, q);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_parity = false;
@@ -195,8 +212,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     for (int q = -1; q <= 1; ++q) {
         if (std::abs(magnetic_field_spherical[q + 1]) * typical_magnetic_dipole >
             numerical_precision) {
-            *this->hamiltonian -= magnetic_field_spherical[q + 1] *
-                OperatorAtom<Scalar>(basis, OperatorType::MAGNETIC_DIPOLE, q);
+            this->matrix -= magnetic_field_spherical[q + 1] *
+                get_operator_matrix(OperatorType::MAGNETIC_DIPOLE, q);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m &= (q == 0);
@@ -213,12 +230,12 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     if (diamagnetism_enabled) {
         if (std::abs(magnetic_field_spherical[1]) * typical_electric_quadrupole >
             numerical_precision) {
-            *this->hamiltonian += static_cast<real_t>(1 / 12.) *
+            this->matrix += static_cast<real_t>(1 / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
-            *this->hamiltonian -= static_cast<real_t>(1 / 12.) *
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
+            this->matrix -= static_cast<real_t>(1 / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, 0);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
         }
@@ -226,12 +243,12 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 numerical_precision &&
             std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
                 numerical_precision) {
-            *this->hamiltonian -= static_cast<real_t>(2 / 12.) * magnetic_field_spherical[0] *
+            this->matrix -= static_cast<real_t>(2 / 12.) * magnetic_field_spherical[0] *
                 magnetic_field_spherical[2] *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
-            *this->hamiltonian -= static_cast<real_t>(1 / 12.) * magnetic_field_spherical[0] *
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
+            this->matrix -= static_cast<real_t>(1 / 12.) * magnetic_field_spherical[0] *
                 magnetic_field_spherical[2] *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, 0);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
         }
@@ -239,9 +256,9 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 numerical_precision &&
             std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
                 numerical_precision) {
-            *this->hamiltonian -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
+            this->matrix -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
                 magnetic_field_spherical[1] * magnetic_field_spherical[2] *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 1);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, 1);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
@@ -250,27 +267,27 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 numerical_precision &&
             std::abs(magnetic_field_spherical[0]) * typical_electric_quadrupole >
                 numerical_precision) {
-            *this->hamiltonian -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
+            this->matrix -= static_cast<real_t>(std::sqrt(3.0) / 12.) *
                 magnetic_field_spherical[1] * magnetic_field_spherical[0] *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -1);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, -1);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
         }
         if (std::abs(magnetic_field_spherical[2]) * typical_electric_quadrupole >
             numerical_precision) {
-            *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
+            this->matrix -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[2], 2)) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 2);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, 2);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
         }
         if (std::abs(magnetic_field_spherical[0]) * typical_electric_quadrupole >
             numerical_precision) {
-            *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
+            this->matrix -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[0], 2)) *
-                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -2);
+                get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, -2);
             this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;

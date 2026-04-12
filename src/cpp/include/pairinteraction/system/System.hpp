@@ -28,14 +28,8 @@ public:
     using real_t = typename traits::CrtpTraits<Derived>::real_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
     using basis_t = typename traits::CrtpTraits<Derived>::basis_t;
-    using operator_t = typename traits::CrtpTraits<Derived>::operator_t;
 
     System(std::shared_ptr<const basis_t> basis);
-    System(const System &other);
-    System(System &&other) noexcept;
-    System<Derived> &operator=(const System &other);
-    System<Derived> &operator=(System &&other) noexcept;
-    virtual ~System();
 
     std::shared_ptr<const basis_t> get_basis() const;
     std::shared_ptr<const basis_t> get_eigenbasis() const;
@@ -49,9 +43,6 @@ public:
     std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::vector<TransformationType> &labels) const override;
 
-    void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
-                                              IndicesOfBlocksCreator &blocks) const;
-
     System<Derived> &transform(const Transformation<scalar_t> &transformation);
     System<Derived> &transform(const Sorting &transformation);
 
@@ -61,14 +52,12 @@ public:
     bool is_diagonal() const;
 
 protected:
-    mutable std::unique_ptr<operator_t> hamiltonian;
+    mutable std::shared_ptr<const basis_t> basis;
+    mutable Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
     mutable bool hamiltonian_requires_construction{true};
     mutable bool hamiltonian_is_diagonal{false};
     mutable std::vector<TransformationType> blockdiagonalizing_labels;
 
     virtual void construct_hamiltonian() const = 0;
-
-private:
-    const Derived &derived() const;
 };
 } // namespace pairinteraction

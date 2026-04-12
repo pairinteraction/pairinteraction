@@ -29,9 +29,6 @@ add_library(
   ./include/pairinteraction/ket/KetAtom.hpp
   ./include/pairinteraction/ket/KetAtomCreator.hpp
   ./include/pairinteraction/ket/KetPair.hpp
-  ./include/pairinteraction/operator/Operator.hpp
-  ./include/pairinteraction/operator/OperatorAtom.hpp
-  ./include/pairinteraction/operator/OperatorPair.hpp
   ./include/pairinteraction/system/GreenTensorInterpolator.hpp
   ./include/pairinteraction/system/System.hpp
   ./include/pairinteraction/system/SystemAtom.hpp
@@ -84,9 +81,6 @@ add_library(
   ./src/ket/KetAtomCreator.cpp
   ./src/ket/KetAtomCreator.test.cpp
   ./src/ket/KetPair.cpp
-  ./src/operator/Operator.cpp
-  ./src/operator/OperatorAtom.cpp
-  ./src/operator/OperatorPair.cpp
   ./src/system/GreenTensorInterpolator.cpp
   ./src/system/System.cpp
   ./src/system/SystemAtom.cpp

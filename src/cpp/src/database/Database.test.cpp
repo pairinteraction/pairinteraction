@@ -8,7 +8,6 @@
 #include "pairinteraction/database/AtomDescriptionByRanges.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
 
 #include <doctest/doctest.h>
 
@@ -74,7 +73,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     }
 }
 
-DOCTEST_TEST_CASE("get an OperatorAtom") {
+DOCTEST_TEST_CASE("get atomic matrix elements") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges description;

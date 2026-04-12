@@ -48,9 +48,9 @@ int main(int argc, char **argv) {
         pairinteraction::BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).create(
             database);
 
-    pairinteraction::OperatorAtom<double> dipole_ket1_ket2(
-        basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
-    double dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+    auto dipole_ket1_ket2 = database.get_matrix_elements<double>(
+        basis_ket1_ket2, basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
+    double dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
     double reference = 1247.6043831131365;
 
@@ -60,8 +60,8 @@ int main(int argc, char **argv) {
         success = false;
     }
 
-    dipole_ket1_ket2 = 2 * dipole_ket1_ket2;
-    dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+    dipole_ket1_ket2 *= 2;
+    dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
     if (std::abs(dipole_ket1_ket2_value - 2 * reference) >
         10 * std::numeric_limits<double>::epsilon()) {
@@ -69,8 +69,8 @@ int main(int argc, char **argv) {
         success = false;
     }
 
-    dipole_ket1_ket2 = dipole_ket1_ket2 + dipole_ket1_ket2;
-    dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+    dipole_ket1_ket2 += dipole_ket1_ket2;
+    dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
     if (std::abs(dipole_ket1_ket2_value - 4 * reference) >
         10 * std::numeric_limits<double>::epsilon()) {
@@ -85,39 +85,39 @@ int main(int argc, char **argv) {
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    pairinteraction::OperatorAtom<std::complex<double>> dipole_0(
-        basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
-    pairinteraction::OperatorAtom<std::complex<double>> dipole_p(
-        basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 1);
-    pairinteraction::OperatorAtom<std::complex<double>> dipole_m(
-        basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, -1);
+    auto dipole_0 = database.get_matrix_elements<std::complex<double>>(
+        basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
+    auto dipole_p = database.get_matrix_elements<std::complex<double>>(
+        basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 1);
+    auto dipole_m = database.get_matrix_elements<std::complex<double>>(
+        basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, -1);
 
-    if (dipole_0.get_matrix().rows() != 64) {
+    if (dipole_0.rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
         success = false;
     }
 
-    if (dipole_p.get_matrix().rows() != 64) {
+    if (dipole_p.rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
         success = false;
     }
 
-    if (dipole_m.get_matrix().rows() != 64) {
+    if (dipole_m.rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
         success = false;
     }
 
-    if (dipole_0.get_matrix().nonZeros() != 288) {
+    if (dipole_0.nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
         success = false;
     }
 
-    if (dipole_p.get_matrix().nonZeros() != 288) {
+    if (dipole_p.nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
         success = false;
     }
 
-    if (dipole_m.get_matrix().nonZeros() != 288) {
+    if (dipole_m.nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
         success = false;
     }
