@@ -46,8 +46,10 @@ template <typename Scalar>
 Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket,
                                                               OperatorType type, int q) const {
     auto final = this->get_canonical_state_from_ket(ket);
-    auto matrix_elements =
-        this->get_database().get_matrix_elements(this->shared_from_this(), final, type, q);
+    auto matrix_elements = this->get_database().get_matrix_elements_in_canonical_basis(
+        this->shared_from_this(), final, type, q);
+    matrix_elements =
+        final->get_coefficients().adjoint() * matrix_elements * this->get_coefficients();
 
     assert(static_cast<size_t>(matrix_elements.rows()) == 1);
     assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_states());
@@ -59,8 +61,10 @@ template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type,
                                        int q) const {
-    auto matrix_elements =
-        this->get_database().get_matrix_elements(this->shared_from_this(), other, type, q);
+    auto matrix_elements = this->get_database().get_matrix_elements_in_canonical_basis(
+        this->shared_from_this(), other, type, q);
+    matrix_elements =
+        other->get_coefficients().adjoint() * matrix_elements * this->get_coefficients();
 
     assert(static_cast<size_t>(matrix_elements.rows()) == other->get_number_of_states());
     assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_states());

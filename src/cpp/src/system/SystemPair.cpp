@@ -161,8 +161,12 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
         matrices.reserve(m.size());
         int factor = conjugate ? -1 : 1;
         std::transform(m.begin(), m.end(), std::back_inserter(matrices), [&](int q) {
-            return (std::pow(factor, q) *
-                    basis->get_database().get_matrix_elements(basis, basis, type, factor * q))
+            auto matrix_elements = (std::pow(factor, q) *
+                                    basis->get_database().get_matrix_elements_in_canonical_basis(
+                                        basis, basis, type, factor * q))
+                                       .eval();
+            return (basis->get_coefficients().adjoint() * matrix_elements *
+                    basis->get_coefficients())
                 .eval();
         });
         return matrices;
@@ -201,29 +205,6 @@ struct overloaded : Ts... {
 };
 template <class... Ts>
 overloaded(Ts...) -> overloaded<Ts...>;
-
-template <typename Scalar>
-bool is_diagonal_matrix(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-                            &matrix) { // TODO remove the need of this function
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-
-    real_t scale = 1;
-    if (matrix.rows() > 0) {
-        scale = std::max<real_t>(scale, matrix.diagonal().cwiseAbs().maxCoeff());
-    }
-    real_t numerical_precision = 100 * scale * std::numeric_limits<real_t>::epsilon();
-
-    for (int row = 0; row < matrix.outerSize(); ++row) {
-        for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(matrix, row);
-             it; ++it) {
-            if (it.row() != it.col() && std::abs(it.value()) > numerical_precision) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
 
 template <typename Scalar>
 SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
@@ -303,12 +284,11 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->matrix.reserve(
         Eigen::VectorXi::Constant(static_cast<Eigen::Index>(this->basis->get_number_of_kets()), 1));
     for (Eigen::Index idx = 0; idx < this->matrix.rows(); ++idx) {
-        this->matrix.insert(idx, idx) =
-            this->basis->get_ket(static_cast<size_t>(idx))->get_energy();
+        this->matrix.insert(idx, idx) = this->basis->get_ket(idx)->get_energy();
     }
     this->matrix.makeCompressed();
 
-    this->hamiltonian_is_diagonal = true;
+    this->hamiltonian_is_diagonal = false;
     bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();
     bool sort_by_quantum_number_m = this->basis->has_quantum_number_m();
     bool sort_by_parity = this->basis->has_parity();
@@ -351,7 +331,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                     }},
                 entry);
 
-            this->hamiltonian_is_diagonal = false;
             sort_by_quantum_number_f = false;
         }
     };
@@ -371,9 +350,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // Transform from the canonical basis into the actual basis
     this->matrix =
         this->basis->get_coefficients().adjoint() * this->matrix * this->basis->get_coefficients();
-    if (this->hamiltonian_is_diagonal) {
-        this->hamiltonian_is_diagonal = is_diagonal_matrix(this->matrix);
-    }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();

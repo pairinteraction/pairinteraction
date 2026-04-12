@@ -96,6 +96,43 @@ DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
     }
 }
 
+DOCTEST_TEST_CASE("construct an atomic Hamiltonian in a non-canonical atomic basis") {
+    auto &database = Database::get_global_instance();
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(60, 61)
+                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number_m(0.5, 0.5)
+                     .create(database);
+    DOCTEST_REQUIRE(basis->get_number_of_states() >= 2);
+
+    SystemAtom<double> reference_system(basis);
+    reference_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    const auto &reference_matrix = reference_system.get_matrix();
+
+    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation(
+        static_cast<Eigen::Index>(basis->get_number_of_states()),
+        static_cast<Eigen::Index>(basis->get_number_of_states()));
+    transformation.setIdentity();
+
+    double inverse_sqrt_two = 1 / std::sqrt(2.0);
+    transformation.coeffRef(0, 0) = inverse_sqrt_two;
+    transformation.coeffRef(1, 0) = inverse_sqrt_two;
+    transformation.coeffRef(0, 1) = inverse_sqrt_two;
+    transformation.coeffRef(1, 1) = -inverse_sqrt_two;
+    transformation.makeCompressed();
+
+    auto transformed_basis = basis->transformed(transformation);
+    SystemAtom<double> transformed_system(transformed_basis);
+    transformed_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+
+    Eigen::SparseMatrix<double, Eigen::RowMajor> expected_matrix =
+        transformation.adjoint() * reference_matrix * transformation;
+
+    DOCTEST_CHECK(transformed_system.get_matrix().isApprox(expected_matrix, 1e-11));
+}
+
 DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel" *
                   doctest::skip(true)) {
     // TODO For a slow database, the fast parallelized construction of the tiny Hamiltonians seems

@@ -59,9 +59,9 @@ public:
 
     template <typename Scalar>
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
-                        std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type,
-                        int q);
+    get_matrix_elements_in_canonical_basis(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
+                                           std::shared_ptr<const BasisAtom<Scalar>> final_basis,
+                                           OperatorType type, int q);
 
     bool get_download_missing() const;
     bool get_use_cache() const;
@@ -112,9 +112,9 @@ private:
         const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
     extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
-    Database::get_matrix_elements<SCALAR>(std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,  \
-                                          std::shared_ptr<const BasisAtom<SCALAR>> final_basis,    \
-                                          OperatorType type, int q);
+    Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
+        std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
+        std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 EXTERN_GETTERS(double)

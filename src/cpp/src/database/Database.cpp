@@ -936,10 +936,9 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
-                              std::shared_ptr<const BasisAtom<Scalar>> final_basis,
-                              OperatorType type, int q) {
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_canonical_basis(
+    std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
+    std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type, int q) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using cached_matrix_ptr_t = std::shared_ptr<const cached_matrix_t>;
 
@@ -1125,12 +1124,9 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         }
     }
 
-    task_checkpoint("Projecting matrix elements onto basis...");
+    task_checkpoint("Returning matrix elements in canonical basis...");
 
-    // Construct the operator and return it
-    auto cached_matrix = cache_it->second.get();
-    return final_basis->get_coefficients().adjoint() * cached_matrix->template cast<Scalar>() *
-        initial_basis->get_coefficients();
+    return cache_it->second.get()->template cast<Scalar>();
 }
 
 bool Database::get_download_missing() const { return download_missing_; }
@@ -1215,7 +1211,8 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
-    template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor> Database::get_matrix_elements<SCALAR>(   \
+    template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
+    Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
         std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)

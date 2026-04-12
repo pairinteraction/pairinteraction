@@ -173,10 +173,14 @@ BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final, Operat
     auto final1 = final->get_basis1();
     auto final2 = final->get_basis2();
 
-    auto matrix_elements1 =
-        initial1->get_database().get_matrix_elements(initial1, final1, type1, q1);
-    auto matrix_elements2 =
-        initial2->get_database().get_matrix_elements(initial2, final2, type2, q2);
+    auto matrix_elements1 = initial1->get_database().get_matrix_elements_in_canonical_basis(
+        initial1, final1, type1, q1);
+    matrix_elements1 =
+        final1->get_coefficients().adjoint() * matrix_elements1 * initial1->get_coefficients();
+    auto matrix_elements2 = initial2->get_database().get_matrix_elements_in_canonical_basis(
+        initial2, final2, type2, q2);
+    matrix_elements2 =
+        final2->get_coefficients().adjoint() * matrix_elements2 * initial2->get_coefficients();
     auto matrix_elements = utils::calculate_tensor_product_in_canonical_basis(
         this->shared_from_this(), final, matrix_elements1, matrix_elements2);
     assert(static_cast<size_t>(matrix_elements.rows()) == final->get_number_of_kets());

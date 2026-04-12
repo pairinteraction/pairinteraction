@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
         pairinteraction::BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).create(
             database);
 
-    auto dipole_ket1_ket2 = database.get_matrix_elements<double>(
+    auto dipole_ket1_ket2 = database.get_matrix_elements_in_canonical_basis<double>(
         basis_ket1_ket2, basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
     double dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
@@ -85,11 +85,11 @@ int main(int argc, char **argv) {
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    auto dipole_0 = database.get_matrix_elements<std::complex<double>>(
+    auto dipole_0 = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
         basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
-    auto dipole_p = database.get_matrix_elements<std::complex<double>>(
+    auto dipole_p = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
         basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 1);
-    auto dipole_m = database.get_matrix_elements<std::complex<double>>(
+    auto dipole_m = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
         basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, -1);
 
     if (dipole_0.rows() != 64) {
