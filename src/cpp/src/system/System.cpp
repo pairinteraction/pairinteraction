@@ -45,7 +45,7 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    if (!hamiltonian_is_diagonal) {
+    if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
     return basis;
@@ -57,7 +57,7 @@ Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenerg
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    if (!hamiltonian_is_diagonal) {
+    if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
     return matrix.diagonal().real();
@@ -224,7 +224,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         hamiltonian_requires_construction = false;
     }
 
-    if (hamiltonian_is_diagonal) {
+    if (this->is_diagonal()) {
         return *this;
     }
 
@@ -363,7 +363,24 @@ bool System<Derived>::is_diagonal() const {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian_is_diagonal;
+
+    if (!hamiltonian_is_diagonal) {
+        real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+
+        for (int row = 0; row < matrix.outerSize(); ++row) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(matrix,
+                                                                                           row);
+                 it; ++it) {
+                if (it.row() != it.col() && std::abs(it.value()) > numerical_precision) {
+                    return false;
+                }
+            }
+        }
+
+        hamiltonian_is_diagonal = true;
+    }
+
+    return true;
 }
 
 // Explicit instantiation

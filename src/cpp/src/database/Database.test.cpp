@@ -82,8 +82,8 @@ DOCTEST_TEST_CASE("get atomic matrix elements") {
 
     auto basis = database.get_basis<double>("Rb", description, {});
 
-    auto dipole =
-        database.get_matrix_elements<double>(basis, basis, OperatorType::ELECTRIC_DIPOLE, 0);
+    auto dipole = database.get_matrix_elements_in_canonical_basis<double>(
+        basis, basis, OperatorType::ELECTRIC_DIPOLE, 0);
 
     DOCTEST_MESSAGE("Number of basis states: ", basis->get_number_of_states());
     DOCTEST_MESSAGE("Number of non-zero entries: ", dipole.nonZeros());
