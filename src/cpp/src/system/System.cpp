@@ -7,8 +7,6 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -16,6 +14,7 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/SparseCore>
+#include <algorithm>
 #include <complex>
 #include <limits>
 #include <memory>
@@ -27,51 +26,9 @@
 namespace pairinteraction {
 template <typename Derived>
 System<Derived>::System(std::shared_ptr<const basis_t> basis)
-    : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(std::move(basis))) {}
-
-template <typename Derived>
-System<Derived>::System(const System &other)
-    : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(*other.hamiltonian)),
-      hamiltonian_requires_construction(other.hamiltonian_requires_construction),
-      hamiltonian_is_diagonal(other.hamiltonian_is_diagonal),
-      blockdiagonalizing_labels(other.blockdiagonalizing_labels) {}
-
-template <typename Derived>
-System<Derived>::System(System &&other) noexcept
-    : hamiltonian(std::move(other.hamiltonian)),
-      hamiltonian_requires_construction(other.hamiltonian_requires_construction),
-      hamiltonian_is_diagonal(other.hamiltonian_is_diagonal),
-      blockdiagonalizing_labels(std::move(other.blockdiagonalizing_labels)) {}
-
-template <typename Derived>
-System<Derived> &System<Derived>::operator=(const System &other) {
-    if (this != &other) {
-        hamiltonian = std::make_unique<operator_t>(*other.hamiltonian);
-        hamiltonian_requires_construction = other.hamiltonian_requires_construction;
-        hamiltonian_is_diagonal = other.hamiltonian_is_diagonal,
-        blockdiagonalizing_labels = other.blockdiagonalizing_labels;
-    }
-    return *this;
-}
-
-template <typename Derived>
-System<Derived> &System<Derived>::operator=(System &&other) noexcept {
-    if (this != &other) {
-        hamiltonian = std::move(other.hamiltonian);
-        hamiltonian_requires_construction = other.hamiltonian_requires_construction;
-        hamiltonian_is_diagonal = other.hamiltonian_is_diagonal,
-        blockdiagonalizing_labels = std::move(other.blockdiagonalizing_labels);
-    }
-    return *this;
-}
-
-template <typename Derived>
-System<Derived>::~System() = default;
-
-template <typename Derived>
-const Derived &System<Derived>::derived() const {
-    return static_cast<const Derived &>(*this);
-}
+    : basis(std::move(basis)),
+      matrix(static_cast<Eigen::Index>(this->basis->get_number_of_states()),
+             static_cast<Eigen::Index>(this->basis->get_number_of_states())) {}
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
@@ -79,7 +36,7 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ba
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_basis();
+    return basis;
 }
 
 template <typename Derived>
@@ -91,7 +48,7 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
     if (!hamiltonian_is_diagonal) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
-    return hamiltonian->get_basis();
+    return basis;
 }
 
 template <typename Derived>
@@ -103,7 +60,7 @@ Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenerg
     if (!hamiltonian_is_diagonal) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
-    return hamiltonian->get_matrix().diagonal().real();
+    return matrix.diagonal().real();
 }
 
 template <typename Derived>
@@ -113,7 +70,7 @@ System<Derived>::get_matrix() const {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_matrix();
+    return matrix;
 }
 
 template <typename Derived>
@@ -123,7 +80,7 @@ System<Derived>::get_transformation() const {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_transformation();
+    return basis->get_transformation();
 }
 
 template <typename Derived>
@@ -133,7 +90,7 @@ System<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_rotator(alpha, beta, gamma);
+    return basis->get_rotator(alpha, beta, gamma);
 }
 
 template <typename Derived>
@@ -142,7 +99,47 @@ Sorting System<Derived>::get_sorter(const std::vector<TransformationType> &label
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_sorter(labels);
+
+    basis->perform_sorter_checks(labels);
+
+    auto it = std::find(labels.begin(), labels.end(), TransformationType::SORT_BY_ENERGY);
+    std::vector<TransformationType> before_energy(labels.begin(), it);
+    bool contains_energy = (it != labels.end());
+    std::vector<TransformationType> after_energy(contains_energy ? it + 1 : labels.end(),
+                                                 labels.end());
+
+    Sorting transformation;
+    transformation.matrix.resize(matrix.rows());
+    transformation.matrix.setIdentity();
+
+    if (!before_energy.empty()) {
+        basis->get_sorter_without_checks(before_energy, transformation);
+    }
+
+    if (contains_energy) {
+        std::vector<real_t> energies_of_states;
+        energies_of_states.reserve(matrix.rows());
+        for (int i = 0; i < matrix.rows(); ++i) {
+            energies_of_states.push_back(std::real(matrix.coeff(i, i)));
+        }
+
+        std::stable_sort(
+            transformation.matrix.indices().data(),
+            transformation.matrix.indices().data() + transformation.matrix.indices().size(),
+            [&](int i, int j) { return energies_of_states[i] < energies_of_states[j]; });
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);
+    }
+
+    if (!after_energy.empty()) {
+        basis->get_sorter_without_checks(after_energy, transformation);
+    }
+
+    if (labels != transformation.transformation_type) {
+        throw std::invalid_argument("The states could not be sorted by all the requested labels.");
+    }
+
+    return transformation;
 }
 
 template <typename Derived>
@@ -152,7 +149,35 @@ System<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &la
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_indices_of_blocks(labels);
+
+    basis->perform_sorter_checks(labels);
+
+    std::set<TransformationType> unique_labels(labels.begin(), labels.end());
+    basis->perform_blocks_checks(unique_labels);
+
+    auto it = unique_labels.find(TransformationType::SORT_BY_ENERGY);
+    bool contains_energy = (it != unique_labels.end());
+    if (contains_energy) {
+        unique_labels.erase(it);
+    }
+
+    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(matrix.rows())});
+
+    if (!unique_labels.empty()) {
+        basis->get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
+    }
+
+    if (contains_energy && matrix.rows() > 0) {
+        scalar_t last_energy = std::real(matrix.coeff(0, 0));
+        for (int i = 0; i < matrix.rows(); ++i) {
+            if (std::real(matrix.coeff(i, i)) != last_energy) {
+                blocks_creator.add(i);
+                last_energy = std::real(matrix.coeff(i, i));
+            }
+        }
+    }
+
+    return blocks_creator.create();
 }
 
 template <typename Derived>
@@ -161,7 +186,10 @@ System<Derived> &System<Derived>::transform(const Transformation<scalar_t> &tran
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+    if (matrix.cols() != 0) {
+        matrix = transformation.matrix.adjoint() * matrix * transformation.matrix;
+        basis = basis->transformed(transformation);
+    }
 
     // A transformed system might have lost its block-diagonalizability if the
     // transformation was not a sorting
@@ -176,7 +204,11 @@ System<Derived> &System<Derived>::transform(const Sorting &transformation) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+
+    if (matrix.cols() != 0) {
+        matrix = matrix.twistedBy(transformation.matrix.inverse());
+        basis = basis->transformed(transformation);
+    }
 
     return *this;
 }
@@ -201,12 +233,13 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        auto sorter = hamiltonian->get_sorter(blockdiagonalizing_labels);
-        hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(sorter));
+        auto sorter = get_sorter(blockdiagonalizing_labels);
+        matrix = matrix.twistedBy(sorter.matrix.inverse());
+        basis = basis->transformed(sorter);
     }
 
     // Get the indices of the blocks
-    auto blocks = hamiltonian->get_indices_of_blocks(blockdiagonalizing_labels);
+    auto blocks = get_indices_of_blocks(blockdiagonalizing_labels);
 
     assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
            !blockdiagonalizing_labels.empty());
@@ -221,14 +254,12 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
             for (size_t idx = range.begin(); idx != range.end(); ++idx) {
                 task_checkpoint("Diagonalizing Hamiltonian blocks...");
                 auto eigensys = min_eigenenergy.has_value() || max_eigenenergy.has_value()
-                    ? diagonalizer.eigh(
-                          hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
-                                                          blocks[idx].size(), blocks[idx].size()),
-                          min_eigenenergy, max_eigenenergy, rtol)
-                    : diagonalizer.eigh(
-                          hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
-                                                          blocks[idx].size(), blocks[idx].size()),
-                          rtol);
+                    ? diagonalizer.eigh(matrix.block(blocks[idx].start, blocks[idx].start,
+                                                     blocks[idx].size(), blocks[idx].size()),
+                                        min_eigenenergy, max_eigenenergy, rtol)
+                    : diagonalizer.eigh(matrix.block(blocks[idx].start, blocks[idx].start,
+                                                     blocks[idx].size(), blocks[idx].size()),
+                                        rtol);
                 eigenvectors_blocks[idx] = eigensys.eigenvectors;
                 eigenenergies_blocks[idx] = eigensys.eigenvalues;
             }
@@ -236,7 +267,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Get the number of non-zeros per row of the combined eigenvector matrix
     std::vector<Eigen::Index> non_zeros_per_inner_index;
-    non_zeros_per_inner_index.reserve(hamiltonian->get_matrix().rows());
+    non_zeros_per_inner_index.reserve(matrix.rows());
     Eigen::Index num_rows = 0;
     Eigen::Index num_cols = 0;
     for (const auto &matrix : eigenvectors_blocks) {
@@ -249,8 +280,8 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         num_cols += matrix.cols();
     }
 
-    assert(static_cast<size_t>(num_rows) == hamiltonian->get_basis()->get_number_of_kets());
-    assert(static_cast<size_t>(num_cols) <= hamiltonian->get_basis()->get_number_of_states());
+    assert(static_cast<size_t>(num_rows) == basis->get_number_of_kets());
+    assert(static_cast<size_t>(num_cols) <= basis->get_number_of_states());
 
     eigenvectors.resize(num_rows, num_cols);
     eigenenergies.resize(num_cols, num_cols);
@@ -318,8 +349,8 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     // Store the diagonalized hamiltonian
-    hamiltonian->get_matrix() = eigenenergies;
-    hamiltonian->get_basis() = hamiltonian->get_basis()->transformed(eigenvectors);
+    matrix = eigenenergies;
+    basis = basis->transformed(eigenvectors);
 
     hamiltonian_is_diagonal = true;
 

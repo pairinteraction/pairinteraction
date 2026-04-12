@@ -33,8 +33,6 @@ nanobind_add_module(
   interfaces/TransformationBuilderInterface.py.cpp
   ket/Ket.py.hpp
   ket/Ket.py.cpp
-  operator/Operator.py.hpp
-  operator/Operator.py.cpp
   system/System.py.hpp
   system/System.py.cpp
   tools/run_unit_tests.py.hpp

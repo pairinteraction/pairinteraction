@@ -5,13 +5,12 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
@@ -163,7 +162,7 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
         int factor = conjugate ? -1 : 1;
         std::transform(m.begin(), m.end(), std::back_inserter(matrices), [&](int q) {
             return (std::pow(factor, q) *
-                    OperatorAtom<Scalar>(basis, type, factor * q).get_matrix())
+                    basis->get_database().get_matrix_elements(basis, basis, type, factor * q))
                 .eval();
         });
         return matrices;
@@ -285,9 +284,8 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
 
 template <typename Scalar>
 void SystemPair<Scalar>::construct_hamiltonian() const {
-    auto basis = this->hamiltonian->get_basis();
-    auto basis1 = basis->get_basis1();
-    auto basis2 = basis->get_basis2();
+    auto basis1 = this->basis->get_basis1();
+    auto basis2 = this->basis->get_basis2();
 
     std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator_ptr;
     if (green_tensor_interpolator) {
@@ -300,49 +298,45 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto op = construct_operator_matrices(*green_tensor_interpolator_ptr, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian in the canonical pair basis
-    this->hamiltonian =
-        std::make_unique<OperatorPair<Scalar>>(basis); // TODO remove the OperatorPair class
-    this->hamiltonian->get_matrix().resize(static_cast<Eigen::Index>(basis->get_number_of_kets()),
-                                           static_cast<Eigen::Index>(basis->get_number_of_kets()));
-    this->hamiltonian->get_matrix().reserve(
-        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(basis->get_number_of_kets()), 1));
-    for (Eigen::Index idx = 0; idx < this->hamiltonian->get_matrix().rows(); ++idx) {
-        this->hamiltonian->get_matrix().insert(idx, idx) =
-            basis->get_ket(static_cast<size_t>(idx))->get_energy();
+    this->matrix.resize(static_cast<Eigen::Index>(this->basis->get_number_of_kets()),
+                        static_cast<Eigen::Index>(this->basis->get_number_of_kets()));
+    this->matrix.reserve(
+        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(this->basis->get_number_of_kets()), 1));
+    for (Eigen::Index idx = 0; idx < this->matrix.rows(); ++idx) {
+        this->matrix.insert(idx, idx) =
+            this->basis->get_ket(static_cast<size_t>(idx))->get_energy();
     }
-    this->hamiltonian->get_matrix().makeCompressed();
+    this->matrix.makeCompressed();
 
     this->hamiltonian_is_diagonal = true;
-    bool sort_by_quantum_number_f = basis->has_quantum_number_f();
-    bool sort_by_quantum_number_m = basis->has_quantum_number_m();
-    bool sort_by_parity = basis->has_parity();
+    bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();
+    bool sort_by_quantum_number_m = this->basis->has_quantum_number_m();
+    bool sort_by_parity = this->basis->has_parity();
 
     // Store the energies (they are needed in case of Rydberg-Rydberg interaction with an
     // OmegaDependentEntry)
-    auto energies = this->hamiltonian->get_matrix().diagonal().real();
+    auto energies = this->matrix.diagonal().real();
 
     // Helper function for adding Rydberg-Rydberg interaction
-    auto add_interaction = [this, &basis, &energies, &sort_by_quantum_number_f,
-                            &sort_by_quantum_number_m](const auto &entries, const auto &op1,
-                                                       const auto &op2, int delta) {
+    auto add_interaction = [this, &energies, &sort_by_quantum_number_f, &sort_by_quantum_number_m](
+                               const auto &entries, const auto &op1, const auto &op2, int delta) {
         for (const auto &entry : entries) {
             std::visit(
                 overloaded{
-                    [this, &basis, &sort_by_quantum_number_m, &op1, &op2,
+                    [this, &sort_by_quantum_number_m, &op1, &op2,
                      &delta](const typename GreenTensorInterpolator<Scalar>::ConstantEntry &ce) {
-                        this->hamiltonian->get_matrix() += ce.val() *
-                            utils::calculate_tensor_product_in_canonical_basis(basis, basis,
-                                                                               op1[ce.row()],
-                                                                               op2[ce.col()]);
+                        this->matrix += ce.val() *
+                            utils::calculate_tensor_product_in_canonical_basis(
+                                            this->basis, this->basis, op1[ce.row()], op2[ce.col()]);
                         if (ce.row() != ce.col() + delta) {
                             sort_by_quantum_number_m = false;
                         }
                     },
 
-                    [this, &basis, &energies, &sort_by_quantum_number_m, &op1, &op2, &delta](
+                    [this, &energies, &sort_by_quantum_number_m, &op1, &op2, &delta](
                         const typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry &oe) {
                         auto tensor_product = utils::calculate_tensor_product_in_canonical_basis(
-                            basis, basis, op1[oe.row()], op2[oe.col()]);
+                            this->basis, this->basis, op1[oe.row()], op2[oe.col()]);
                         for (int k = 0; k < tensor_product.outerSize(); ++k) {
                             for (typename Eigen::SparseMatrix<
                                      Scalar, Eigen::RowMajor>::InnerIterator it(tensor_product, k);
@@ -350,7 +344,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                                 it.valueRef() *= oe.val(energies(it.row()) - energies(it.col()));
                             }
                         }
-                        this->hamiltonian->get_matrix() += tensor_product;
+                        this->matrix += tensor_product;
                         if (oe.row() != oe.col() + delta) {
                             sort_by_quantum_number_m = false;
                         }
@@ -375,10 +369,10 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
 
     // Transform from the canonical basis into the actual basis
-    this->hamiltonian->get_matrix() = basis->get_coefficients().adjoint() *
-        this->hamiltonian->get_matrix() * basis->get_coefficients();
+    this->matrix =
+        this->basis->get_coefficients().adjoint() * this->matrix * this->basis->get_coefficients();
     if (this->hamiltonian_is_diagonal) {
-        this->hamiltonian_is_diagonal = is_diagonal_matrix(this->hamiltonian->get_matrix());
+        this->hamiltonian_is_diagonal = is_diagonal_matrix(this->matrix);
     }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian

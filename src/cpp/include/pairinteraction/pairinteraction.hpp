@@ -19,7 +19,6 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"

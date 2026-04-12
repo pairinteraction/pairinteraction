@@ -13,9 +13,6 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class OperatorAtom;
-
-template <typename Scalar>
 class BasisAtom;
 
 class KetAtom;
@@ -30,7 +27,6 @@ struct traits::CrtpTraits<SystemAtom<Scalar>> {
     using ket_t = KetAtom;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
     using basis_t = BasisAtom<scalar_t>;
-    using operator_t = OperatorAtom<scalar_t>;
 };
 
 template <typename Scalar>

@@ -12,7 +12,6 @@
 #include "./interfaces/DiagonalizerInterface.py.hpp"
 #include "./interfaces/TransformationBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
-#include "./operator/Operator.py.hpp"
 #include "./paths.py.hpp"
 #include "./system/System.py.hpp"
 #include "./tools/run_unit_tests.py.hpp"
@@ -57,9 +56,6 @@ NB_MODULE(_backend, m) // NOLINT
     // interfaces
     bind_diagonalizer_interface(m);
     bind_transformation_builder_interface(m);
-
-    // operator
-    bind_operator(m);
 
     // database
     bind_database(m);
