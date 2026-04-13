@@ -16,6 +16,7 @@
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/operator.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 #include "pairinteraction/utils/tensor.hpp"
@@ -279,14 +280,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     auto op = construct_operator_matrices(*green_tensor_interpolator_ptr, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian in the canonical pair basis
-    this->matrix.resize(static_cast<Eigen::Index>(this->basis->get_number_of_kets()),
-                        static_cast<Eigen::Index>(this->basis->get_number_of_kets()));
-    this->matrix.reserve(
-        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(this->basis->get_number_of_kets()), 1));
-    for (Eigen::Index idx = 0; idx < this->matrix.rows(); ++idx) {
-        this->matrix.insert(idx, idx) = this->basis->get_ket(idx)->get_energy();
-    }
-    this->matrix.makeCompressed();
+    this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
     bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();

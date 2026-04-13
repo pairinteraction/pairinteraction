@@ -40,6 +40,7 @@ add_library(
   ./include/pairinteraction/utils/eigen_assertion.hpp
   ./include/pairinteraction/utils/eigen_compat.hpp
   ./include/pairinteraction/utils/euler.hpp
+  ./include/pairinteraction/utils/operator.hpp
   ./include/pairinteraction/utils/hash.hpp
   ./include/pairinteraction/utils/id_in_database.hpp
   ./include/pairinteraction/utils/maths.hpp

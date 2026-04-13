@@ -16,6 +16,7 @@
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 
 #include <Eigen/Eigenvalues>
+#include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
 
