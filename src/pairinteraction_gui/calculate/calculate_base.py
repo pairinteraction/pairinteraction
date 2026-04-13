@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 from attr import dataclass
 
 import pairinteraction as pi
-from pairinteraction_gui.worker import MultiThreadWorker
+from pairinteraction import _backend
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -247,10 +247,10 @@ class Results(ABC):
         energy_offset: float,
     ) -> Self:
         """Create Results object from ket, basis, and diagonalized systems."""
-        MultiThreadWorker.task_checkpoint("Collecting eigenenergies...")
+        _backend.task_checkpoint("Collecting eigenenergies...")
         energies = [system.get_eigenenergies("GHz") - energy_offset for system in system_list]
 
-        MultiThreadWorker.task_checkpoint("Calculating state overlaps...")
+        _backend.task_checkpoint("Calculating state overlaps...")
         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]
 
         return cls(energies, energy_offset, ket_overlaps, list(system_list))
