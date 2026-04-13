@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from PySide6.QtCore import QObject, Qt, QThread, QTimer, Signal
 from PySide6.QtGui import QColor, QPainter
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication, QLabel, QWidget
 
 from pairinteraction import _backend
 
@@ -28,6 +28,8 @@ class SpinnerWidget(QWidget):
         circle_size: int = 80,
         n_dots: int = 12,
         dot_radius: int = 5,
+        label_width: int = 220,
+        label_height: int = 20,
     ) -> None:
         super().__init__(parent)
         self._step = 0
@@ -40,9 +42,13 @@ class SpinnerWidget(QWidget):
         self._timer.timeout.connect(self._advance)
 
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setFixedSize(circle_size, circle_size)
+        self.setFixedSize(max(circle_size, label_width), circle_size + 6 + label_height)
         x, y = (parent.width() - self.width()) // 2, (parent.height() - self.height()) // 2
         self.setGeometry(x, y, self.width(), self.height())
+
+        self._label = QLabel("", self)
+        self._label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._label.setGeometry((self.width() - label_width) // 2, circle_size + 6, label_width, label_height)
 
         self.hide()
 
@@ -58,17 +64,24 @@ class SpinnerWidget(QWidget):
         self._timer.stop()
         self.hide()
 
+    def set_diagonalization_progress(self, done: int, total: int | None) -> None:
+        if total is not None:
+            self._label.setText(f"Diagonalizing systems {done}/{total}...")
+        else:
+            self._label.setText(f"Diagonalizing systems {done}...")
+
     def paintEvent(self, event: Any) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         circle_radius = self._circle_size / 2
+        offset_x = (self.width() - self._circle_size) / 2
         orbit = circle_radius - self._dot_radius - 4
         for i in range(self._n_dots):
             opacity = ((i - self._step) % self._n_dots) / (self._n_dots - 1)
             painter.setBrush(QColor(128, 128, 128, int(opacity * 220)))
             painter.setPen(Qt.PenStyle.NoPen)
             angle = 2 * math.pi * i / self._n_dots
-            x = circle_radius + orbit * math.sin(angle)
+            x = offset_x + circle_radius + orbit * math.sin(angle)
             y = circle_radius - orbit * math.cos(angle)
             painter.drawEllipse(
                 int(x - self._dot_radius),
@@ -85,6 +98,7 @@ class WorkerSignals(QObject):
     finished = Signal(str)
     error = Signal(Exception)
     progress = Signal(str)
+    diag_progress = Signal(int)
     result = Signal(object)
 
 
@@ -111,7 +125,8 @@ class MultiThreadWorker(QThread):
 
         self.signals = WorkerSignals()
 
-        self._last_task_status = ""
+        self._last_task_info = ""
+        self._last_diagonalization_status: int = 0
         self._progress_timer = QTimer(self)
         self._progress_timer.setInterval(75)
         self._progress_timer.timeout.connect(self._poll_progress)
@@ -130,17 +145,28 @@ class MultiThreadWorker(QThread):
         if self.isInterruptionRequested():
             raise _backend.TaskAbortedError
 
-        task_status = _backend.get_task_status()
-        if len(task_status) > 0 and task_status == self._last_task_status:
-            self._last_task_status = task_status
-            self.signals.progress.emit(task_status)
+        task_info = _backend.get_task_info()
+        if task_info not in ("", self._last_task_info):
+            self._last_task_info = task_info
+            self.signals.progress.emit(task_info)
 
-    def enable_busy_indicator(self, widget: QWidget) -> None:
+        done = _backend.get_progress_count()
+        if done not in (0, self._last_diagonalization_status):
+            self._last_diagonalization_status = done
+            self.signals.diag_progress.emit(done)
+
+    def enable_busy_indicator(
+        self, widget: QWidget, *, add_progress_label: bool = False, number_of_steps: int | None = None
+    ) -> None:
         """Show a spinning wheel overlay while the worker is running."""
         self.busy_spinner = SpinnerWidget(widget)
 
         self.signals.started.connect(self.busy_spinner.start)
         self.signals.finished.connect(self.busy_spinner.stop)
+        if add_progress_label:
+            self.signals.diag_progress.connect(
+                lambda done: self.busy_spinner.set_diagonalization_progress(done, number_of_steps)
+            )
 
     def run(self) -> None:
         """Initialise the runner function with passed args, kwargs."""
@@ -160,7 +186,7 @@ class MultiThreadWorker(QThread):
         finally:
             if status is None:
                 status = "Calculation failed"
-            _backend.clear_task_abort()
+            _backend.reset_task_status()
             self.signals.finished.emit(status)
 
     def request_abort(self) -> None:

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -16,10 +17,12 @@ public:
 
 void request_task_abort() noexcept;
 
-void clear_task_abort() noexcept;
+void reset_task_status() noexcept;
 
-std::string get_task_status();
+std::string get_task_info();
 
-void task_checkpoint(std::string_view status_message);
+void set_task_status(std::string_view status_message, bool increase_progress_count = false);
+
+std::size_t get_progress_count() noexcept;
 
 } // namespace pairinteraction

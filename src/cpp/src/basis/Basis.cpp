@@ -417,7 +417,7 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
 
     std::vector<Eigen::Triplet<scalar_t>> entries;
 
-    task_checkpoint("Constructing basis rotation...");
+    set_task_status("Constructing basis rotation...");
     for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
         real_t f = kets[idx_initial]->get_quantum_number_f();
         real_t m_initial = kets[idx_initial]->get_quantum_number_m();
@@ -493,7 +493,7 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
     const int *perm_back = perm_end - 1;
 
     // Sort the vector based on the requested labels
-    task_checkpoint("Sorting basis states...");
+    set_task_status("Sorting basis states...");
     std::stable_sort(perm_begin, perm_end, [&](int a, int b) {
         for (const auto &label : labels) {
             switch (label) {
@@ -576,7 +576,7 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
     auto last_parity = state_index_to_parity[0];
     auto last_ket = state_index_to_ket_index[0];
 
-    task_checkpoint("Identifying basis blocks...");
+    set_task_status("Identifying basis blocks...");
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
         for (auto label : unique_labels) {
             if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F &&
@@ -620,7 +620,7 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
     }
 
     // Apply the transformation
-    task_checkpoint("Applying basis sorting...");
+    set_task_status("Applying basis sorting...");
     transformed->coefficients.matrix = coefficients.matrix * transformation.matrix;
     transformed->coefficients.transformation_type = transformation.transformation_type;
 
@@ -629,7 +629,7 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
     transformed->state_index_to_parity.resize(transformation.matrix.size());
     transformed->state_index_to_ket_index.resize(transformation.matrix.size());
 
-    task_checkpoint("Relabeling sorted basis states...");
+    set_task_status("Relabeling sorted basis states...");
     for (int i = 0; i < transformation.matrix.size(); ++i) {
         transformed->state_index_to_quantum_number_f[i] =
             state_index_to_quantum_number_f[transformation.matrix.indices()[i]];
@@ -688,13 +688,13 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     // Apply the transformation
     // If a quantum number turns out to be conserved by the transformation, it will be
     // rounded to the nearest half integer to avoid loss of numerical_precision.
-    task_checkpoint("Applying basis transformation...");
+    set_task_status("Applying basis transformation...");
     transformed->coefficients.matrix = coefficients.matrix * transformation.matrix;
     transformed->coefficients.transformation_type = transformation.transformation_type;
 
     Eigen::SparseMatrix<real_t> probs = transformation.matrix.cwiseAbs2().transpose();
 
-    task_checkpoint("Updating transformed quantum numbers...");
+    set_task_status("Updating transformed quantum numbers...");
     {
         auto map = Eigen::Map<const Eigen::VectorX<real_t>>(state_index_to_quantum_number_f.data(),
                                                             state_index_to_quantum_number_f.size());
@@ -754,7 +754,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         }
     }
 
-    task_checkpoint("Obtaining transformed state mapping...");
+    set_task_status("Obtaining transformed state mapping...");
     {
         // In the following, we obtain a bijective map between state index and ket index.
 

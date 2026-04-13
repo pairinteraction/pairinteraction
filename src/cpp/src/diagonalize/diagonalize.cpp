@@ -9,6 +9,7 @@
 #include "pairinteraction/utils/TaskControl.hpp"
 
 #include <complex>
+#include <cstddef>
 #include <oneapi/tbb.h>
 #include <optional>
 
@@ -19,11 +20,12 @@ void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenenergy,
                  std::optional<typename Derived::real_t> max_eigenenergy, double rtol) {
+    set_task_status("Diagonalizing systems...");
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                task_checkpoint("Diagonalizing systems...");
                 system.get().diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
+                set_task_status("Finished diagonalizing one system...", true);
             }
         });
 }
@@ -33,11 +35,12 @@ void diagonalize(std::vector<Derived> &systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenenergy,
                  std::optional<typename Derived::real_t> max_eigenenergy, double rtol) {
+    set_task_status("Diagonalizing systems...");
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                task_checkpoint("Diagonalizing systems...");
                 system.diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
+                set_task_status("Finished diagonalizing one system...", true);
             }
         });
 }
@@ -47,11 +50,12 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenenergy,
                  std::optional<typename Derived::real_t> max_eigenenergy, double rtol) {
+    set_task_status("Diagonalizing systems...");
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                task_checkpoint("Diagonalizing systems...");
                 system.get().diagonalize(diagonalizer, min_eigenenergy, max_eigenenergy, rtol);
+                set_task_status("Finished diagonalizing one system...", true);
             }
         });
 }
