@@ -57,7 +57,18 @@ def main() -> int:
     # Launch GUI (default action)
     parser.set_defaults(func=lambda args: start_gui(reload=args.reload))
 
-    subparsers = parser.add_subparsers(dest="command", title="commands")
+    subparsers = parser.add_subparsers(dest="command", title="commands", metavar="{test,database,config}")
+
+    # Removed launch command
+    gui_parser = subparsers.add_parser(
+        "gui",
+        add_help=False,
+    )
+    gui_parser.set_defaults(
+        func=lambda _args: parser.error(
+            "The 'gui' subcommand no longer exists. To launch the GUI, run 'pairinteraction' without a command."
+        )
+    )
 
     # Test command
     test_parser = subparsers.add_parser(
