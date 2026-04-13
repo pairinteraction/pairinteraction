@@ -22,16 +22,28 @@ logger = logging.getLogger(__name__)
 class SpinnerWidget(QWidget):
     """Spinning wheel indicator similar to the OS busy cursor, but larger."""
 
-    def __init__(self, parent: QWidget, size: int = 80, n_dots: int = 12, dot_radius: int = 5) -> None:
+    def __init__(
+        self,
+        parent: QWidget,
+        circle_size: int = 80,
+        n_dots: int = 12,
+        dot_radius: int = 5,
+    ) -> None:
         super().__init__(parent)
         self._step = 0
         self._n_dots = n_dots
         self._dot_radius = dot_radius
+        self._circle_size = circle_size
+
         self._timer = QTimer(self)
         self._timer.setInterval(80)
         self._timer.timeout.connect(self._advance)
-        self.setFixedSize(size, size)
+
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setFixedSize(circle_size, circle_size)
+        x, y = (parent.width() - self.width()) // 2, (parent.height() - self.height()) // 2
+        self.setGeometry(x, y, self.width(), self.height())
+
         self.hide()
 
     def _advance(self) -> None:
@@ -49,15 +61,15 @@ class SpinnerWidget(QWidget):
     def paintEvent(self, event: Any) -> None:
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        center = self.width() / 2
-        orbit = center - self._dot_radius - 4
+        circle_radius = self._circle_size / 2
+        orbit = circle_radius - self._dot_radius - 4
         for i in range(self._n_dots):
             opacity = ((i - self._step) % self._n_dots) / (self._n_dots - 1)
             painter.setBrush(QColor(128, 128, 128, int(opacity * 220)))
             painter.setPen(Qt.PenStyle.NoPen)
             angle = 2 * math.pi * i / self._n_dots
-            x = center + orbit * math.sin(angle)
-            y = center - orbit * math.cos(angle)
+            x = circle_radius + orbit * math.sin(angle)
+            y = circle_radius - orbit * math.cos(angle)
             painter.drawEllipse(
                 int(x - self._dot_radius),
                 int(y - self._dot_radius),
@@ -99,10 +111,10 @@ class MultiThreadWorker(QThread):
 
         self.signals = WorkerSignals()
 
-        self._last_progress_message = ""
+        self._last_task_status = ""
         self._progress_timer = QTimer(self)
         self._progress_timer.setInterval(75)
-        self._progress_timer.timeout.connect(lambda: self.report_progress(_backend.get_task_status()))
+        self._progress_timer.timeout.connect(self._poll_progress)
         self.started.connect(self._progress_timer.start)
         self.finished.connect(self._progress_timer.stop)
         self.finished.connect(self.finish_up)
@@ -114,30 +126,18 @@ class MultiThreadWorker(QThread):
             return current_thread
         return None
 
-    @classmethod
-    def task_checkpoint(cls, progress_message: str | None = None) -> None:
-        worker = cls.current_worker()
-
-        if progress_message is not None and worker is not None:
-            worker.report_progress(progress_message)
-
-        if worker is not None and worker.isInterruptionRequested():
+    def _poll_progress(self) -> None:
+        if self.isInterruptionRequested():
             raise _backend.TaskAbortedError
 
-        _backend.task_checkpoint(progress_message or "")
-
-    def report_progress(self, message: str) -> None:
-        if not message or message == self._last_progress_message:
-            return
-
-        self._last_progress_message = message
-        self.signals.progress.emit(message)
+        task_status = _backend.get_task_status()
+        if len(task_status) > 0 and task_status == self._last_task_status:
+            self._last_task_status = task_status
+            self.signals.progress.emit(task_status)
 
     def enable_busy_indicator(self, widget: QWidget) -> None:
         """Show a spinning wheel overlay while the worker is running."""
-        size = 80
-        self.busy_spinner = SpinnerWidget(widget, size=size)
-        self.busy_spinner.setGeometry((widget.width() - size) // 2, (widget.height() - size) // 2, size, size)
+        self.busy_spinner = SpinnerWidget(widget)
 
         self.signals.started.connect(self.busy_spinner.start)
         self.signals.finished.connect(self.busy_spinner.stop)

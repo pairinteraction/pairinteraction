@@ -152,7 +152,7 @@ class CalculationPage(SimulationPage):
             worker_plot.start()
 
         worker = MultiThreadWorker(self.calculate)
-        worker.enable_busy_indicator(self)
+        worker.enable_busy_indicator(self.plotwidget)
         worker.signals.progress.connect(lambda message: show_status_tip(self, message))
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)

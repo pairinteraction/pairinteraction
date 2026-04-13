@@ -15,7 +15,6 @@ from pairinteraction_gui.page.base_page import CalculationPage
 from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 from pairinteraction_gui.qobjects import show_status_tip
 from pairinteraction_gui.theme import theme_manager
-from pairinteraction_gui.worker import MultiThreadWorker
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -79,11 +78,11 @@ class LifetimesPage(CalculationPage):
         ]:
             sorted_rates[key] = {n: [] for n in n_list}
             for i, s in enumerate(kets):
-                MultiThreadWorker.task_checkpoint("Preparing transition rates...")
+                show_status_tip(self, "Preparing transition rates...")
                 sorted_rates[key][s.n].append((s, rates[i]))
         self.sorted_rates = sorted_rates
 
-        MultiThreadWorker.task_checkpoint("Plotting transition rates...")
+        show_status_tip(self, "Plotting transition rates...")
         rates_summed = {key: [sum(rates for _, rates in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}
         bar_sp = ax.bar(n_list, rates_summed["SP"], label="Spontaneous Decay", color="blue", alpha=0.8)
         bar_bbr = ax.bar(n_list, rates_summed["BBR"], label="Black Body Radiation", color="red", alpha=0.8)
@@ -93,7 +92,7 @@ class LifetimesPage(CalculationPage):
         ax.set_xlabel("Principal Quantum Number $n$")
         ax.set_ylabel(r"Transition Rates (1 / ms)")
 
-        MultiThreadWorker.task_checkpoint("Adding transition rate annotations...")
+        show_status_tip(self, "Adding transition rate annotations...")
         self.add_cursor()
 
         self.plotwidget.canvas.draw()
