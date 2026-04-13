@@ -10,6 +10,7 @@ from attr import dataclass
 
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
+from pairinteraction import _backend
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 
 if TYPE_CHECKING:
@@ -86,6 +87,7 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
         )
         logger.debug("Diagonalizing SystemAtoms...")
         pi.diagonalize(systems, **parameters.diagonalize_kwargs)
+        _backend.reset_task_status()
         logger.debug("Done diagonalizing SystemAtoms.")
         ket_pair_energy_0 = sum(systems[i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
         delta_energy = parameters.pair_delta_energy

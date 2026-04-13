@@ -186,6 +186,8 @@ System<Derived> &System<Derived>::transform(const Transformation<scalar_t> &tran
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
+
+    set_task_status("Applying transformation...");
     if (matrix.cols() != 0) {
         matrix = transformation.matrix.adjoint() * matrix * transformation.matrix;
         basis = basis->transformed(transformation);
@@ -207,6 +209,7 @@ System<Derived> &System<Derived>::transform(const Sorting &transformation) {
         hamiltonian_requires_construction = false;
     }
 
+    set_task_status("Applying transformation...");
     if (matrix.cols() != 0) {
         matrix = matrix.twistedBy(transformation.matrix.inverse());
         basis = basis->transformed(transformation);
@@ -219,7 +222,7 @@ template <typename Derived>
 System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                               std::optional<real_t> min_eigenenergy,
                                               std::optional<real_t> max_eigenenergy, double rtol) {
-    task_checkpoint("Preparing Hamiltonian...");
+    set_task_status("Preparing Hamiltonian...");
 
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
@@ -254,7 +257,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
             for (size_t idx = range.begin(); idx != range.end(); ++idx) {
-                task_checkpoint("Diagonalizing Hamiltonian blocks...");
+                set_task_status("Diagonalizing Hamiltonian blocks...");
                 auto eigensys = min_eigenenergy.has_value() || max_eigenenergy.has_value()
                     ? diagonalizer.eigh(matrix.block(blocks[idx].start, blocks[idx].start,
                                                      blocks[idx].size(), blocks[idx].size()),
@@ -273,7 +276,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     Eigen::Index num_rows = 0;
     Eigen::Index num_cols = 0;
     for (const auto &matrix : eigenvectors_blocks) {
-        task_checkpoint("Collecting eigenvectors...");
+        set_task_status("Collecting eigenvectors...");
         for (int i = 0; i < matrix.outerSize(); ++i) {
             non_zeros_per_inner_index.push_back(matrix.outerIndexPtr()[i + 1] -
                                                 matrix.outerIndexPtr()[i]);
@@ -295,7 +298,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         Eigen::Index offset_rows = 0;
         Eigen::Index offset_cols = 0;
         for (const auto &matrix : eigenvectors_blocks) {
-            task_checkpoint("Combining eigenvectors...");
+            set_task_status("Combining eigenvectors...");
             for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
                 for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
                          matrix, i);
@@ -317,7 +320,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         eigenenergies.reserve(Eigen::VectorXi::Constant(num_cols, 1));
         Eigen::Index offset = 0;
         for (const auto &matrix : eigenenergies_blocks) {
-            task_checkpoint("Combining eigenenergies...");
+            set_task_status("Combining eigenenergies...");
             for (int i = 0; i < matrix.size(); ++i) {
                 eigenenergies.insert(i + offset, i + offset) = matrix(i);
             }
@@ -328,7 +331,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         // Fix phase ambiguity
         std::vector<scalar_t> map_col_to_max(num_cols, 0);
         for (int row = 0; row < eigenvectors.outerSize(); ++row) {
-            task_checkpoint("Normalizing eigenvector phases...");
+            set_task_status("Normalizing eigenvector phases...");
             for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
                      eigenvectors, row);
                  it; ++it) {
@@ -346,7 +349,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         }
         phase_matrix.makeCompressed();
 
-        task_checkpoint("Applying eigenvector phases...");
+        set_task_status("Applying eigenvector phases...");
         eigenvectors = eigenvectors * phase_matrix;
     }
 

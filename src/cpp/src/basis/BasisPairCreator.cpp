@@ -51,7 +51,7 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_product_of_parities
 
 template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
-    task_checkpoint("Constructing pair basis...");
+    set_task_status("Constructing pair basis...");
 
     if (systems_atom.size() != 2) {
         throw std::invalid_argument("Two SystemAtom must be added before creating the BasisPair.");
@@ -85,7 +85,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Loop only over states with an allowed energy
     size_t ket_index = 0;
     for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenenergies1.size()); ++idx1) {
-        task_checkpoint("Constructing pair basis...");
+        set_task_status("Constructing pair basis...");
 
         // Get the energetically allowed range of the second index
         size_t min = 0;

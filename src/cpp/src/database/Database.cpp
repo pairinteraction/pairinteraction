@@ -319,7 +319,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     }
 
     // Ask the database for the described state
-    task_checkpoint("Loading atomic ket from database...");
+    set_task_status("Loading atomic ket from database...");
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
         exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
@@ -576,7 +576,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
     }
     {
-        task_checkpoint("Selecting atomic basis states...");
+        set_task_status("Selecting atomic basis states...");
         auto result = con->Query(fmt::format(
             R"(CREATE TEMP TABLE '{}' AS SELECT *, {} AS ketid FROM (
                 SELECT *,
@@ -593,7 +593,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
     // Ask the table for the extreme values of the quantum numbers
     {
-        task_checkpoint("Validating atomic basis coverage...");
+        set_task_status("Validating atomic basis coverage...");
         std::string select;
         std::string separator;
         if (description.range_energy.is_finite()) {
@@ -817,7 +817,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     }
 
     // Ask the table for the described states
-    task_checkpoint("Loading atomic basis states...");
+    set_task_status("Loading atomic basis states...");
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, m, parity, ketid, n, nu, exp_nui, std_nui, exp_l, std_l,
         exp_s, std_s, exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution FROM '{}' ORDER BY ketid ASC)",
@@ -860,7 +860,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
-        task_checkpoint("Constructing atomic basis...");
+        set_task_status("Constructing atomic basis...");
 
         auto *chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
         auto *chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
@@ -1015,7 +1015,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                 }
 
                 // Ask the database for the operator
-                task_checkpoint("Loading matrix elements from database...");
+                set_task_status("Loading matrix elements from database...");
                 std::string species = initial_basis->get_species();
                 duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
                 if (specifier != "energy") {
@@ -1078,7 +1078,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                     }
                 }
 
-                task_checkpoint("Constructing matrix elements...");
+                set_task_status("Constructing matrix elements...");
 
                 // Construct the matrix
                 int num_entries = static_cast<int>(result->RowCount());
@@ -1124,7 +1124,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
         }
     }
 
-    task_checkpoint("Returning matrix elements in canonical basis...");
+    set_task_status("Returning matrix elements in canonical basis...");
 
     return cache_it->second.get()->template cast<Scalar>();
 }

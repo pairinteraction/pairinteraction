@@ -10,17 +10,22 @@ namespace pairinteraction {
 namespace {
 
 std::atomic_bool &task_abort_requested() {
-    static std::atomic_bool value = false;
+    static std::atomic_bool value{false};
     return value;
 }
 
-std::mutex &task_status_mutex() {
+std::mutex &task_info_mutex() {
     static std::mutex value;
     return value;
 }
 
-std::string &task_status() {
+std::string &task_info() {
     static std::string value;
+    return value;
+}
+
+std::atomic<std::size_t> &progress_count() {
+    static std::atomic<std::size_t> value{0};
     return value;
 }
 
@@ -28,29 +33,33 @@ std::string &task_status() {
 
 TaskAbortedError::TaskAbortedError() : std::runtime_error("Task aborted.") {}
 
-void request_task_abort() noexcept {
-    task_abort_requested().store(true, std::memory_order_relaxed);
+void request_task_abort() noexcept { task_abort_requested().store(true); }
+
+void reset_task_status() noexcept {
+    task_abort_requested().store(false);
+    progress_count().store(0);
+    std::scoped_lock lock(task_info_mutex());
+    task_info().clear();
 }
 
-void clear_task_abort() noexcept {
-    task_abort_requested().store(false, std::memory_order_relaxed);
-    std::scoped_lock lock(task_status_mutex());
-    task_status().clear();
+std::string get_task_info() {
+    std::scoped_lock lock(task_info_mutex());
+    return task_info();
 }
 
-std::string get_task_status() {
-    std::scoped_lock lock(task_status_mutex());
-    return task_status();
-}
-
-void task_checkpoint(std::string_view status_message) {
+void set_task_status(std::string_view status_message, bool increase_progress_count) {
     if (!status_message.empty()) {
-        std::scoped_lock lock(task_status_mutex());
-        task_status().assign(status_message);
+        std::scoped_lock lock(task_info_mutex());
+        task_info().assign(status_message);
     }
-    if (task_abort_requested().load(std::memory_order_relaxed)) {
+    if (increase_progress_count) {
+        progress_count().fetch_add(1);
+    }
+    if (task_abort_requested().load()) {
         throw TaskAbortedError();
     }
 }
+
+std::size_t get_progress_count() noexcept { return progress_count().load(); }
 
 } // namespace pairinteraction

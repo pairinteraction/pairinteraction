@@ -136,9 +136,7 @@ def diagonalize(
 
     for system, cpp_system in zip(systems, cpp_systems, strict=False):
         if sort_by_energy:
-            _backend.task_checkpoint("Sorting diagonalized systems...")
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
-            _backend.task_checkpoint("Applying energy sorting...")
             cpp_system.transform(sorter)
         system._cpp = cpp_system
 

@@ -42,10 +42,9 @@ NB_MODULE(_backend, m) // NOLINT
     static nb::exception<pairinteraction::TaskAbortedError> task_aborted_error(m,
                                                                                "TaskAbortedError");
     m.def("request_task_abort", &pairinteraction::request_task_abort);
-    m.def("clear_task_abort", &pairinteraction::clear_task_abort);
-    m.def("get_task_status", &pairinteraction::get_task_status);
-    m.def("task_checkpoint",
-          [](const std::string &message) { pairinteraction::task_checkpoint(message); });
+    m.def("reset_task_status", &pairinteraction::reset_task_status);
+    m.def("get_task_info", &pairinteraction::get_task_info);
+    m.def("get_progress_count", &pairinteraction::get_progress_count);
 
     // enums
     bind_operator_type(m);

@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QHideEvent, QShowEvent
 
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+    from pairinteraction_gui.config.calculation_config import CalculationConfig
     from pairinteraction_gui.config.ket_config import KetConfig
     from pairinteraction_gui.plotwidget.plotwidget import PlotWidget
 
@@ -152,7 +153,12 @@ class CalculationPage(SimulationPage):
             worker_plot.start()
 
         worker = MultiThreadWorker(self.calculate)
-        worker.enable_busy_indicator(self.plotwidget)
+        if hasattr(self, "calculation_config"):
+            calculation_config: CalculationConfig = self.calculation_config
+            number_of_steps = calculation_config.steps.value()
+            worker.enable_busy_indicator(self.plotwidget, add_progress_label=True, number_of_steps=number_of_steps)
+        else:
+            worker.enable_busy_indicator(self.plotwidget)
         worker.signals.progress.connect(lambda message: show_status_tip(self, message))
         worker.signals.result.connect(update_plot)
         worker.signals.finished.connect(self.after_calculate)
