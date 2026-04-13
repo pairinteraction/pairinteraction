@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pairinteraction import ureg
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from scipy import sparse
 
@@ -154,7 +155,7 @@ def test_c3_with_sample_system(pi_module: PairinteractionModule, system_pair_sam
     ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     c3_obj = pi_module.C3(ket1, ket2)
     c3_obj._distance_vector = None  # avoid warning due when setting system pair
-    c3_obj.system_pair = system_pair_sample
+    c3_obj.set_system_pair(system_pair_sample)
 
     c3 = c3_obj.get(unit="planck_constant * gigahertz * micrometer^3")
     assert np.isclose(-0.5 * c3, 3.1515)
@@ -178,7 +179,7 @@ def test_c6_with_sample_system(pi_module: PairinteractionModule, system_pair_sam
     ket = pi_module.KetAtom(species="Rb", n=61, l=0, j=0.5, m=0.5)
     c6_obj = pi_module.C6(ket, ket)
     c6_obj._distance_vector = None  # avoid warning due when setting system pair
-    c6_obj.system_pair = system_pair_sample
+    c6_obj.set_system_pair(system_pair_sample)
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
     assert np.isclose(c6, -167.880)
@@ -203,14 +204,14 @@ def test_exact_resonance_detection(
     ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2)])
-    eff_system.system_pair = system_pair_sample
+    eff_system.set_system_pair(system_pair_sample)
 
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"), np.errstate(invalid="ignore"):
         eff_system.get_effective_hamiltonian()
     captured = capsys.readouterr()
-    assert "Detected 'inf' entries" in captured.err
-    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
+    assert "gets a large dressing (inf overlap)" in captured.err
+    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has admixture inf" in captured.err
 
 
 def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pytest.CaptureFixture[str]) -> None:
@@ -219,12 +220,122 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     ket2 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
-    eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")
+    eff_system.create_basis_pair(number_of_kets=100)
+
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
         eff_system.get_effective_hamiltonian()
-        eff_system.check_for_resonances(0.99)
+        eff_system.check_for_resonances(0.01)
     captured = capsys.readouterr()
     assert "The most perturbing states are" in captured.err
     assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in captured.err
+
+
+def test_set_basis_atoms(pi_module: PairinteractionModule) -> None:
+    ket = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    basis0 = pi_module.BasisAtom("Rb", n=(58, 64), l=(0, 2))
+    basis1 = pi_module.BasisAtom("Rb", n=(59, 63), l=(0, 1))
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_basis_atoms(basis0)
+    assert eff_system.basis_atoms[0] is basis0
+    assert eff_system.basis_atoms[1] is basis0
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_basis_atoms([basis0, basis1])
+    assert eff_system.basis_atoms[0] is basis0
+    assert eff_system.basis_atoms[1] is basis1
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.basis_atoms  # noqa: B018
+    # Now basis_atoms is set; trying to set it again should fail
+    with pytest.raises(RuntimeError, match="basis_atoms"):
+        eff_system.set_basis_atoms(basis0)
+
+
+def test_set_system_atoms(pi_module: PairinteractionModule) -> None:
+    ket = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    basis0 = pi_module.BasisAtom("Rb", n=(58, 64), l=(0, 2))
+    basis1 = pi_module.BasisAtom("Rb", n=(59, 63), l=(0, 1))
+    system0 = pi_module.SystemAtom(basis0)
+    system1 = pi_module.SystemAtom(basis1)
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_system_atoms(system0)
+    assert eff_system.system_atoms[0] is system0
+    assert eff_system.system_atoms[1] is system0
+
+    pi_module.diagonalize([system0, system1])
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_system_atoms([system0, system1])
+    assert eff_system.system_atoms[0] is system0
+    assert eff_system.system_atoms[1] is system1
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.basis_atoms  # noqa: B018
+    with pytest.raises(RuntimeError, match="system_atoms"):
+        eff_system.set_system_atoms(system0)
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_electric_field([0, 0, 0], "volt/cm")
+    with pytest.raises(RuntimeError, match="system atom parameters"):
+        eff_system.set_system_atoms(system0)
+
+
+def test_set_system_pair(pi_module: PairinteractionModule, system_pair_sample: SystemPair) -> None:
+    ket = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    basis = pi_module.BasisAtom("Rb", n=(58, 64), l=(0, 2))
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_distance(10, unit="micrometer")
+    with pytest.raises(RuntimeError, match="system pair parameters"):
+        eff_system.set_system_pair(system_pair_sample)
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_basis_atoms(basis)
+    with pytest.raises(RuntimeError, match="electric_field"):
+        eff_system.set_electric_field([0, 0, 1], "V/cm")
+
+
+def test_set_distance_with_pint_quantity(pi_module: PairinteractionModule) -> None:
+    """Test that set_distance accepts a pint.Quantity directly."""
+    ket = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    distance = 10 * ureg.micrometer
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_distance(distance)
+    assert eff_system._distance_vector is not None
+
+    eff_system = pi_module.EffectiveSystemPair([(ket, ket)])
+    eff_system.set_distance_vector([0, 0, distance])
+    assert eff_system._distance_vector is not None
+
+
+def test_create_basis_pair_with_delta_energy(pi_module: PairinteractionModule) -> None:
+    """Test that create_basis_pair works with explicit delta_energy parameters."""
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2)])
+    eff_system.create_basis_pair(delta_energy=3.0, delta_energy_unit="GHz")
+    assert eff_system._basis_pair is not None
+    assert eff_system.basis_pair.number_of_kets > 0
+
+
+def test_create_basis_pair_with_number_of_kets(pi_module: PairinteractionModule) -> None:
+    """Test that create_basis_pair works with an explicit number_of_kets."""
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2)])
+    eff_system.create_basis_pair(number_of_kets=200)
+    assert eff_system.basis_pair.number_of_kets >= 200
+
+
+def test_get_pair_energies(pi_module: PairinteractionModule) -> None:
+    """Test that get_pair_energies returns the correct number of energies."""
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    energies = eff_system.get_pair_energies(unit="GHz")
+    assert len(energies) == 2
+    # Both pair states (ket1,ket2) and (ket2,ket1) have the same energy
+    assert np.isclose(energies[0], energies[1])

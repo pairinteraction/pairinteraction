@@ -32,8 +32,7 @@ class C3(EffectiveSystemPair):
     """
 
     def __init__(self, ket1: KetAtom, ket2: KetAtom) -> None:
-        super().__init__([(ket1, ket2), (ket2, ket1)])
-        self.set_perturbation_order(1)
+        super().__init__([(ket1, ket2), (ket2, ket1)], 1)
 
         # Set some default distance. The exact value does not matter for the C3 value
         self.set_distance(100, unit="micrometer")
