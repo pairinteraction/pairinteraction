@@ -191,6 +191,8 @@ System<Derived> &System<Derived>::transform(const Transformation<scalar_t> &tran
         basis = basis->transformed(transformation);
     }
 
+    hamiltonian_is_diagonal = false;
+
     // A transformed system might have lost its block-diagonalizability if the
     // transformation was not a sorting
     blockdiagonalizing_labels.clear();

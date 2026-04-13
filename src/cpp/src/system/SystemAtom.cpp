@@ -10,10 +10,12 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/operator.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
 #include <Eigen/Dense>
 #include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <set>
@@ -98,15 +100,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             this->basis, this->basis, type, q);
     };
 
-    // Construct the unperturbed Hamiltonian in the canonical pair basis
-    this->matrix.resize(static_cast<Eigen::Index>(this->basis->get_number_of_kets()),
-                        static_cast<Eigen::Index>(this->basis->get_number_of_kets()));
-    this->matrix.reserve(
-        Eigen::VectorXi::Constant(static_cast<Eigen::Index>(this->basis->get_number_of_kets()), 1));
-    for (Eigen::Index idx = 0; idx < this->matrix.rows(); ++idx) {
-        this->matrix.insert(idx, idx) = this->basis->get_ket(idx)->get_energy();
-    }
-    this->matrix.makeCompressed();
+    // Construct the unperturbed Hamiltonian in the canonical atomic basis
+    this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
     bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();

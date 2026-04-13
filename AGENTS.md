@@ -17,7 +17,7 @@ Always build via `uv sync`, do not use `cmake` directly.
 
 ## Tips for Testing
 
-If you changed C++ code, recompile and run:
+If you changed C++ code, rebuild and run:
 
 ```bash
 uv run --no-project pytest -k run_unit_tests --durations=0
