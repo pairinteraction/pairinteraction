@@ -90,6 +90,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             additional_kets: List of additional kets to add to the basis. Default None.
 
         """
+        super().__init__()
         creator = self._cpp_creator()
         creator.set_species(species)
 
@@ -279,12 +280,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     @property
     def database(self) -> Database:
         """The database used for this object."""
-        return self.kets[0].database
+        return self.get_ket(0).database
 
     @property
     def species(self) -> str:
         """The atomic species."""
-        return self.kets[0].species
+        return self.get_ket(0).species
 
     @overload
     def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...

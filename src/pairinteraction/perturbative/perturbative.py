@@ -295,13 +295,13 @@ def _check_for_resonances(
         indices = sparse.find(overlaps[i, :] >= print_above_admixture * vector_norm)[1]
         logger.error(
             "The state %s has resonances with the following states, please consider adding them to your model space:",
-            system_pair.basis.kets[j],
+            system_pair.basis.get_ket(j),
         )
         for index in indices:
             if index == j:
                 continue
             admixture = 1 if np.isinf(overlaps[i, index]) else overlaps[i, index] / vector_norm
-            logger.error("  - %s with admixture %.3f", system_pair.basis.kets[index], admixture)
+            logger.error("  - %s with admixture %.3f", system_pair.basis.get_ket(int(index)), admixture)
     if error_flag:
         raise ValueError(
             "Error. Perturbative Calculation not possible due to resonances. "

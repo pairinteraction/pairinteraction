@@ -627,7 +627,7 @@ class EffectiveSystemPair:
                 overlap[inds[0]],
             )
             for i in inds[1:5]:
-                logger.error("  - %s with overlap %.3e", self.system_pair.basis.kets[i], overlap[i])
+                logger.error("  - %s with overlap %.3e", self.system_pair.basis.get_ket(i), overlap[i])
 
         return model_inds
 
@@ -654,7 +654,7 @@ class EffectiveSystemPair:
                     " Consider adding the following states to the model space:"
                 )
                 for index in indices:
-                    logger.critical("  - %s has infinite admixture", self.system_pair.basis.kets[index])
+                    logger.critical("  - %s has infinite admixture", self.system_pair.basis.get_ket(index))
                 continue
 
             overlaps_i /= np.sum(overlaps_i.data)  # normalize the overlaps to 1
@@ -665,7 +665,7 @@ class EffectiveSystemPair:
                 " Thus, the calculation might lead to unexpected or wrong results.\n"
                 " Consider adding the most perturbing states to the model space.\n"
                 " The most perturbing states are:",
-                self.system_pair.basis.kets[m_ind],
+                self.system_pair.basis.get_ket(m_ind),
                 overlaps_i[0, m_ind],
             )
             print_above_admixture = (1 - overlaps_i[0, m_ind]) * 0.05
@@ -674,7 +674,7 @@ class EffectiveSystemPair:
             for index in indices:
                 if index != m_ind:
                     admixture = overlaps_i[0, index]
-                    logger.error("  - %s with overlap %.3e", self.system_pair.basis.kets[index], admixture)
+                    logger.error("  - %s with overlap %.3e", self.system_pair.basis.get_ket(index), admixture)
 
 
 class EffectiveSystemPairReal(EffectiveSystemPair):
