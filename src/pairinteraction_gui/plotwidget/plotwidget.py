@@ -14,6 +14,7 @@ from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QHBoxLayout
 from scipy.optimize import curve_fit
 
+from pairinteraction.state.state_atom import StateAtom
 from pairinteraction.visualization.colormaps import alphamagma
 from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas
 from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar
@@ -65,7 +66,9 @@ class PlotWidget(WidgetV):
 
     def clear(self) -> None:
         self.canvas.ax.clear()
-        self.canvas.draw()
+        self.canvas.draw_idle()
+        self.clear_annotations()
+        self.disconnect_click()
 
     def clear_annotations(self) -> None:
         for ann in self._annotations.values():
@@ -114,13 +117,11 @@ class PlotEnergies(PlotWidget):
         self.canvas.ax.set_zorder(1)
 
     def plot(self, parameters: Parameters[Any], results: Results) -> None:
-        self.reset_fit()
-        ax = self.canvas.ax
-        ax.clear()
-        self.clear_annotations()
-        ax.set_xmargin(0)
+        self.clear()
 
         show_status_tip(self, "Plotting energy curves...")
+        ax = self.canvas.ax
+        ax.set_xmargin(0)
 
         # store data to allow fitting later on
         self.parameters = parameters
@@ -163,9 +164,6 @@ class PlotEnergies(PlotWidget):
 
     def setup_annotations(self, parameters: Parameters[Any], results: Results) -> None:
         """Connect click-based state annotation to the energy plot."""
-        self.disconnect_click()
-        self.clear_annotations()
-
         energies = results.energies
         overlaps = results.ket_overlaps
         x_values = parameters.get_x_values()
@@ -185,7 +183,12 @@ class PlotEnergies(PlotWidget):
         pts_overlaps = np.array(all_overlaps)
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or len(pts_data) == 0:
+            if (
+                event.inaxes is not self.canvas.ax
+                or event.button not in [1, 3]
+                or len(pts_data) == 0
+                or self.navigation_toolbar.mode
+            ):
                 return
             if event.button == 3:  # right click clears annotations
                 self.clear_annotations()
@@ -211,21 +214,19 @@ class PlotEnergies(PlotWidget):
             ylim = self.canvas.ax.get_ylim()
             x_frac = (pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])
             y_frac = (pts_data[selected, 1] - ylim[0]) / (ylim[1] - ylim[0])
-            ha = "right" if x_frac > 0.5 else "left"
-            va = "top" if y_frac > 0.5 else "bottom"
-            x_offset = -15 if x_frac > 0.5 else 15
-            y_offset = -10 if y_frac > 0.5 else 10
+            x_offset = -100 if isinstance(state, StateAtom) else -250
+            x_offset = x_offset if x_frac > 0.5 else 0
+            y_offset = 15 + 10 * label.count("\n")
+            y_offset = -y_offset if y_frac > 0.5 else y_offset
             ann = self.canvas.ax.annotate(
                 label,
                 xy=(pts_data[selected, 0], pts_data[selected, 1]),
                 xytext=(x_offset, y_offset),
                 textcoords="offset points",
-                ha=ha,
-                va=va,
+                va="center",
                 bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
                 arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
                 clip_on=False,
-                annotation_clip=False,
             )
             ann.set_in_layout(False)
             self._annotations[selected] = ann
@@ -334,7 +335,7 @@ class PlotEnergies(PlotWidget):
             )
             self.canvas.ax.legend()
 
-        self.canvas.draw()
+        self.canvas.draw_idle()
 
     def clear(self) -> None:
         super().clear()
@@ -368,8 +369,8 @@ class PlotLifetimes(PlotWidget):
         )
 
     def plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
+        self.clear()
         ax = self.canvas.ax
-        ax.clear()
 
         show_status_tip(self, "Preparing transition rates...")
         labels = ["Spontaneous Decay", "Black Body Radiation"]
@@ -398,8 +399,6 @@ class PlotLifetimes(PlotWidget):
     def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:  # noqa: C901
         """Add click-based annotations to the plot."""
         show_status_tip(self, "Adding transition rate annotations...")
-        self.disconnect_click()
-        self.clear_annotations()
 
         self._bar_data: list[tuple[str, int, mpl.patches.Rectangle]] = []
         for container in reversed(self.artists):
@@ -411,7 +410,7 @@ class PlotLifetimes(PlotWidget):
                 self._bar_data.append((label, n, rect))
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button not in [1, 3]:
+            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or self.navigation_toolbar.mode:
                 return
             if event.button == 3:  # right click clears annotations
                 self.clear_annotations()
@@ -445,21 +444,16 @@ class PlotLifetimes(PlotWidget):
             bar_top = rect.get_y() + rect.get_height()
             x_frac = (bar_cx - xlim[0]) / (xlim[1] - xlim[0])
             y_frac = (bar_top - ylim[0]) / (ylim[1] - ylim[0])
-            ha = "right" if x_frac > 0.5 else "left"
-            va = "top" if y_frac > 0.5 else "bottom"
-            x_offset = -15 if x_frac > 0.5 else 15
-            y_offset = -10 if y_frac > 0.5 else 10
+            x_offset = -200 if x_frac > 0.5 else 25
+            y_offset = -50 if y_frac > 0.5 else 50
             ann = self.canvas.ax.annotate(
                 text,
                 xy=(bar_cx, bar_top),
                 xytext=(x_offset, y_offset),
                 textcoords="offset points",
-                ha=ha,
-                va=va,
                 bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
                 arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
                 clip_on=False,
-                annotation_clip=False,
             )
             ann.set_in_layout(False)
             self._annotations[(label, n)] = ann
@@ -467,11 +461,6 @@ class PlotLifetimes(PlotWidget):
 
         self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
-
-    def clear(self) -> None:
-        self.disconnect_click()
-        self.clear_annotations()
-        super().clear()
 
 
 def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -> NDArray[Any]:

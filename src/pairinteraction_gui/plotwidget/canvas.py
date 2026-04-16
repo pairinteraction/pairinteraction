@@ -75,4 +75,4 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
             self.ax.set_autoscaley_on(False)
 
         # Redraw the canvas
-        self.draw()
+        self.draw_idle()
