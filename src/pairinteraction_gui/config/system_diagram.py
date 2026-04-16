@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 from math import cos, hypot, radians, sin
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QColor, QFont, QPainter, QPen, QPolygonF
 from PySide6.QtWidgets import QSizePolicy, QWidget
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QPaintEvent
+
     from pairinteraction_gui.config.system_config import SystemConfig
 
 
@@ -17,7 +19,6 @@ class _Colors:
     AXIS = QColor("#8a91a0")
     ATOM_FILL = QColor("#cad9f7")
     ATOM_EDGE = QColor("#28354e")
-    ION_FILL = QColor("#f9fbfe")
     ION_EDGE = QColor("#28354e")
     EFIELD = QColor("#e05050")
     BFIELD = QColor("#2266cc")
@@ -37,20 +38,29 @@ class SystemDiagram(QWidget):
 
     def connectConfig(self, config: SystemConfig) -> None:
         """Connect all relevant config items to trigger repaints."""
-        for item in [config.Ex, config.Ey, config.Ez, config.Bx, config.By, config.Bz,
-                     config.ion_distance, config.ion_angle]:
+        for item in [
+            config.Ex,
+            config.Ey,
+            config.Ez,
+            config.Bx,
+            config.By,
+            config.Bz,
+            config.ion_distance,
+            config.ion_angle,
+        ]:
             item.connectAll(self.update)
         if self._two_atoms:
             config.distance.connectAll(self.update)  # type: ignore[attr-defined]
             config.angle.connectAll(self.update)  # type: ignore[attr-defined]
         self._config = config
 
-    def _read_state(self, use_max: bool) -> dict:
+    def _read_state(self, use_max: bool) -> dict[str, Any]:
         cfg = self._config
         if cfg is None:
             return {}
 
-        spinbox = lambda item: item.max_spinbox if use_max else item.min_spinbox  # noqa: E731
+        def spinbox(item: Any) -> Any:
+            return item.max_spinbox if use_max else item.min_spinbox
 
         ex = spinbox(cfg.Ex).value() if cfg.Ex.isChecked() else 0.0
         ey = spinbox(cfg.Ey).value() if cfg.Ey.isChecked() else 0.0
@@ -59,24 +69,18 @@ class SystemDiagram(QWidget):
         by = spinbox(cfg.By).value() if cfg.By.isChecked() else 0.0
         bz = spinbox(cfg.Bz).value() if cfg.Bz.isChecked() else 0.0
 
-        has_efield = hypot(ex, ez) > 1e-9
-        has_bfield = hypot(bx, bz) > 1e-9
-        # ey/by are out-of-plane (y-axis); shown as dot/cross symbol near axis origin
-        ey_sign = 1 if ey > 1e-9 else (-1 if ey < -1e-9 else 0)
-        by_sign = 1 if by > 1e-9 else (-1 if by < -1e-9 else 0)
+        def _sign(v: float) -> int:
+            return 1 if v > 1e-9 else (-1 if v < -1e-9 else 0)
 
-        show_ion = cfg.ion_distance.isChecked()
-        ion_angle_deg = spinbox(cfg.ion_angle).value() if cfg.ion_angle.isChecked() else 0.0
-
-        state: dict = {
-            "has_efield": has_efield,
+        state: dict[str, Any] = {
+            "has_efield": hypot(ex, ez) > 1e-9,
             "efield_dir": (ex, ez),
-            "ey_sign": ey_sign,
-            "has_bfield": has_bfield,
+            "ey_sign": _sign(ey),
+            "has_bfield": hypot(bx, bz) > 1e-9,
             "bfield_dir": (bx, bz),
-            "by_sign": by_sign,
-            "show_ion": show_ion,
-            "ion_angle_deg": ion_angle_deg,
+            "by_sign": _sign(by),
+            "show_ion": cfg.ion_distance.isChecked(),
+            "ion_angle_deg": spinbox(cfg.ion_angle).value() if cfg.ion_angle.isChecked() else 0.0,
         }
 
         if self._two_atoms:
@@ -84,30 +88,25 @@ class SystemDiagram(QWidget):
 
         return state
 
-    def paintEvent(self, event) -> None:  # noqa: ANN001
+    def paintEvent(self, event: QPaintEvent) -> None:
+        if self._config is None:
+            return
+
         w, h = self.width(), self.height()
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        painter.fillRect(0, 0, w, h, _Colors.BG)
-
         half = w // 2
 
-        # Draw dividing line
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.fillRect(0, 0, w, h, _Colors.BG)
+
         painter.setPen(QPen(_Colors.AXIS, 1, Qt.PenStyle.DotLine))
         painter.drawLine(half, 4, half, h - 4)
 
-        # Left panel: min step
-        painter.save()
-        painter.setClipRect(0, 0, half, h)
-        self._draw_panel(painter, 0, half, h, self._read_state(use_max=False), label="min")
-        painter.restore()
-
-        # Right panel: max step
-        painter.save()
-        painter.setClipRect(half, 0, half, h)
-        self._draw_panel(painter, half, half, h, self._read_state(use_max=True), label="max")
-        painter.restore()
+        for use_max, x_offset, label in [(False, 0, "min"), (True, half, "max")]:
+            painter.save()
+            painter.setClipRect(x_offset, 0, half, h)
+            self._draw_panel(painter, x_offset, half, h, self._read_state(use_max), label)
+            painter.restore()
 
         painter.end()
 
@@ -117,16 +116,14 @@ class SystemDiagram(QWidget):
         x_offset: int,
         panel_w: int,
         panel_h: int,
-        state: dict,
+        state: dict[str, Any],
         label: str,
     ) -> None:
         cy = panel_h / 2.0
-
         origin_px = QPointF(x_offset + panel_w * 0.22, cy)
         atoms_cx = x_offset + panel_w * 0.68
         scale = min(panel_w * 0.5, panel_h) * 0.30
 
-        # Panel label ("min" / "max") at top-center
         font = QFont()
         font.setPointSize(7)
         painter.setFont(font)
@@ -140,25 +137,22 @@ class SystemDiagram(QWidget):
             label,
         )
 
-        if self._two_atoms and state:
-            atom_angle_deg = state.get("atom_angle_deg", 0.0)
-            angle_rad = radians(atom_angle_deg)
-            dx = sin(angle_rad) * scale
-            dz = cos(angle_rad) * scale
-
+        if self._two_atoms:
+            angle_rad = radians(state.get("atom_angle_deg", 0.0))
+            dx, dz = sin(angle_rad) * scale, cos(angle_rad) * scale
             atom1_px = QPointF(atoms_cx - dx / 2, cy + dz / 2)
-            atom2_px = QPointF(atoms_cx + dx / 2, cy - dz / 2)
+            atom2_px: QPointF | None = QPointF(atoms_cx + dx / 2, cy - dz / 2)
         else:
             atom1_px = QPointF(atoms_cx, cy)
             atom2_px = None
 
-        # Ion position (relative to atom1)
         ion_px = None
         if state.get("show_ion"):
-            ion_angle_rad = radians(state.get("ion_angle_deg", 0.0))
-            ion_dx = sin(ion_angle_rad) * scale * 0.7
-            ion_dz = cos(ion_angle_rad) * scale * 0.7
-            ion_px = QPointF(atom1_px.x() + ion_dx, atom1_px.y() - ion_dz)
+            ion_rad = radians(state.get("ion_angle_deg", 0.0))
+            ion_px = QPointF(
+                atom1_px.x() + sin(ion_rad) * scale * 0.7,
+                atom1_px.y() - cos(ion_rad) * scale * 0.7,
+            )
 
         self._draw_axes(painter, origin_px)
 
@@ -179,27 +173,22 @@ class SystemDiagram(QWidget):
             mag = hypot(bx, bz)
             self._draw_arrow(painter, origin_px, (bx / mag, bz / mag), scale, _Colors.BFIELD, "B")
 
-        # Out-of-plane indicators: stacked below the axis origin
-        oop_offset = 0
-        if state.get("ey_sign", 0) != 0:
-            pos = QPointF(origin_px.x(), origin_px.y() + 18 + oop_offset)
-            self._draw_oop_symbol(painter, pos, state["ey_sign"], _Colors.EFIELD, "E")
-            oop_offset += 16
-        if state.get("by_sign", 0) != 0:
-            pos = QPointF(origin_px.x(), origin_px.y() + 18 + oop_offset)
-            self._draw_oop_symbol(painter, pos, state["by_sign"], _Colors.BFIELD, "B")
+        # Out-of-plane indicators stacked below the axis origin
+        oop_y = origin_px.y() + 18
+        for sign_key, color, field_label in [
+            ("ey_sign", _Colors.EFIELD, "E"),
+            ("by_sign", _Colors.BFIELD, "B"),
+        ]:
+            if state.get(sign_key, 0) != 0:
+                self._draw_oop_symbol(painter, QPointF(origin_px.x(), oop_y), state[sign_key], color, field_label)
+                oop_y += 16
 
     def _draw_axes(self, painter: QPainter, origin: QPointF) -> None:
         axis_len = 20.0
-        pen = QPen(_Colors.AXIS, 1.2, Qt.PenStyle.DashLine)
-        painter.setPen(pen)
-
-        # X axis (right)
+        painter.setPen(QPen(_Colors.AXIS, 1.2, Qt.PenStyle.DashLine))
         x_end = QPointF(origin.x() + axis_len, origin.y())
-        painter.drawLine(origin, x_end)
-
-        # Z axis (up)
         z_end = QPointF(origin.x(), origin.y() - axis_len)
+        painter.drawLine(origin, x_end)
         painter.drawLine(origin, z_end)
 
         font = QFont()
@@ -231,16 +220,9 @@ class SystemDiagram(QWidget):
 
     def _draw_ion(self, painter: QPainter, center: QPointF) -> None:
         r = 4.0
-        pen = QPen(_Colors.ION_EDGE, 1.5)
-        painter.setPen(pen)
-        painter.drawLine(
-            QPointF(center.x() - r, center.y()),
-            QPointF(center.x() + r, center.y()),
-        )
-        painter.drawLine(
-            QPointF(center.x(), center.y() - r),
-            QPointF(center.x(), center.y() + r),
-        )
+        painter.setPen(QPen(_Colors.ION_EDGE, 1.5))
+        painter.drawLine(QPointF(center.x() - r, center.y()), QPointF(center.x() + r, center.y()))
+        painter.drawLine(QPointF(center.x(), center.y() - r), QPointF(center.x(), center.y() + r))
 
         font = QFont()
         font.setPointSize(7)
@@ -258,33 +240,25 @@ class SystemDiagram(QWidget):
         label: str,
     ) -> None:
         arrow_len = min(scale * 0.5, 40.0)
-        dx_phys, dz_phys = direction
-        # pixel direction: x right, y down → z up means py = -dz_phys
-        pdx = dx_phys
-        pdy = -dz_phys
+        px, pz = direction  # physics x, z; pixel y is inverted
+        tip = QPointF(origin.x() + px * arrow_len, origin.y() - pz * arrow_len)
 
-        tip = QPointF(origin.x() + pdx * arrow_len, origin.y() + pdy * arrow_len)
-
-        pen = QPen(color, 1.8)
-        painter.setPen(pen)
+        painter.setPen(QPen(color, 1.8))
         painter.drawLine(origin, tip)
 
-        # arrowhead
-        arrowhead = self._make_arrowhead(tip, (pdx, pdy))
         painter.setBrush(color)
         painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawPolygon(arrowhead)
+        painter.drawPolygon(self._make_arrowhead(tip, (px, -pz)))
 
-        # label
         font = QFont()
         font.setPointSize(7)
         font.setItalic(True)
         painter.setFont(font)
         painter.setPen(QPen(color))
-        painter.drawText(tip + QPointF(pdx * 5 + 2, pdy * 5 + 4), label)
+        painter.drawText(tip + QPointF(px * 5 + 2, -pz * 5 + 4), label)
 
+    @staticmethod
     def _draw_oop_symbol(
-        self,
         painter: QPainter,
         center: QPointF,
         sign: int,
@@ -298,22 +272,14 @@ class SystemDiagram(QWidget):
         painter.drawEllipse(center, r, r)
 
         if sign > 0:
-            # dot in the centre
             painter.setBrush(color)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawEllipse(center, 1.5, 1.5)
         else:
-            # cross inside the circle
             d = r * 0.6
             painter.setPen(QPen(color, 1.2))
-            painter.drawLine(
-                QPointF(center.x() - d, center.y() - d),
-                QPointF(center.x() + d, center.y() + d),
-            )
-            painter.drawLine(
-                QPointF(center.x() + d, center.y() - d),
-                QPointF(center.x() - d, center.y() + d),
-            )
+            painter.drawLine(QPointF(center.x() - d, center.y() - d), QPointF(center.x() + d, center.y() + d))
+            painter.drawLine(QPointF(center.x() + d, center.y() - d), QPointF(center.x() - d, center.y() + d))
 
         font = QFont()
         font.setPointSize(7)
@@ -325,11 +291,13 @@ class SystemDiagram(QWidget):
     @staticmethod
     def _make_arrowhead(tip: QPointF, direction: tuple[float, float]) -> QPolygonF:
         ux, uy = direction
-        # perpendicular
-        px, py = -uy, ux
-        L = 8.0
-        W = 4.0
-        base = QPointF(tip.x() - L * ux, tip.y() - L * uy)
-        left = QPointF(base.x() + W * px, base.y() + W * py)
-        right = QPointF(base.x() - W * px, base.y() - W * py)
-        return QPolygonF([tip, left, right])
+        px, py = -uy, ux  # perpendicular
+        head_len, head_w = 8.0, 4.0
+        base = QPointF(tip.x() - head_len * ux, tip.y() - head_len * uy)
+        return QPolygonF(
+            [
+                tip,
+                QPointF(base.x() + head_w * px, base.y() + head_w * py),
+                QPointF(base.x() - head_w * px, base.y() - head_w * py),
+            ]
+        )
