@@ -167,49 +167,57 @@ class PlotEnergies(PlotWidget):
         self.clear_annotations()
 
         energies = results.energies
+        overlaps = results.ket_overlaps
         x_values = parameters.get_x_values()
 
         self._point_index_map: list[tuple[int, int]] = []
         all_x: list[float] = []
         all_y: list[float] = []
+        all_overlaps: list[float] = []
         for idx in range(len(energies)):
             x = x_values[idx]
-            for idstate, energy in enumerate(energies[idx]):
+            for idstate, (energy, overlap) in enumerate(zip(energies[idx], overlaps[idx], strict=False)):
                 all_x.append(x)
                 all_y.append(float(energy))
+                all_overlaps.append(float(overlap))
                 self._point_index_map.append((idx, idstate))
         pts_data = np.column_stack([all_x, all_y]) if all_x else np.empty((0, 2))
+        pts_overlaps = np.array(all_overlaps)
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button != 1 or len(pts_data) == 0:
+            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or len(pts_data) == 0:
                 return
+            if event.button == 3:  # right click clears annotations
+                self.clear_annotations()
+                return
+
             pts_pos = self.canvas.ax.transData.transform(pts_data)
             click_pos = np.array([event.x, event.y])
             dists = np.hypot(pts_pos[:, 0] - click_pos[0], pts_pos[:, 1] - click_pos[1])
-            nearest = int(np.argmin(dists))
-            if dists[nearest] > 20:  # pixel threshold
+            candidates = np.flatnonzero(dists <= 10)  # threshold in pixels
+            if len(candidates) == 0:
                 self.clear_annotations()
                 return
-            if nearest in self._annotations:
-                self._annotations[nearest].remove()
-                del self._annotations[nearest]
+            selected = int(candidates[np.argmax(pts_overlaps[candidates])])
+            if selected in self._annotations:
+                self._annotations[selected].remove()
+                del self._annotations[selected]
                 self.canvas.draw_idle()
                 return
-            show_status_tip(self, "Calculating state annotation...")
-            idstep, idstate = self._point_index_map[nearest]
+            idstep, idstate = self._point_index_map[selected]
             state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)
             label = state.get_label().replace(" + ", "\n + ").replace("+ -", " - ")
             xlim = self.canvas.ax.get_xlim()
             ylim = self.canvas.ax.get_ylim()
-            x_frac = (pts_data[nearest, 0] - xlim[0]) / (xlim[1] - xlim[0])
-            y_frac = (pts_data[nearest, 1] - ylim[0]) / (ylim[1] - ylim[0])
+            x_frac = (pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])
+            y_frac = (pts_data[selected, 1] - ylim[0]) / (ylim[1] - ylim[0])
             ha = "right" if x_frac > 0.5 else "left"
             va = "top" if y_frac > 0.5 else "bottom"
             x_offset = -15 if x_frac > 0.5 else 15
             y_offset = -10 if y_frac > 0.5 else 10
             ann = self.canvas.ax.annotate(
                 label,
-                xy=(pts_data[nearest, 0], pts_data[nearest, 1]),
+                xy=(pts_data[selected, 0], pts_data[selected, 1]),
                 xytext=(x_offset, y_offset),
                 textcoords="offset points",
                 ha=ha,
@@ -220,9 +228,8 @@ class PlotEnergies(PlotWidget):
                 annotation_clip=False,
             )
             ann.set_in_layout(False)
-            self._annotations[nearest] = ann
+            self._annotations[selected] = ann
             self.canvas.draw_idle()
-            show_status_tip(self, "State annotation calculated.")
 
         self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
@@ -388,7 +395,7 @@ class PlotLifetimes(PlotWidget):
         ax.set_xlabel("Principal Quantum Number $n$")
         ax.set_ylabel(r"Transition Rates (1 / ms)")
 
-    def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
+    def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:  # noqa: C901
         """Add click-based annotations to the plot."""
         show_status_tip(self, "Adding transition rate annotations...")
         self.disconnect_click()
@@ -404,7 +411,10 @@ class PlotLifetimes(PlotWidget):
                 self._bar_data.append((label, n, rect))
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button != 1:
+            if event.inaxes is not self.canvas.ax or event.button not in [1, 3]:
+                return
+            if event.button == 3:  # right click clears annotations
+                self.clear_annotations()
                 return
 
             if event.xdata is None or event.ydata is None:
