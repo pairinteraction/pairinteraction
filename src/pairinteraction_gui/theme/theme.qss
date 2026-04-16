@@ -26,11 +26,7 @@ QToolBar#SidebarToolBar QToolButton {
     min-height: 60px;
     border-radius:30px;
 }
-QToolBar#SidebarToolBar QToolButton:hover {
-    color: palette(bright-text);
-    border: 1px solid palette(bright-text);
-}
-QToolBar#SidebarToolBar QToolButton:checked {
+QToolBar#SidebarToolBar QToolButton:hover, QToolBar#SidebarToolBar QToolButton:checked {
     color: palette(bright-text);
     border: 1px solid palette(bright-text);
 }
@@ -79,7 +75,7 @@ QToolBox::tab {
 QToolBox::tab:hover {
     background-color: palette(midlight);
 }
-QToolBox::tab:selected {
+QToolBox::tab:selected, QToolBox::tab:pressed {
     background-color: palette(highlight);
     color: palette(highlighted-text);
 }

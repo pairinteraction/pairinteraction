@@ -1,0 +1,32 @@
+% Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+%
+% This file is part of the pairinteraction library.
+%
+% The pairinteraction library is free software: you can redistribute it and/or modify
+% it under the terms of the GNU Lesser General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% The pairinteraction library is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public License
+% along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
+
+% The logo can be generated from the tex file with the following commands:
+% > pdflatex icon.tex
+% > convert -density 2000 icon.pdf -quality 90 -resize 250x250 icon.png
+
+\documentclass{standalone}
+\usepackage{tikz}
+\begin{document}
+\begin{tikzpicture}[thick,line cap=round,line join=round]
+  \filldraw[white,rounded corners,use as bounding box] (-2pt,-3pt) rectangle +(19pt,19pt);
+  \draw (0,13pt) |- (15pt,0);
+  \draw[red] (1pt,12pt) .. controls (3pt,-10pt) and (6pt,2pt) .. (15pt,1pt);
+  \draw[blue] (2pt,12pt) .. controls (4pt,-6pt) and (6pt,5pt) .. (15pt,2pt);
+  \node at (9pt,9pt) {PI};
+\end{tikzpicture}
+\end{document}
