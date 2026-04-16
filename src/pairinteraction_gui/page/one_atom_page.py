@@ -60,7 +60,7 @@ class OneAtomPage(CalculationPage):
 
         used = set()
         states0: list[StateBase[Any]] = results.systems[0].get_eigenbasis().states
-        for state, energy in zip(states0, results.energies[0], strict=False):
+        for state, energy in zip(states0, results.energies[0], strict=True):
             ket_label = state.get_label()
             short_label = ket_label[1:-1]
             short_label = short_label.split(":", 1)[-1]

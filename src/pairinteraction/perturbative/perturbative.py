@@ -285,7 +285,7 @@ def _check_for_resonances(
     """
     overlaps = (eigvec_perturb.multiply(eigvec_perturb.conj())).real
     error_flag = False
-    for i, j in zip(range(len(model_inds)), model_inds, strict=False):
+    for i, j in zip(range(len(model_inds)), model_inds, strict=True):
         vector_norm = sparse.linalg.norm(overlaps[i, :])
         overlap = overlaps[i, j] / vector_norm
         if overlap >= required_overlap:
@@ -375,7 +375,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
     pair_energies_au = [
         sum(
             system.get_corresponding_energy(ket).to_base_units().magnitude
-            for system, ket in zip(system_atoms, ket_tuple, strict=False)
+            for system, ket in zip(system_atoms, ket_tuple, strict=True)
         )
         for ket_tuple in ket_tuple_list
     ]

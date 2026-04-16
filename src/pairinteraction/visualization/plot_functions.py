@@ -58,7 +58,7 @@ def plot_pair_potential(
     lw = mpl.rcParams["lines.linewidth"]
     ax.plot(distances, np.array(eigenenergies), c="k", lw=lw / 6, zorder=-10)
 
-    x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(distances, eigenenergies, strict=False)])
+    x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(distances, eigenenergies, strict=True)])
     energies_flattend = np.hstack(eigenenergies)
     overlaps_flattend = np.hstack(overlaps)
     sorter = np.argsort(overlaps_flattend)

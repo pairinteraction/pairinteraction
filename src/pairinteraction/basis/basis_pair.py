@@ -202,7 +202,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             pair_energies = [
                 sum(
                     system.get_corresponding_energy(ket, delta_energy_unit)
-                    for ket, system in zip(ket_atoms, system_atoms, strict=False)
+                    for ket, system in zip(ket_atoms, system_atoms, strict=True)
                 )
                 for ket_atoms in ket_atom_tuples
             ]
@@ -226,7 +226,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         pair_energies_au = [
             sum(
                 system.get_corresponding_energy(ket, "hartree")
-                for ket, system in zip(ket_atoms, system_atoms, strict=False)
+                for ket, system in zip(ket_atoms, system_atoms, strict=True)
             )
             for ket_atoms in ket_atom_tuples
         ]

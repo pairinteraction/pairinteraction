@@ -134,7 +134,7 @@ def diagonalize(
 
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
-    for system, cpp_system in zip(systems, cpp_systems, strict=False):
+    for system, cpp_system in zip(systems, cpp_systems, strict=True):
         if sort_by_energy:
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             cpp_system.transform(sorter)

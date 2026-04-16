@@ -74,7 +74,7 @@ class StateAtom(StateBase[KetAtom]):
         """
         if not isinstance(other, type(self)):
             raise TypeError(f"Cannot add {type(self)} and {type(other)}.")
-        if not all(ket_self == ket_other for ket_self, ket_other in zip(self.kets, other.kets, strict=False)):
+        if not all(ket_self == ket_other for ket_self, ket_other in zip(self.kets, other.kets, strict=True)):
             raise ValueError("Cannot add states where the basis does not consist of exactly the same kets.")
 
         coeffs = self._cpp.get_coefficients() + other._cpp.get_coefficients()

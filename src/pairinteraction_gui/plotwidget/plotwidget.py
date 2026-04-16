@@ -133,14 +133,14 @@ class PlotEnergies(PlotWidget):
         if len({len(es) for es in energies}) <= 1:  # check if homogeneous shape
             ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
         else:
-            for x_value, es in zip(x_values, energies, strict=False):
+            for x_value, es in zip(x_values, energies, strict=True):
                 ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
 
         show_status_tip(self, "Plotting overlaps...")
 
         # Flatten the arrays for scatter plot and repeat x value for each energy
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
-        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies, strict=False)])
+        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies, strict=True)])
         energies_flattened = np.hstack(energies)
         overlaps_flattened = np.hstack(results.ket_overlaps)
 
@@ -174,7 +174,7 @@ class PlotEnergies(PlotWidget):
         all_overlaps: list[float] = []
         for idx in range(len(energies)):
             x = x_values[idx]
-            for idstate, (energy, overlap) in enumerate(zip(energies[idx], overlaps[idx], strict=False)):
+            for idstate, (energy, overlap) in enumerate(zip(energies[idx], overlaps[idx], strict=True)):
                 all_x.append(x)
                 all_y.append(float(energy))
                 all_overlaps.append(float(overlap))
@@ -309,7 +309,7 @@ class PlotEnergies(PlotWidget):
 
         # this could be a call to np.take_along_axis if the sizes match, but the handling of inhomogeneous shapes
         # in the plot() function makes me worry they won't, so I go for a slower python for loop...
-        energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs, strict=False)])
+        energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs, strict=True)])
 
         # stop highlighting the previous fit
         if self.fit_data_highlight is not None:

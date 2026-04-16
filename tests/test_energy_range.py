@@ -50,5 +50,5 @@ def test_energy_range(pi_module: PairinteractionModule) -> None:
         eigenenergies[(eigenenergies < pair_energy + 5) & (eigenenergies > pair_energy - 5)]
         for eigenenergies in eigenenergies_all
     ]
-    for e1, e2 in zip(eigenenergies_restricted, eigenenergies_all_restricted, strict=False):
+    for e1, e2 in zip(eigenenergies_restricted, eigenenergies_all_restricted, strict=True):
         np.testing.assert_allclose(e1, e2)

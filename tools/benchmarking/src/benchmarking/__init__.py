@@ -147,7 +147,7 @@ def plot_results(all_results: list[BenchmarkResult], output: Path) -> None:
     other_softwares = [
         s for s in unique_softwares if s not in ["Alkali.ne Rydberg Calculator", "Legacy PairInteraction (v0.9.10)"]
     ]
-    palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)), strict=False)))
+    palette.update(dict(zip(other_softwares, sns.color_palette("viridis", len(other_softwares)), strict=True)))
 
     # Set up a split plot if necessary
     sorted_data = sorted(data["duration_in_sec"])

@@ -431,6 +431,6 @@ class KetAtom(KetBase):
                 transition_rates_au *= temperature_au / exprel(energy_differences_au / temperature_au)
 
         mask = transition_rates_au != 0
-        relevant_kets = [ket for ket, is_relevant in zip(relevant_kets, mask, strict=False) if is_relevant]
+        relevant_kets = [ket for ket, is_relevant in zip(relevant_kets, mask, strict=True) if is_relevant]
         transition_rates_au = transition_rates_au[mask]
         return relevant_kets, transition_rates_au
