@@ -96,6 +96,19 @@ template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass
+        .def("get_amplitudes", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const typename BasisAtom<T>::ket_t>>(
+                 &BasisAtom<T>::get_amplitudes, nb::const_))
+        .def("get_amplitudes", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>>(&BasisAtom<T>::get_amplitudes,
+                                                                    nb::const_))
+        .def("get_overlaps", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const typename BasisAtom<T>::ket_t>>(
+                 &BasisAtom<T>::get_overlaps, nb::const_))
+        .def("get_overlaps", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>>(&BasisAtom<T>::get_overlaps,
+                                                                    nb::const_));
 }
 
 template <typename T>

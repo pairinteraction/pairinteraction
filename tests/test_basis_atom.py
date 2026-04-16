@@ -41,7 +41,7 @@ def test_coefficients(basis: BasisAtom) -> None:
     assert pytest.approx(coeffs.sum()) == basis.number_of_kets  # NOSONAR
 
 
-def test_get_amplitudes_and_overlaps(basis: BasisAtom) -> None:
+def test_get_amplitudes_and_overlaps(pi_module: PairinteractionModule, basis: BasisAtom) -> None:
     """Test amplitude and overlap calculations."""
     # Test with ket
     test_ket = basis.get_ket(0)
@@ -51,6 +51,12 @@ def test_get_amplitudes_and_overlaps(basis: BasisAtom) -> None:
     overlaps = basis.get_overlaps(test_ket)
     assert len(overlaps) == basis.number_of_states
     assert pytest.approx(overlaps[0]) == 1.0  # NOSONAR
+
+    # Test with ket not in the basis
+    ket_outside = pi_module.KetAtom("Rb", n=70, l=0, j=0.5, m=0.5)
+    overlaps_outside = basis.get_overlaps(ket_outside)
+    assert len(overlaps_outside) == basis.number_of_states
+    assert np.all(overlaps_outside == 0)
 
     # Test with state
     test_state = basis.get_state(0)
@@ -68,6 +74,27 @@ def test_get_amplitudes_and_overlaps(basis: BasisAtom) -> None:
     matrix_overlaps = basis.get_overlaps(basis)
     assert matrix_overlaps.shape == (basis.number_of_states, basis.number_of_states)
     assert pytest.approx(matrix_overlaps.diagonal()) == 1.0  # NOSONAR
+
+    # Test with a different basis (non-identical kets) - cross-basis overlaps
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    energy_min = ket.get_energy(unit="GHz") - 100
+    energy_max = ket.get_energy(unit="GHz") + 100
+    basis2 = pi_module.BasisAtom("Rb", n=(60, 62), l=(0, 1), energy=(energy_min, energy_max), energy_unit="GHz")
+    matrix_amplitudes = basis.get_amplitudes(basis2)
+    assert matrix_amplitudes.shape == (basis2.number_of_states, basis.number_of_states)
+    matrix_overlaps = basis.get_overlaps(basis2)
+    assert matrix_overlaps.shape == (basis2.number_of_states, basis.number_of_states)
+    assert (matrix_overlaps.data >= 0).all()
+    assert (matrix_overlaps.data <= 1 + 1e-10).all()
+
+    col_sums = np.array(matrix_overlaps.sum(axis=0)).flatten()
+    assert np.all(col_sums <= 1.0 + 1e-10)
+    row_sums = np.array(matrix_overlaps.sum(axis=1)).flatten()
+    assert np.all(row_sums <= 1.0 + 1e-10)
+
+    idx0 = basis.get_corresponding_state_index(ket)
+    idx2 = basis2.get_corresponding_state_index(ket)
+    assert pytest.approx(matrix_overlaps[idx2, idx0]) == 1.0  # NOSONAR
 
 
 def test_get_matrix_elements(basis: BasisAtom) -> None:
