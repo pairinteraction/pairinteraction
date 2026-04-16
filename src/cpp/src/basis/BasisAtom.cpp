@@ -45,6 +45,12 @@ const std::string &BasisAtom<Scalar>::get_id_of_kets() const {
 }
 
 template <typename Scalar>
+std::shared_ptr<const BasisAtom<Scalar>> BasisAtom<Scalar>::get_canonical_basis() const {
+    return std::make_shared<BasisAtom<Scalar>>(Private{}, ketvec_t(this->kets),
+                                               std::string(id_of_kets), database);
+}
+
+template <typename Scalar>
 Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
     if (get_ket_index_from_id(ket->get_id_in_database()) < 0) {
         return Eigen::VectorX<Scalar>::Zero(

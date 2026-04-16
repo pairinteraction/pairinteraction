@@ -288,6 +288,10 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         """The atomic species."""
         return self.get_ket(0).species
 
+    def get_canonical_basis(self: Self) -> Self:
+        """Return the canonical basis with identity coefficients."""
+        return type(self)._from_cpp_object(self._cpp.get_canonical_basis())
+
     @overload
     def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...
 

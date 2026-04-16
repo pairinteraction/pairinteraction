@@ -108,7 +108,8 @@ static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
                  &BasisAtom<T>::get_overlaps, nb::const_))
         .def("get_overlaps", // define again, so nanobind can resolve the override correctly
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>>(&BasisAtom<T>::get_overlaps,
-                                                                    nb::const_));
+                                                                    nb::const_))
+        .def("get_canonical_basis", &BasisAtom<T>::get_canonical_basis);
 }
 
 template <typename T>

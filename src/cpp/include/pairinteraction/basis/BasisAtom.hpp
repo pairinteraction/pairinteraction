@@ -56,6 +56,8 @@ public:
 
     int get_ket_index_from_id(size_t ket_id) const;
 
+    std::shared_ptr<const Type> get_canonical_basis() const;
+
     Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const Type> other) const;
