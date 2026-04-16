@@ -8,6 +8,7 @@ import numpy as np
 from PySide6.QtWidgets import QLabel
 
 from pairinteraction_gui.config.base_config import BaseConfig
+from pairinteraction_gui.config.system_diagram import SystemDiagram
 from pairinteraction_gui.qobjects import Item, QnItemDouble, QnItemInt, RangeItem
 
 if TYPE_CHECKING:
@@ -111,6 +112,12 @@ class SystemConfigOneAtom(SystemConfig):
         self.setupBField()
         self.setupIonInteraction()
 
+    def postSetupWidget(self) -> None:
+        self._diagram = SystemDiagram(self, two_atoms=False)
+        self._diagram.connectConfig(self)
+        self.layout().addWidget(self._diagram)
+        super().postSetupWidget()
+
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
         return [*super()._get_all_ranges(), self.ion_distance, self.ion_angle]
@@ -124,6 +131,12 @@ class SystemConfigTwoAtoms(SystemConfig):
         self.setupBField()
         self.setupIonInteraction()
         self.setupRydbergInteraction()
+
+    def postSetupWidget(self) -> None:
+        self._diagram = SystemDiagram(self, two_atoms=True)
+        self._diagram.connectConfig(self)
+        self.layout().addWidget(self._diagram)
+        super().postSetupWidget()
 
     def setupRydbergInteraction(self) -> None:
         self.layout().addWidget(QLabel("<b>Rydberg interaction</b>"))
