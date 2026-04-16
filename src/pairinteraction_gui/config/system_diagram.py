@@ -81,10 +81,12 @@ class SystemDiagram(QWidget):
             "by_sign": _sign(by),
             "show_ion": cfg.ion_distance.isChecked(),
             "ion_angle_deg": spinbox(cfg.ion_angle).value() if cfg.ion_angle.isChecked() else 0.0,
+            "ion_distance_val": spinbox(cfg.ion_distance).value() if cfg.ion_distance.isChecked() else 0.0,
         }
 
         if self._two_atoms:
             state["atom_angle_deg"] = spinbox(cfg.angle).value()  # type: ignore[attr-defined]
+            state["atom_distance_val"] = spinbox(cfg.distance).value()  # type: ignore[attr-defined]
 
         return state
 
@@ -149,9 +151,15 @@ class SystemDiagram(QWidget):
         ion_px = None
         if state.get("show_ion"):
             ion_rad = radians(state.get("ion_angle_deg", 0.0))
+            if self._two_atoms:
+                atom_dist = state.get("atom_distance_val") or 1.0
+                ion_dist = state.get("ion_distance_val", 0.0)
+                ion_scale = (ion_dist / atom_dist) * scale
+            else:
+                ion_scale = scale * 0.7
             ion_px = QPointF(
-                atom1_px.x() + sin(ion_rad) * scale * 0.7,
-                atom1_px.y() - cos(ion_rad) * scale * 0.7,
+                atom1_px.x() + sin(ion_rad) * ion_scale,
+                atom1_px.y() - cos(ion_rad) * ion_scale,
             )
 
         self._draw_axes(painter, origin_px)
