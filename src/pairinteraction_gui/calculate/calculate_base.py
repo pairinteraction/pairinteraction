@@ -6,9 +6,11 @@ import logging
 from abc import ABC
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+import numpy as np
 from attr import dataclass
 
 import pairinteraction as pi
+from pairinteraction_gui.utils import distance_angle_to_xz_vector
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -33,6 +35,8 @@ UnitFromRangeKey: dict[RangesKeys, str] = {
     "Bz": "Gauss",
     "Distance": r"$\mu$m",
     "Angle": r"$^\circ$",
+    "IonDistance": r"$\mu$m",
+    "IonAngle": r"$^\circ$",
 }
 
 VariableNameFromRangeKey: dict[RangesKeys, str] = {
@@ -44,6 +48,8 @@ VariableNameFromRangeKey: dict[RangesKeys, str] = {
     "Bz": "bfield_z",
     "Distance": "distance",
     "Angle": "angle",
+    "IonDistance": "ion_distance",
+    "IonAngle": "ion_angle",
 }
 
 PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
@@ -58,6 +64,8 @@ class Parameters(ABC, Generic[PageType]):
     diamagnetism_enabled: bool
     diagonalize_kwargs: dict[str, str]
     diagonalize_relative_energy_range: tuple[float, float] | None
+    ion_charge: float
+    ion_interaction_order: int
 
     def __post_init__(self) -> None:
         """Post-initialization processing."""
@@ -103,6 +111,8 @@ class Parameters(ABC, Generic[PageType]):
             diamagnetism_enabled,
             diagonalize_kwargs,
             diagonalize_relative_energy_range,
+            page.system_config.ion_charge.value(),
+            page.system_config.ion_order.value(),
         )
 
     @property
@@ -129,6 +139,25 @@ class Parameters(ABC, Generic[PageType]):
         """Return the magnetic field for the given step."""
         bfield_keys: list[RangesKeys] = ["Bx", "By", "Bz"]
         return [self.ranges[key][step] if key in self.ranges else 0 for key in bfield_keys]
+
+    def get_ion_distance_vector(self, step: int, atom: int = 0) -> NDArray:
+        """Return the ion distance vector for the given atom.
+
+        For two atoms, the configured ion distance/angle are interpreted relative to atom 1.
+        The vector for atom 2 is derived by subtracting the atom-1 to atom-2 Rydberg interaction vector.
+
+        When IonDistance is not configured, returns [0, 0, inf] which is the C++ default
+        and causes the ion interaction to be skipped (distance is not finite).
+        """
+        ion_distance = self.ranges["IonDistance"][step] if "IonDistance" in self.ranges else np.inf
+        ion_angle = self.ranges["IonAngle"][step] if "IonAngle" in self.ranges else 0
+        ion_vector = distance_angle_to_xz_vector(ion_distance, ion_angle)
+        if self.n_atoms == 2 and atom == 1 and "Distance" in self.ranges:
+            rydberg_distance = self.ranges["Distance"][step]
+            rydberg_angle = self.ranges.get("Angle", [0] * self.steps)[step]
+            rydberg_vector = distance_angle_to_xz_vector(rydberg_distance, rydberg_angle)
+            return ion_vector - rydberg_vector
+        return ion_vector
 
     def get_species(self, atom: int | None = None) -> str:
         """Return the species for the given ket."""
@@ -194,6 +223,8 @@ class Parameters(ABC, Generic[PageType]):
             "$X_VARIABLE_NAME": VariableNameFromRangeKey[max_key],
             "$X_LABEL": as_string(self.get_x_label(), raw_string=True),
             "$DIAMAGNETISM_ENABLED": str(self.diamagnetism_enabled),
+            "$ION_CHARGE": str(self.ion_charge),
+            "$ION_ORDER": str(self.ion_interaction_order),
         }
 
         for atom in range(self.n_atoms):
@@ -209,6 +240,24 @@ class Parameters(ABC, Generic[PageType]):
             replacements[f"${key.upper()}_MAX"] = str(values[-1])
             if values[0] == values[-1]:
                 replacements[f"${key.upper()}_VALUE"] = str(values[0])
+
+        default_from_range_key: dict[RangesKeys, str] = {
+            "Ex": "0",
+            "Ey": "0",
+            "Ez": "0",
+            "Bx": "0",
+            "By": "0",
+            "Bz": "0",
+            "Distance": "np.inf",
+            "Angle": "0",
+            "IonDistance": "np.inf",
+            "IonAngle": "0",
+        }
+        for key, default in default_from_range_key.items():
+            if key not in self.ranges:
+                replacements[f"${key.upper()}_MIN"] = default
+                replacements[f"${key.upper()}_MAX"] = default
+                replacements[f"${key.upper()}_VALUE"] = default
 
         replacements["$DIAGONALIZE_KWARGS"] = dict_to_repl(self.diagonalize_kwargs)
 

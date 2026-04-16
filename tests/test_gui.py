@@ -111,6 +111,27 @@ def test_two_atoms_page(window_pair_potential: MainWindow) -> None:
     _test_calculate_page(window_pair_potential, "TwoAtomsPage", "pair_potential")
 
 
+def test_two_atoms_ion_geometry(window_pair_potential: MainWindow) -> None:
+    from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms
+
+    two_atoms_page: TwoAtomsPage = window_pair_potential.stacked_pages.getNamedWidget("TwoAtomsPage")  # type: ignore [assignment]
+    two_atoms_page.system_config.angle.setValues(60, 60)
+    two_atoms_page.system_config.ion_distance.setChecked(True)
+    two_atoms_page.system_config.ion_distance.setValues(10, 10)
+    two_atoms_page.system_config.ion_angle.setValues(30, 30)
+
+    parameters = ParametersTwoAtoms.from_page(two_atoms_page)
+
+    np.testing.assert_allclose(
+        parameters.get_ion_distance_vector(0, atom=0),
+        [5.0, 0.0, 5.0 * np.sqrt(3)],
+    )
+    np.testing.assert_allclose(
+        parameters.get_ion_distance_vector(0, atom=1),
+        [5.0 - np.sqrt(3) / 2, 0.0, 5.0 * np.sqrt(3) - 0.5],
+    )
+
+
 def _test_calculate_page(
     window: MainWindow,
     page_name: Literal["OneAtomPage", "TwoAtomsPage"],

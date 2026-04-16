@@ -1,8 +1,14 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
+from __future__ import annotations
 
 import re
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+import numpy as np
+
+if TYPE_CHECKING:
+    from pairinteraction.units import NDArray
 
 AVAILABLE_SPECIES = [
     "Rb",
@@ -62,3 +68,12 @@ def label_to_object_name(label: str) -> str:
     label = re.sub(r"\s+", "_", label)
     label = re.sub(r"[\\/]+", "_", label)
     return label.replace("δ", "delta")
+
+
+def distance_angle_to_xz_vector(distance: float, angle_degree: float) -> NDArray:
+    """Convert a distance-angle description to an xz-plane vector.
+
+    0° corresponds to the positive z-axis and 90° to the positive x-axis.
+    """
+    angle_rad = np.deg2rad(angle_degree)
+    return np.array([np.sin(angle_rad) * distance, 0.0, np.cos(angle_rad) * distance])

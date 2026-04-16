@@ -62,7 +62,9 @@ def calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     return _calculate_two_atoms(parameters)
 
 
-def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
+def _calculate_two_atoms(
+    parameters: ParametersTwoAtoms,
+) -> ResultsTwoAtoms:
     """Make the unwrapped function available for testing."""
     pi = pi_real if parameters.is_real else pi_complex
     n_atoms = 2
@@ -72,10 +74,14 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
         pi.BasisAtom(parameters.get_species(i), **parameters.get_quantum_number_restrictions(i)) for i in range(n_atoms)
     )
 
-    fields = {k: v for k, v in parameters.ranges.items() if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz"]}
+    system_atom_ranges = {
+        k: v
+        for k, v in parameters.ranges.items()
+        if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz", "IonDistance", "IonAngle"]
+    }
 
     basis_pair_list: list[pi_real.BasisPair] | list[pi_complex.BasisPair]
-    if all(v[0] == v[-1] for v in fields.values()):
+    if all(v[0] == v[-1] for v in system_atom_ranges.values()):
         # If all fields are constant, we can only have to diagonalize one SystemAtom per atom
         # and can construct one BasisPair, which we can use for all steps
         systems = tuple(
@@ -83,6 +89,9 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             .set_electric_field(parameters.get_efield(0), unit="V/cm")
             .set_magnetic_field(parameters.get_bfield(0), unit="G")
             .set_diamagnetism_enabled(parameters.diamagnetism_enabled)
+            .set_ion_interaction_order(parameters.ion_interaction_order)
+            .set_ion_charge(parameters.ion_charge, unit="e")
+            .set_ion_distance_vector(parameters.get_ion_distance_vector(0, atom=i), unit="micrometer")
             for i in range(n_atoms)
         )
         logger.debug("Diagonalizing SystemAtoms...")
@@ -102,16 +111,19 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     else:
         # Otherwise, we have to diagonalize one SystemAtom per atom and per step
         # and construct one BasisPair per step
-        systems_list = []
-        for step in range(parameters.steps):
-            systems = tuple(
+        systems_list = [
+            tuple(
                 pi.SystemAtom(bases[i])
                 .set_electric_field(parameters.get_efield(step), unit="V/cm")
                 .set_magnetic_field(parameters.get_bfield(step), unit="G")
                 .set_diamagnetism_enabled(parameters.diamagnetism_enabled)
+                .set_ion_interaction_order(parameters.ion_interaction_order)
+                .set_ion_charge(parameters.ion_charge, unit="e")
+                .set_ion_distance_vector(parameters.get_ion_distance_vector(step, atom=i), unit="micrometer")
                 for i in range(n_atoms)
             )
-            systems_list.append(systems)
+            for step in range(parameters.steps)
+        ]
         systems_flattened = [system for systems in systems_list for system in systems]
         logger.debug("Diagonalizing SystemAtoms...")
         pi.diagonalize(systems_flattened, **parameters.diagonalize_kwargs)
@@ -135,12 +147,9 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     for step in range(parameters.steps):
         system = pi.SystemPair(basis_pair_list[step])
         system.set_interaction_order(parameters.order)
-        if "Distance" in parameters.ranges:
-            distance = parameters.ranges["Distance"][step]
-            angle: float = 0
-            if "Angle" in parameters.ranges:
-                angle = parameters.ranges["Angle"][step]
-            system.set_distance(distance, angle, unit="micrometer")
+        distance = parameters.ranges["Distance"][step] if "Distance" in parameters.ranges else np.inf
+        angle = parameters.ranges["Angle"][step] if "Angle" in parameters.ranges else 0
+        system.set_distance(distance, angle, unit="micrometer")
         system_pair_list.append(system)
 
     logger.debug("Diagonalizing SystemPairs...")
