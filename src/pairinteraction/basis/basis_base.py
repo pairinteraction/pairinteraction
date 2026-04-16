@@ -104,14 +104,15 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return self._cpp.get_coefficients()
 
     def get_corresponding_ket(self: Self, state: StateType) -> KetType:
-        raise NotImplementedError("Not implemented yet.")
+        ket_index = self.get_corresponding_ket_index(state)
+        return self.get_ket(ket_index)
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
         raise NotImplementedError("Not implemented yet.")
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
-        state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
-        return self._state_class._from_cpp_object(state_cpp)
+        state_index = self.get_corresponding_state_index(ket)
+        return self.get_state(state_index)
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
