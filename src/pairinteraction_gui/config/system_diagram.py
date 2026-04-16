@@ -17,9 +17,11 @@ if TYPE_CHECKING:
 
 class _Colors:
     AXIS = QColor("#8a91a0")
-    ATOM_FILL = QColor("#cad9f7")
-    ATOM_EDGE = QColor("#28354e")
-    ION_EDGE = QColor("#28354e")
+    ATOM_FILL = QColor("#1a1a1a")
+    ATOM_LABEL = QColor("#ffffff")
+    ION_POS = QColor("#cc2222")
+    ION_NEG = QColor("#2266cc")
+    ION_NEUTRAL = QColor("#8a91a0")
     EFIELD = QColor("#e05050")
     BFIELD = QColor("#2266cc")
     TEXT = QColor("#111828")
@@ -47,6 +49,7 @@ class SystemDiagram(QWidget):
             config.Bz,
             config.ion_distance,
             config.ion_angle,
+            config.ion_charge,
         ]:
             item.connectAll(self.update)
         if self._two_atoms:
@@ -82,11 +85,13 @@ class SystemDiagram(QWidget):
             "show_ion": cfg.ion_distance.isChecked(),
             "ion_angle_deg": spinbox(cfg.ion_angle).value() if cfg.ion_angle.isChecked() else 0.0,
             "ion_distance_val": spinbox(cfg.ion_distance).value() if cfg.ion_distance.isChecked() else 0.0,
+            "ion_charge": cfg.ion_charge.spinbox.value(),
         }
 
         if self._two_atoms:
             state["atom_angle_deg"] = spinbox(cfg.angle).value()  # type: ignore[attr-defined]
-            state["atom_distance_val"] = spinbox(cfg.distance).value()  # type: ignore[attr-defined]
+            dist_item = cfg.distance  # type: ignore[attr-defined]
+            state["atom_distance_val"] = spinbox(dist_item).value() if dist_item.isChecked() else None
 
         return state
 
@@ -151,12 +156,14 @@ class SystemDiagram(QWidget):
         ion_px = None
         if state.get("show_ion"):
             ion_rad = radians(state.get("ion_angle_deg", 0.0))
-            if self._two_atoms:
-                atom_dist = state.get("atom_distance_val") or 1.0
+            atom_dist = state.get("atom_distance_val")  # None means infinite
+            if not self._two_atoms:
+                ion_scale = scale
+            elif self._two_atoms and atom_dist:
                 ion_dist = state.get("ion_distance_val", 0.0)
                 ion_scale = (ion_dist / atom_dist) * scale
             else:
-                ion_scale = scale * 0.7
+                ion_scale = 0.1 * scale
             ion_px = QPointF(
                 atom1_px.x() + sin(ion_rad) * ion_scale,
                 atom1_px.y() - cos(ion_rad) * ion_scale,
@@ -169,7 +176,7 @@ class SystemDiagram(QWidget):
         self._draw_atom(painter, atom1_px, "1" if self._two_atoms else "")
 
         if ion_px is not None:
-            self._draw_ion(painter, ion_px)
+            self._draw_ion(painter, ion_px, state.get("ion_charge", 1.0))
 
         if state.get("has_efield"):
             ex, ez = state["efield_dir"]
@@ -209,14 +216,15 @@ class SystemDiagram(QWidget):
     def _draw_atom(self, painter: QPainter, center: QPointF, label: str) -> None:
         r = 8.0
         painter.setBrush(_Colors.ATOM_FILL)
-        painter.setPen(QPen(_Colors.ATOM_EDGE, 1.5))
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(center, r, r)
 
         if label:
             font = QFont()
             font.setPointSize(7)
+            font.setBold(True)
             painter.setFont(font)
-            painter.setPen(QPen(_Colors.TEXT))
+            painter.setPen(QPen(_Colors.ATOM_LABEL))
             painter.drawText(
                 int(center.x() - r),
                 int(center.y() - r),
@@ -226,17 +234,27 @@ class SystemDiagram(QWidget):
                 label,
             )
 
-    def _draw_ion(self, painter: QPainter, center: QPointF) -> None:
-        r = 4.0
-        painter.setPen(QPen(_Colors.ION_EDGE, 1.5))
-        painter.drawLine(QPointF(center.x() - r, center.y()), QPointF(center.x() + r, center.y()))
-        painter.drawLine(QPointF(center.x(), center.y() - r), QPointF(center.x(), center.y() + r))
+    def _draw_ion(self, painter: QPainter, center: QPointF, charge: float) -> None:
+        r = 5.0
+        if charge > 1e-9:
+            color = _Colors.ION_POS
+            sign = "+"
+        elif charge < -1e-9:
+            color = _Colors.ION_NEG
+            sign = "\u2212"  # minus sign
+        else:
+            color = _Colors.ION_NEUTRAL
+            sign = "0"
 
-        font = QFont()
-        font.setPointSize(7)
-        painter.setFont(font)
-        painter.setPen(QPen(_Colors.TEXT))
-        painter.drawText(center + QPointF(r + 2, 4), "ion")
+        painter.setBrush(color)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.drawEllipse(center, r, r)
+
+        inner = r * 0.55
+        painter.setPen(QPen(QColor("#ffffff"), 1.5))
+        painter.drawLine(QPointF(center.x() - inner, center.y()), QPointF(center.x() + inner, center.y()))
+        if sign == "+":
+            painter.drawLine(QPointF(center.x(), center.y() - inner), QPointF(center.x(), center.y() + inner))
 
     def _draw_arrow(
         self,
