@@ -147,9 +147,10 @@ def _calculate_two_atoms(
     for step in range(parameters.steps):
         system = pi.SystemPair(basis_pair_list[step])
         system.set_interaction_order(parameters.order)
-        distance = parameters.ranges["Distance"][step] if "Distance" in parameters.ranges else np.inf
-        angle = parameters.ranges["Angle"][step] if "Angle" in parameters.ranges else 0
-        system.set_distance(distance, angle, unit="micrometer")
+        if "Distance" in parameters.ranges:
+            distance = parameters.ranges["Distance"][step]
+            angle: float = parameters.ranges["Angle"][step] if "Angle" in parameters.ranges else 0
+            system.set_distance(distance, angle, unit="micrometer")
         system_pair_list.append(system)
 
     logger.debug("Diagonalizing SystemPairs...")

@@ -75,5 +75,7 @@ def distance_angle_to_xz_vector(distance: float, angle_degree: float) -> NDArray
 
     0° corresponds to the positive z-axis and 90° to the positive x-axis.
     """
+    if not np.isfinite(distance):
+        return np.array([0.0, 0.0, np.inf])
     angle_rad = np.deg2rad(angle_degree)
     return np.array([np.sin(angle_rad) * distance, 0.0, np.cos(angle_rad) * distance])
