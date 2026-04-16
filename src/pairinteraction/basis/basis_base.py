@@ -119,6 +119,10 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
 
+    def canonicalized(self: Self) -> Self:
+        """Return the canonical basis with identity coefficients."""
+        return type(self)._from_cpp_object(self._cpp.canonicalized())
+
     @abstractmethod
     def get_amplitudes(self, other: Any) -> Any: ...
 

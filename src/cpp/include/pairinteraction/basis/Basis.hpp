@@ -112,6 +112,7 @@ public:
     void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
+    std::shared_ptr<const Derived> canonicalized() const;
     std::shared_ptr<const Derived>
     transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<const Derived> transformed(const Sorting &transformation) const;
