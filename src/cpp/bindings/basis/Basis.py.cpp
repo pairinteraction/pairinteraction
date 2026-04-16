@@ -87,6 +87,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_corresponding_ket_index",
              nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket_index,
                                                          nb::const_))
+        .def("canonicalized", &Basis<T>::canonicalized)
         .def("copy", [](const Basis<T> &self) {
             return std::make_shared<T>(static_cast<const T &>(self));
         });
@@ -165,7 +166,9 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>,
                                OperatorType, OperatorType, int, int>(
-                 &BasisPair<T>::get_matrix_elements, nb::const_));
+                 &BasisPair<T>::get_matrix_elements, nb::const_))
+        .def("get_basis1", &BasisPair<T>::get_basis1)
+        .def("get_basis2", &BasisPair<T>::get_basis2);
 }
 
 template <typename T>

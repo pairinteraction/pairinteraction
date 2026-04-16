@@ -611,6 +611,47 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 }
 
 template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
+    auto result = std::make_shared<Derived>(derived());
+
+    size_t n = kets.size();
+
+    result->coefficients.matrix.resize(n, n);
+    result->coefficients.matrix.setIdentity();
+    result->coefficients.transformation_type = {TransformationType::SORT_BY_KET};
+
+    result->state_index_to_ket_index.resize(n);
+    std::iota(result->state_index_to_ket_index.begin(), result->state_index_to_ket_index.end(), 0);
+
+    result->ket_index_to_state_index.resize(n);
+    std::iota(result->ket_index_to_state_index.begin(), result->ket_index_to_state_index.end(), 0);
+
+    result->state_index_to_quantum_number_f.resize(n);
+    result->state_index_to_quantum_number_m.resize(n);
+    result->state_index_to_parity.resize(n);
+    result->_has_quantum_number_f = true;
+    result->_has_quantum_number_m = true;
+    result->_has_parity = true;
+
+    for (size_t i = 0; i < n; ++i) {
+        result->state_index_to_quantum_number_f[i] = kets[i]->get_quantum_number_f();
+        result->state_index_to_quantum_number_m[i] = kets[i]->get_quantum_number_m();
+        result->state_index_to_parity[i] = kets[i]->get_parity();
+        if (kets[i]->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
+            result->_has_quantum_number_f = false;
+        }
+        if (kets[i]->get_quantum_number_m() == std::numeric_limits<real_t>::max()) {
+            result->_has_quantum_number_m = false;
+        }
+        if (kets[i]->get_parity() == Parity::UNKNOWN) {
+            result->_has_parity = false;
+        }
+    }
+
+    return result;
+}
+
+template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
