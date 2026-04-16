@@ -181,7 +181,9 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
         .def("get_matrix_elements",
              nb::overload_cast<const std::shared_ptr<const KetAtom> &,
                                const std::shared_ptr<const KetAtom> &, OperatorType, OperatorType,
-                               int, int>(&BasisPair<T>::get_matrix_elements, nb::const_));
+                               int, int>(&BasisPair<T>::get_matrix_elements, nb::const_))
+        .def("get_basis1", &BasisPair<T>::get_basis1)
+        .def("get_basis2", &BasisPair<T>::get_basis2);
 }
 
 template <typename T>
