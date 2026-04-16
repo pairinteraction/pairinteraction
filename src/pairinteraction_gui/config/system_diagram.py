@@ -53,13 +53,17 @@ class SystemDiagram(QWidget):
         spinbox = lambda item: item.max_spinbox if use_max else item.min_spinbox  # noqa: E731
 
         ex = spinbox(cfg.Ex).value() if cfg.Ex.isChecked() else 0.0
+        ey = spinbox(cfg.Ey).value() if cfg.Ey.isChecked() else 0.0
         ez = spinbox(cfg.Ez).value() if cfg.Ez.isChecked() else 0.0
         bx = spinbox(cfg.Bx).value() if cfg.Bx.isChecked() else 0.0
+        by = spinbox(cfg.By).value() if cfg.By.isChecked() else 0.0
         bz = spinbox(cfg.Bz).value() if cfg.Bz.isChecked() else 0.0
-        # Ey/By out-of-plane: read but not drawn
 
         has_efield = hypot(ex, ez) > 1e-9
         has_bfield = hypot(bx, bz) > 1e-9
+        # ey/by are out-of-plane (y-axis); shown as dot/cross symbol near axis origin
+        ey_sign = 1 if ey > 1e-9 else (-1 if ey < -1e-9 else 0)
+        by_sign = 1 if by > 1e-9 else (-1 if by < -1e-9 else 0)
 
         show_ion = cfg.ion_distance.isChecked()
         ion_angle_deg = spinbox(cfg.ion_angle).value() if cfg.ion_angle.isChecked() else 0.0
@@ -67,8 +71,10 @@ class SystemDiagram(QWidget):
         state: dict = {
             "has_efield": has_efield,
             "efield_dir": (ex, ez),
+            "ey_sign": ey_sign,
             "has_bfield": has_bfield,
             "bfield_dir": (bx, bz),
+            "by_sign": by_sign,
             "show_ion": show_ion,
             "ion_angle_deg": ion_angle_deg,
         }
@@ -173,6 +179,16 @@ class SystemDiagram(QWidget):
             mag = hypot(bx, bz)
             self._draw_arrow(painter, origin_px, (bx / mag, bz / mag), scale, _Colors.BFIELD, "B")
 
+        # Out-of-plane indicators: stacked below the axis origin
+        oop_offset = 0
+        if state.get("ey_sign", 0) != 0:
+            pos = QPointF(origin_px.x(), origin_px.y() + 18 + oop_offset)
+            self._draw_oop_symbol(painter, pos, state["ey_sign"], _Colors.EFIELD, "E")
+            oop_offset += 16
+        if state.get("by_sign", 0) != 0:
+            pos = QPointF(origin_px.x(), origin_px.y() + 18 + oop_offset)
+            self._draw_oop_symbol(painter, pos, state["by_sign"], _Colors.BFIELD, "B")
+
     def _draw_axes(self, painter: QPainter, origin: QPointF) -> None:
         axis_len = 20.0
         pen = QPen(_Colors.AXIS, 1.2, Qt.PenStyle.DashLine)
@@ -266,6 +282,45 @@ class SystemDiagram(QWidget):
         painter.setFont(font)
         painter.setPen(QPen(color))
         painter.drawText(tip + QPointF(pdx * 5 + 2, pdy * 5 + 4), label)
+
+    def _draw_oop_symbol(
+        self,
+        painter: QPainter,
+        center: QPointF,
+        sign: int,
+        color: QColor,
+        label: str,
+    ) -> None:
+        """Draw ⊙ (out-of-page, sign=+1) or ⊗ (into-page, sign=-1) with a field label."""
+        r = 5.0
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(color, 1.2))
+        painter.drawEllipse(center, r, r)
+
+        if sign > 0:
+            # dot in the centre
+            painter.setBrush(color)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.drawEllipse(center, 1.5, 1.5)
+        else:
+            # cross inside the circle
+            d = r * 0.6
+            painter.setPen(QPen(color, 1.2))
+            painter.drawLine(
+                QPointF(center.x() - d, center.y() - d),
+                QPointF(center.x() + d, center.y() + d),
+            )
+            painter.drawLine(
+                QPointF(center.x() + d, center.y() - d),
+                QPointF(center.x() - d, center.y() + d),
+            )
+
+        font = QFont()
+        font.setPointSize(7)
+        font.setItalic(True)
+        painter.setFont(font)
+        painter.setPen(QPen(color))
+        painter.drawText(center + QPointF(r + 2, 4), label)
 
     @staticmethod
     def _make_arrowhead(tip: QPointF, direction: tuple[float, float]) -> QPolygonF:
