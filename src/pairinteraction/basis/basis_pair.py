@@ -249,6 +249,34 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             energy_unit="hartree",
         )
 
+    def get_canonical_basis(
+        self: Self,
+        m: tuple[float, float] | None = None,
+        product_of_parities: Parity | None = None,
+        energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
+        energy_unit: str | None = None,
+    ) -> Self:
+        """Return a new BasisPair built from field-free systems using the canonical atom bases.
+
+        Gets the canonical basis for each atom's current eigenbasis,
+        creates field-free SystemAtom objects from them, and constructs a new BasisPair.
+
+        Args:
+            m: tuple of (min, max) for total magnetic quantum number. Default None means no restriction.
+            product_of_parities: Product parity restriction. Default None means no restriction.
+            energy: tuple of (min, max) pair energy. Default None means no restriction.
+            energy_unit: Unit for the energy values, e.g. "GHz". Default None means pint objects.
+
+        """
+        system_type = type(self.system_atoms[0])
+        canonical_basis_1 = self.system_atoms[0].basis.get_canonical_basis()
+        canonical_basis_2 = self.system_atoms[1].basis.get_canonical_basis()
+        system_1 = system_type(canonical_basis_1).diagonalize()
+        system_2 = system_type(canonical_basis_2).diagonalize()
+        return type(self)(
+            (system_1, system_2), m=m, product_of_parities=product_of_parities, energy=energy, energy_unit=energy_unit
+        )
+
     @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, system_atoms: tuple[SystemAtom, SystemAtom]) -> Self:
         obj = super()._from_cpp_object(cpp_obj)
