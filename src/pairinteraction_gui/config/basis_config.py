@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypedDict
 
 from PySide6.QtWidgets import QCheckBox, QLabel
 
@@ -33,6 +33,10 @@ class QuantumNumberRestrictions(TypedDict, total=False):
     l_ryd: tuple[float, float]
     f: tuple[float, float]
     m: tuple[float, float]
+
+
+AutoParity: TypeAlias = Literal["auto"]
+ParitySelection: TypeAlias = Parity | AutoParity
 
 
 class BasisConfig(BaseConfig):
@@ -180,16 +184,16 @@ class BasisConfigTwoAtoms(BasisConfig):
             checked=False,
         )
         self.layout().addWidget(self.pair_m_range)
-        self.parity_under_permutation = ChoiceItem[Parity](
+        self.parity_under_permutation = ChoiceItem[ParitySelection](
             self,
             "Parity under permutation",
-            [("Any", None), ("Even", "even"), ("Odd", "odd")],
+            [("Auto", "auto"), ("Any", None), ("Even", "even"), ("Odd", "odd")],
         )
         self.layout().addWidget(self.parity_under_permutation)
-        self.parity_under_inversion = ChoiceItem[Parity](
+        self.parity_under_inversion = ChoiceItem[ParitySelection](
             self,
             "Parity under inversion",
-            [("Any", None), ("Even", "even"), ("Odd", "odd")],
+            [("Auto", "auto"), ("Any", None), ("Even", "even"), ("Odd", "odd")],
         )
         self.layout().addWidget(self.parity_under_inversion)
 

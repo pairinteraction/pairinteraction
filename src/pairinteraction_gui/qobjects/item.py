@@ -2,8 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-import typing as t
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, cast, runtime_checkable
 
 import numpy as np
 from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel
@@ -23,8 +22,8 @@ ValueType = TypeVar("ValueType", int, float, complex)
 ChoiceType = TypeVar("ChoiceType")
 
 
-@t.runtime_checkable
-class NotSet(t.Protocol):
+@runtime_checkable
+class NotSet(Protocol):
     """Singleton for a not set value and type at the same time.
 
     See Also:
@@ -107,7 +106,7 @@ class ChoiceItem(WidgetH, Generic[ChoiceType]):
         self.combo.currentIndexChanged.connect(lambda _index: func())
 
     def value(self) -> ChoiceType | None:
-        return self.combo.currentData()
+        return cast("ChoiceType | None", self.combo.currentData())
 
 
 class _QnItem(WidgetH, Generic[ValueType]):

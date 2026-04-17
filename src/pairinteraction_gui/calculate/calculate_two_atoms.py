@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
 import numpy as np
 from attr import dataclass
@@ -11,15 +11,84 @@ from attr import dataclass
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from pairinteraction import _backend
+from pairinteraction.enums import Parity
 from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.enums import Parity
+    from pairinteraction_gui.config.system_config import RangesKeys
     from pairinteraction_gui.page import TwoAtomsPage
 
 logger = logging.getLogger(__name__)
+
+AutoParity = Literal["auto"]
+ParitySelection: TypeAlias = Parity | AutoParity | None
+ResolvedPairParities: TypeAlias = tuple[Parity | None, Parity | None]
+
+
+def _has_zero_electric_field(parameters: ParametersTwoAtoms) -> bool:
+    efield_keys: tuple[RangesKeys, ...] = ("Ex", "Ey", "Ez")
+    return all(all(abs(v) <= 1e-12 for v in parameters.ranges.get(key, [0.0])) for key in efield_keys)
+
+
+def _has_equivalent_atom_systems(parameters: ParametersTwoAtoms) -> bool:
+    return parameters.get_species(0) == parameters.get_species(1) and parameters.get_quantum_number_restrictions(
+        0
+    ) == parameters.get_quantum_number_restrictions(1)
+
+
+def _has_same_target_state(parameters: ParametersTwoAtoms) -> bool:
+    return parameters.get_species(0) == parameters.get_species(1) and parameters.get_quantum_numbers(
+        0
+    ) == parameters.get_quantum_numbers(1)
+
+
+def _parity_product(parity_a: Parity, parity_b: Parity) -> Parity:
+    return "even" if parity_a == parity_b else "odd"
+
+
+def _resolve_auto_pair_parities(  # noqa: C901
+    parameters: ParametersTwoAtoms,
+    inversion: ParitySelection,
+    permutation: ParitySelection,
+) -> ResolvedPairParities:
+    if inversion != "auto" and permutation != "auto":
+        return inversion, permutation
+
+    has_equivalent_atom_systems = _has_equivalent_atom_systems(parameters)
+    has_zero_electric_field = _has_zero_electric_field(parameters)
+    has_same_target_state = _has_same_target_state(parameters)
+
+    can_use_inversion = has_equivalent_atom_systems and has_zero_electric_field
+    can_use_permutation = has_equivalent_atom_systems and parameters.order <= 3
+
+    # If both parities can be used, the parity product is conserved
+    if can_use_inversion and can_use_permutation:
+        parity_product = _parity_product(parameters.get_ket_atom(0).parity, parameters.get_ket_atom(1).parity)
+        if inversion in ["even", "odd"]:  # implies that permutation is auto
+            permutation = _parity_product(parity_product, cast("Parity", inversion))
+        elif permutation in ["even", "odd"]:  # implies that inversion is auto
+            inversion = _parity_product(parity_product, cast("Parity", permutation))
+
+    # Resolve the parities if they are still set to auto
+    if inversion == "auto":
+        if not can_use_inversion:
+            inversion = None
+        elif has_same_target_state:
+            inversion = "odd"
+        else:
+            inversion = None
+
+    if permutation == "auto":
+        if not can_use_permutation:
+            permutation = None
+        elif has_same_target_state:
+            permutation = "odd"
+        else:
+            permutation = None
+
+    return inversion, permutation
 
 
 @dataclass
@@ -39,9 +108,12 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
         obj.pair_m_range = (
             page.basis_config.pair_m_range.values() if page.basis_config.pair_m_range.isChecked() else None
         )
-        obj.parity_under_inversion = page.basis_config.parity_under_inversion.value()
-        obj.parity_under_permutation = page.basis_config.parity_under_permutation.value()
-        obj.order = page.system_config.order.value()
+        obj.order = int(page.system_config.order.value())
+        obj.parity_under_inversion, obj.parity_under_permutation = _resolve_auto_pair_parities(
+            obj,
+            page.basis_config.parity_under_inversion.value(),
+            page.basis_config.parity_under_permutation.value(),
+        )
         return obj
 
     def to_replacement_dict(self) -> dict[str, str]:
