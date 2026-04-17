@@ -1,0 +1,381 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction.system.green_tensor &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction.system.green_tensor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction.system.green_tensor</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityArray</span><span class="p">,</span> <span class="n">QuantityScalar</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dimension</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">PintArray</span><span class="p">,</span> <span class="n">PintFloat</span>
+
+    <span class="n">Quantity</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;Quantity&quot;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GreenTensor">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.GreenTensor.html#pairinteraction.GreenTensor">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GreenTensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Green tensor for the multipole pair interactions.</span>
+
+<span class="sd">    This class allows to define custom constant or frequency-dependent Green tensors,</span>
+<span class="sd">    which can then be used for the interaction of a :class:`SystemPair` (see :meth:`SystemPair.set_green_tensor`).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction as pi</span>
+<span class="sd">        &gt;&gt;&gt; gt = pi.GreenTensor()</span>
+<span class="sd">        &gt;&gt;&gt; distance_mum = 5</span>
+<span class="sd">        &gt;&gt;&gt; tensor = np.array([[1, 0, 0], [0, 1, 0], [0, 0, -2]]) / distance_mum**3</span>
+<span class="sd">        &gt;&gt;&gt; tensor_unit = &quot;hartree / (e^2 micrometer^3)&quot;</span>
+<span class="sd">        &gt;&gt;&gt; gt.set_from_cartesian(1, 1, tensor, tensor_unit)</span>
+<span class="sd">        GreenTensor(...)</span>
+<span class="sd">        &gt;&gt;&gt; print(gt.get_spherical(1, 1, unit=tensor_unit).diagonal())</span>
+<span class="sd">        [ 0.008 -0.016  0.008]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorComplex</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorComplex</span>
+
+<div class="viewcode-block" id="GreenTensor.__init__">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.GreenTensor.html#pairinteraction.GreenTensor.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a new Green tensor object.</span>
+
+<span class="sd">        The actual tensor can be set afterwards via the :meth:`set_from_cartesian` method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp_type</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(...)&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_from_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">tensor_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_from_cartesian</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tensor</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDArray</span><span class="p">],</span>
+        <span class="n">tensor_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">omegas</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">omegas_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_from_cartesian</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tensor</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDArray</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">omegas</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+        <span class="n">omegas_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="GreenTensor.set_from_cartesian">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.GreenTensor.html#pairinteraction.GreenTensor.set_from_cartesian">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_from_cartesian</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">tensor</span><span class="p">:</span> <span class="n">NDArray</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">NDArray</span><span class="p">],</span>
+        <span class="n">tensor_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">omegas</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">omegas_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the entries of the Green tensor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kappa1: The rank of the first multipole operator.</span>
+<span class="sd">            kappa2: The rank of the second multipole operator.</span>
+<span class="sd">            tensor: The green tensor in cartesian coordinates.</span>
+<span class="sd">                Either a single tensor to set a constant green tensor</span>
+<span class="sd">                or a list of tensors to set a frequency-dependent green tensor.</span>
+<span class="sd">            tensor_unit: The unit of the tensor.</span>
+<span class="sd">                Default None, which means that the tensor must be given as pint object.</span>
+<span class="sd">            omegas: Only needed if a list of tensors is given.</span>
+<span class="sd">                The frequencies of the tensors.</span>
+<span class="sd">            omegas_unit: The unit of the frequencies.</span>
+<span class="sd">                Default None, which means that the frequencies must be given as pint object.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dimension</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Dimension</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_unit_dimension</span><span class="p">(</span><span class="n">kappa1</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">omegas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tensor_au</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tensor</span><span class="p">),</span> <span class="n">tensor_unit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tensor_au</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">3</span><span class="o">**</span><span class="n">kappa1</span><span class="p">,</span> <span class="mi">3</span><span class="o">**</span><span class="n">kappa2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">tensor_au</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tensor must be a 2D array of shape (3**kappa1, 3**kappa2).&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">create_entries_from_cartesian</span><span class="p">(</span><span class="n">kappa1</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">,</span> <span class="n">tensor_au</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="n">tensors_au</span> <span class="o">=</span> <span class="p">[</span><span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">tensor_unit</span><span class="p">,</span> <span class="n">dimension</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tensor</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tensors_au</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tensor must be a list of 2D arrays.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="o">**</span><span class="n">kappa1</span><span class="p">,</span> <span class="mi">3</span><span class="o">**</span><span class="n">kappa2</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tensors_au</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The tensors must be of shape (3**kappa1, 3**kappa2).&quot;</span><span class="p">)</span>
+
+        <span class="n">omegas_au</span> <span class="o">=</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">omegas</span><span class="p">),</span> <span class="n">omegas_unit</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">create_entries_from_cartesian</span><span class="p">(</span><span class="n">kappa1</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">,</span> <span class="n">tensors_au</span><span class="p">,</span> <span class="n">omegas_au</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spherical</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">omega</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">omega_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spherical</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">omega</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">omega_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="GreenTensor.get_spherical">
+<a class="viewcode-back" href="../../../_autosummary/pairinteraction.GreenTensor.html#pairinteraction.GreenTensor.get_spherical">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_spherical</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">omega</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">omega_unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PintArray</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the Green tensor in spherical coordinates for the given indices kappa1 and kappa2.</span>
+
+<span class="sd">        For kappa == 1 the spherical basis is [p_{1,-1}, p_{1,0}, p_{1,1}].</span>
+<span class="sd">        For kappa == 2 the spherical basis is [p_{2,-2}, p_{2,-1}, p_{2,0}, p_{2,1}, p_{2,2}, p_{0,0}].</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            kappa1: The rank of the first multipole operator.</span>
+<span class="sd">            kappa2: The rank of the second multipole operator.</span>
+<span class="sd">            omega: The frequency at which to evaluate the Green tensor.</span>
+<span class="sd">                Only needed if the Green tensor is frequency dependent.</span>
+<span class="sd">            omega_unit: The unit of the frequency.</span>
+<span class="sd">                Default None, which means that the frequency must be given as pint object.</span>
+<span class="sd">            unit: The unit to which to convert the result.</span>
+<span class="sd">                Default None, which means that the result is returned as pint object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The Green tensor as a 2D array.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">entries_cpp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">get_spherical_entries</span><span class="p">(</span><span class="n">kappa1</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">)</span>
+        <span class="n">omega_au</span> <span class="o">=</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">omega</span><span class="p">,</span> <span class="n">omega_unit</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">omega</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">dim1</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">kappa1</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">6</span>
+        <span class="n">dim2</span> <span class="o">=</span> <span class="mi">3</span> <span class="k">if</span> <span class="n">kappa2</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="mi">6</span>
+        <span class="n">tensor_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim1</span><span class="p">,</span> <span class="n">dim2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">entry_cpp</span> <span class="ow">in</span> <span class="n">entries_cpp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry_cpp</span><span class="p">,</span> <span class="p">(</span><span class="n">_backend</span><span class="o">.</span><span class="n">ConstantEntryReal</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">ConstantEntryComplex</span><span class="p">)):</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">entry_cpp</span><span class="o">.</span><span class="n">val</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">omega_au</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The Green tensor has omega dependent entries, please specify an omega.&quot;</span><span class="p">)</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">entry_cpp</span><span class="o">.</span><span class="n">val</span><span class="p">(</span><span class="n">omega_au</span><span class="p">)</span>
+            <span class="n">tensor_au</span><span class="p">[</span><span class="n">entry_cpp</span><span class="o">.</span><span class="n">row</span><span class="p">(),</span> <span class="n">entry_cpp</span><span class="o">.</span><span class="n">col</span><span class="p">()]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="n">tensor_au</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real_if_close</span><span class="p">(</span><span class="n">tensor_au</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">QuantityArray</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">tensor_au</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_unit_dimension</span><span class="p">(</span><span class="n">kappa1</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">),</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_unit_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kappa1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">kappa2</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Dimension</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;green_tensor_00&quot;</span><span class="p">,</span> <span class="o">*</span><span class="p">[</span><span class="s2">&quot;inverse_distance&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">kappa1</span> <span class="o">+</span> <span class="n">kappa2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]]</span>  <span class="c1"># type: ignore [list-item]</span></div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">GreenTensorReal</span><span class="p">(</span><span class="n">GreenTensor</span><span class="p">):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorReal</span>  <span class="c1"># type: ignore [assignment]</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorReal</span>  <span class="c1"># type: ignore [assignment]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

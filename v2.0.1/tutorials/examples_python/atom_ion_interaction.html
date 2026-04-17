@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rydberg Atom Ion Interaction &mdash; pairinteraction 2.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f5cff4aa"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="MQDT Calculations for Ytterbium" href="mqdt.html" />
+    <link rel="prev" title="Pair Potentials Under External Fields" href="pair_potential_efield_sensitivity.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            pairinteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concepts.html">Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stark_map.html">Stark Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potentials.html">Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lifetimes.html">Lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_c3_c6.html"><span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_h_eff.html">Effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Rydberg Atom Ion Interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mqdt.html">MQDT Calculations for Ytterbium</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/architecture.html">Overview About pairinteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">pairinteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Rydberg Atom Ion Interaction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorials/examples_python/atom_ion_interaction.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+  .nbinput .prompt,
+  .nboutput .prompt {
+    display: none;
+  }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="atom_ion_interaction.ipynb">atom_ion_interaction.ipynb</a>.
+  Open in
+  <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/atom_ion_interaction.ipynb">Google Colab</a>.
+</div><section id="Rydberg-Atom-Ion-Interaction">
+<h1>Rydberg Atom Ion Interaction<a class="headerlink" href="#Rydberg-Atom-Ion-Interaction" title="Link to this heading"></a></h1>
+<p>Here we look at the interacton between a single ion and a Rydberg atom. More details regarding the theory can be found in <a class="reference external" href="https://doi.org/10.1103/PhysRevResearch.3.023114">A. Duspayev et al., Phys. Rev. Research 3, 023114 (2021)</a> or <a class="reference external" href="https://doi.org/10.3390/atoms9020034">M. Deiß et al., Atoms 9, 2 (2021)</a>. The inernuclear axis is aligned with the z-direction and the interaction is expanded in multipolar terms. With this choice of coordinate system, the interaction potential is
+rotationally symmetric around the quantization axis and only states of same <span class="math notranslate nohighlight">\(m_J\)</span> couple with each other, reducing the number of basis states.</p>
+<p>We will reproduce here results shown in Fig. 2 in Phys. Rev. Research 3, 023114 (2021), demonstrating the influence of higher multipole order terms.</p>
+<p>In the code bellow, the <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> class defines the system of the Rydberg atom and the ion, including the effect of the electric field of the ion into the calculations. The charge of the ion is passed with <code class="docutils literal notranslate"><span class="pre">SystemAtom.set_ion_charge(value,</span> <span class="pre">unit)</span></code> and the distance vector between the ion and the Rydberg core with <code class="docutils literal notranslate"><span class="pre">SystemAtom.set_ion_distance_vector(vector,</span> <span class="pre">unit)</span></code>. We calculate the energy of the Rydberg state for different internuclear distances and including a different number of
+multipole orders. Choosing a maximum multipole order of two is equivalent to calculating a StarkMap in a homogenious electric field.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install matplotlib numpy pairinteraction
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+
+<span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Define the Rydberg state for which the interaction with the ion should be calculated</span>
+<span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">45</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">energy</span> <span class="o">=</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="s2">&quot;1/cm&quot;</span><span class="p">)</span>
+
+<span class="c1"># Setup basis, considering states only with similar energy and principle quantum number (if a</span>
+<span class="c1"># high accuracy is required, the energy and principle quantum number ranges must be increased).</span>
+<span class="c1"># Since the ion and Rydberg atom are placed on the z-axis, the magnetic momentum is conserved</span>
+<span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span>
+    <span class="s2">&quot;Rb&quot;</span><span class="p">,</span>
+    <span class="n">n</span><span class="o">=</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">n</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">3</span><span class="p">),</span>
+    <span class="n">m</span><span class="o">=</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">m</span><span class="p">),</span>
+    <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">energy</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span> <span class="n">energy</span> <span class="o">+</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;1/cm&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">axs</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Setup system</span>
+<span class="c1"># Define the maximum considered order of the multipole expansion.</span>
+<span class="c1"># 2: monopole-dipole (scales like 1/R^2 with the distance R),</span>
+<span class="c1"># 3: monopole-quadrupole (scales like 1/R^3), ...</span>
+<span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">order</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">axs</span><span class="p">):</span>
+    <span class="n">systems</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set_ion_charge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;e&quot;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set_ion_interaction_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">set_ion_distance_vector</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="p">],</span> <span class="s2">&quot;um&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">distances</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Diagonalize the system</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span>
+        <span class="n">systems</span><span class="p">,</span>
+        <span class="n">diagonalizer</span><span class="o">=</span><span class="s2">&quot;lapacke_evr&quot;</span><span class="p">,</span>
+        <span class="n">energy_range</span><span class="o">=</span><span class="p">(</span><span class="n">energy</span> <span class="o">-</span> <span class="mf">0.34</span><span class="p">,</span> <span class="n">energy</span> <span class="o">-</span> <span class="mf">0.04</span><span class="p">),</span>
+        <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;1/cm&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Get eigenenergies and overlaps</span>
+    <span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="p">[</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;1/cm&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">systems</span><span class="p">]</span>
+    <span class="n">list_overlaps</span> <span class="o">=</span> <span class="p">[</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">systems</span><span class="p">]</span>
+    <span class="n">list_distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">list_eigenenergies</span><span class="p">)]</span>
+
+    <span class="c1"># Sort so that the potential curves with largest overlap are plotted on top</span>
+    <span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_eigenenergies</span><span class="p">)</span>
+    <span class="n">list_overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_overlaps</span><span class="p">)</span>
+    <span class="n">list_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_distances</span><span class="p">)</span>
+
+    <span class="n">sorter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">list_overlaps</span><span class="p">)</span>
+    <span class="n">list_distances</span> <span class="o">=</span> <span class="n">list_distances</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span>
+    <span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="n">list_eigenenergies</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span>
+    <span class="n">list_overlaps</span> <span class="o">=</span> <span class="n">list_overlaps</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span>
+
+    <span class="c1"># Plot the potential curves</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ket</span><span class="si">}</span><span class="s2">, up to order </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2"> in $1/R$&quot;</span><span class="p">)</span>
+    <span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+        <span class="n">list_distances</span><span class="p">,</span>
+        <span class="n">list_eigenenergies</span> <span class="o">-</span> <span class="n">energy</span><span class="p">,</span>
+        <span class="n">c</span><span class="o">=</span><span class="n">list_overlaps</span><span class="p">,</span>
+        <span class="n">s</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">vmin</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+        <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">norm</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>
+        <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;magma_r&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Distance $R$ ($\mu$m)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (1/cm)&quot;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Overlap&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_atom_ion_interaction_2_0.png" src="../../_images/tutorials_examples_python_atom_ion_interaction_2_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pair_potential_efield_sensitivity.html" class="btn btn-neutral float-left" title="Pair Potentials Under External Fields" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mqdt.html" class="btn btn-neutral float-right" title="MQDT Calculations for Ytterbium" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, Pairinteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.0.1
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

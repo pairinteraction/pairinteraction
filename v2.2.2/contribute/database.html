@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Database Format &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Style Guide" href="style_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="style_guide.html">Style Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Database Format</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/contribute/database.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="database-format">
+<span id="database"></span><h1>Database Format<a class="headerlink" href="#database-format" title="Link to this heading"></a></h1>
+<p>The PairInteraction software constructs Hamiltonians from matrix elements that are stored in databases. This design
+enables the inclusion of new atomic species and even molecules into the software without requiring modification of the
+code of the software itself.</p>
+<p>The currently available databases are hosted on GitHub and are downloaded by PairInteraction when needed. We manage two
+database repositories:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pairinteraction/database-sqdt/releases">database-sqdt</a>: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool
+<a class="reference external" href="https://github.com/pairinteraction/ryd-numerov">ryd-numerov</a>.</p></li>
+<li><p><a class="reference external" href="https://github.com/pairinteraction/database-mqdt/releases">database-mqdt</a>: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool
+<a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a>.</p></li>
+</ul>
+<p>You can also manually download the databases from <a class="reference external" href="https://github.com/pairinteraction/database-sqdt/releases">database-sqdt</a> and <a class="reference external" href="https://github.com/pairinteraction/database-mqdt/releases">database-mqdt</a>. Simply download the zip file of the
+species you are interested in and extract it. Alternatively, you can create your own custom database (see
+<a class="reference external" href="https://github.com/pairinteraction/database-sqdt">https://github.com/pairinteraction/database-sqdt</a> for an example on how to create a database for PairInteraction). Then
+move the extracted folder (e.g. <code class="docutils literal notranslate"><span class="pre">Rb_v1.2</span></code>) to the cache directory of PairInteraction inside the
+<code class="docutils literal notranslate"><span class="pre">pairinteraction/database/tables/</span></code> directory. On Linux, this is usually located at
+<code class="docutils literal notranslate"><span class="pre">~/.cache/pairinteraction/database/tables/</span></code>. For other platforms, you can use our command line interface to find the
+directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pairinteraction<span class="w"> </span>paths
+</pre></div>
+</div>
+<p>Your final directory structure should look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>~/.cache/pairinteraction/database/tables/
+├──<span class="w"> </span>misc_v1.2
+│<span class="w">   </span>└──<span class="w"> </span>wigner.parquet
+├──<span class="w"> </span>Rb_v1.2
+│<span class="w">   </span>├──<span class="w"> </span>states.parquet
+│<span class="w">   </span>├──<span class="w"> </span>matrix_elements_d.parquet
+│<span class="w">   </span>├──<span class="w"> </span>matrix_elements_...
+├──<span class="w"> </span>...
+</pre></div>
+</div>
+<p>Note that in addition to the species-specific databases, you also always need to download the <code class="docutils literal notranslate"><span class="pre">misc</span></code> folder, which
+contains a database with Wigner symbols.</p>
+<p>The databases store tables of states and matrix elements of a set of fundamental operators. We have chosen the set of
+operators such that it allows to efficiently construct more complex operators such as the operator for dipole-dipole
+interaction.</p>
+<p><details>
+<summary><a>SQL File Defining the Tables of the Database</a></summary><div class="highlight-sql notranslate"><div class="highlight"><pre><span></span><span class="c1">-- Version 2.0</span>
+
+<span class="c1">-- Unit System: Atomic Units</span>
+<span class="c1">--</span>
+<span class="c1">-- Base units:</span>
+<span class="c1">-- - length: Bohr radius</span>
+<span class="c1">-- - time: reduced Planck constant divided by Hartree energy</span>
+<span class="c1">-- - temperature: Hartree energy divided by Boltzmann constant</span>
+<span class="c1">-- - mass: electron mass</span>
+<span class="c1">-- - current: elementary charge times Hartree energy divided by reduced Planck constant</span>
+<span class="c1">--</span>
+<span class="c1">-- Fundamental constants in this unit system:</span>
+<span class="c1">-- - reduced Planck constant:   1</span>
+<span class="c1">-- - Coulomb constant:          1</span>
+<span class="c1">-- - Bohr magneton:             0.5</span>
+<span class="c1">-- - elementary charge:         1</span>
+<span class="c1">-- - electron mass:             1</span>
+<span class="c1">--</span>
+
+<span class="k">BEGIN</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="p">;</span>
+
+<span class="c1">-- Create a table of states</span>
+<span class="c1">-- The energies are defined as E=E_i-Ry/nu_i^2, where E_i is the channel-dependent ionization threshold and nu_i is the</span>
+<span class="c1">-- effective principal quantum number of the channel i (note that by using this definition, the energies of Rydberg</span>
+<span class="c1">-- states are positive).</span>
+<span class="c1">-- The effective principal quantum number of the state is defined as nu=sqrt(Ry/(I-E)). In the case of a single channel,</span>
+<span class="c1">-- &quot;I&quot; is the ionization threshold of that channel and nu=n-delta where delta is the quantum defect. In the case of multiple</span>
+<span class="c1">-- channels, &quot;I&quot; is the ionization threshold of the channel that corresponds to the core being in the ionic ground state and</span>
+<span class="c1">-- has maximum total angular momentum f_core (this ensures that for stretched states with maximum F that consist only of a</span>
+<span class="c1">-- single channel, the energy agrees with the energy obtainable by single-channel quantum defect theory).</span>
+<span class="c1">-- The principal quantum number n is, in principle, not well defined for states that consist of multiple channels since</span>
+<span class="c1">-- these states comprise superpositions of different radial wave functions. Instead, we state the principal quantum number</span>
+<span class="c1">-- of the most dominant channel.</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">states</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="p">,</span>
+<span class="w">    </span><span class="n">energy</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the energy of the state: E=I-Ry/nu^2</span>
+<span class="w">    </span><span class="n">parity</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the parity of the state</span>
+<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="nb">INTEGER</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the principal quantum number n</span>
+<span class="w">    </span><span class="n">nu</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the effective principal quantum number nu</span>
+<span class="w">    </span><span class="n">f</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the total momentum quantum number f (int or half-int)</span>
+<span class="w">    </span><span class="n">exp_nui</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the effective principal quantum numbers nu_i of the channels</span>
+<span class="w">    </span><span class="n">exp_l</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the orbital quantum number l of all valence electrons</span>
+<span class="w">    </span><span class="n">exp_j</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the total angular quantum number j of all valence electrons</span>
+<span class="w">    </span><span class="n">exp_s</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the total spin quantum number s of all valence electrons</span>
+<span class="w">    </span><span class="n">exp_l_ryd</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron</span>
+<span class="w">    </span><span class="n">exp_j_ryd</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron</span>
+<span class="w">    </span><span class="n">std_nui</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the effective principal quantum numbers nu_i of the channels</span>
+<span class="w">    </span><span class="n">std_l</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the orbital quantum number l of all valence electrons</span>
+<span class="w">    </span><span class="n">std_j</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the total angular quantum number j of all valence electrons</span>
+<span class="w">    </span><span class="n">std_s</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the total spin quantum number s of all valence electrons</span>
+<span class="w">    </span><span class="n">std_l_ryd</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron</span>
+<span class="w">    </span><span class="n">std_j_ryd</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron</span>
+<span class="w">    </span><span class="n">is_j_total_momentum</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- whether j is the total momentum quantum number, otherwise f is used for printing the state</span>
+<span class="w">    </span><span class="n">is_calculated_with_mqdt</span><span class="w"> </span><span class="nb">BOOLEAN</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- whether multi-channel quantum defect theory was used</span>
+<span class="w">    </span><span class="n">underspecified_channel_contribution</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w"> </span><span class="c1">-- the contribution of channels whose quantum numbers are not exactly known</span>
+<span class="p">);</span>
+
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TRIGGER</span><span class="w"> </span><span class="n">check_energy</span>
+<span class="k">BEFORE</span><span class="w"> </span><span class="k">INSERT</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">states</span>
+<span class="k">BEGIN</span>
+<span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">RAISE</span><span class="p">(</span><span class="n">FAIL</span><span class="p">,</span><span class="w"> </span><span class="ss">&quot;id and energy must be inserted in increasing order&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">FROM</span><span class="w"> </span><span class="n">states</span>
+<span class="w">    </span><span class="k">WHERE</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="k">NEW</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">OR</span><span class="w"> </span><span class="n">energy</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="k">NEW</span><span class="p">.</span><span class="n">energy</span><span class="p">;</span>
+<span class="k">END</span><span class="p">;</span>
+
+<span class="c1">-- Create a table of wigner 3j symbols multiplied by the phase factor (-1)^(f-m)</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">wigner</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">f_initial</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the total momentum quantum number of the initial state</span>
+<span class="w">    </span><span class="n">f_final</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span><span class="w"> </span><span class="c1">-- the total momentum quantum number of the final state</span>
+<span class="w">    </span><span class="n">m_initial</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">m_final</span><span class="w"> </span><span class="nb">REAL</span><span class="p">,</span>
+<span class="w">    </span><span class="n">kappa</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">q</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">f_initial</span><span class="p">,</span><span class="w"> </span><span class="n">f_final</span><span class="p">,</span><span class="w"> </span><span class="n">m_initial</span><span class="p">,</span><span class="w"> </span><span class="n">m_final</span><span class="p">,</span><span class="w"> </span><span class="n">kappa</span><span class="p">,</span><span class="w"> </span><span class="n">q</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create a table of matrix elements of the reduced electric dipole operator e*r*sqrt(4*pi/3)*Y_1</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">matrix_elements_d</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id_initial</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">id_final</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">,</span><span class="w"> </span><span class="n">id_final</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create a table of matrix elements of the reduced electric quadrupole operator e*r^2*sqrt(4*pi/5)*Y_2</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">matrix_elements_q</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id_initial</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">id_final</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">,</span><span class="w"> </span><span class="n">id_final</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create a table of matrix elements of the reduced operator e*r^2*sqrt(4*pi)*Y_0, occurring in</span>
+<span class="c1">-- the diamagnetic interaction and electric quadrupole interaction near surfaces</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">matrix_elements_q0</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id_initial</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">id_final</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">,</span><span class="w"> </span><span class="n">id_final</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create a table of matrix elements of the reduced electric octupole operator e*r^3*sqrt(4*pi/7)*Y_3</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">matrix_elements_o</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id_initial</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">id_final</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">,</span><span class="w"> </span><span class="n">id_final</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create a table of matrix elements of the reduced magnetic dipole operator</span>
+<span class="c1">-- \mu = - \mu_B / \hbar * (g_L * L + g_S * S) + \mu_N / \hbar g_I I,</span>
+<span class="c1">-- taking into account all spins: Rydberg electron, core electron, and nucleus</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">matrix_elements_mu</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="n">id_initial</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">id_final</span><span class="w"> </span><span class="nb">INTEGER</span><span class="p">,</span>
+<span class="w">    </span><span class="n">val</span><span class="w"> </span><span class="nb">REAL</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span>
+<span class="w">    </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">,</span><span class="w"> </span><span class="n">id_final</span><span class="p">)</span>
+<span class="p">);</span>
+
+<span class="c1">-- Create indices to speed up queries</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_states_energy</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">states</span><span class="w"> </span><span class="p">(</span><span class="n">energy</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_wigner_f_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">wigner</span><span class="w"> </span><span class="p">(</span><span class="n">f_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_wigner_f_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">wigner</span><span class="w"> </span><span class="p">(</span><span class="n">f_final</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_d_id_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_d</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_d_id_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_d</span><span class="w"> </span><span class="p">(</span><span class="n">id_final</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_q_id_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_q</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_q_id_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_q</span><span class="w"> </span><span class="p">(</span><span class="n">id_final</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_q0_id_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_q0</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_q0_id_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_q0</span><span class="w"> </span><span class="p">(</span><span class="n">id_final</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_o_id_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_o</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_o_id_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_o</span><span class="w"> </span><span class="p">(</span><span class="n">id_final</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_mu_id_initial</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_mu</span><span class="w"> </span><span class="p">(</span><span class="n">id_initial</span><span class="p">);</span>
+<span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_matrix_elements_mu_id_final</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">matrix_elements_mu</span><span class="w"> </span><span class="p">(</span><span class="n">id_final</span><span class="p">);</span>
+
+<span class="k">COMMIT</span><span class="p">;</span>
+</pre></div>
+</div>
+</details></p><p>To enhance performance and minimize memory usage, the tables are converted from SQL to the Apache Parquet format prior
+to being uploaded to GitHub.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="style_guide.html" class="btn btn-neutral float-left" title="Style Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

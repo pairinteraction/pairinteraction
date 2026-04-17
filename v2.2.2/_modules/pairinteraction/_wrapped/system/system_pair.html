@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pairinteraction._wrapped.system.system_pair &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../../about.html" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">pairinteraction._wrapped.system.system_pair</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for pairinteraction._wrapped.system.system_pair</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span class="c1"># SPDX-License-Identifier: LGPL-3.0-or-later</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.basis.basis_pair</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisPairComplex</span><span class="p">,</span> <span class="n">BasisPairReal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.system.green_tensor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreenTensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.system.system</span><span class="w"> </span><span class="kn">import</span> <span class="n">SystemBase</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="n">QuantityScalar</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.basis.basis_pair</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasisPair</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.ket.ket_atom</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">KetAtom</span><span class="p">,</span>  <span class="c1"># noqa: F401  # needed for sphinx to recognize KetAtomTuple</span>
+    <span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction._wrapped.ket.ket_pair</span><span class="w"> </span><span class="kn">import</span> <span class="n">KetAtomTuple</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.units</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">ArrayLike</span><span class="p">,</span>
+        <span class="n">PintArray</span><span class="p">,</span>  <span class="c1"># noqa: F401  # needed for sphinx to recognize PintArrayLike</span>
+        <span class="n">PintArrayLike</span><span class="p">,</span>
+        <span class="n">PintFloat</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="n">BasisType</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;BasisType&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="s2">&quot;BasisPair[Any, Any]&quot;</span><span class="p">,</span> <span class="n">covariant</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">UnionCPPSystemPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairReal</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairComplex</span><span class="p">]</span>
+<span class="n">UnionTypeCPPSystemPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">type</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairReal</span><span class="p">],</span> <span class="nb">type</span><span class="p">[</span><span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairComplex</span><span class="p">]]</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SystemPair">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemPair</span><span class="p">(</span><span class="n">SystemBase</span><span class="p">[</span><span class="n">BasisType</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;System of a pair of atoms.</span>
+
+<span class="sd">    Use the given BasisPair object to create the system object.</span>
+<span class="sd">    You can set the distance (vector) between the atoms afterwards via the corresponding methods.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import pairinteraction.real as pi</span>
+<span class="sd">        &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span>
+<span class="sd">        &gt;&gt;&gt; basis = pi.BasisAtom(&quot;Rb&quot;, n=(58, 63), l=(0, 3))</span>
+<span class="sd">        &gt;&gt;&gt; system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit=&quot;V/cm&quot;).diagonalize()</span>
+<span class="sd">        &gt;&gt;&gt; system = pi.SystemAtom(basis).set_magnetic_field([0, 0, 1], unit=&quot;G&quot;).diagonalize()</span>
+<span class="sd">        &gt;&gt;&gt; pair_energy = 2 * system.get_corresponding_energy(ket, unit=&quot;GHz&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; pair_basis = pi.BasisPair(</span>
+<span class="sd">        ...     [system, system],</span>
+<span class="sd">        ...     energy=(pair_energy - 3, pair_energy + 3),</span>
+<span class="sd">        ...     energy_unit=&quot;GHz&quot;,</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; pair_system = pi.SystemPair(pair_basis).set_distance(5, unit=&quot;micrometer&quot;).set_interaction_order(3)</span>
+<span class="sd">        &gt;&gt;&gt; print(pair_system)</span>
+<span class="sd">        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)</span>
+<span class="sd">        &gt;&gt;&gt; pair_system = pair_system.diagonalize()</span>
+<span class="sd">        &gt;&gt;&gt; eigenenergies = pair_system.get_eigenenergies(unit=&quot;GHz&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;{eigenenergies[0] - pair_energy:.5f}&quot;)</span>
+<span class="sd">        -2.18394</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">UnionCPPSystemPair</span>
+    <span class="n">_cpp_type</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">UnionTypeCPPSystemPair</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SystemPair.__init__">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basis</span><span class="p">:</span> <span class="n">BasisType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a system object for a pair of atoms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            basis: The :class:`pairinteraction.real.BasisPair` object that describes the basis of the system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector_au</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+
+<div class="viewcode-block" id="SystemPair.get_eigenbasis">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.get_eigenbasis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_eigenbasis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BasisType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the eigenbasis of the system.</span>
+
+<span class="sd">        This method retrieves the eigenbasis of the system, which is the basis in which the Hamiltonian is diagonal.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A BasisPair object representing the eigenbasis of the system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">eigenbasis</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span>
+        <span class="n">eigenbasis</span><span class="o">.</span><span class="n">system_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">system_atoms</span>
+        <span class="k">return</span> <span class="n">eigenbasis</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_basis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">system_atoms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">system_atoms</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_update_basis</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_basis</span><span class="o">.</span><span class="n">system_atoms</span> <span class="o">=</span> <span class="n">system_atoms</span>
+
+<div class="viewcode-block" id="SystemPair.set_interaction_order">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.set_interaction_order">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_interaction_order</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the interaction order of the pair system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            order: The interaction order to set for the pair system.</span>
+<span class="sd">                The order must be 3, 4, or 5.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_interaction_order</span> <span class="o">=</span> <span class="n">order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SystemPair.set_distance">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.set_distance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_distance</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">],</span>
+        <span class="n">angle_degree</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the distance between the atoms using the specified distance and angle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            distance: The distance to set between the atoms in the given unit.</span>
+<span class="sd">            angle_degree: The angle between the distance vector and the z-axis in degrees.</span>
+<span class="sd">                90 degrees corresponds to the x-axis.</span>
+<span class="sd">                Defaults to 0, which corresponds to the z-axis.</span>
+<span class="sd">            unit: The unit of the distance, e.g. &quot;micrometer&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distance_vector</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_degree</span><span class="p">))</span> <span class="o">*</span> <span class="n">distance</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">distance_vector</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SystemPair.set_distance_vector">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.set_distance_vector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_distance_vector</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span>
+        <span class="n">distance</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;ArrayLike&quot;</span><span class="p">,</span> <span class="s2">&quot;PintArrayLike&quot;</span><span class="p">],</span>
+        <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the distance vector between the atoms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            distance: The distance vector to set between the atoms in the given unit.</span>
+<span class="sd">            unit: The unit of the distance, e.g. &quot;micrometer&quot;.</span>
+<span class="sd">                Default None expects a `pint.Quantity`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distance_au</span> <span class="o">=</span> <span class="p">[</span><span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_user_to_au</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">unit</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">distance</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">(</span><span class="n">distance_au</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector_au</span> <span class="o">=</span> <span class="n">distance_au</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="SystemPair.get_distance_vector">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.get_distance_vector">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="s2">&quot;PintFloat&quot;</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector_au</span><span class="p">]</span>  <span class="c1"># type: ignore [return-value]</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="SystemPair.get_distance">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.get_distance">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_distance_vector_au</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">QuantityScalar</span><span class="o">.</span><span class="n">convert_au_to_user</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">distance</span><span class="p">),</span> <span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SystemPair.set_green_tensor">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.set_green_tensor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_green_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">green_tensor</span><span class="p">:</span> <span class="n">GreenTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Self&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the Green tensor for the pair system.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            green_tensor: The Green tensor to set for the system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairReal</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">green_tensor</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorReal</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_green_tensor</span><span class="p">(</span><span class="n">green_tensor</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairComplex</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">green_tensor</span><span class="o">.</span><span class="n">_cpp</span><span class="p">,</span> <span class="n">_backend</span><span class="o">.</span><span class="n">GreenTensorComplex</span>
+        <span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cpp</span><span class="o">.</span><span class="n">set_green_tensor</span><span class="p">(</span><span class="n">green_tensor</span><span class="o">.</span><span class="n">_cpp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Incompatible types: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">=}</span><span class="s2">; </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">green_tensor</span><span class="p">)</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetAtomTuple&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">:</span> <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetAtomTuple&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span> <span class="o">...</span>
+
+<div class="viewcode-block" id="SystemPair.get_corresponding_energy">
+<a class="viewcode-back" href="../../../../_autosummary/pairinteraction._wrapped.SystemPair.html#pairinteraction._wrapped.SystemPair.get_corresponding_energy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_corresponding_energy</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">:</span> <span class="s2">&quot;Self&quot;</span><span class="p">,</span> <span class="n">ket_tuple</span><span class="p">:</span> <span class="s2">&quot;KetAtomTuple&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;PintFloat&quot;</span><span class="p">]:</span>
+        <span class="n">overlaps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">ket_tuple</span><span class="p">)</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">overlaps</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;The provided ket states does not correspond to an eigenstate of the system in a unique way.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="n">unit</span><span class="p">)[</span><span class="n">idx</span><span class="p">]</span>  <span class="c1"># type: ignore [index,no-any-return] # PintArray does not know it can be indexed</span></div>
+</div>
+
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemPairReal</span><span class="p">(</span><span class="n">SystemPair</span><span class="p">[</span><span class="n">BasisPairReal</span><span class="p">]):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairReal</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairReal</span>
+    <span class="n">_TypeBasis</span> <span class="o">=</span> <span class="n">BasisPairReal</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SystemPairComplex</span><span class="p">(</span><span class="n">SystemPair</span><span class="p">[</span><span class="n">BasisPairComplex</span><span class="p">]):</span>
+    <span class="n">_cpp</span><span class="p">:</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairComplex</span>
+    <span class="n">_cpp_type</span> <span class="o">=</span> <span class="n">_backend</span><span class="o">.</span><span class="n">SystemPairComplex</span>
+    <span class="n">_TypeBasis</span> <span class="o">=</span> <span class="n">BasisPairComplex</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

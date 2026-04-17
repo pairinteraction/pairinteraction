@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Style Guide &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Database Format" href="database.html" />
+    <link rel="prev" title="Overview of PairInteraction’s Architecture" href="architecture.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Style Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#naming-conventions-for-python-and-c">Naming Conventions for Python and C++</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-and-folder-names">File and Folder Names</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#c">C++</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#type-annotations">Type Annotations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">Python</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#adding-license-information">Adding License Information</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Style Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/contribute/style_guide.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="style-guide">
+<h1>Style Guide<a class="headerlink" href="#style-guide" title="Link to this heading"></a></h1>
+<p>This guide outlines the coding style and conventions used in the project.</p>
+<p>We highly recommend using <a class="reference external" href="https://docs.astral.sh/ruff/">ruff</a> for formatting Python code and <a class="reference external" href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a> for C++ code to ensure consistency. The
+easiest way to use these tools is to integrate them as pre-commit hooks into your local repository. To do this, install
+the <a class="reference external" href="https://clang.llvm.org/docs/ClangFormat.html">clang-format</a> tool and the Python package <a class="reference external" href="https://pre-commit.com">pre-commit</a> and execute the following command in the root directory of
+your repository:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>This adds a pre-commit hook that automatically formats your code and conducts style checks before each commit. The
+pre-commit hook applies most <a class="reference external" href="https://docs.astral.sh/ruff/rules/">ruff rules</a> (see the <code class="docutils literal notranslate"><span class="pre">[tool.ruff]</span></code> section in the
+<a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/pyproject.toml">pyproject.toml</a> file) and some C++ clang rules (see the
+<a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/.clang-format">.clang-format</a> file).</p>
+<p>For manual checks at any time, execute:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</pre></div>
+</div>
+<p>While this fixes a lot of formatting issues automatically and enforces some coding rules, there are still some rules
+that need to be followed manually and are described in the following.</p>
+<section id="naming-conventions-for-python-and-c">
+<h2>Naming Conventions for Python and C++<a class="headerlink" href="#naming-conventions-for-python-and-c" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Use descriptive names! Explicit is always better than implicit (for example, don’t name a Hamiltonian <code class="docutils literal notranslate"><span class="pre">h</span></code> but
+<code class="docutils literal notranslate"><span class="pre">hamiltonian</span></code>). The only allowed exceptions to this rule are the names of loop variables or variables in list
+comprehensions.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">snake_case</span></code> (letters lowercase and words separated by underscores) for methods, variables and functions.
+Moreover, we use snake_case for the value of literals in Python.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">CamelCase</span></code> (first letter of each word capitalized) for classes.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">ALL_CAPS</span></code> (all uppercase with words separated by underscores) for global constant variables, mainly magic
+numbers that are only used internally. Moreover, we use ALL_CAPS for enum values in C++.</p></li>
+<li><p>Sometimes, it is not directly clear whether a method should be named in <em>singular</em> or <em>plural</em> form, for example,
+<code class="docutils literal notranslate"><span class="pre">get_overlap()</span></code> vs. <code class="docutils literal notranslate"><span class="pre">get_overlaps()</span></code>. We strictly stick to the following rule: If a method returns a list or
+matrix of objects (such as a list of overlaps), we use the plural form. If a method returns a single object, we use
+the singular form.</p></li>
+</ul>
+</section>
+<section id="file-and-folder-names">
+<h2>File and Folder Names<a class="headerlink" href="#file-and-folder-names" title="Link to this heading"></a></h2>
+<section id="c">
+<h3>C++<a class="headerlink" href="#c" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">snake_case</span></code> for folders. Files are named after the class/function they contain. Thus, we use <code class="docutils literal notranslate"><span class="pre">CamelCase</span></code> for
+file names containing classes and <code class="docutils literal notranslate"><span class="pre">snake_case</span></code> for file names containing functions. Note that most of the time, each
+class has its own file.</p></li>
+<li><p>Separate the code into source files (<code class="docutils literal notranslate"><span class="pre">src/cpp/src/**/*.cpp</span></code>) and header files
+(<code class="docutils literal notranslate"><span class="pre">src/cpp/include/pairinteraction/**/*.hpp</span></code>).</p></li>
+</ul>
+</section>
+<section id="python">
+<h3>Python<a class="headerlink" href="#python" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Always use <code class="docutils literal notranslate"><span class="pre">snake_case</span></code> for folders and files. It is common to have multiple classes in one file if they are closely
+related.</p></li>
+<li><p>The code that wraps the C++ backend is located in the private module <code class="docutils literal notranslate"><span class="pre">src/pairinteraction/_wrapped/</span></code> and made
+available to the user via the public modules <code class="docutils literal notranslate"><span class="pre">src/pairinteraction/real.py</span></code> and <code class="docutils literal notranslate"><span class="pre">src/pairinteraction/complex.py</span></code>.</p></li>
+<li><p>If you want to add a new feature purely in Python, add a new file to <code class="docutils literal notranslate"><span class="pre">src/pairinteraction/</span></code> (if the feature does not
+require much code) or create a new folder in <code class="docutils literal notranslate"><span class="pre">src/pairinteraction/</span></code> with multiple files (if the feature is more
+complex).</p></li>
+</ul>
+</section>
+</section>
+<section id="type-annotations">
+<h2>Type Annotations<a class="headerlink" href="#type-annotations" title="Link to this heading"></a></h2>
+<p>To avoid bugs, make the code more readable, and help with code completion, we use strict typing. Avoid <code class="docutils literal notranslate"><span class="pre">void</span></code> pointers
+and <code class="docutils literal notranslate"><span class="pre">dynamic_casts</span></code> in C++. Use type annotations in Python.</p>
+<section id="id1">
+<h3>Python<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<p><strong>Argument types</strong> <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">my_func(arg1:</span> <span class="pre">ArgumentType1,</span> <span class="pre">arg2:</span> <span class="pre">ArgumentType2)</span> <span class="pre">-&gt;</span> <span class="pre">...:</span></code></p>
+<ul class="simple">
+<li><p>Argument types often don’t need to be a specific type like <cite>Duck</cite>, but only have to be some <cite>DuckLikeType</cite> (see also
+the <a class="reference external" href="https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html#standard-duck-types">mypy cheat-sheet</a>).</p></li>
+<li><p>List/Tuples of objects with a fixed length should typically be annotated as <code class="docutils literal notranslate"><span class="pre">collections.abc.Sequence[Type]</span></code>; for a
+variable length use <code class="docutils literal notranslate"><span class="pre">collections.abc.Iterable[Type]</span></code> instead (see also <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections-abstract-base-classes">collections.abc abstract base classes</a>).</p></li>
+<li><p>NumPy arrays should be annotated as <code class="docutils literal notranslate"><span class="pre">&quot;pairinteraction.units.NDArray&quot;</span></code> (which is an alias for
+<code class="docutils literal notranslate"><span class="pre">numpy.typing.NDArray[Any]</span></code>).</p></li>
+</ul>
+<p><strong>Return types</strong> <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">my_func(...)</span> <span class="pre">-&gt;</span> <span class="pre">ReturnType:</span></code></p>
+<ul class="simple">
+<li><p>Return types should be annotated as specific as possible. This allows for better type checking and code completion of
+the returned values.</p></li>
+<li><p>Lists should be annotated as <code class="docutils literal notranslate"><span class="pre">list[Type]</span></code>.</p></li>
+<li><p>Tuples should be annotated as <code class="docutils literal notranslate"><span class="pre">tuple[Type1,</span> <span class="pre">Type2]</span></code> or <code class="docutils literal notranslate"><span class="pre">tuple[Type1,</span> <span class="pre">...]</span></code> for a variable length.</p></li>
+<li><p>NumPy arrays should be annotated as <code class="docutils literal notranslate"><span class="pre">&quot;pairinteraction.units.NDArray&quot;</span></code> (which is an alias for
+<code class="docutils literal notranslate"><span class="pre">numpy.typing.NDArray[Any]</span></code>).</p></li>
+<li><p>Pint objects should be annotated as <code class="docutils literal notranslate"><span class="pre">&quot;pairinteraction.units.PintFloat&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;pairinteraction.units.PintArray&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;pairinteraction.units.PintSparse&quot;</span></code> for scalar, dense matrix and sparse matrix respectively. These are aliases for
+<code class="docutils literal notranslate"><span class="pre">PlainQuantity[float]</span></code>, <code class="docutils literal notranslate"><span class="pre">PlainQuantity[NDArray]</span></code> or <code class="docutils literal notranslate"><span class="pre">PlainQuantity[csr_matrix]</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="adding-license-information">
+<h2>Adding License Information<a class="headerlink" href="#adding-license-information" title="Link to this heading"></a></h2>
+<p>The PairInteraction software is licensed under LGPL v3. Code files should contain the following license header:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SPDX</span><span class="o">-</span><span class="n">FileCopyrightText</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">year</span> <span class="n">of</span> <span class="n">the</span> <span class="n">creation</span> <span class="n">of</span> <span class="n">the</span> <span class="n">file</span><span class="o">&gt;</span> <span class="n">PairInteraction</span> <span class="n">Developers</span>
+<span class="n">SPDX</span><span class="o">-</span><span class="n">License</span><span class="o">-</span><span class="n">Identifier</span><span class="p">:</span> <span class="n">LGPL</span><span class="o">-</span><span class="mf">3.0</span><span class="o">-</span><span class="ow">or</span><span class="o">-</span><span class="n">later</span>
+</pre></div>
+</div>
+<p>If a third-party library is used <em>and</em> binary builds of the PairInteraction software include it, license information for
+the library should be added to the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/LICENSES-THIRD-PARTY">LICENSES-THIRD-PARTY</a> directory.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="architecture.html" class="btn btn-neutral float-left" title="Overview of PairInteraction’s Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="database.html" class="btn btn-neutral float-right" title="Database Format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

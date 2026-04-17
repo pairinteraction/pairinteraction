@@ -1,0 +1,427 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Effective Hamiltonian &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Pair Potentials Under External Fields" href="pair_potential_efield_sensitivity.html" />
+    <link rel="prev" title="State object" href="state_object.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concepts.html">Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stark_map.html">Stark Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potentials.html">Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lifetimes.html">Lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_c3_c6.html"><span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html">State object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Create-superposition-state-objects">Create superposition state objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Use-state-objects-to-calculate-overlaps-and-expectation-values">Use state objects to calculate overlaps and expectation values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Example-of-Stark-map-with-overlap-of-superposition-state-objects">Example of Stark map with overlap of superposition state objects</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#M_\mathrm{tot}-=-0\,-subspace"><span class="math notranslate nohighlight">\(M_\mathrm{tot} = 0\,\)</span> subspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#M_\mathrm{tot}-=-+1\,-subspace"><span class="math notranslate nohighlight">\(M_\mathrm{tot} = +1\,\)</span> subspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">Rydberg Atom Ion Interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mqdt.html">MQDT Calculations for Ytterbium</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Effective Hamiltonian</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorials/examples_python/perturbative_eff_h.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+  .nbinput .prompt,
+  .nboutput .prompt {
+    display: none;
+  }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="perturbative_eff_h.ipynb">perturbative_eff_h.ipynb</a>.
+  Open in
+  <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/perturbative_eff_h.ipynb">Google Colab</a>.
+</div><section id="Effective-Hamiltonian">
+<h1>Effective Hamiltonian<a class="headerlink" href="#Effective-Hamiltonian" title="Link to this heading"></a></h1>
+<p>This notebook demonstrates how to calculate an effective Hamiltonian with the <code class="docutils literal notranslate"><span class="pre">pairinteraction.perturbative</span></code> module. We use <a class="reference external" href="https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.6.020332">PRX Quantum 6, 020332 (2025)</a> as a reference and try to reproduce figure 2c) and d) from the paper. Note that the paper used a Schrieffer-Wolff transformation to calculate the effective Hamiltonian, while here we use perturbation theory up to third order.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -q matplotlib numpy pairinteraction
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="kn">import</span> <span class="n">perturbative</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let us define all single-atom states of interest, as well as the fields and distances between the atoms used in the paper.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket_atoms</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;+&quot;</span><span class="p">:</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">81</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+    <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+    <span class="s2">&quot;-&quot;</span><span class="p">:</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">magnetic_field</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">60.7</span><span class="p">]</span>  <span class="c1"># in gauss</span>
+
+<span class="n">theta_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># degree</span>
+<span class="n">theta_default</span> <span class="o">=</span> <span class="mf">35.1</span>  <span class="c1"># degree</span>
+
+<span class="n">distance_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>  <span class="c1"># mum</span>
+<span class="n">distance_default</span> <span class="o">=</span> <span class="mf">11.6</span>  <span class="c1"># mum</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="M_\mathrm{tot}-=-0\,-subspace">
+<h1><span class="math notranslate nohighlight">\(M_\mathrm{tot} = 0\,\)</span> subspace<a class="headerlink" href="#M_\mathrm{tot}-=-0\,-subspace" title="Link to this heading"></a></h1>
+<p>We start by considering the <span class="math notranslate nohighlight">\(M_\mathrm{tot} = 0\,\)</span> two-atom subspace, which contains the following states:</p>
+<ul class="simple">
+<li><p>|+, -&gt;</p></li>
+<li><p>|0, 0&gt;</p></li>
+<li><p>|-, +&gt;</p></li>
+</ul>
+<p>And create the corresponding effective Hamiltonian for this subspace.</p>
+<p>Note, that we can set the magnetic field as well as the interaction order of the effective Hamiltonian like we are used to from the <code class="docutils literal notranslate"><span class="pre">SystemAtom</span></code> class and the <code class="docutils literal notranslate"><span class="pre">SystemPair</span></code> class.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket_tuples</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">],</span> <span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;-&quot;</span><span class="p">],</span> <span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="n">eff_system</span> <span class="o">=</span> <span class="n">perturbative</span><span class="o">.</span><span class="n">EffectiveSystemPair</span><span class="p">(</span><span class="n">ket_tuples</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_perturbation_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Set single-atom properties</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">60.7</span><span class="p">],</span> <span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># create a pair basis with at least 5000 ket pairs</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_minimum_number_of_ket_pairs</span><span class="p">(</span><span class="mi">5_000</span><span class="p">)</span>
+
+<span class="c1"># set two-atom properties</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<p>Now we can create the effective Hamiltonian for different distances and angles between the atoms. Then from the effective Hamiltonians we can extract the parameters <span class="math notranslate nohighlight">\(V^\mathrm{offd}\)</span>, <span class="math notranslate nohighlight">\(V^\mathrm{diag}\)</span>, and <span class="math notranslate nohighlight">\(J^{00}\)</span>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eff_h_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;theta&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+<span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="n">theta_list</span><span class="p">:</span>
+    <span class="n">eff_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance_default</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+    <span class="n">eff_h_dict</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eff_system</span><span class="o">.</span><span class="n">get_effective_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">distance_list</span><span class="p">:</span>
+    <span class="n">eff_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">theta_default</span><span class="p">,</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+    <span class="n">eff_h_dict</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eff_system</span><span class="o">.</span><span class="n">get_effective_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">))</span>
+
+<span class="n">pair_energy_pm</span> <span class="o">=</span> <span class="n">eff_system</span><span class="o">.</span><span class="n">get_pair_energies</span><span class="p">(</span><span class="s2">&quot;MHz&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">J00</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">eff_h</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">eff_h</span> <span class="ow">in</span> <span class="n">eff_h_lists</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">eff_h_lists</span> <span class="ow">in</span> <span class="n">eff_h_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+<span class="n">Voffd</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">eff_h</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">eff_h</span> <span class="ow">in</span> <span class="n">eff_h_lists</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">eff_h_lists</span> <span class="ow">in</span> <span class="n">eff_h_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+<span class="n">Vdiag</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">eff_h</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">pair_energy_pm</span> <span class="k">for</span> <span class="n">eff_h</span> <span class="ow">in</span> <span class="n">eff_h_lists</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">eff_h_lists</span> <span class="ow">in</span> <span class="n">eff_h_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Finally, we can plot the results for the different distances and angles to reproduce the <span class="math notranslate nohighlight">\(V^\mathrm{offd}\)</span>, <span class="math notranslate nohighlight">\(V^\mathrm{diag}\)</span>, and <span class="math notranslate nohighlight">\(J^{00}\)</span> lines from the paper.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">J00</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C1-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^</span><span class="si">{00}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">Voffd</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C2-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{offd}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">Vdiag</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C2--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{diag}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\theta$ (degree)&quot;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">J00</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C1-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^</span><span class="si">{00}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">Voffd</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C2-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{offd}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">Vdiag</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C2--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{diag}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r$ ($\mu$m)&quot;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(MHz)&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_perturbative_eff_h_11_0.png" src="../../_images/tutorials_examples_python_perturbative_eff_h_11_0.png" />
+</div>
+</div>
+</section>
+<section id="M_\mathrm{tot}-=-+1\,-subspace">
+<h1><span class="math notranslate nohighlight">\(M_\mathrm{tot} = +1\,\)</span> subspace<a class="headerlink" href="#M_\mathrm{tot}-=-+1\,-subspace" title="Link to this heading"></a></h1>
+<p>To also reproduce e.g. the <span class="math notranslate nohighlight">\(J^{+0}\)</span> line from the paper, we can also consider the <span class="math notranslate nohighlight">\(M_\mathrm{tot} = +1\,\)</span> two-atom subspace, which contains the following states:</p>
+<ul class="simple">
+<li><p>|+, 0&gt;</p></li>
+<li><p>|0, +&gt;</p></li>
+</ul>
+<p>And create the corresponding effective Hamiltonian for this subspace.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ket_tuples</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">],</span> <span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">]),</span>
+    <span class="p">(</span><span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span> <span class="n">ket_atoms</span><span class="p">[</span><span class="s2">&quot;+&quot;</span><span class="p">]),</span>
+<span class="p">]</span>
+
+<span class="n">eff_system</span> <span class="o">=</span> <span class="n">perturbative</span><span class="o">.</span><span class="n">EffectiveSystemPair</span><span class="p">(</span><span class="n">ket_tuples</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_perturbation_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">60.7</span><span class="p">],</span> <span class="s2">&quot;gauss&quot;</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_minimum_number_of_ket_pairs</span><span class="p">(</span><span class="mi">5_000</span><span class="p">)</span>
+<span class="n">eff_system</span><span class="o">.</span><span class="n">set_interaction_order</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">eff_h_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;theta&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+<span class="k">for</span> <span class="n">theta</span> <span class="ow">in</span> <span class="n">theta_list</span><span class="p">:</span>
+    <span class="n">eff_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance_default</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+    <span class="n">eff_h_dict</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eff_system</span><span class="o">.</span><span class="n">get_effective_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">distance_list</span><span class="p">:</span>
+    <span class="n">eff_system</span><span class="o">.</span><span class="n">set_distance</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">theta_default</span><span class="p">,</span> <span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+    <span class="n">eff_h_dict</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eff_system</span><span class="o">.</span><span class="n">get_effective_hamiltonian</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">))</span>
+
+<span class="n">Jp0</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">eff_h</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">eff_h</span> <span class="ow">in</span> <span class="n">eff_h_lists</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">eff_h_lists</span> <span class="ow">in</span> <span class="n">eff_h_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+</pre></div>
+</div>
+</div>
+<p>Plotting the results together with the previous results, we can reproduce the entire figure 2c) and d) from the paper.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">Jp0</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C0-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^{+0}$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">J00</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C1-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^</span><span class="si">{00}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">Voffd</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C2-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{offd}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">theta_list</span><span class="p">,</span> <span class="n">Vdiag</span><span class="p">[</span><span class="s2">&quot;theta&quot;</span><span class="p">],</span> <span class="s2">&quot;C2--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{diag}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\theta$ (degree)&quot;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">Jp0</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C0-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^{+0}$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">J00</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C1-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$J^</span><span class="si">{00}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">Voffd</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C2-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{offd}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">Vdiag</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">],</span> <span class="s2">&quot;C2--&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$V^\text</span><span class="si">{diag}</span><span class="s2">$&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r$ ($\mu$m)&quot;</span><span class="p">)</span>
+
+<span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(MHz)&quot;</span><span class="p">)</span>
+<span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_perturbative_eff_h_15_0.png" src="../../_images/tutorials_examples_python_perturbative_eff_h_15_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="state_object.html" class="btn btn-neutral float-left" title="State object" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pair_potential_efield_sensitivity.html" class="btn btn-neutral float-right" title="Pair Potentials Under External Fields" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

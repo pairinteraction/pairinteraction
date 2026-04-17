@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MQDT Calculations for Ytterbium &mdash; PairInteraction 2.2.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=219dea72"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../about.html" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="API Reference" href="../../api_reference.html" />
+    <link rel="prev" title="Rydberg Atom Ion Interaction" href="atom_ion_interaction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="quick_start.html">Quick Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="concepts.html">Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stark_map.html">Stark Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potentials.html">Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="lifetimes.html">Lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_c3_c6.html"><span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html">State object</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Create-superposition-state-objects">Create superposition state objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Use-state-objects-to-calculate-overlaps-and-expectation-values">Use state objects to calculate overlaps and expectation values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="state_object.html#Example-of-Stark-map-with-overlap-of-superposition-state-objects">Example of Stark map with overlap of superposition state objects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_eff_h.html">Effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_eff_h.html#M_\mathrm{tot}-=-0\,-subspace"><span class="math notranslate nohighlight">\(M_\mathrm{tot} = 0\,\)</span> subspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="perturbative_eff_h.html#M_\mathrm{tot}-=-+1\,-subspace"><span class="math notranslate nohighlight">\(M_\mathrm{tot} = +1\,\)</span> subspace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="pair_potential_efield_sensitivity.html">Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atom_ion_interaction.html">Rydberg Atom Ion Interaction</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">MQDT Calculations for Ytterbium</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Zeeman-Map-for-Yb174">Zeeman Map for Yb174</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Pair-Potentials-for-Yb171">Pair Potentials for Yb171</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../publications/publications.html">Publications</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/ryd-numerov/">ryd-numerov</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">MQDT Calculations for Ytterbium</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/tutorials/examples_python/mqdt.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+  .nbinput .prompt,
+  .nboutput .prompt {
+    display: none;
+  }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="mqdt.ipynb">mqdt.ipynb</a>.
+  Open in
+  <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/mqdt.ipynb">Google Colab</a>.
+</div><section id="MQDT-Calculations-for-Ytterbium">
+<h1>MQDT Calculations for Ytterbium<a class="headerlink" href="#MQDT-Calculations-for-Ytterbium" title="Link to this heading"></a></h1>
+<p>The PairInteraction software supports atomic species with two valence electrons such as Yb171 and Yb174, using multi-channel quantum defect theory (MQDT). In the following, we reproduce findings of the publication <a class="reference external" href="https://arxiv.org/abs/2406.01482">M. Peper et al., Spectroscopy and modeling of 171Yb Rydberg states for high-fidelity two-qubit gates”, 2024</a>. In this publication, the authors carefully benchmarked their results against experimental data.</p>
+<section id="Zeeman-Map-for-Yb174">
+<h2>Zeeman Map for Yb174<a class="headerlink" href="#Zeeman-Map-for-Yb174" title="Link to this heading"></a></h2>
+<p>We calculate the Zeeman map for Yb174 that is shown in Fig. 13 of the publication. The Zeeman map takes into account diamagnetism.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -q matplotlib numpy pairinteraction
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+
+<span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Get the state of interest</span>
+<span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Yb174_mqdt&quot;</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">energy_in_ghz</span> <span class="o">=</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_energy</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span>
+
+<span class="c1"># Construct a basis around the state</span>
+<span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="s2">&quot;Yb174_mqdt&quot;</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">nu</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">nu</span> <span class="o">+</span> <span class="mi">3</span><span class="p">),</span> <span class="n">j</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Construct and diagonalize systems for different magnetic fields</span>
+<span class="n">list_bfield_in_gauss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1650</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">list_system</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span><span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;G&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">list_bfield_in_gauss</span>
+<span class="p">]</span>
+<span class="n">pi</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="n">list_system</span><span class="p">,</span> <span class="n">diagonalizer</span><span class="o">=</span><span class="s2">&quot;lapacke_evd&quot;</span><span class="p">,</span> <span class="n">float_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get eigenenergies and overlaps</span>
+<span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;GHz&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">list_system</span><span class="p">])</span>
+<span class="n">list_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">(</span><span class="n">ket</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">list_system</span><span class="p">])</span>
+
+<span class="c1"># Plot the Zeeman map</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">get_label</span><span class="p">(</span><span class="s2">&quot;ket&quot;</span><span class="p">))</span>
+<span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">list_bfield_in_gauss</span><span class="p">,</span> <span class="n">list_eigenenergies</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="n">list_eigenenergies</span> <span class="o">-</span> <span class="n">energy_in_ghz</span><span class="p">,</span>
+    <span class="n">c</span><span class="o">=</span><span class="n">list_overlap</span><span class="p">,</span>
+    <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Overlap&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">list_bfield_in_gauss</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.4</span><span class="p">,</span> <span class="mf">7.4</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Squared Magnetic Field (G$^2$)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (GHz)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_mqdt_3_0.png" src="../../_images/tutorials_examples_python_mqdt_3_0.png" />
+</div>
+</div>
+</section>
+<section id="Pair-Potentials-for-Yb171">
+<h2>Pair Potentials for Yb171<a class="headerlink" href="#Pair-Potentials-for-Yb171" title="Link to this heading"></a></h2>
+<p>We calculate the pair potentials for Yb171 that are displayed in Fig. 7a of the publication. The pair potentials are calculated for a magnetic field pointing along the z-axis and the interatomic axis pointing along the x-axis. Because this arrangement breaks rotational symmetry, the total magnetic quantum number is not conserved and two-atom Hilbert space is rather large. To keep the execution time down, we only calculate the pair potentials for a few interatomic distances.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -q matplotlib numpy pairinteraction
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction.real</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+
+<span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">get_global_database</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">Database</span><span class="o">.</span><span class="n">initialize_global_database</span><span class="p">(</span><span class="n">download_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Get the state of interest</span>
+<span class="n">ket</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Yb171_mqdt&quot;</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">54.56</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Construct a basis around the state</span>
+<span class="n">basis</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisAtom</span><span class="p">(</span><span class="s2">&quot;Yb171_mqdt&quot;</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">nu</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">ket</span><span class="o">.</span><span class="n">nu</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">f</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">l</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Single atom basis size: </span><span class="si">{</span><span class="n">basis</span><span class="o">.</span><span class="n">number_of_states</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Construct and diagonalize a system for a single atom</span>
+<span class="n">system</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">SystemAtom</span><span class="p">(</span><span class="n">basis</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_magnetic_field</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">5.03</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;G&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">set_diamagnetism_enabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="n">diagonalizer</span><span class="o">=</span><span class="s2">&quot;lapacke_evr&quot;</span><span class="p">,</span> <span class="n">float_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">pair_energy_shifted</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">system</span><span class="o">.</span><span class="n">get_corresponding_energy</span><span class="p">(</span><span class="n">ket</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">)</span>
+
+<span class="c1"># Construct a basis for a pair of atoms</span>
+<span class="n">basis_pair</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">BasisPair</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">system</span><span class="p">,</span> <span class="n">system</span><span class="p">],</span>
+    <span class="n">energy</span><span class="o">=</span><span class="p">(</span><span class="n">pair_energy_shifted</span> <span class="o">-</span> <span class="mf">3.5e3</span><span class="p">,</span> <span class="n">pair_energy_shifted</span> <span class="o">+</span> <span class="mf">3.5e3</span><span class="p">),</span>
+    <span class="n">energy_unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pair basis size: </span><span class="si">{</span><span class="n">basis_pair</span><span class="o">.</span><span class="n">number_of_states</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Construct and diagonalize systems for different interatomic distances</span>
+<span class="n">list_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">list_system</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">SystemPair</span><span class="p">(</span><span class="n">basis_pair</span><span class="p">)</span><span class="o">.</span><span class="n">set_distance_vector</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;um&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">list_distances</span>
+<span class="p">]</span>
+<span class="n">pi</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span>
+    <span class="n">list_system</span><span class="p">,</span>
+    <span class="n">diagonalizer</span><span class="o">=</span><span class="s2">&quot;lapacke_evr&quot;</span><span class="p">,</span>
+    <span class="n">float_type</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">energy_range</span><span class="o">=</span><span class="p">(</span><span class="n">pair_energy_shifted</span> <span class="o">-</span> <span class="mi">20</span><span class="p">,</span> <span class="n">pair_energy_shifted</span> <span class="o">+</span> <span class="mi">20</span><span class="p">),</span>
+    <span class="n">energy_range_unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Get eigenenergies and overlaps</span>
+<span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="p">[</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenenergies</span><span class="p">(</span><span class="n">unit</span><span class="o">=</span><span class="s2">&quot;MHz&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">list_system</span><span class="p">]</span>
+<span class="n">list_overlap</span> <span class="o">=</span> <span class="p">[</span><span class="n">system</span><span class="o">.</span><span class="n">get_eigenbasis</span><span class="p">()</span><span class="o">.</span><span class="n">get_overlaps</span><span class="p">([</span><span class="n">ket</span><span class="p">,</span> <span class="n">ket</span><span class="p">])</span> <span class="k">for</span> <span class="n">system</span> <span class="ow">in</span> <span class="n">list_system</span><span class="p">]</span>
+<span class="n">list_distances</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">list_distances</span><span class="p">,</span> <span class="n">list_eigenenergies</span><span class="p">)]</span>
+
+<span class="c1"># Plot the pair potential</span>
+<span class="n">list_eigenenergies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_eigenenergies</span><span class="p">)</span>
+<span class="n">list_overlap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_overlap</span><span class="p">)</span>
+<span class="n">list_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">list_distances</span><span class="p">)</span>
+<span class="n">sorter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">list_overlap</span><span class="p">)</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">ket</span><span class="o">.</span><span class="n">get_label</span><span class="p">(</span><span class="s2">&quot;ket&quot;</span><span class="p">))</span>
+<span class="n">scat</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span>
+    <span class="n">list_distances</span><span class="p">[</span><span class="n">sorter</span><span class="p">],</span>
+    <span class="n">list_eigenenergies</span><span class="p">[</span><span class="n">sorter</span><span class="p">]</span> <span class="o">-</span> <span class="n">pair_energy_shifted</span><span class="p">,</span>
+    <span class="n">c</span><span class="o">=</span><span class="n">list_overlap</span><span class="p">[</span><span class="n">sorter</span><span class="p">],</span>
+    <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">norm</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>
+    <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;magma_r&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Overlap&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Interatomic Distance ($\mu$m)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (MHz)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Single atom basis size: 260
+Pair basis size: 3392
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/tutorials_examples_python_mqdt_5_1.png" src="../../_images/tutorials_examples_python_mqdt_5_1.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="atom_ion_interaction.html" class="btn btn-neutral float-left" title="Rydberg Atom Ion Interaction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../api_reference.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.2.2
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

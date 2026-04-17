@@ -1,0 +1,322 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started as a Contributor &mdash; PairInteraction 2.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=67b02a41"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Overview of PairInteraction’s Architecture" href="architecture.html" />
+    <link rel="prev" title="FAQs" href="../faqs.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started as a Contributor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ways-to-contribute">Ways to Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#making-changes-to-the-repository">Making Changes to the Repository</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fork-and-clone-the-repository">1. Fork and Clone the Repository</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#set-up-a-development-environment">2. Set Up a Development Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#implement-test-and-document-your-changes">3. Implement, Test, and Document Your Changes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#commit-and-push">4. Commit and Push</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#submit-a-pull-request">5. Submit a Pull Request</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Getting Started as a Contributor</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/contribute/getting_started.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="getting-started-as-a-contributor">
+<span id="id1"></span><h1>Getting Started as a Contributor<a class="headerlink" href="#getting-started-as-a-contributor" title="Link to this heading"></a></h1>
+<p>The PairInteraction software has greatly benefited from the contributions of our community. If you’re also interested in
+enhancing PairInteraction, this guide is for you. Don’t hesitate to reach out to the maintainers for any questions or
+further assistance.</p>
+<section id="ways-to-contribute">
+<h2>Ways to Contribute<a class="headerlink" href="#ways-to-contribute" title="Link to this heading"></a></h2>
+<dl>
+<dt>Reporting Issues</dt><dd><p>Encountered a bug or have a suggestion? Help us improve by submitting an issue on <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/issues">our GitHub issue page</a>. Your input is invaluable for ongoing improvements and bug fixes.</p>
+</dd>
+<dt>Contributing New Quantum Defects</dt><dd><p>Precise quantum defects are crucial for our software’s accuracy. We particularly seek improvements for species with
+two-valence electrons, where data remains sparse. If you’ve conducted research that provides new quantum defects,
+sharing your data would significantly benefit the community. To ensure that your research receives appropriate
+recognition, our <a class="reference internal" href="../index.html"><span class="doc">README</span></a> promotes the citation of publications that have contributed quantum
+defects.</p>
+</dd>
+<dt>Writing Tutorials</dt><dd><p>Share your knowledge by writing tutorials. If you’ve published research utilizing PairInteraction, consider
+contributing a tutorial. This not only aids others in replicating your results but also enhances the visibility of
+your work. Your tutorial can serve as a practical guide for applying PairInteraction to solve complex problems.</p>
+</dd>
+<dt>Developing Features or Resolving Bugs</dt><dd><p>Community contributions in the form of new features or bug fixes are highly appreciated. They not only alleviate the
+workload on our maintainers but also enrich the software with diverse expertise.</p>
+<p>You can either implement new features in the C++ backend and write Python bindings and wrappers for them (as an
+example, see the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/cpp/src/diagonalize/diagonalize.cpp">function for diagonalizing the Hamiltonians of multiple systems in parallel</a>), or write them purely in Python (as an example, see the
+<a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/pairinteraction/perturbative">perturbative calculation of dispersion coefficients and effective Hamiltonians</a>).</p>
+</dd>
+</dl>
+</section>
+<section id="making-changes-to-the-repository">
+<h2>Making Changes to the Repository<a class="headerlink" href="#making-changes-to-the-repository" title="Link to this heading"></a></h2>
+<p>If you’re interested in creating tutorials, adding features, or addressing bugs, and want to make changes to the
+PairInteraction repository, this guide is for you. It assumes a basic familiarity with Git and GitHub. For newcomers, we
+encourage exploring <a class="reference external" href="https://docs.github.com/en/get-started">GitHub’s educational resources</a>.</p>
+<section id="fork-and-clone-the-repository">
+<h3>1. Fork and Clone the Repository<a class="headerlink" href="#fork-and-clone-the-repository" title="Link to this heading"></a></h3>
+<p>Start by forking the PairInteraction repository to your GitHub account by clicking the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/fork">“Fork”</a> button on
+the repository’s page. This action creates your own version of the repository, enabling you to perform changes freely.</p>
+<p>Once forked, clone the repository to your local machine to start working on the files directly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/YourGitHubUsername/pairinteraction.git
+</pre></div>
+</div>
+<p>Familiarize yourself with the repository’s architecture. The software is divided into a <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/cpp">C++ backend</a> with Python bindings and a <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/src/pairinteraction">Python library</a>. The Python
+library makes the Python bindings accessible and adds functionality like the perturbative calculation of effective
+Hamiltonians.</p>
+</section>
+<section id="set-up-a-development-environment">
+<h3>2. Set Up a Development Environment<a class="headerlink" href="#set-up-a-development-environment" title="Link to this heading"></a></h3>
+<p>Before implementing any changes, <a class="reference internal" href="../installation/advanced/advanced.html#advanced"><span class="std std-ref">set up a development environment and build the software from source</span></a>
+to guarantee the build system is functioning on your computer. In the following we provide a brief summary of the
+necessary steps:</p>
+<ul>
+<li><p>Install the <a class="reference internal" href="../installation/advanced/setup/system.html#system-setup"><span class="std std-ref">tools</span></a> for running the build system and a package manager for managing the Python
+dependencies. In addition, you need to install the dependencies of the C++ backend:</p>
+<p>If you are using GNU/Linux, instructions for installing dependencies with <code class="docutils literal notranslate"><span class="pre">apt</span></code> / <code class="docutils literal notranslate"><span class="pre">yum</span></code> / <code class="docutils literal notranslate"><span class="pre">zypper</span></code> can be found
+in the Dockerfiles that are located in the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/docker/docker">docker branch</a>.</p>
+<p>If you are using OS X, take a look at the <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span></code> instructions in <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/.github/workflows/cpp-backend.yml">our GitHub workflow</a>.</p>
+<p>If you are using Windows, you can use <code class="docutils literal notranslate"><span class="pre">vcpkg</span></code> to manage the dependencies. To set up vcpkg execute the following
+commands in the PowerShell:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/microsoft/vcpkg.git<span class="w"> </span>C:<span class="se">\p</span>ath<span class="se">\t</span>o<span class="se">\v</span>cpkg
+C:<span class="se">\p</span>ath<span class="se">\t</span>o<span class="se">\v</span>cpkg<span class="se">\b</span>ootstrap-vcpkg.bat
+<span class="nv">$env</span>:VCPKG_ROOT<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;C:\path\to\vcpkg&quot;</span>
+<span class="nv">$env</span>:PATH<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$env</span><span class="s2">:VCPKG_ROOT;</span><span class="nv">$env</span><span class="s2">:PATH&quot;</span>
+<span class="nv">$env</span>:CMAKE_TOOLCHAIN_FILE<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$env</span><span class="s2">:VCPKG_ROOT\scripts\buildsystems\vcpkg.cmake&quot;</span>
+</pre></div>
+</div>
+<p>Then, the C++ dependencies from <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/tree/master/vcpkg.json">our vcpkg configuration file</a> get installed
+automatically when we build PairInteraction.</p>
+</li>
+<li><p>After taking care of the dependencies, you have two options to build the software. You can either build the complete
+software using <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--group<span class="w"> </span>tests<span class="w"> </span>--group<span class="w"> </span>docs
+</pre></div>
+</div>
+<p>Or, you can build solely the C++ backend using <code class="docutils literal notranslate"><span class="pre">cmake</span></code>. This manual approach is recommended if you are planning to
+contribute to the C++ backend because it allows for a faster build and more fine-grained control.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>.build_requirements.txt
+mkdir<span class="w"> </span>build
+<span class="nb">cd</span><span class="w"> </span>build
+cmake<span class="w"> </span>..
+cmake<span class="w"> </span>--build<span class="w"> </span>.
+</pre></div>
+</div>
+</li>
+</ul>
+<p>To ensure your code adheres to the project’s coding standards, we highly recommend using the <a class="reference external" href="https://pre-commit.com">pre-commit tool</a>. Once
+you’ve installed this tool, integrate it as a pre-commit hook into your local repository with the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit<span class="w"> </span>install
+</pre></div>
+</div>
+<p>This automatically formats your code and conducts style checks before each commit. For manual checks at any time,
+execute:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pre-commit<span class="w"> </span>run<span class="w"> </span>--all-files
+</pre></div>
+</div>
+</section>
+<section id="implement-test-and-document-your-changes">
+<h3>3. Implement, Test, and Document Your Changes<a class="headerlink" href="#implement-test-and-document-your-changes" title="Link to this heading"></a></h3>
+<p>After applying your changes, run our test cases to ensure that the software is still working. If you built the software
+via <code class="docutils literal notranslate"><span class="pre">pip</span></code>, run the following command (the virtual environment must be activated):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest
+</pre></div>
+</div>
+<p>If you used <code class="docutils literal notranslate"><span class="pre">cmake</span></code>, execute the command below in your build directory to run all C++ tests:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ctest<span class="w"> </span>-C<span class="w"> </span>RelWithDebInfo
+</pre></div>
+</div>
+<p>If you added new features, consider writing tests to validate their functionality and a tutorial to demonstrate their
+usage.</p>
+</section>
+<section id="commit-and-push">
+<h3>4. Commit and Push<a class="headerlink" href="#commit-and-push" title="Link to this heading"></a></h3>
+<p>With successful testing and having added some documentation, commit your changes and push them to your fork (if you are
+working on multiple different features, consider creating a new branch for each feature; otherwise, you can commit
+directly to the master branch of your fork).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>add<span class="w"> </span>Path/To/ModifiedFiles
+git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Your commit message&quot;</span>
+git<span class="w"> </span>push
+</pre></div>
+</div>
+</section>
+<section id="submit-a-pull-request">
+<h3>5. Submit a Pull Request<a class="headerlink" href="#submit-a-pull-request" title="Link to this heading"></a></h3>
+<p>Finally, initiate a pull request to merge your contributions with the main repository. From the main repository page, go
+to the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/pull">“Pull requests”</a> page, and click the <a class="extlink-github reference external" href="https://github.com/pairinteraction/pairinteraction/compare">“New pull request”</a> button to compare
+your fork to the original PairInteraction repository. After reviewing your changes, submit the pull request for
+approval.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../faqs.html" class="btn btn-neutral float-left" title="FAQs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="architecture.html" class="btn btn-neutral float-right" title="Overview of PairInteraction’s Architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.3.1 (stable)
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.3.1 (stable)</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
