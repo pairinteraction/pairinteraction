@@ -8,8 +8,9 @@ from PySide6.QtWidgets import QCheckBox, QLabel
 
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
+from pairinteraction.enums import Parity
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
+from pairinteraction_gui.qobjects import ChoiceItem, NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.qobjects.item import RangeItem
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
@@ -179,6 +180,18 @@ class BasisConfigTwoAtoms(BasisConfig):
             checked=False,
         )
         self.layout().addWidget(self.pair_m_range)
+        self.parity_under_permutation = ChoiceItem[Parity](
+            self,
+            "Parity under permutation",
+            [("Any", None), ("Even", "even"), ("Odd", "odd")],
+        )
+        self.layout().addWidget(self.parity_under_permutation)
+        self.parity_under_inversion = ChoiceItem[Parity](
+            self,
+            "Parity under inversion",
+            [("Any", None), ("Even", "even"), ("Odd", "odd")],
+        )
+        self.layout().addWidget(self.parity_under_inversion)
 
         self.basis_pair_label = QLabel()
         self._set_theme_role(self.basis_pair_label, "info")

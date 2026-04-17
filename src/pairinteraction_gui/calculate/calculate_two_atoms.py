@@ -16,6 +16,7 @@ from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.enums import Parity
     from pairinteraction_gui.page import TwoAtomsPage
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
 
     pair_delta_energy: float = np.inf
     pair_m_range: tuple[float, float] | None = None
+    parity_under_inversion: Parity | None = None
+    parity_under_permutation: Parity | None = None
     order: int = 3
 
     @classmethod
@@ -36,6 +39,8 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
         obj.pair_m_range = (
             page.basis_config.pair_m_range.values() if page.basis_config.pair_m_range.isChecked() else None
         )
+        obj.parity_under_inversion = page.basis_config.parity_under_inversion.value()
+        obj.parity_under_permutation = page.basis_config.parity_under_permutation.value()
         obj.order = page.system_config.order.value()
         return obj
 
@@ -46,6 +51,12 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
             "np.inf" if np.isinf(self.pair_delta_energy) else str(self.pair_delta_energy)
         )
         replacements["$PAIR_M_RANGE"] = str(self.pair_m_range)
+        replacements["$PAIR_PARITY_UNDER_INVERSION"] = (
+            "None" if self.parity_under_inversion is None else f'"{self.parity_under_inversion}"'
+        )
+        replacements["$PAIR_PARITY_UNDER_PERMUTATION"] = (
+            "None" if self.parity_under_permutation is None else f'"{self.parity_under_permutation}"'
+        )
         return replacements
 
 
@@ -96,6 +107,8 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
             energy=(ket_pair_energy_0 - delta_energy, ket_pair_energy_0 + delta_energy),
             energy_unit="GHz",
             m=parameters.pair_m_range,
+            parity_under_inversion=parameters.parity_under_inversion,
+            parity_under_permutation=parameters.parity_under_permutation,
         )
         # not very elegant, but works (note that importantly this does not copy the basis_pair objects)
         basis_pair_list = parameters.steps * [basis_pair]
@@ -127,6 +140,8 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
                 energy=(ket_pair_energy - delta_energy, ket_pair_energy + delta_energy),
                 energy_unit="GHz",
                 m=parameters.pair_m_range,
+                parity_under_inversion=parameters.parity_under_inversion,
+                parity_under_permutation=parameters.parity_under_permutation,
             )
             basis_pair_list.append(basis_pair)
         ket_pair_energy_0 = sum(systems_list[-1][i].get_corresponding_energy(kets[i], "GHz") for i in range(n_atoms))
