@@ -47,15 +47,12 @@ def main() -> None:
         system_two.setConservedMomentaUnderRotation([int(2 * m)])
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setConservedParityUnderPermutation(pi.ODD)
-        # The parity under inversion and permutation being odd implies that the product
-        # of the parities of the state of the atoms (-1)^(l1+l2) is conserved to be
-        # odd * odd = even.
         system_two.setOrder(order)
         system_two.setDistance(np.min(distances))
         system_two.buildHamiltonian()
     duration_construction = get_duration()
-    number_of_kets = system_two.getNumBasisvectors()
-    number_of_states = number_of_kets
+    number_of_basis_states = system_two.getNumBasisvectors()
+    number_of_eigen_states = number_of_basis_states
 
     with timer() as get_duration:
         for distance in distances:
@@ -64,8 +61,8 @@ def main() -> None:
     duration_diagonalization = get_duration()
 
     output = {
-        "number_of_kets": number_of_kets,
-        "number_of_states": number_of_states,
+        "number_of_basis_states": number_of_basis_states,
+        "number_of_eigen_states": number_of_eigen_states,
         "duration_construction": duration_construction,
         "duration_diagonalization": duration_diagonalization,
     }
