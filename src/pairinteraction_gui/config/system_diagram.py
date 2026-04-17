@@ -109,13 +109,31 @@ class SystemDiagram(QWidget):
         painter.setPen(QPen(_Colors.AXIS, 1, Qt.PenStyle.DotLine))
         painter.drawLine(half, 4, half, h - 4)
 
+        state_min = self._read_state(use_max=False)
+        state_max = self._read_state(use_max=True)
+        global_max_dist = self._compute_global_max_dist(state_min, state_max)
+
         for use_max, x_offset, label in [(False, 0, "min"), (True, half, "max")]:
+            state = state_min if not use_max else state_max
             painter.save()
             painter.setClipRect(x_offset, 0, half, h)
-            self._draw_panel(painter, x_offset, half, h, self._read_state(use_max), label)
+            self._draw_panel(painter, x_offset, half, h, state, label, global_max_dist)
             painter.restore()
 
         painter.end()
+
+    def _compute_global_max_dist(self, state_min: dict[str, Any], state_max: dict[str, Any]) -> float:
+        dists = []
+        for state in [state_min, state_max]:
+            if self._two_atoms:
+                d = state.get("atom_distance_val")
+                if d is not None and d > 0:
+                    dists.append(d)
+            if state.get("show_ion"):
+                d = state.get("ion_distance_val", 0.0)
+                if d > 0:
+                    dists.append(d)
+        return max(dists) if dists else 1.0
 
     def _draw_panel(
         self,
@@ -125,6 +143,7 @@ class SystemDiagram(QWidget):
         panel_h: int,
         state: dict[str, Any],
         label: str,
+        global_max_dist: float = 1.0,
     ) -> None:
         cy = panel_h / 2.0
         origin_px = QPointF(x_offset + panel_w * 0.22, cy)
@@ -146,7 +165,12 @@ class SystemDiagram(QWidget):
 
         if self._two_atoms:
             angle_rad = radians(state.get("atom_angle_deg", 0.0))
-            dx, dz = sin(angle_rad) * scale, cos(angle_rad) * scale
+            atom_dist = state.get("atom_distance_val")
+            if atom_dist is not None and atom_dist > 0:
+                atom_scale = (atom_dist / global_max_dist) * scale
+            else:
+                atom_scale = scale
+            dx, dz = sin(angle_rad) * atom_scale, cos(angle_rad) * atom_scale
             atom1_px = QPointF(atoms_cx - dx / 2, cy + dz / 2)
             atom2_px: QPointF | None = QPointF(atoms_cx + dx / 2, cy - dz / 2)
         else:
@@ -156,12 +180,9 @@ class SystemDiagram(QWidget):
         ion_px = None
         if state.get("show_ion"):
             ion_rad = radians(state.get("ion_angle_deg", 0.0))
-            atom_dist = state.get("atom_distance_val")  # None means infinite
-            if not self._two_atoms:
-                ion_scale = scale
-            elif self._two_atoms and atom_dist:
-                ion_dist = state.get("ion_distance_val", 0.0)
-                ion_scale = (ion_dist / atom_dist) * scale
+            ion_dist = state.get("ion_distance_val", 0.0)
+            if ion_dist > 0:
+                ion_scale = (ion_dist / global_max_dist) * scale
             else:
                 ion_scale = 0.1 * scale
             ion_px = QPointF(
