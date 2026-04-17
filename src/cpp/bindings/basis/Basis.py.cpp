@@ -176,7 +176,10 @@ static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_n
         .def("add", &BasisPairCreator<T>::add)
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
-        .def("restrict_product_of_parities", &BasisPairCreator<T>::restrict_product_of_parities)
+        .def("restrict_parity_under_inversion",
+             &BasisPairCreator<T>::restrict_parity_under_inversion)
+        .def("restrict_parity_under_permutation",
+             &BasisPairCreator<T>::restrict_parity_under_permutation)
         .def("create", &BasisPairCreator<T>::create, nb::call_guard<nb::gil_scoped_release>());
 }
 
