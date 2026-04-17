@@ -35,17 +35,17 @@ def main() -> None:
     with timer() as get_duration:
         calc = arc.PairStateInteractions(arc.Rubidium(), n, l, j, n, l, j, m, m, interactionsUpTo=(order - 1) // 2)
         calc.defineBasis(0, 0, delta_n, delta_l, delta_energy, progressOutput=False)
-    number_of_kets = len(calc.basisStates)
+    number_of_basis_states = len(calc.basisStates)
     duration_construction = get_duration()
 
-    number_of_states = 50
+    number_of_eigen_states = 50
     with timer() as get_duration:
-        calc.diagonalise(distances, number_of_states, progressOutput=False)
+        calc.diagonalise(distances, number_of_eigen_states, progressOutput=False)
     duration_diagonalization = get_duration()
 
     output = {
-        "number_of_kets": number_of_kets,
-        "number_of_states": number_of_states,
+        "number_of_basis_states": number_of_basis_states,
+        "number_of_eigen_states": number_of_eigen_states,
         "duration_construction": duration_construction,
         "duration_diagonalization": duration_diagonalization,
     }
