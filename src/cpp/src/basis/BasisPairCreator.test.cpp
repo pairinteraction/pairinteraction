@@ -199,4 +199,54 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     }
 }
 
+DOCTEST_TEST_CASE("transform a BasisPair to a kronecker pair basis") {
+    DiagonalizerEigen<double> diagonalizer;
+
+    Database &database = Database::get_global_instance();
+    auto atomic_basis = BasisAtomCreator<double>()
+                            .set_species("Rb")
+                            .restrict_quantum_number_n(58, 62)
+                            .restrict_quantum_number_l(0, 2)
+                            .restrict_quantum_number_m(0.5, 0.5)
+                            .create(database);
+
+    auto ket = KetAtomCreator()
+                   .set_species("Rb")
+                   .set_quantum_number_n(60)
+                   .set_quantum_number_l(0)
+                   .set_quantum_number_m(0.5)
+                   .create(database);
+    double min_energy = 2 * ket->get_energy() - 20 / HARTREE_IN_GHZ;
+    double max_energy = 2 * ket->get_energy() + 20 / HARTREE_IN_GHZ;
+
+    auto perturbed_system1 = SystemAtom<double>(atomic_basis);
+    perturbed_system1.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    perturbed_system1.diagonalize(diagonalizer);
+
+    auto perturbed_system2 = SystemAtom<double>(atomic_basis);
+    perturbed_system2.set_electric_field({0, 0, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    perturbed_system2.diagonalize(diagonalizer);
+
+    auto perturbed_basis = BasisPairCreator<double>()
+                               .add(perturbed_system1)
+                               .add(perturbed_system2)
+                               .restrict_energy(min_energy, max_energy)
+                               .create();
+    auto state_in_perturbed_basis = perturbed_basis->get_state(42);
+
+    auto unperturbed_system1 = SystemAtom<double>(atomic_basis);
+    auto unperturbed_system2 = SystemAtom<double>(atomic_basis);
+    auto kronecker_basis = BasisPairCreator<double>()
+                               .add(unperturbed_system1)
+                               .add(unperturbed_system2)
+                               .restrict_energy(min_energy, max_energy)
+                               .create();
+
+    auto state_in_kronecker_basis = state_in_perturbed_basis->get_matrix_elements(
+        kronecker_basis, OperatorType::IDENTITY, OperatorType::IDENTITY);
+    DOCTEST_CHECK(state_in_kronecker_basis.rows() == kronecker_basis->get_number_of_states());
+    DOCTEST_CHECK(state_in_kronecker_basis.cols() ==
+                  state_in_perturbed_basis->get_number_of_states());
+}
+
 } // namespace pairinteraction
