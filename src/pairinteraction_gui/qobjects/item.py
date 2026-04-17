@@ -196,13 +196,15 @@ class RangeItem(WidgetH):
         tooltip_label: str | None = None,
         checkable: bool = True,
         checked: bool = True,
+        key: str | None = None,
     ) -> None:
         tooltip_label = tooltip_label if tooltip_label is not None else label
+        self.key = key if key is not None else label
 
         self.checkbox: QCheckBox | None
         if checkable:
             self.checkbox = QCheckBox()
-            self.checkbox.setObjectName(f"{label_to_object_name(label)}_checkbox")
+            self.checkbox.setObjectName(f"{label_to_object_name(self.key)}_checkbox")
             self.checkbox.setChecked(checked)
             self.checkbox.stateChanged.connect(self._on_checkbox_changed)
         else:
@@ -213,8 +215,8 @@ class RangeItem(WidgetH):
 
         self.min_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[0], tooltip=f"Minimum {tooltip_label} in {unit}")
         self.max_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[1], tooltip=f"Maximum {tooltip_label} in {unit}")
-        self.min_spinbox.setObjectName(f"{label_to_object_name(label)}_min")
-        self.max_spinbox.setObjectName(f"{label_to_object_name(label)}_max")
+        self.min_spinbox.setObjectName(f"{label_to_object_name(self.key)}_min")
+        self.max_spinbox.setObjectName(f"{label_to_object_name(self.key)}_max")
 
         self.unit = QLabel(unit)
 

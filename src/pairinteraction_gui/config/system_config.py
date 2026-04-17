@@ -5,18 +5,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 import numpy as np
-from PySide6.QtWidgets import (
-    QLabel,
-)
+from PySide6.QtWidgets import QLabel
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import Item, QnItemInt, RangeItem
+from pairinteraction_gui.config.system_diagram import SystemDiagram
+from pairinteraction_gui.qobjects import Item, QnItemDouble, QnItemInt, RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
-RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle"]
+RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle", "IonDistance", "IonAngle"]
 
 
 class SystemConfig(BaseConfig):
@@ -52,17 +51,48 @@ class SystemConfig(BaseConfig):
         self.layout().addWidget(self.By)
         self.layout().addWidget(self.Bz)
 
-    def setupDiamagnetism(self) -> None:
-        self.layout().addWidget(QLabel("<b>Diamagnetism</b>"))
         self.diamagnetism = Item(self, "Enable diamagnetism", checked=True)
         self.layout().addWidget(self.diamagnetism)
+
+    def setupIonInteraction(self) -> None:
+        self.layout().addWidget(QLabel("<b>Ion interaction</b>"))
+
+        self.ion_distance = RangeItem(
+            self,
+            "Distance",
+            vdefaults=(3, 8),
+            vrange=(0, np.inf),
+            unit="<span>&mu;m</span>",
+            checked=False,
+            key="IonDistance",
+        )
+        self.layout().addWidget(self.ion_distance)
+
+        self.ion_angle = RangeItem(
+            self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree", checked=False, key="IonAngle"
+        )
+        self.layout().addWidget(self.ion_angle)
+
+        self.ion_order = QnItemInt(
+            self,
+            "Multipole order",
+            vmin=2,
+            vmax=3,
+            vdefault=3,
+            tooltip="Select the order of the ion interaction multipole expansion",
+            checkable=False,
+        )
+        self.layout().addWidget(self.ion_order)
+
+        self.ion_charge = QnItemDouble(self, "Charge", vmin=-10, vmax=10, vdefault=1, unit="e", checkable=False)
+        self.layout().addWidget(self.ion_charge)
 
     def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:
         """Return the electric and magnetic field ranges."""
         steps = self.page.calculation_config.steps.value()
         all_ranges = self._get_all_ranges()
         ranges_min_max: dict[str, tuple[float, float]] = {
-            item.label.text(): item.values() for item in all_ranges if item.isChecked()
+            item.key: item.values() for item in all_ranges if item.isChecked()
         }
         if len(ranges_min_max) == 0:
             ranges_min_max["Bz"] = (0, 0)
@@ -80,7 +110,17 @@ class SystemConfigOneAtom(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
-        self.setupDiamagnetism()
+        self.setupIonInteraction()
+
+    def postSetupWidget(self) -> None:
+        self._diagram = SystemDiagram(self, two_atoms=False)
+        self._diagram.connectConfig(self)
+        self.layout().addWidget(self._diagram)
+        super().postSetupWidget()
+
+    def _get_all_ranges(self) -> list[RangeItem]:
+        """Return all range items."""
+        return [*super()._get_all_ranges(), self.ion_distance, self.ion_angle]
 
 
 class SystemConfigTwoAtoms(SystemConfig):
@@ -89,27 +129,24 @@ class SystemConfigTwoAtoms(SystemConfig):
     def setupWidget(self) -> None:
         self.setupEField()
         self.setupBField()
-        self.setupDiamagnetism()
-        self.setupDistance()
-        self.setupAngle()
-        self.setupOrder()
+        self.setupIonInteraction()
+        self.setupRydbergInteraction()
 
-    def setupDistance(self) -> None:
-        label = QLabel("<b>Distance</b>")
-        self.layout().addWidget(label)
+    def postSetupWidget(self) -> None:
+        self._diagram = SystemDiagram(self, two_atoms=True)
+        self._diagram.connectConfig(self)
+        self.layout().addWidget(self._diagram)
+        super().postSetupWidget()
+
+    def setupRydbergInteraction(self) -> None:
+        self.layout().addWidget(QLabel("<b>Rydberg interaction</b>"))
 
         self.distance = RangeItem(self, "Distance", vdefaults=(3, 8), vrange=(0, np.inf), unit="<span>&mu;m</span>")
         self.layout().addWidget(self.distance)
 
-    def setupAngle(self) -> None:
-        label = QLabel("<b>Angle</b> (0° = z-axis, 90° = x-axis)")
-        self.layout().addWidget(label)
-
         self.angle = RangeItem(self, "Angle", vdefaults=(0, 0), vrange=(0, 360), unit="degree", checkable=False)
         self.layout().addWidget(self.angle)
 
-    def setupOrder(self) -> None:
-        self.layout().addWidget(QLabel("<b>Multipole expansion order</b>"))
         self.order = QnItemInt(
             self,
             "Multipole order",
@@ -123,4 +160,4 @@ class SystemConfigTwoAtoms(SystemConfig):
 
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
-        return [*super()._get_all_ranges(), self.distance, self.angle]
+        return [*super()._get_all_ranges(), self.ion_distance, self.ion_angle, self.distance, self.angle]

@@ -47,6 +47,9 @@ def _calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
         .set_electric_field(parameters.get_efield(step), unit="V/cm")
         .set_magnetic_field(parameters.get_bfield(step), unit="G")
         .set_diamagnetism_enabled(parameters.diamagnetism_enabled)
+        .set_ion_interaction_order(parameters.ion_interaction_order)
+        .set_ion_charge(parameters.ion_charge, unit="e")
+        .set_ion_distance_vector(parameters.get_ion_distance_vector(step), unit="micrometer")
         for step in range(parameters.steps)
     ]
 
