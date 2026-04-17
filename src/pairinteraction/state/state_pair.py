@@ -2,13 +2,29 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+import logging
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard
 
 from pairinteraction.ket import KetPair, KetPairReal
+from pairinteraction.state.state_atom import StateAtom
 from pairinteraction.state.state_base import StateBase
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from pairinteraction import _backend
+
+    StatePairLike: TypeAlias = "StatePair | tuple[StateAtom, StateAtom] | Sequence[StateAtom]"
+
+logger = logging.getLogger(__name__)
+
+
+def is_state_pair_like(obj: Any) -> TypeGuard[StatePairLike]:
+    return isinstance(obj, StatePair) or is_state_atom_tuple(obj)
+
+
+def is_state_atom_tuple(obj: Any) -> TypeGuard[tuple[StateAtom, StateAtom]]:
+    return hasattr(obj, "__len__") and len(obj) == 2 and all(isinstance(x, StateAtom) for x in obj)
 
 
 class StatePair(StateBase[KetPair]):
