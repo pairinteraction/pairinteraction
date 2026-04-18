@@ -2,14 +2,15 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypedDict
 
 from PySide6.QtWidgets import QCheckBox, QLabel
 
 import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
+from pairinteraction.enums import Parity
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
+from pairinteraction_gui.qobjects import ChoiceItem, NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
 from pairinteraction_gui.qobjects.item import RangeItem
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
@@ -32,6 +33,10 @@ class QuantumNumberRestrictions(TypedDict, total=False):
     l_ryd: tuple[float, float]
     f: tuple[float, float]
     m: tuple[float, float]
+
+
+AutoParity: TypeAlias = Literal["auto"]
+ParitySelection: TypeAlias = Parity | AutoParity
 
 
 class BasisConfig(BaseConfig):
@@ -179,6 +184,18 @@ class BasisConfigTwoAtoms(BasisConfig):
             checked=False,
         )
         self.layout().addWidget(self.pair_m_range)
+        self.parity_under_permutation = ChoiceItem[ParitySelection](
+            self,
+            "Parity under permutation",
+            [("Auto", "auto"), ("Any", None), ("Even", "even"), ("Odd", "odd")],
+        )
+        self.layout().addWidget(self.parity_under_permutation)
+        self.parity_under_inversion = ChoiceItem[ParitySelection](
+            self,
+            "Parity under inversion",
+            [("Auto", "auto"), ("Any", None), ("Even", "even"), ("Odd", "odd")],
+        )
+        self.layout().addWidget(self.parity_under_inversion)
 
         self.basis_pair_label = QLabel()
         self._set_theme_role(self.basis_pair_label, "info")

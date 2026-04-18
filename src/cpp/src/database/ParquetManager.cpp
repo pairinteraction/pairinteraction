@@ -26,6 +26,7 @@
 namespace fs = std::filesystem;
 using json = nlohmann::json;
 
+namespace pairinteraction {
 namespace {
 
 std::string format_time(std::time_t time_val) {
@@ -54,7 +55,6 @@ void save_json(const fs::path &file, const json &doc) {
 
 } // namespace
 
-namespace pairinteraction {
 void ParquetManager::react_on_exception(const std::string &context, const std::exception &e) {
     repo_paths_.clear();
     remote_asset_info.clear();

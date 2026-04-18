@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-import typing as t
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, Protocol, TypeVar, cast, runtime_checkable
 
 import numpy as np
-from PySide6.QtWidgets import QCheckBox, QLabel
+from PySide6.QtWidgets import QCheckBox, QComboBox, QLabel
 
 from pairinteraction_gui.qobjects.spin_boxes import DoubleSpinBox, HalfIntSpinBox, IntSpinBox
 from pairinteraction_gui.qobjects.widget import WidgetH
@@ -20,10 +19,11 @@ if TYPE_CHECKING:
     P = TypeVar("P")
 
 ValueType = TypeVar("ValueType", int, float, complex)
+ChoiceType = TypeVar("ChoiceType")
 
 
-@t.runtime_checkable
-class NotSet(t.Protocol):
+@runtime_checkable
+class NotSet(Protocol):
     """Singleton for a not set value and type at the same time.
 
     See Also:
@@ -73,6 +73,40 @@ class Item(WidgetH):
     def connectAll(self, func: Callable[[], None]) -> None:
         """Connect the function to the spinbox.valueChanged signal."""
         self.checkbox.stateChanged.connect(lambda state: func())
+
+
+class ChoiceItem(WidgetH, Generic[ChoiceType]):
+    margin = (20, 0, 20, 0)
+    spacing = 10
+
+    def __init__(
+        self,
+        parent: QWidget,
+        label: str,
+        choices: list[tuple[str, ChoiceType | None]],
+    ) -> None:
+        self.label = QLabel(label)
+        self.label.setMinimumWidth(25)
+
+        self.combo = QComboBox(parent)
+        self.combo.setObjectName(label_to_object_name(label))
+        for text, value in choices:
+            self.combo.addItem(text, value)
+
+        super().__init__(parent)
+
+    def setupWidget(self) -> None:
+        self.layout().addWidget(self.label)
+        self.layout().addWidget(self.combo)
+
+    def postSetupWidget(self) -> None:
+        self.layout().addStretch(1)
+
+    def connectAll(self, func: Callable[[], None]) -> None:
+        self.combo.currentIndexChanged.connect(lambda _index: func())
+
+    def value(self) -> ChoiceType | None:
+        return cast("ChoiceType | None", self.combo.currentData())
 
 
 class _QnItem(WidgetH, Generic[ValueType]):

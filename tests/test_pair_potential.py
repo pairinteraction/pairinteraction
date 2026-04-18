@@ -28,7 +28,12 @@ def test_pair_potential(pi_module: PairinteractionModule, generate_reference: bo
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
 
-    basis_pair = pi_module.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    basis_pair = pi_module.BasisPair(
+        [system, system],
+        energy=(min_energy, max_energy),
+        energy_unit="GHz",
+        m=(1, 1),
+    )
     print(f"Number of two-atom basis states: {basis_pair.number_of_states}")
 
     distances = np.linspace(1, 5, 5)

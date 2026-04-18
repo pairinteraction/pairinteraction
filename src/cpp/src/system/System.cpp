@@ -285,7 +285,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         num_cols += matrix.cols();
     }
 
-    assert(static_cast<size_t>(num_rows) == basis->get_number_of_kets());
+    assert(static_cast<size_t>(num_rows) == basis->get_number_of_states());
     assert(static_cast<size_t>(num_cols) <= basis->get_number_of_states());
 
     eigenvectors.resize(num_rows, num_cols);

@@ -31,7 +31,8 @@ def main(*, enable_theme_hot_reload: bool = False) -> int:
 
         window = MainWindow(enable_theme_hot_reload=enable_theme_hot_reload)
         window.show()
-        splash.finish(window)
+        app.processEvents()
+        QTimer.singleShot(0, lambda: splash.finish(window))
 
     # 50 ms lets the compositor flush the first frame, avoiding painting issues with the splash screen on some platforms
     QTimer.singleShot(50, _start)

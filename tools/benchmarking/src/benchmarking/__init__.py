@@ -77,7 +77,8 @@ def benchmark_pairinteraction(
             energy=(pair_energy - delta_energy, pair_energy + delta_energy),
             energy_unit="GHz",
             m=(2 * m, 2 * m),
-            product_of_parities="even",
+            parity_under_inversion="odd",
+            parity_under_permutation="odd",
         )
         pair_systems = [
             pi.SystemPair(pair_basis).set_distance(d, unit="micrometer").set_interaction_order(order) for d in distances
@@ -85,7 +86,7 @@ def benchmark_pairinteraction(
         _ = pair_systems[0].get_hamiltonian()
     results.append(BenchmarkResult("Construction", software_name, get_duration()))
 
-    logger.info("Number of kets: %s", pair_systems[0].basis.number_of_states)
+    logger.info("Number of basis states: %s", pair_systems[0].basis.number_of_states)
 
     with timer() as get_duration:
         pi.diagonalize(
@@ -97,7 +98,7 @@ def benchmark_pairinteraction(
             energy_range_unit="GHz",
         )
 
-    logger.info("Number of states: %s", pair_systems[0].basis.number_of_states)
+    logger.info("Number of eigen states: %s", pair_systems[0].basis.number_of_states)
 
     results.append(BenchmarkResult("Diagonalization", software_name, get_duration()))
 
@@ -123,8 +124,8 @@ def benchmark_external_script(script_path: Path, name: str, settings: dict[str, 
         raise RuntimeError(f"Unable to extract benchmarking results. Output of the subprocess: '{output}'") from e
     data = json.loads(json_line)
 
-    logger.info("Number of kets: %s", data["number_of_kets"])
-    logger.info("Number of states: %s", data["number_of_states"])
+    logger.info("Number of basis states: %s", data["number_of_basis_states"])
+    logger.info("Number of eigen states: %s", data["number_of_eigen_states"])
 
     return [
         BenchmarkResult("Construction", name, data["duration_construction"]),

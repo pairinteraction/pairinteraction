@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pytest
+from pairinteraction_gui.calculate.calculate_two_atoms import ParametersTwoAtoms, _resolve_auto_pair_parities
 from pairinteraction_gui.main_window import MainWindow
 
 from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
@@ -14,6 +15,9 @@ from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
+    from pairinteraction_gui.config.ket_config import QuantumNumbers
+    from pairinteraction_gui.config.system_config import RangesKeys
     from pairinteraction_gui.page import LifetimesPage, OneAtomPage
     from pairinteraction_gui.page.two_atoms_page import TwoAtomsPage
     from pytestqt.qtbot import QtBot
@@ -67,6 +71,12 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
 
     two_atoms_page.basis_config.pair_delta_energy.setValue(3)
     two_atoms_page.basis_config.pair_m_range.setValues(1, 1)
+    two_atoms_page.basis_config.parity_under_inversion.combo.setCurrentIndex(
+        two_atoms_page.basis_config.parity_under_inversion.combo.findData(None)
+    )
+    two_atoms_page.basis_config.parity_under_permutation.combo.setCurrentIndex(
+        two_atoms_page.basis_config.parity_under_permutation.combo.findData(None)
+    )
 
     calculation_config = two_atoms_page.calculation_config
     calculation_config.steps.setValue(5)
@@ -212,3 +222,95 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
 
     assert ket_qn.items["n"].value() == 222
     assert ket_qn.items["l"].value() == 999
+
+
+def _make_two_atom_parameters(
+    *,
+    species: tuple[str, str] = ("Rb", "Rb"),
+    quantum_numbers: tuple[QuantumNumbers, QuantumNumbers] = (
+        {"n": 60, "l": 0, "j": 0.5, "m": 0.5},
+        {"n": 60, "l": 0, "j": 0.5, "m": 0.5},
+    ),
+    quantum_number_restrictions: tuple[QuantumNumberRestrictions, QuantumNumberRestrictions] = (
+        {"n": (58, 62), "l": (0, 2)},
+        {"n": (58, 62), "l": (0, 2)},
+    ),
+    ranges: dict[RangesKeys, list[float]] | None = None,
+    order: int = 3,
+) -> ParametersTwoAtoms:
+    return ParametersTwoAtoms(
+        species=species,
+        quantum_numbers=quantum_numbers,
+        quantum_number_restrictions=quantum_number_restrictions,
+        ranges={"Bz": [0.0], **(ranges or {})},
+        diamagnetism_enabled=False,
+        diagonalize_kwargs={},
+        diagonalize_relative_energy_range=None,
+        order=order,
+    )
+
+
+def test_auto_pair_parities_select_unique_identical_state_sector() -> None:
+    parameters = _make_two_atom_parameters()
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "auto")
+
+    assert inversion == "odd"
+    assert permutation == "odd"
+
+
+def test_auto_pair_parities_fall_back_when_state_spans_multiple_blocks() -> None:
+    parameters = _make_two_atom_parameters(
+        quantum_numbers=(
+            {"n": 60, "l": 0, "j": 0.5, "m": 0.5},
+            {"n": 60, "l": 1, "j": 0.5, "m": 0.5},
+        )
+    )
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "auto")
+
+    assert inversion is None
+    assert permutation is None
+
+
+def test_auto_pair_parities_disable_inversion_when_electric_field_breaks_it() -> None:
+    parameters = _make_two_atom_parameters(ranges={"Ez": [1.0]}, order=3)
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "auto")
+
+    assert inversion is None
+    assert permutation == "odd"
+
+
+def test_auto_pair_parities_disable_permutation_for_higher_order_interaction() -> None:
+    parameters = _make_two_atom_parameters(order=5)
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "auto")
+
+    assert inversion == "odd"
+    assert permutation is None
+
+
+def test_auto_pair_parities_can_derive_the_other_selector_from_orbital_parity() -> None:
+    parameters = _make_two_atom_parameters(
+        quantum_numbers=(
+            {"n": 60, "l": 0, "j": 0.5, "m": 0.5},
+            {"n": 60, "l": 1, "j": 0.5, "m": -0.5},
+        )
+    )
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "even")
+
+    assert inversion == "odd"
+    assert permutation == "even"
+
+
+def test_auto_pair_parities_require_equivalent_atom_systems() -> None:
+    parameters = _make_two_atom_parameters(
+        quantum_number_restrictions=({"n": (58, 62), "l": (0, 2)}, {"n": (59, 63), "l": (0, 2)})
+    )
+
+    inversion, permutation = _resolve_auto_pair_parities(parameters, "auto", "auto")
+
+    assert inversion is None
+    assert permutation is None
