@@ -147,7 +147,7 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
                                                                     nb::const_))
         .def("get_amplitudes", // define again, so nanobind can resolve all overloads correctly
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
-                 &Basis<BasisPair<T>>::get_amplitudes, nb::const_))
+                 &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
                  &BasisPair<T>::get_amplitudes, nb::const_))
@@ -160,7 +160,7 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
                                                                     nb::const_))
         .def("get_overlaps", // define again, so nanobind can resolve all overloads correctly
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
-                 &Basis<BasisPair<T>>::get_overlaps, nb::const_))
+                 &BasisPair<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
                  &BasisPair<T>::get_overlaps, nb::const_))

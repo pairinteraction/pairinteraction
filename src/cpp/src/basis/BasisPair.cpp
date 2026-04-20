@@ -54,12 +54,20 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
 }
 
 template <typename Scalar>
+Eigen::VectorX<Scalar> BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
+    if (this->get_ket_index_from_ket(ket) < 0) {
+        return get_amplitudes(ket->to_trivial_state()).row(0);
+    }
+    return this->Basis<BasisPair<Scalar>>::get_amplitudes(ket);
+}
+
+template <typename Scalar>
 Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom> ket1,
                                   std::shared_ptr<const KetAtom> ket2) const {
     return get_amplitudes(ket1->template to_trivial_state<Scalar>(),
                           ket2->template to_trivial_state<Scalar>())
-        .transpose();
+        .row(0);
 }
 
 template <typename Scalar>
@@ -88,6 +96,12 @@ BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other
     assert(other->get_number_of_kets() ==
            other1->get_number_of_states() * other2->get_number_of_states());
     return get_amplitudes(other);
+}
+
+template <typename Scalar>
+Eigen::VectorX<typename BasisPair<Scalar>::real_t>
+BasisPair<Scalar>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
+    return get_amplitudes(ket).cwiseAbs2();
 }
 
 template <typename Scalar>

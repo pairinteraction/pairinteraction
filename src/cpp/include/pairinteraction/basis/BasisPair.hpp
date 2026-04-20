@@ -69,6 +69,7 @@ public:
     int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
 
     using Basis<BasisPair<Scalar>>::get_amplitudes;
+    Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
     Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom> ket1,
                                           std::shared_ptr<const KetAtom> ket2) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
@@ -78,6 +79,7 @@ public:
                    std::shared_ptr<const BasisAtom<Scalar>> other2) const;
 
     using Basis<BasisPair<Scalar>>::get_overlaps;
+    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const ket_t> ket) const;
     Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const KetAtom> ket1,
                                         std::shared_ptr<const KetAtom> ket2) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
