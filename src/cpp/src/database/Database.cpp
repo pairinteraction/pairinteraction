@@ -1205,12 +1205,23 @@ struct database_dir_noexcept : std::filesystem::path {
 
 const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
+template <typename Scalar>
+std::shared_ptr<const BasisAtom<Scalar>>
+Database::make_trivial_basis(std::shared_ptr<const KetAtom> ket) {
+    typename BasisAtom<Scalar>::ketvec_t kets = {ket};
+    std::string id_of_kets = "trivial:" + std::to_string(ket->get_id_in_database());
+    return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private{},
+                                                     std::move(kets), std::move(id_of_kets), *this);
+}
+
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GETTERS(SCALAR)                                                                \
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
+    template std::shared_ptr<const BasisAtom<SCALAR>> Database::make_trivial_basis<SCALAR>(        \
+        std::shared_ptr<const KetAtom> ket);                                                       \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \

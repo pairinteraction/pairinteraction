@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
@@ -36,27 +35,39 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
     _state_class: type[StateType]  # should be ClassVar, but cannot be nested yet
 
-    @abstractmethod
-    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
+    def __init__(self) -> None:
+        if self.number_of_kets == 0:
+            raise ValueError("Cannot create a basis with zero kets.")
+        self._kets_cache: dict[int, KetType] = {}
 
     @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, *args: Any, **kwargs: Any) -> Self:
         assert len(kwargs) == len(args) == 0, "No additional arguments expected."
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
+        obj._kets_cache = {}
         return obj
 
     def __repr__(self) -> str:
-        args = f"{self.kets[0]} ... {self.kets[-1]}"
+        args = f"{self.get_ket(0)} ... {self.get_ket(self.number_of_kets - 1)}"
         return f"{type(self).__name__}({args})"
 
     def __str__(self) -> str:
         return self.__repr__()
 
-    @cached_property
+    @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return [self._ket_class._from_cpp_object(ket_cpp) for ket_cpp in self._cpp.get_kets()]
+        return [self.get_ket(i) for i in range(self.number_of_kets)]
+
+    def get_ket(self, index: int) -> KetType:
+        """Return the ket at the given index."""
+        if index not in self._kets_cache:
+            if index < 0 or index >= self.number_of_kets:
+                raise IndexError(f"Ket index {index} out of range (number of kets: {self.number_of_kets}).")
+            ket_cpp = self._cpp.get_ket(index)
+            self._kets_cache[index] = self._ket_class._from_cpp_object(ket_cpp)
+        return self._kets_cache[index]
 
     @property  # not cached_property since State objects are mutable
     def states(self) -> list[StateType]:
@@ -65,6 +76,8 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def get_state(self, index: int) -> StateType:
         """Return the state at the given index."""
+        if index < 0 or index >= self.number_of_states:
+            raise IndexError(f"State index {index} out of range (number of states: {self.number_of_states}).")
         state_cpp = self._cpp.get_state(index)
         return self._state_class._from_cpp_object(state_cpp)
 
@@ -93,14 +106,15 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return self._cpp.get_coefficients()
 
     def get_corresponding_ket(self: Self, state: StateType) -> KetType:
-        raise NotImplementedError("Not implemented yet.")
+        ket_index = self.get_corresponding_ket_index(state)
+        return self.get_ket(ket_index)
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
         raise NotImplementedError("Not implemented yet.")
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
-        state_cpp = self._cpp.get_corresponding_state(ket._cpp)  # type: ignore [arg-type]
-        return self._state_class._from_cpp_object(state_cpp)
+        state_index = self.get_corresponding_state_index(ket)
+        return self.get_state(state_index)
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
         return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]

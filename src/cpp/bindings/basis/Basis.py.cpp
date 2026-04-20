@@ -96,6 +96,19 @@ template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass
+        .def("get_amplitudes", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const typename BasisAtom<T>::ket_t>>(
+                 &BasisAtom<T>::get_amplitudes, nb::const_))
+        .def("get_amplitudes", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>>(&BasisAtom<T>::get_amplitudes,
+                                                                    nb::const_))
+        .def("get_overlaps", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const typename BasisAtom<T>::ket_t>>(
+                 &BasisAtom<T>::get_overlaps, nb::const_))
+        .def("get_overlaps", // define again, so nanobind can resolve the override correctly
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>>(&BasisAtom<T>::get_overlaps,
+                                                                    nb::const_));
 }
 
 template <typename T>
@@ -126,31 +139,33 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
     nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass
         .def("get_amplitudes", // define again, so nanobind can resolve all overloads correctly
-             nb::overload_cast<std::shared_ptr<const BasisPair<T>>>(
-                 &Basis<BasisPair<T>>::get_amplitudes, nb::const_))
+             nb::overload_cast<std::shared_ptr<const BasisPair<T>>>(&BasisPair<T>::get_amplitudes,
+                                                                    nb::const_))
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
                                std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_amplitudes,
                                                                     nb::const_))
         .def("get_amplitudes", // define again, so nanobind can resolve all overloads correctly
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
-                 &Basis<BasisPair<T>>::get_amplitudes, nb::const_))
+                 &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &>(
                  &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_overlaps", // define again, so nanobind can resolve all overloads correctly
-             nb::overload_cast<std::shared_ptr<const BasisPair<T>>>(
-                 &Basis<BasisPair<T>>::get_overlaps, nb::const_))
+             nb::overload_cast<std::shared_ptr<const BasisPair<T>>>(&BasisPair<T>::get_overlaps,
+                                                                    nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
                                std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_overlaps,
                                                                     nb::const_))
         .def("get_overlaps", // define again, so nanobind can resolve all overloads correctly
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
-                 &Basis<BasisPair<T>>::get_overlaps, nb::const_))
-        .def("get_overlaps",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
                  &BasisPair<T>::get_overlaps, nb::const_))
+        .def("get_overlaps",
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &>(&BasisPair<T>::get_overlaps,
+                                                                       nb::const_))
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const BasisPair<T>>, OperatorType, OperatorType, int,
                                int>(&BasisPair<T>::get_matrix_elements, nb::const_))
@@ -163,9 +178,9 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
                                OperatorType, int, int>(&BasisPair<T>::get_matrix_elements,
                                                        nb::const_))
         .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>,
-                               OperatorType, OperatorType, int, int>(
-                 &BasisPair<T>::get_matrix_elements, nb::const_));
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &, OperatorType, OperatorType,
+                               int, int>(&BasisPair<T>::get_matrix_elements, nb::const_));
 }
 
 template <typename T>
