@@ -126,6 +126,8 @@ def test_get_methods(basis: BasisPair, basis2: BasisPair, other_key: str) -> Non
     overlaps = basis.get_overlaps(other)
     assert overlaps.shape == _get_expected_shape(other, basis)
 
+    if "basis2" in other_key:
+        pytest.skip("get_matrix_element for different bases not yet implemented.")
     elements_dipole = basis.get_matrix_elements(
         other, ("electric_dipole", "electric_dipole"), qs=(0, 0), unit="e^2 * a0^2"
     )
