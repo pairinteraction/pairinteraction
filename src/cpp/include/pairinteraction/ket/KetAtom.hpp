@@ -22,7 +22,7 @@ enum class Parity : int;
  *
  * @brief Class for representing atomic kets.
  */
-class KetAtom : public Ket {
+class KetAtom : public Ket, public std::enable_shared_from_this<KetAtom> {
     friend class Database;
     struct Private {};
 

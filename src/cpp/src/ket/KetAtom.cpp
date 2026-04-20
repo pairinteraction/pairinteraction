@@ -4,7 +4,6 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/hash.hpp"
@@ -144,7 +143,7 @@ double KetAtom::get_underspecified_channel_contribution() const {
 
 template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>> KetAtom::to_trivial_state() const {
-    return database.get_basis<Scalar>(species, AtomDescriptionByRanges{}, {id_in_database});
+    return database.make_trivial_basis<Scalar>(shared_from_this());
 }
 
 template std::shared_ptr<const BasisAtom<double>> KetAtom::to_trivial_state<double>() const;
