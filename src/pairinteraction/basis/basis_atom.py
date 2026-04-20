@@ -90,7 +90,6 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             additional_kets: List of additional kets to add to the basis. Default None.
 
         """
-        super().__init__()
         creator = self._cpp_creator()
         creator.set_species(species)
 
@@ -145,6 +144,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 creator.append_ket(ket._cpp)
             self._parameters_creator["additional_kets"] = additional_kets
         self._cpp = creator.create(database._cpp)
+
+        super().__init__()
 
     @classmethod
     def from_kets(

@@ -36,6 +36,8 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     _state_class: type[StateType]  # should be ClassVar, but cannot be nested yet
 
     def __init__(self) -> None:
+        if self.number_of_kets == 0:
+            raise ValueError("Cannot create a basis with zero kets.")
         self._kets_cache: dict[int, KetType] = {}
 
     @classmethod
