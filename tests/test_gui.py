@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 from pairinteraction_gui.main_window import MainWindow
 
-from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
+from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference, no_log_propagation
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -125,7 +125,8 @@ def test_two_atoms_page(window_pair_potential: MainWindow) -> None:
 
 def test_lifetimes_page(window_lifetimes: MainWindow) -> None:
     page: LifetimesPage = window_lifetimes.stacked_pages.getNamedWidget("LifetimesPage")  # type: ignore [assignment]
-    parameters, results = page.calculate()
+    with no_log_propagation("cpp"):  # suppress low n state warnings from lifetime calculation
+        parameters, results = page.calculate()
     page.plotwidget.plot(parameters, results)
 
     assert results.lifetime > 0
@@ -136,7 +137,8 @@ def test_lifetimes_page(window_lifetimes: MainWindow) -> None:
     python_code = python_code.replace("plt.show()", "plt.close()")  # HACK, otherwise it will block the test
 
     locals_globals: dict[str, Any] = {}
-    exec(python_code, locals_globals, locals_globals)  # noqa: S102
+    with no_log_propagation("cpp"):  # suppress low n state warnings from lifetime calculation
+        exec(python_code, locals_globals, locals_globals)  # noqa: S102
 
     rates_dict = {
         key: [sum(r for _, r in page.plotwidget.sorted_rates[label][n]) for n in locals_globals["n_list"]]
