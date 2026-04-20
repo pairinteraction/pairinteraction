@@ -72,3 +72,10 @@ documented below:
        green_tensor.GreenTensorSurface
        green_tensor.GreenTensorCavity
        green_tensor.GreenTensorInterpolator
+
+**TypeAliases**
+
+.. toctree::
+    :maxdepth: 2
+
+    type_aliases.rst
