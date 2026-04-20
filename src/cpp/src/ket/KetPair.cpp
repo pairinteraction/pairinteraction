@@ -4,8 +4,10 @@
 #include "pairinteraction/ket/KetPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <limits>
@@ -62,6 +64,14 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomi
         atomic_states.push_back(atomic_bases[atom_index]->get_state(atomic_indices[atom_index]));
     }
     return atomic_states;
+}
+
+template <typename Scalar>
+std::shared_ptr<const BasisPair<Scalar>> KetPair<Scalar>::to_trivial_state() const {
+    auto atomic_states = get_atomic_states();
+    auto system1 = SystemAtom<Scalar>(atomic_states[0]);
+    auto system2 = SystemAtom<Scalar>(atomic_states[1]);
+    return BasisPairCreator<Scalar>().add(system1).add(system2).create();
 }
 
 template <typename Scalar>

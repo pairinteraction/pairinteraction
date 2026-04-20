@@ -5,11 +5,15 @@
 
 #include "pairinteraction/ket/Ket.hpp"
 
+#include <memory>
 #include <string>
 #include <type_traits>
 
 namespace pairinteraction {
 class Database;
+
+template <typename Scalar>
+class BasisAtom;
 
 enum class Parity : int;
 
@@ -33,6 +37,9 @@ public:
     Database &get_database() const;
     size_t get_id_in_database() const;
     std::string get_label() const override;
+
+    template <typename Scalar>
+    std::shared_ptr<const BasisAtom<Scalar>> to_trivial_state() const;
     std::shared_ptr<KetAtom>
     get_ket_for_different_quantum_number_m(double new_quantum_number_m) const;
     const std::string &get_species() const;

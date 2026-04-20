@@ -3,12 +3,16 @@
 
 #include "pairinteraction/ket/KetAtom.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <array>
 #include <cctype>
 #include <cmath>
+#include <complex>
 #include <fmt/core.h>
 #include <string>
 #include <string_view>
@@ -137,6 +141,15 @@ bool KetAtom::is_calculated_with_mqdt() const { return is_calculated_with_mqdt_;
 double KetAtom::get_underspecified_channel_contribution() const {
     return underspecified_channel_contribution;
 }
+
+template <typename Scalar>
+std::shared_ptr<const BasisAtom<Scalar>> KetAtom::to_trivial_state() const {
+    return database.get_basis<Scalar>(species, AtomDescriptionByRanges{}, {id_in_database});
+}
+
+template std::shared_ptr<const BasisAtom<double>> KetAtom::to_trivial_state<double>() const;
+template std::shared_ptr<const BasisAtom<std::complex<double>>>
+KetAtom::to_trivial_state<std::complex<double>>() const;
 
 bool KetAtom::operator==(const KetAtom &other) const {
     return Ket::operator==(other) && species == other.species &&

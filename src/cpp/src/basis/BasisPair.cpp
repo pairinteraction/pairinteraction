@@ -57,8 +57,8 @@ template <typename Scalar>
 Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom> ket1,
                                   std::shared_ptr<const KetAtom> ket2) const {
-    return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
-                          basis2->get_canonical_state_from_ket(ket2))
+    return get_amplitudes(ket1->template to_trivial_state<Scalar>(),
+                          ket2->template to_trivial_state<Scalar>())
         .transpose();
 }
 
