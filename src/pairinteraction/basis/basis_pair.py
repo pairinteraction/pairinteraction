@@ -260,11 +260,17 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         return self.get_state(state_index)
 
     def get_corresponding_state_index(self, ket: KetPairLike) -> int:  # type: ignore [override]
-        if is_ket_atom_tuple(ket):
-            overlaps = self.get_overlaps(ket)
-            return int(np.argmax(overlaps))
         if isinstance(ket, KetPair):
             return super().get_corresponding_state_index(ket)
+        if is_ket_atom_tuple(ket):
+            overlaps = self.get_overlaps(ket)
+            id_max = np.argmax(overlaps)
+            if overlaps[id_max] < 0.51:
+                raise ValueError(
+                    "The provided ket pair does not correspond well to any state in the basis "
+                    f"(max overlap={overlaps[id_max]:.3f})."
+                )
+            return int(id_max)
         raise TypeError(f"Unknown type: {type(ket)=}")
 
     @overload
