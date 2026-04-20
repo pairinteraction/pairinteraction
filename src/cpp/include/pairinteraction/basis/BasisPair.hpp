@@ -70,8 +70,8 @@ public:
 
     using Basis<BasisPair<Scalar>>::get_amplitudes;
     Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
-    Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom> ket1,
-                                          std::shared_ptr<const KetAtom> ket2) const;
+    Eigen::VectorX<Scalar> get_amplitudes(const std::shared_ptr<const KetAtom> &ket1,
+                                          const std::shared_ptr<const KetAtom> &ket2) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const Type> other) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
@@ -80,8 +80,8 @@ public:
 
     using Basis<BasisPair<Scalar>>::get_overlaps;
     Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const ket_t> ket) const;
-    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const KetAtom> ket1,
-                                        std::shared_ptr<const KetAtom> ket2) const;
+    Eigen::VectorX<real_t> get_overlaps(const std::shared_ptr<const KetAtom> &ket1,
+                                        const std::shared_ptr<const KetAtom> &ket2) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
     get_overlaps(std::shared_ptr<const Type> other) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
@@ -95,8 +95,8 @@ public:
                         int /*q*/) const override;
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
                                                OperatorType type2, int q1 = 0, int q2 = 0) const;
-    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
-                                               std::shared_ptr<const KetAtom> ket2,
+    Eigen::VectorX<Scalar> get_matrix_elements(const std::shared_ptr<const KetAtom> &ket1,
+                                               const std::shared_ptr<const KetAtom> &ket2,
                                                OperatorType type1, OperatorType type2, int q1 = 0,
                                                int q2 = 0) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>

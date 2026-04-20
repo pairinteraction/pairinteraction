@@ -149,7 +149,8 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
                  &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &>(
                  &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_overlaps", // define again, so nanobind can resolve all overloads correctly
              nb::overload_cast<std::shared_ptr<const BasisPair<T>>>(&BasisPair<T>::get_overlaps,
@@ -162,8 +163,9 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>>(
                  &BasisPair<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
-                 &BasisPair<T>::get_overlaps, nb::const_))
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &>(&BasisPair<T>::get_overlaps,
+                                                                       nb::const_))
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const BasisPair<T>>, OperatorType, OperatorType, int,
                                int>(&BasisPair<T>::get_matrix_elements, nb::const_))
@@ -176,9 +178,9 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
                                OperatorType, int, int>(&BasisPair<T>::get_matrix_elements,
                                                        nb::const_))
         .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>,
-                               OperatorType, OperatorType, int, int>(
-                 &BasisPair<T>::get_matrix_elements, nb::const_));
+             nb::overload_cast<const std::shared_ptr<const KetAtom> &,
+                               const std::shared_ptr<const KetAtom> &, OperatorType, OperatorType,
+                               int, int>(&BasisPair<T>::get_matrix_elements, nb::const_));
 }
 
 template <typename T>

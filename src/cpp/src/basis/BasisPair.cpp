@@ -63,8 +63,8 @@ Eigen::VectorX<Scalar> BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const k
 
 template <typename Scalar>
 Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom> ket1,
-                                  std::shared_ptr<const KetAtom> ket2) const {
+BasisPair<Scalar>::get_amplitudes(const std::shared_ptr<const KetAtom> &ket1,
+                                  const std::shared_ptr<const KetAtom> &ket2) const {
     return get_amplitudes(ket1->template to_trivial_state<Scalar>(),
                           ket2->template to_trivial_state<Scalar>())
         .row(0);
@@ -106,8 +106,8 @@ BasisPair<Scalar>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
 
 template <typename Scalar>
 Eigen::VectorX<typename BasisPair<Scalar>::real_t>
-BasisPair<Scalar>::get_overlaps(std::shared_ptr<const KetAtom> ket1,
-                                std::shared_ptr<const KetAtom> ket2) const {
+BasisPair<Scalar>::get_overlaps(const std::shared_ptr<const KetAtom> &ket1,
+                                const std::shared_ptr<const KetAtom> &ket2) const {
     return get_amplitudes(ket1, ket2).cwiseAbs2();
 }
 
@@ -150,10 +150,9 @@ BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, Operato
 }
 
 template <typename Scalar>
-Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
-                                       std::shared_ptr<const KetAtom> ket2, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
+Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(
+    const std::shared_ptr<const KetAtom> &ket1, const std::shared_ptr<const KetAtom> &ket2,
+    OperatorType type1, OperatorType type2, int q1, int q2) const {
     // Construct a pair basis with the two single-atom kets
     auto final1 = this->get_basis1()->get_canonical_state_from_ket(ket1);
     auto final2 = this->get_basis2()->get_canonical_state_from_ket(ket2);
