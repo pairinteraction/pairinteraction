@@ -46,7 +46,7 @@ def test_coefficients(basis: BasisAtom) -> None:
     assert pytest.approx(coeffs.sum()) == basis.number_of_kets  # NOSONAR
 
 
-def test_get_methods_with_ket(basis: BasisAtom, basis2: BasisAtom) -> None:
+def test_get_methods_with_ket(pi_module: PairinteractionModule, basis: BasisAtom) -> None:
     """Test amplitude, overlap and matrix element calculations with a ket."""
     # ket from basis
     ket = basis.get_ket(0)
@@ -64,7 +64,9 @@ def test_get_methods_with_ket(basis: BasisAtom, basis2: BasisAtom) -> None:
     assert np.count_nonzero(elements_dipole) < basis.number_of_states
 
     # ket not in basis
-    ket = next(basis2.get_ket(i) for i in range(basis2.number_of_kets) if basis2.get_ket(i) not in basis.kets)
+    ket = pi_module.KetAtom("Rb", n=60, l=3, j=2.5, m=0.5)
+    assert ket not in basis.kets
+
     amplitudes = basis.get_amplitudes(ket)
     assert len(amplitudes) == basis.number_of_states
     assert pytest.approx(amplitudes[0]) == 0.0  # NOSONAR
