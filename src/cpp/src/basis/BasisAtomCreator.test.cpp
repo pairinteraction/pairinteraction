@@ -141,7 +141,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     SystemAtom<double> system(basis);
 
     DOCTEST_SUBCASE("calculate energy") {
-        auto m1 = basis->get_canonical_state_from_ket(ket_s)->get_matrix_elements(
+
+        auto m1 = ket_s->template to_trivial_state<double>()->get_matrix_elements(
             ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m1.size() == 1);
         double energy1 = m1[0];

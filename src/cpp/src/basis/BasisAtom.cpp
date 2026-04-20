@@ -95,7 +95,7 @@ BasisAtom<Scalar>::get_overlaps(std::shared_ptr<const Type> other) const {
 template <typename Scalar>
 Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket,
                                                               OperatorType type, int q) const {
-    auto final = this->get_canonical_state_from_ket(ket);
+    auto final = ket->template to_trivial_state<Scalar>();
     auto matrix_elements = this->get_database().get_matrix_elements_in_canonical_basis(
         this->shared_from_this(), final, type, q);
     matrix_elements =

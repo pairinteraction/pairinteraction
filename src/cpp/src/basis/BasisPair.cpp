@@ -143,7 +143,8 @@ Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
                                        OperatorType type2, int q1, int q2) const {
     // Construct a pair basis containing only the pair ket
-    auto final = this->get_canonical_state_from_ket(ket);
+
+    auto final = ket->to_trivial_state();
     assert(final->get_number_of_states() == 1);
 
     return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
@@ -154,8 +155,9 @@ Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(
     const std::shared_ptr<const KetAtom> &ket1, const std::shared_ptr<const KetAtom> &ket2,
     OperatorType type1, OperatorType type2, int q1, int q2) const {
     // Construct a pair basis with the two single-atom kets
-    auto final1 = this->get_basis1()->get_canonical_state_from_ket(ket1);
-    auto final2 = this->get_basis2()->get_canonical_state_from_ket(ket2);
+
+    auto final1 = ket1->template to_trivial_state<Scalar>();
+    auto final2 = ket2->template to_trivial_state<Scalar>();
     auto system1 = SystemAtom<Scalar>(final1);
     auto system2 = SystemAtom<Scalar>(final2);
     auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
