@@ -145,6 +145,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             self._parameters_creator["additional_kets"] = additional_kets
         self._cpp = creator.create(database._cpp)
 
+        super().__init__()
+
     @classmethod
     def from_kets(
         cls: type[Self],
@@ -279,20 +281,24 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     @property
     def database(self) -> Database:
         """The database used for this object."""
-        return self.kets[0].database
+        return self.get_ket(0).database
 
     @property
     def species(self) -> str:
         """The atomic species."""
-        return self.kets[0].species
+        return self.get_ket(0).species
+
+    def get_canonical_basis(self: Self) -> Self:
+        """Return the canonical basis with identity coefficients."""
+        return type(self)._from_cpp_object(self._cpp.get_canonical_basis())
 
     @overload
     def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_amplitudes(self, other: Self) -> csr_matrix: ...
+    def get_amplitudes(self, other: BasisAtom) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
+    def get_amplitudes(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if isinstance(other, StateAtom):
@@ -305,9 +311,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_overlaps(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_overlaps(self, other: Self) -> csr_matrix: ...
+    def get_overlaps(self, other: BasisAtom) -> csr_matrix: ...
 
-    def get_overlaps(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
+    def get_overlaps(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if isinstance(other, StateAtom):
@@ -325,13 +331,15 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_matrix_elements(self, other: KetAtom | StateAtom, operator: OperatorType, q: int, unit: str) -> NDArray: ...
 
     @overload
-    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: None = None) -> PintSparse: ...
+    def get_matrix_elements(
+        self, other: BasisAtom, operator: OperatorType, q: int, unit: None = None
+    ) -> PintSparse: ...
 
     @overload
-    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: str) -> csr_matrix: ...
+    def get_matrix_elements(self, other: BasisAtom, operator: OperatorType, q: int, unit: str) -> csr_matrix: ...
 
     def get_matrix_elements(
-        self, other: KetAtom | StateAtom | Self, operator: OperatorType, q: int, unit: str | None = None
+        self, other: KetAtom | StateAtom | BasisAtom, operator: OperatorType, q: int, unit: str | None = None
     ) -> NDArray | PintArray | csr_matrix | PintSparse:
         cpp_op = get_cpp_operator_type(operator)
 

@@ -54,93 +54,67 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
 }
 
 template <typename Scalar>
+Eigen::VectorX<Scalar> BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
+    if (this->get_ket_index_from_ket(ket) < 0) {
+        return get_amplitudes(ket->to_trivial_state()).row(0);
+    }
+    return this->Basis<BasisPair<Scalar>>::get_amplitudes(ket);
+}
+
+template <typename Scalar>
 Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom> ket1,
-                                  std::shared_ptr<const KetAtom> ket2) const {
-    return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
-                          basis2->get_canonical_state_from_ket(ket2))
-        .transpose();
+BasisPair<Scalar>::get_amplitudes(const std::shared_ptr<const KetAtom> &ket1,
+                                  const std::shared_ptr<const KetAtom> &ket2) const {
+    return get_amplitudes(ket1->template to_trivial_state<Scalar>(),
+                          ket2->template to_trivial_state<Scalar>())
+        .row(0);
+}
+
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const Type> other) const {
+    auto amplitudes_matrix1 = basis1->get_amplitudes(other->get_basis1());
+    auto amplitudes_matrix2 = basis2->get_amplitudes(other->get_basis2());
+
+    auto result = utils::calculate_tensor_product_in_canonical_basis(
+        this->shared_from_this(), other, amplitudes_matrix1, amplitudes_matrix2);
+    assert(static_cast<size_t>(result.rows()) == other->get_number_of_kets());
+    assert(static_cast<size_t>(result.cols()) == this->get_number_of_kets());
+
+    return other->get_coefficients().adjoint() * result * this->get_coefficients();
 }
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other1,
                                   std::shared_ptr<const BasisAtom<Scalar>> other2) const {
-    if (other1->get_id_of_kets() != basis1->get_id_of_kets() ||
-        other2->get_id_of_kets() != basis2->get_id_of_kets()) {
-        throw std::invalid_argument("The other objects must be expressed using the same kets.");
-    }
-
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients1 =
-        basis1->get_coefficients().adjoint() * other1->get_coefficients();
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients2 =
-        basis2->get_coefficients().adjoint() * other2->get_coefficients();
-
-    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
-
-    // Loop over the rows of the first coefficient matrix
-    oneapi::tbb::parallel_for(
-        oneapi::tbb::blocked_range<Eigen::Index>(0, coefficients1.outerSize()),
-        [&](const auto &range) {
-            for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
-
-                const auto &range_row2 = this->get_index_range(row1);
-
-                // Loop over the rows of the second coefficient matrix that are energetically
-                // allowed
-                for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
-                     row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
-
-                    Eigen::Index row = get_ket_index_from_tuple(row1, row2);
-                    if (row < 0) {
-                        continue;
-                    }
-
-                    // Loop over the non-zero column elements of the first coefficient matrix
-                    for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
-                             coefficients1, row1);
-                         it1; ++it1) {
-
-                        Eigen::Index col1 = it1.col();
-                        Scalar value1 = it1.value();
-
-                        // Loop over the non-zero column elements of the second coefficient matrix
-                        for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator
-                                 it2(coefficients2, row2);
-                             it2; ++it2) {
-
-                            Eigen::Index col2 = it2.col();
-                            Scalar value2 = it2.value();
-                            Eigen::Index col = col1 * coefficients2.cols() + col2;
-
-                            // Store the entry
-                            Scalar value = value1 * value2;
-                            if (std::abs(value) > numerical_precision) {
-                                triplets.emplace_back(row, col, value);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-    // Construct the combined matrix from the triplets
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(this->get_number_of_kets(),
-                                                        other1->get_number_of_states() *
-                                                            other2->get_number_of_states());
-    matrix.setFromTriplets(triplets.begin(), triplets.end());
-    matrix.makeCompressed();
-
-    return matrix.adjoint() * this->get_coefficients();
+    auto system1 = SystemAtom<Scalar>(other1);
+    auto system2 = SystemAtom<Scalar>(other2);
+    auto other = BasisPairCreator<Scalar>().add(system1).add(system2).create();
+    assert(other->get_number_of_states() ==
+           other1->get_number_of_states() * other2->get_number_of_states());
+    assert(other->get_number_of_kets() ==
+           other1->get_number_of_states() * other2->get_number_of_states());
+    return get_amplitudes(other);
 }
 
 template <typename Scalar>
 Eigen::VectorX<typename BasisPair<Scalar>::real_t>
-BasisPair<Scalar>::get_overlaps(std::shared_ptr<const KetAtom> ket1,
-                                std::shared_ptr<const KetAtom> ket2) const {
+BasisPair<Scalar>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
+    return get_amplitudes(ket).cwiseAbs2();
+}
+
+template <typename Scalar>
+Eigen::VectorX<typename BasisPair<Scalar>::real_t>
+BasisPair<Scalar>::get_overlaps(const std::shared_ptr<const KetAtom> &ket1,
+                                const std::shared_ptr<const KetAtom> &ket2) const {
     return get_amplitudes(ket1, ket2).cwiseAbs2();
+}
+
+template <typename Scalar>
+Eigen::SparseMatrix<typename BasisPair<Scalar>::real_t, Eigen::RowMajor>
+BasisPair<Scalar>::get_overlaps(std::shared_ptr<const Type> other) const {
+    return get_amplitudes(other).cwiseAbs2();
 }
 
 template <typename Scalar>
@@ -162,6 +136,35 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*final*/, OperatorType /*type*/,
                                        int /*q*/) const {
     throw std::invalid_argument("It is required to specify one operator for each atom.");
+}
+
+template <typename Scalar>
+Eigen::VectorX<Scalar>
+BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
+                                       OperatorType type2, int q1, int q2) const {
+    // Construct a pair basis containing only the pair ket
+
+    auto final = ket->to_trivial_state();
+    assert(final->get_number_of_states() == 1);
+
+    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
+}
+
+template <typename Scalar>
+Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(
+    const std::shared_ptr<const KetAtom> &ket1, const std::shared_ptr<const KetAtom> &ket2,
+    OperatorType type1, OperatorType type2, int q1, int q2) const {
+    // Construct a pair basis with the two single-atom kets
+
+    auto final1 = ket1->template to_trivial_state<Scalar>();
+    auto final2 = ket2->template to_trivial_state<Scalar>();
+    auto system1 = SystemAtom<Scalar>(final1);
+    auto system2 = SystemAtom<Scalar>(final2);
+    auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
+    assert(final->get_number_of_states() == 1);
+    assert(final->get_number_of_kets() == 1);
+
+    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
 }
 
 template <typename Scalar>
@@ -205,34 +208,6 @@ BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> 
            final1->get_number_of_states() * final2->get_number_of_states());
 
     return this->get_matrix_elements(final, type1, type2, q1, q2);
-}
-
-template <typename Scalar>
-Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
-    // Construct a pair basis containing only the pair ket
-    auto final = this->get_canonical_state_from_ket(ket);
-    assert(final->get_number_of_states() == 1);
-
-    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
-}
-
-template <typename Scalar>
-Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
-                                       std::shared_ptr<const KetAtom> ket2, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
-    // Construct a pair basis with the two single-atom kets
-    auto final1 = this->get_basis1()->get_canonical_state_from_ket(ket1);
-    auto final2 = this->get_basis2()->get_canonical_state_from_ket(ket2);
-    auto system1 = SystemAtom<Scalar>(final1);
-    auto system2 = SystemAtom<Scalar>(final2);
-    auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
-    assert(final->get_number_of_states() == 1);
-    assert(final->get_number_of_kets() == 1);
-
-    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
 }
 
 // Explicit instantiations

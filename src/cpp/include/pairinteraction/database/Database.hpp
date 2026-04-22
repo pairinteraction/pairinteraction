@@ -58,6 +58,9 @@ public:
                                                        std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
+    std::shared_ptr<const BasisAtom<Scalar>> make_trivial_basis(std::shared_ptr<const KetAtom> ket);
+
+    template <typename Scalar>
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_matrix_elements_in_canonical_basis(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
                                            std::shared_ptr<const BasisAtom<Scalar>> final_basis,
@@ -111,6 +114,8 @@ private:
     extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(          \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
+    extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::make_trivial_basis<SCALAR>( \
+        std::shared_ptr<const KetAtom> ket);                                                       \
     extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \

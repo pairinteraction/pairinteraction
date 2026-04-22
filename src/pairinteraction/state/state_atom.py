@@ -39,7 +39,7 @@ class StateAtom(StateBase[KetAtom]):
         >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
         >>> state2 = pi.StateAtom(ket2, basis)
         >>> print((2 * state2 - state).normalize())
-        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ + -0.45 |Rb:60,S_1/2,1/2⟩)
+        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
 
 
     """
@@ -55,6 +55,7 @@ class StateAtom(StateBase[KetAtom]):
             basis: The basis to which the state belongs.
 
         """
+        super().__init__()
         state = basis.get_corresponding_state(ket)
         ket_idx = state.kets.index(ket)
         coeffs = state._cpp.get_coefficients() * 0  # type: ignore [operator]
@@ -146,12 +147,12 @@ class StateAtom(StateBase[KetAtom]):
     @property
     def database(self) -> Database:
         """The database used for this object."""
-        return self.kets[0].database
+        return self.get_ket(0).database
 
     @property
     def species(self) -> str:
         """The atomic species."""
-        return self.kets[0].species
+        return self.get_ket(0).species
 
     @property
     def is_canonical(self) -> bool:
