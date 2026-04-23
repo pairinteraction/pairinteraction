@@ -315,6 +315,18 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                             for (typename Eigen::SparseMatrix<
                                      Scalar, Eigen::RowMajor>::InnerIterator it(tensor_product, k);
                                  it; ++it) {
+                                throw std::logic_error("Green tensor with omega dependent entries "
+                                                       "is currently not supported.");
+                                // this are actually the wrong energies! if anything, we would need
+                                // the single atom transition energies here and would need to check
+                                // that the corresponding green tensors are roughly the same whether
+                                // we use the transition energy of the first or the second atom.
+                                // However, currently I am not sure, if there is any reasonable
+                                // limit, where using this here makes sense (maybe if one is just
+                                // interested in C3 coefficients and not the full matrix, because
+                                // especially C6 coefficients would probably be wrong in this
+                                // regime) green tensor for omega dependent entries is currently not
+                                // suppported
                                 it.valueRef() *= oe.val(energies(it.row()) - energies(it.col()));
                             }
                         }
