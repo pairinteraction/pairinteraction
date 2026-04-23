@@ -9,7 +9,10 @@ import numpy as np
 import scipy.constants as const
 from typing_extensions import override
 
-from pairinteraction.green_tensor.dynamic_green_tensor import dynamic_green_tensor_total
+from pairinteraction.green_tensor.dynamic_green_tensor import (
+    dynamic_green_tensor_homogeneous,
+    dynamic_green_tensor_scattered,
+)
 from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
 from pairinteraction.units import QuantityScalar, ureg
 
@@ -40,8 +43,10 @@ class GreenTensorCavity(GreenTensorBase):
         z1: float | PintFloat,
         z2: float | PintFloat,
         unit: str | None = None,
-        static_limit: bool = False,
+        static_limit: bool = True,
         interaction_order: int = 3,
+        *,
+        without_vacuum_contribution: bool = False,
     ) -> None:
         """Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.
 
@@ -56,12 +61,16 @@ class GreenTensorCavity(GreenTensorBase):
             unit: The unit of the distance, e.g. "micrometer".
                 Default None expects a `pint.Quantity`.
             static_limit: If True, the static limit is used.
-                Default False.
+                Default True.
             interaction_order: The order of interaction, e.g., 3 for dipole-dipole.
                 Defaults to 3.
+            without_vacuum_contribution: If True, return only the scattered contribution and
+                omit the homogeneous vacuum term. Defaults to False.
 
         """
-        super().__init__(pos1, pos2, unit, static_limit, interaction_order)
+        super().__init__(
+            pos1, pos2, unit, static_limit, interaction_order, without_vacuum_contribution=without_vacuum_contribution
+        )
         self.surface1_z_au = QuantityScalar.convert_user_to_au(z1, unit, "distance")
         self.surface2_z_au = QuantityScalar.convert_user_to_au(z2, unit, "distance")
         # Almost perfect mirrors # TODO make utils be able to handle inf
@@ -80,6 +89,12 @@ class GreenTensorCavity(GreenTensorBase):
 
 
         """
+        if self.without_vacuum_contribution and epsilon != 1.0:
+            raise ValueError(
+                "If the Green tensor is provided without the vacuum contribution, "
+                "the relative permittivity of the medium needs to be set to 1."
+            )
+
         self.epsilon = epsilon
         self.surface1_epsilon = epsilon1
         self.surface2_epsilon = epsilon2
@@ -113,9 +128,11 @@ class GreenTensorCavity(GreenTensorBase):
         epsilon2 = evaluate_relative_permittivity(self.surface2_epsilon, transition_energy_au, "hartree")
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
-        gt = dynamic_green_tensor_total(
+        gt = dynamic_green_tensor_scattered(
             pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
         )
+        if not self.without_vacuum_contribution:
+            gt += dynamic_green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au

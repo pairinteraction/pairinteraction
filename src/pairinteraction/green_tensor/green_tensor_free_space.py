@@ -38,8 +38,10 @@ class GreenTensorFreeSpace(GreenTensorBase):
         pos1: ArrayLike | PintArrayLike,
         pos2: ArrayLike | PintArrayLike,
         unit: str | None = None,
-        static_limit: bool = False,
+        static_limit: bool = True,
         interaction_order: int = 3,
+        *,
+        without_vacuum_contribution: bool = False,
     ) -> None:
         """Create a Green tensor for two atoms in free space.
 
@@ -49,12 +51,16 @@ class GreenTensorFreeSpace(GreenTensorBase):
             unit: The unit of the distance, e.g. "micrometer".
                 Default None expects a `pint.Quantity`.
             static_limit: If True, the static limit is used.
-                Default False.
+                Default True.
             interaction_order: The order of interaction, e.g., 3 for dipole-dipole.
                 Defaults to 3.
+            without_vacuum_contribution: Reserved for API consistency. Free-space Green tensors
+                always include the vacuum contribution, so setting this to True is invalid.
 
         """
-        super().__init__(pos1, pos2, unit, static_limit, interaction_order)
+        super().__init__(
+            pos1, pos2, unit, static_limit, interaction_order, without_vacuum_contribution=without_vacuum_contribution
+        )
 
     def set_relative_permittivity(self, epsilon: PermittivityLike) -> Self:
         """Set the relative permittivity of the system.
@@ -91,6 +97,8 @@ class GreenTensorFreeSpace(GreenTensorBase):
         omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
+        if self.without_vacuum_contribution:
+            raise ValueError("The Green tensor for free space cannot be provided without the vacuum contribution.")
         gt = dynamic_green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar = 1, epsilon_0 = (4*np.pi)**(-1) in atomic units
