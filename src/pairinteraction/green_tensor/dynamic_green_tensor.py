@@ -34,44 +34,7 @@ if TYPE_CHECKING:
     def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 
-__all__ = ["dynamic_green_tensor_homogeneous", "dynamic_green_tensor_scattered", "dynamic_green_tensor_total"]
-
-
-def dynamic_green_tensor_total(
-    pos1: NDArray,
-    pos2: NDArray,
-    z1: float,
-    z2: float,
-    omega: float,
-    epsilon0: complex,
-    epsilon1: complex,
-    epsilon2: complex,
-    *,
-    only_real_part: bool = False,
-) -> NDArray:
-    """Assemble the total Green tensor.
-
-    Args:
-        pos1: Position vector of atom A (m)
-        pos2: Position vector of atom B (m)
-        z1: z-coordinate of the first surface (m)
-        z2: z-coordinate of the second surface (m)
-        omega: Angular frequency (i.e. 2*pi*f) in 1/s
-        epsilon0: Electric permittivity of the medium between the two surfaces (dimensionless, complex)
-        epsilon1: Electric permittivity of the upper medium (dimensionless, complex)
-        epsilon2: Electric permittivity of the lower medium (dimensionless, complex)
-        height: Distance between the two surfaces (m).
-        only_real_part: If True, only the real part of the Green tensor is calculated (default: False)
-
-    Returns: The 3x3 Total Green Tensor (general complex values) m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
-
-    """
-    gt_hom = dynamic_green_tensor_homogeneous(pos1, pos2, omega, epsilon0, only_real_part=only_real_part)
-    gt_scat = dynamic_green_tensor_scattered(
-        pos1, pos2, z1, z2, omega, epsilon0, epsilon1, epsilon2, only_real_part=only_real_part
-    )
-
-    return gt_hom + gt_scat
+__all__ = ["dynamic_green_tensor_homogeneous", "dynamic_green_tensor_scattered"]
 
 
 def dynamic_green_tensor_homogeneous(

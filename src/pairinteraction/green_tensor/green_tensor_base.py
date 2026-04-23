@@ -35,12 +35,15 @@ class GreenTensorBase(ABC):
         pos1: ArrayLike | PintArrayLike,
         pos2: ArrayLike | PintArrayLike,
         unit: str | None = None,
-        static_limit: bool = False,
+        static_limit: bool = True,
         interaction_order: int = 3,
+        *,
+        without_vacuum_contribution: bool = False,
     ) -> None:
         self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
         self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
         self.static_limit = static_limit
+        self.without_vacuum_contribution = without_vacuum_contribution
 
         self.interaction_order = interaction_order
         if interaction_order != 3:

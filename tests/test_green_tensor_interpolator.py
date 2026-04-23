@@ -97,3 +97,31 @@ def test_omega_dependent_green_tensor_interpolator(
 
         tensor = gti.get(1, 1, transition_energy, unit="1/micrometer", coordinates="spherical")
         np.testing.assert_allclose(tensor, reference_tensor, rtol=2e-2)
+
+
+def test_system_atom_green_tensor_interpolator(
+    pi_module: PairinteractionModule,
+    green_tensor_interpolator_class: type[GreenTensorInterpolator],
+) -> None:
+    """Test self interaction in a single-atom system from a user-defined Green tensor interpolator."""
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+
+    basis = pi_module.BasisAtom("Rb", n=(0, 0), additional_kets=[ket1, ket2])
+    system = pi_module.SystemAtom(basis)
+    reference_hamiltonian = system.get_hamiltonian("hartree").toarray()
+
+    dipole = ket1.get_matrix_element(ket2, "electric_dipole", q=0, unit="e * a0")
+    green_tensor_zz = 2.5e-12
+
+    gti = green_tensor_interpolator_class()
+    gti.set_constant(
+        1,
+        1,
+        np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 0.0], [0.0, 0.0, green_tensor_zz]]),
+        "hartree / (e * a0)^2",
+    )
+
+    hamiltonian = system._set_green_tensor_interpolator(gti).get_hamiltonian("hartree").toarray()
+    expected_shift = green_tensor_zz * abs(dipole) ** 2 / 2
+    np.testing.assert_allclose(hamiltonian, reference_hamiltonian + expected_shift * np.eye(2))

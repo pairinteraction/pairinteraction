@@ -15,6 +15,7 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from pairinteraction.green_tensor import GreenTensorBase, GreenTensorInterpolator
     from pairinteraction.ket import KetAtom
     from pairinteraction.units import ArrayLike, PintArrayLike, PintFloat
 
@@ -123,6 +124,51 @@ class SystemAtom(SystemBase[BasisAtom]):
 
     def set_ion_interaction_order(self: Self, order: int) -> Self:
         self._cpp.set_ion_interaction_order(order)
+        return self
+
+    def _set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
+        """Set the Green tensor interpolator for the single atom system.
+
+        Args:
+            green_tensor_interpolator: The Green tensor interpolator to set for the system.
+
+        """
+        self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
+        return self
+
+    def set_green_tensor(self, green_tensor: GreenTensorBase) -> Self:
+        """Set the Green tensor for the single atom system.
+
+        This will add self interaction terms to the Hamiltonian of the single atom system
+        based on the provided Green tensor.
+        This can be used to e.g. include the effect of a nearby surface on the energy levels of the atom.
+
+        Args:
+            green_tensor: The Green tensor to set for the system.
+
+        """
+        if not green_tensor.static_limit:
+            raise ValueError("Setting a Green tensor that is not in the static limit is currently not supported.")
+
+        if not np.allclose(
+            green_tensor.pos1_au,
+            green_tensor.pos2_au,
+            rtol=0,
+            atol=1e-12,
+        ):
+            raise ValueError(
+                "You can only set a Green tensor for the single atom system, where the positions are identical."
+            )
+        if not green_tensor.without_vacuum_contribution:
+            raise ValueError(
+                "The Green tensor for the single atom system needs to be provided without the vacuum contribution, "
+                "i.e., without_vacuum_contribution has to be set to True when creating the Green tensor."
+            )
+
+        use_real = isinstance(self, SystemAtomReal)
+
+        gti = green_tensor.get_interpolator(use_real=use_real)
+        self._set_green_tensor_interpolator(gti)
         return self
 
     @overload
