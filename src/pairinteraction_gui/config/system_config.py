@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
-RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle"]
+RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle", "ZDistanceToSurface"]
 
 
 class SystemConfig(BaseConfig):
@@ -81,6 +81,24 @@ class SystemConfigOneAtom(SystemConfig):
         self.setupEField()
         self.setupBField()
         self.setupDiamagnetism()
+        self.setupSurfaceDistance()
+
+    def setupSurfaceDistance(self) -> None:
+        self.layout().addWidget(QLabel("<b>Surface</b>"))
+        self.z_distance_to_surface = RangeItem(
+            self,
+            "ZDistanceToSurface",
+            vdefaults=(10, 10),
+            vrange=(1e-3, np.inf),
+            unit="<span>&mu;m</span>",
+            tooltip_label="z distance to surface",
+            checked=False,
+        )
+        self.layout().addWidget(self.z_distance_to_surface)
+
+    def _get_all_ranges(self) -> list[RangeItem]:
+        """Return all range items."""
+        return [*super()._get_all_ranges(), self.z_distance_to_surface]
 
 
 class SystemConfigTwoAtoms(SystemConfig):

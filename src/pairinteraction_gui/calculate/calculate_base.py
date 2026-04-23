@@ -33,6 +33,7 @@ UnitFromRangeKey: dict[RangesKeys, str] = {
     "Bz": "Gauss",
     "Distance": r"$\mu$m",
     "Angle": r"$^\circ$",
+    "ZDistanceToSurface": r"$\mu$m",
 }
 
 VariableNameFromRangeKey: dict[RangesKeys, str] = {
@@ -44,6 +45,7 @@ VariableNameFromRangeKey: dict[RangesKeys, str] = {
     "Bz": "bfield_z",
     "Distance": "distance",
     "Angle": "angle",
+    "ZDistanceToSurface": "z_distance_to_surface",
 }
 
 PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
@@ -129,6 +131,13 @@ class Parameters(ABC, Generic[PageType]):
         """Return the magnetic field for the given step."""
         bfield_keys: list[RangesKeys] = ["Bx", "By", "Bz"]
         return [self.ranges[key][step] if key in self.ranges else 0 for key in bfield_keys]
+
+    def get_z_distance_to_surface(self, step: int) -> float | None:
+        """Return the z distance to the surface for the given step."""
+        key: RangesKeys = "ZDistanceToSurface"
+        if key not in self.ranges:
+            return None
+        return self.ranges[key][step]
 
     def get_species(self, atom: int | None = None) -> str:
         """Return the species for the given ket."""
