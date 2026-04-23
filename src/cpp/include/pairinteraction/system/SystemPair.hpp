@@ -53,7 +53,7 @@ public:
     Type &set_interaction_order(int value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
     Type &set_green_tensor_interpolator(
-        std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator);
+        const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator);
 
 private:
     int interaction_order{3};

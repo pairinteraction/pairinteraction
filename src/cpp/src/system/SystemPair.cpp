@@ -199,14 +199,6 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
     return op;
 }
 
-// "overloaded" pattern for std::visit
-template <class... Ts>
-struct overloaded : Ts... {
-    using Ts::operator()...;
-};
-template <class... Ts>
-overloaded(Ts...) -> overloaded<Ts...>;
-
 template <typename Scalar>
 SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
@@ -250,7 +242,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
 
 template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
-    std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
+    const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
     this->hamiltonian_requires_construction = true;
 
     if (std::isfinite(distance_vector[0]) && std::isfinite(distance_vector[1]) &&
@@ -287,45 +279,32 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     bool sort_by_quantum_number_m = this->basis->has_quantum_number_m();
     bool sort_by_parity = this->basis->has_parity();
 
-    // Store the energies (they are needed in case of Rydberg-Rydberg interaction with an
-    // OmegaDependentEntry)
-    auto energies = this->matrix.diagonal().real();
+    // Add Rydberg-Rydberg interaction via Green tensor
+    // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]
+    // where D_1,left uses conjugated convention and
+    // D_2,right uses normal convention.
 
     // Helper function for adding Rydberg-Rydberg interaction
-    auto add_interaction = [this, &energies, &sort_by_quantum_number_f, &sort_by_quantum_number_m](
+    auto add_interaction = [this, &sort_by_quantum_number_f, &sort_by_quantum_number_m](
                                const auto &entries, const auto &op1, const auto &op2, int delta) {
         for (const auto &entry : entries) {
-            std::visit(
-                overloaded{
-                    [this, &sort_by_quantum_number_m, &op1, &op2,
-                     &delta](const typename GreenTensorInterpolator<Scalar>::ConstantEntry &ce) {
-                        this->matrix += ce.val() *
-                            utils::calculate_tensor_product_in_canonical_basis(
-                                            this->basis, this->basis, op1[ce.row()], op2[ce.col()]);
-                        if (ce.row() != ce.col() + delta) {
-                            sort_by_quantum_number_m = false;
-                        }
-                    },
+            if (std::holds_alternative<
+                    typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry>(entry)) {
+                throw std::logic_error(
+                    "Green tensor with omega dependent entries is currently not supported.");
+            }
 
-                    [this, &energies, &sort_by_quantum_number_m, &op1, &op2, &delta](
-                        const typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry &oe) {
-                        auto tensor_product = utils::calculate_tensor_product_in_canonical_basis(
-                            this->basis, this->basis, op1[oe.row()], op2[oe.col()]);
-                        for (int k = 0; k < tensor_product.outerSize(); ++k) {
-                            for (typename Eigen::SparseMatrix<
-                                     Scalar, Eigen::RowMajor>::InnerIterator it(tensor_product, k);
-                                 it; ++it) {
-                                it.valueRef() *= oe.val(energies(it.row()) - energies(it.col()));
-                            }
-                        }
-                        this->matrix += tensor_product;
-                        if (oe.row() != oe.col() + delta) {
-                            sort_by_quantum_number_m = false;
-                        }
-                    }},
-                entry);
+            const auto &constant_entry =
+                std::get<typename GreenTensorInterpolator<Scalar>::ConstantEntry>(entry);
+            this->matrix += constant_entry.val() *
+                utils::calculate_tensor_product_in_canonical_basis(this->basis, this->basis,
+                                                                   op1[constant_entry.row()],
+                                                                   op2[constant_entry.col()]);
 
             sort_by_quantum_number_f = false;
+            if (constant_entry.row() != constant_entry.col() + delta) {
+                sort_by_quantum_number_m = false;
+            }
         }
     };
 
