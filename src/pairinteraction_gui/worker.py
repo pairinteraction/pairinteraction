@@ -180,6 +180,7 @@ class MultiThreadWorker(QThread):
             logger.debug("Calculation thread %s aborted.", self)
             status = "Calculation aborted"
         except Exception as err:
+            logger.exception("Calculation thread %s failed with an exception.", self)
             self.signals.error.emit(err)
         else:
             self.signals.result.emit(result)
