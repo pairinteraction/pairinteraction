@@ -233,7 +233,7 @@ template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
 
-    if (!traits::NumTraits<Scalar>::is_complex_v && distance_vector[1] != 0) {
+    if (!traits::NumTraits<Scalar>::is_complex_v && vector[1] != 0) {
         throw std::invalid_argument(
             "The distance vector must not have a y-component if the scalar type is real.");
     }
