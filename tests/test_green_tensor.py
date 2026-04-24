@@ -40,7 +40,12 @@ def test_static_green_tensor(distance_vector_mum: list[float]) -> None:
 
 
 @pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
-def test_static_green_tensor_pair_potential(pi_module: PairinteractionModule, distance_vector_mum: list[float]) -> None:
+def test_static_green_tensor_pair_potential(
+    pi_module: PairinteractionModule, use_real: bool, distance_vector_mum: list[float]
+) -> None:
+    if use_real and distance_vector_mum[1] != 0:
+        return  # run tests with y-component only for complex Green tensors
+
     ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
     basis = pi_module.BasisAtom("Rb", n=(ket.n - 2, ket.n + 2), l=(0, 2))
     system = pi_module.SystemAtom(basis)
@@ -68,7 +73,12 @@ def test_static_green_tensor_pair_potential(pi_module: PairinteractionModule, di
 
 
 @pytest.mark.parametrize("distance_vector_mum", DISTANCE_VECTOR_MUM_LIST)
-def test_vacuum_green_tensor(pi_module: PairinteractionModule, distance_vector_mum: list[float]) -> None:
+def test_vacuum_green_tensor(
+    pi_module: PairinteractionModule, use_real: bool, distance_vector_mum: list[float]
+) -> None:
+    if use_real and distance_vector_mum[1] != 0:
+        return  # run tests with y-component only for complex Green tensors
+
     ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
