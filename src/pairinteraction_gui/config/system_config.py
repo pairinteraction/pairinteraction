@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import numpy as np
 from PySide6.QtWidgets import (
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
 
 
-RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle", "ZDistanceToSurface"]
+RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle", "DistanceToSurface", "SurfaceAngle"]
 
 
 class SystemConfig(BaseConfig):
@@ -82,23 +82,47 @@ class SystemConfigOneAtom(SystemConfig):
         self.setupBField()
         self.setupDiamagnetism()
         self.setupSurfaceDistance()
+        self.setupSurfaceAngle()
 
     def setupSurfaceDistance(self) -> None:
         self.layout().addWidget(QLabel("<b>Surface</b>"))
-        self.z_distance_to_surface = RangeItem(
+        self.distance_to_surface = RangeItem(
             self,
-            "ZDistanceToSurface",
+            "DistanceToSurface",
             vdefaults=(10, 10),
             vrange=(1e-3, np.inf),
             unit="<span>&mu;m</span>",
-            tooltip_label="z distance to surface",
+            tooltip_label="perpendicular distance to surface",
             checked=False,
         )
-        self.layout().addWidget(self.z_distance_to_surface)
+        self.distance_to_surface.label.setText("Distance to surface")
+        self.layout().addWidget(self.distance_to_surface)
+
+    def setupSurfaceAngle(self) -> None:
+        self.surface_angle = RangeItem(
+            self,
+            "SurfaceAngle",
+            vdefaults=(0, 0),
+            vrange=(0, 360),
+            unit="degree",
+            tooltip_label="angle of the surface normal (0° = z-axis, 90° = x-axis)",
+            checked=False,
+        )
+        self.layout().addWidget(self.surface_angle)
+
+    def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:
+        """Return the active single-atom ranges."""
+        ranges_raw = cast("dict[str, list[float]]", super().get_ranges_dict().copy())
+        if "Distance to surface" in ranges_raw:
+            ranges_raw["DistanceToSurface"] = ranges_raw.pop("Distance to surface")
+        ranges = cast("dict[RangesKeys, list[float]]", ranges_raw)
+        if "DistanceToSurface" not in ranges:
+            ranges.pop("SurfaceAngle", None)
+        return ranges
 
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
-        return [*super()._get_all_ranges(), self.z_distance_to_surface]
+        return [*super()._get_all_ranges(), self.distance_to_surface, self.surface_angle]
 
 
 class SystemConfigTwoAtoms(SystemConfig):
