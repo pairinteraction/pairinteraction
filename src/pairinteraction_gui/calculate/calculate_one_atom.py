@@ -34,7 +34,7 @@ class ParametersOneAtom(Parameters["OneAtomPage"]):
                 "    gt = pi.green_tensor.GreenTensorSurface(\n"
                 "        [0, 0, z_distance_to_surface[i]],\n"
                 "        [0, 0, z_distance_to_surface[i]],\n"
-                "        z=0,\n"
+                "        point_on_plane=[0, 0, 0],\n"
                 '        unit="micrometer",\n'
                 "        static_limit=True,\n"
                 "    )\n"
@@ -78,7 +78,7 @@ def _calculate_one_atom(parameters: ParametersOneAtom) -> ResultsOneAtom:
             gt = pi.green_tensor.GreenTensorSurface(
                 [0, 0, z_distance_to_surface],
                 [0, 0, z_distance_to_surface],
-                z=0,
+                point_on_plane=[0, 0, 0],
                 unit="micrometer",
                 static_limit=True,
             )
