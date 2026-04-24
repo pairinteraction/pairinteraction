@@ -8,18 +8,21 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/operator.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
 #include <Eigen/Dense>
+#include <Eigen/SparseCore>
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
 #include <set>
 #include <spdlog/spdlog.h>
+#include <variant>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -94,10 +97,29 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
 }
 
 template <typename Scalar>
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_green_tensor_interpolator(
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
+    this->hamiltonian_requires_construction = true;
+    this->green_tensor_interpolator = green_tensor_interpolator;
+    return *this;
+}
+
+template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto get_operator_matrix = [this](OperatorType type, int q = 0) {
         return this->basis->get_database().get_matrix_elements_in_canonical_basis(
             this->basis, this->basis, type, q);
+    };
+    auto get_dipole_matrices = [&](bool conjugate) {
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrices;
+        matrices.reserve(3);
+        int factor = conjugate ? -1 : 1;
+        for (int q = -1; q <= 1; ++q) {
+            matrices.push_back((static_cast<real_t>(std::pow(factor, q)) *
+                                get_operator_matrix(OperatorType::ELECTRIC_DIPOLE, factor * q))
+                                   .eval());
+        }
+        return matrices;
     };
 
     // Construct the unperturbed Hamiltonian in the canonical atomic basis
@@ -272,6 +294,37 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, -2);
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
+        }
+    }
+
+    // Add self-interaction via Green tensor (surface/cavity effects)
+    // H_self = Σ_{rc} G_{rc} * D_left[r] * D_right[c]
+    // where D_left uses conjugated convention and
+    // D_right uses normal convention.
+    if (green_tensor_interpolator) {
+        const auto &entries = green_tensor_interpolator->get_spherical_entries(1, 1);
+        if (!entries.empty()) {
+            auto dipole_left = get_dipole_matrices(true);
+            auto dipole_right = get_dipole_matrices(false);
+
+            for (const auto &entry : entries) {
+                if (std::holds_alternative<
+                        typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry>(entry)) {
+                    throw std::logic_error(
+                        "Green tensor with omega dependent entries is currently not supported.");
+                }
+
+                const auto &constant_entry =
+                    std::get<typename GreenTensorInterpolator<Scalar>::ConstantEntry>(entry);
+                Eigen::SparseMatrix<Scalar, Eigen::RowMajor> self_interaction =
+                    (constant_entry.val() * dipole_left[constant_entry.row()] *
+                     dipole_right[constant_entry.col()])
+                        .eval();
+                this->matrix += self_interaction;
+
+                sort_by_quantum_number_f = false;
+                sort_by_quantum_number_m &= (constant_entry.row() == constant_entry.col());
+            }
         }
     }
 

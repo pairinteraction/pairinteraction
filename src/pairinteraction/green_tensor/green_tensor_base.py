@@ -35,12 +35,15 @@ class GreenTensorBase(ABC):
         pos1: ArrayLike | PintArrayLike,
         pos2: ArrayLike | PintArrayLike,
         unit: str | None = None,
-        static_limit: bool = False,
+        static_limit: bool = True,
         interaction_order: int = 3,
+        *,
+        without_vacuum_contribution: bool = False,
     ) -> None:
         self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
         self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
         self.static_limit = static_limit
+        self.without_vacuum_contribution = without_vacuum_contribution
 
         self.interaction_order = interaction_order
         if interaction_order != 3:
@@ -247,3 +250,30 @@ def evaluate_relative_permittivity(
     if callable(epsilon):
         return epsilon(ureg.Quantity(omega_au, "hartree"))
     raise TypeError("epsilon must be either a complex number or a callable function.")
+
+
+def _normalize_vector(vector: np.ndarray, *, name: str) -> np.ndarray:
+    norm = np.linalg.norm(vector)
+    if np.isclose(norm, 0):
+        raise ValueError(f"{name} must not be the zero vector.")
+    return vector / norm
+
+
+def _get_lab_to_local_rotation_matrix(normal: np.ndarray) -> np.ndarray:
+    """Return a rotation matrix that maps lab coordinates to a frame with local z parallel to normal."""
+    z_axis = _normalize_vector(normal, name="normal")
+
+    reference_axes = np.eye(3)
+    reference_axis = reference_axes[np.argmin(np.abs(reference_axes @ z_axis))]
+    x_axis = _normalize_vector(np.cross(reference_axis, z_axis), name="reference axis")
+    y_axis = np.cross(z_axis, x_axis)
+
+    return np.vstack((x_axis, y_axis, z_axis))
+
+
+def _rotate_vector_to_local(vector: np.ndarray, lab_to_local_rotation: np.ndarray) -> np.ndarray:
+    return lab_to_local_rotation @ vector
+
+
+def _rotate_tensor_to_lab(tensor: np.ndarray, lab_to_local_rotation: np.ndarray) -> np.ndarray:
+    return lab_to_local_rotation.T @ tensor @ lab_to_local_rotation

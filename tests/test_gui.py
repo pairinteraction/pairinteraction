@@ -7,7 +7,9 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pytest
+from pairinteraction_gui.calculate.calculate_one_atom import _get_surface_position
 from pairinteraction_gui.main_window import MainWindow
+from pairinteraction_gui.page.one_atom_page import OneAtomPage
 
 from .utils import REFERENCE_PATHS, compare_eigensystem_to_reference
 
@@ -117,6 +119,46 @@ def test_main_window_basic(qtbot: QtBot, window_starkmap: MainWindow) -> None:
 
 def test_one_atom_page(window_starkmap: MainWindow) -> None:
     _test_calculate_page(window_starkmap, "OneAtomPage", "stark_map")
+
+
+def test_one_atom_surface_angle_range(base_window: MainWindow) -> None:
+    page: OneAtomPage = base_window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    page.ket_config.species_combo_list[0].setCurrentText("Rb")
+    ket_qn = page.ket_config.stacked_qn_list[0].currentWidget()
+    ket_qn.items["n"].setValue(60)
+    ket_qn.items["l"].setValue(0)
+    ket_qn.items["m"].setValue(0.5)
+
+    basis_qn = page.basis_config.stacked_basis_list[0].currentWidget()
+    basis_qn.items["n"].setValue(2)
+    basis_qn.items["l"].setValue(2)
+    basis_qn.items["m"].setChecked(False)
+
+    system_config = page.system_config
+    calculation_config = page.calculation_config
+
+    calculation_config.steps.setValue(3)
+    assert system_config.distance_to_surface.label.text() == "Distance to surface"
+    system_config.distance_to_surface.setChecked(True)
+    system_config.distance_to_surface.setValues(5, 5)
+    system_config.surface_angle.setChecked(True)
+    system_config.surface_angle.setValues(0, 90)
+
+    ranges = system_config.get_ranges_dict()
+    assert ranges["DistanceToSurface"] == [5.0, 5.0, 5.0]
+    assert ranges["SurfaceAngle"] == [0.0, 45.0, 90.0]
+
+    python_code = page._create_python_code()
+    assert "surface_angle = np.linspace(0.0, 90.0, steps)" in python_code
+    assert "distance_to_surface = np.linspace(5.0, 5.0, steps)" in python_code
+    assert "surface_position = distance_to_surface[i] * np.array(" in python_code
+    assert "normal=[np.sin(surface_angle_rad), 0, np.cos(surface_angle_rad)]" in python_code
+
+
+def test_one_atom_surface_distance_follows_surface_normal() -> None:
+    assert np.allclose(_get_surface_position(5.0, 0.0), [0.0, 0.0, 5.0])
+    assert np.allclose(_get_surface_position(5.0, 90.0), [5.0, 0.0, 0.0])
+    assert np.allclose(_get_surface_position(5.0, 45.0), [5 / np.sqrt(2), 0.0, 5 / np.sqrt(2)])
 
 
 def test_two_atoms_page(window_pair_potential: MainWindow) -> None:

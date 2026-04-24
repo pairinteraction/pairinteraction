@@ -83,7 +83,8 @@ static void declare_system_atom(nb::module_ &m, const std::string &type_name) {
         .def("set_diamagnetism_enabled", &S::set_diamagnetism_enabled)
         .def("set_ion_distance_vector", &S::set_ion_distance_vector)
         .def("set_ion_charge", &S::set_ion_charge)
-        .def("set_ion_interaction_order", &S::set_ion_interaction_order);
+        .def("set_ion_interaction_order", &S::set_ion_interaction_order)
+        .def("set_green_tensor_interpolator", &S::set_green_tensor_interpolator);
 }
 
 template <typename T>

@@ -15,6 +15,9 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisAtom;
 
+template <typename Scalar>
+class GreenTensorInterpolator;
+
 class KetAtom;
 
 template <typename T>
@@ -46,6 +49,8 @@ public:
     Type &set_ion_distance_vector(const std::array<real_t, 3> &vector);
     Type &set_ion_charge(real_t charge);
     Type &set_ion_interaction_order(int value);
+    Type &set_green_tensor_interpolator(
+        std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator);
 
 private:
     std::array<real_t, 3> electric_field{0, 0, 0};
@@ -54,6 +59,7 @@ private:
     std::array<real_t, 3> ion_distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
     real_t ion_charge{1};
     int ion_interaction_order{3};
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
     void construct_hamiltonian() const override;
 };
