@@ -3,6 +3,7 @@ name: Documentation
 on:
   push:
     branches: ["*"]
+    tags: ["v*.*.*"]  # and run on tags that describe new versions
   pull_request:
     types: [opened, reopened, synchronize]
   workflow_call:
