@@ -141,7 +141,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     SystemAtom<double> system(basis);
 
     DOCTEST_SUBCASE("calculate energy") {
-        auto m1 = basis->get_canonical_state_from_ket(ket_s)->get_matrix_elements(
+
+        auto m1 = ket_s->template to_trivial_state<double>()->get_matrix_elements(
             ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m1.size() == 1);
         double energy1 = m1[0];
@@ -161,6 +162,36 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         double dipole = m[static_cast<int>(basis->get_corresponding_state_index(ket_s))];
 
         DOCTEST_CHECK(std::abs(dipole - 1247.6043831131365) < 1e-6);
+    }
+
+    DOCTEST_SUBCASE("calculate matrix elements across different ket sets") {
+        // basis_b has only ket_p (different id_of_kets from basis)
+        auto basis_b = BasisAtomCreator<double>().append_ket(ket_p).create(database);
+        DOCTEST_CHECK(basis->get_id_of_kets() != basis_b->get_id_of_kets());
+
+        // ENERGY: shape should be (basis_b.states × basis.states)
+        auto m_energy = basis->get_matrix_elements(basis_b, OperatorType::ENERGY, 0);
+        DOCTEST_CHECK(m_energy.rows() ==
+                      static_cast<Eigen::Index>(basis_b->get_number_of_states()));
+        DOCTEST_CHECK(m_energy.cols() == static_cast<Eigen::Index>(basis->get_number_of_states()));
+
+        // Only ket_p is in both bases: its energy should appear at (basis_b_idx, basis_idx)
+        auto p_in_b = static_cast<int>(basis_b->get_corresponding_state_index(ket_p));
+        auto p_in_a = static_cast<int>(basis->get_corresponding_state_index(ket_p));
+        DOCTEST_CHECK(std::abs(m_energy.coeff(p_in_b, p_in_a) - ket_p->get_energy()) < 1e-11);
+
+        // ELECTRIC_DIPOLE across different kets: compare row 0 with the single-ket API
+        auto m_dipole_cross = basis->get_matrix_elements(basis_b, OperatorType::ELECTRIC_DIPOLE, 0);
+        DOCTEST_CHECK(m_dipole_cross.rows() ==
+                      static_cast<Eigen::Index>(basis_b->get_number_of_states()));
+        DOCTEST_CHECK(m_dipole_cross.cols() ==
+                      static_cast<Eigen::Index>(basis->get_number_of_states()));
+
+        // Single-ket API uses same-kets path; cross-basis API uses different-kets path
+        auto m_dipole_ref = basis->get_matrix_elements(ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
+        for (int i = 0; i < static_cast<int>(basis->get_number_of_states()); i++) {
+            DOCTEST_CHECK(std::abs(m_dipole_cross.coeff(p_in_b, i) - m_dipole_ref(i)) < 1e-6);
+        }
     }
 
     DOCTEST_SUBCASE("calculate electric dipole matrix element with and without an induced dipole") {

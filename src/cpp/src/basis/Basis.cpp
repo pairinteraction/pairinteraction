@@ -170,8 +170,6 @@ Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
     if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    // The following line is a more efficient alternative to
-    // "get_amplitudes(get_canonical_state_from_ket(ket)).transpose()"
     return coefficients.matrix.row(ket_index);
 }
 
@@ -321,46 +319,6 @@ size_t Basis<Derived>::get_corresponding_ket_index(size_t state_index) const {
 template <typename Derived>
 size_t Basis<Derived>::get_corresponding_ket_index(std::shared_ptr<const Derived> /*state*/) const {
     throw std::runtime_error("Not implemented yet.");
-}
-
-template <typename Derived>
-std::shared_ptr<const Derived>
-Basis<Derived>::get_canonical_state_from_ket(size_t ket_index) const {
-    // Create a copy of the current object
-    auto created = std::make_shared<Derived>(derived());
-
-    // Fill the copy with the state corresponding to the ket index
-    created->coefficients.matrix =
-        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>(coefficients.matrix.rows(), 1);
-    created->coefficients.matrix.coeffRef(ket_index, 0) = 1;
-    created->coefficients.matrix.makeCompressed();
-
-    std::fill(created->ket_index_to_state_index.begin(), created->ket_index_to_state_index.end(),
-              std::numeric_limits<int>::max());
-    created->ket_index_to_state_index[ket_index] = 0;
-
-    created->state_index_to_quantum_number_f = {kets[ket_index]->get_quantum_number_f()};
-    created->state_index_to_quantum_number_m = {kets[ket_index]->get_quantum_number_m()};
-    created->state_index_to_parity = {kets[ket_index]->get_parity()};
-    created->state_index_to_ket_index = {ket_index};
-
-    created->_has_quantum_number_f =
-        created->state_index_to_quantum_number_f[0] != std::numeric_limits<real_t>::max();
-    created->_has_quantum_number_m =
-        created->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
-    created->_has_parity = created->state_index_to_parity[0] != Parity::UNKNOWN;
-
-    return created;
-}
-
-template <typename Derived>
-std::shared_ptr<const Derived>
-Basis<Derived>::get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_ket(ket);
-    if (ket_index < 0) {
-        throw std::invalid_argument("The ket does not belong to the basis.");
-    }
-    return get_canonical_state_from_ket(ket_index);
 }
 
 template <typename Derived>

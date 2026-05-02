@@ -4,6 +4,7 @@
 #include "./Ket.py.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/Ket.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -60,6 +61,8 @@ static void declare_ket_atom(nb::module_ &m) {
         .def("is_calculated_with_mqdt", &KetAtom::is_calculated_with_mqdt)
         .def("get_underspecified_channel_contribution",
              &KetAtom::get_underspecified_channel_contribution)
+        .def("to_trivial_state_real", &KetAtom::to_trivial_state<double>)
+        .def("to_trivial_state_complex", &KetAtom::to_trivial_state<std::complex<double>>)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetAtom &self) { return KetAtom::hash{}(self); });
 }
@@ -90,6 +93,7 @@ static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
     nb::class_<KetPair<T>, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_atomic_states", &KetPair<T>::get_atomic_states)
+        .def("to_trivial_state", &KetPair<T>::to_trivial_state)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetPair<T> &self) { return typename KetPair<T>::hash{}(self); });
 }

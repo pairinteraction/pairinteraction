@@ -977,12 +977,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
         throw std::invalid_argument("Unknown operator type.");
     }
 
-    if (initial_basis->get_id_of_kets() != final_basis->get_id_of_kets()) {
-        throw std::invalid_argument(
-            "The initial and final basis must be expressed using the same kets.");
-    }
-    std::string id_of_kets = initial_basis->get_id_of_kets();
-    std::string cache_key = fmt::format("{}_{}_{}", specifier, q, id_of_kets);
+    std::string initial_id_of_kets = initial_basis->get_id_of_kets();
+    std::string final_id_of_kets = final_basis->get_id_of_kets();
+    std::string cache_key =
+        fmt::format("{}_{}_{}_{}", specifier, q, initial_id_of_kets, final_id_of_kets);
     auto &matrix_elements_cache = get_matrix_elements_cache();
     std::promise<cached_matrix_ptr_t> matrix_promise;
     auto [cache_it, inserted] =
@@ -990,21 +988,24 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
 
     if (inserted) {
         try {
-            Eigen::Index dim = initial_basis->get_number_of_kets();
+            Eigen::Index initial_dim = initial_basis->get_number_of_kets();
+            Eigen::Index final_dim = final_basis->get_number_of_kets();
 
             std::vector<int> outerIndexPtr;
             std::vector<int> innerIndices;
             std::vector<real_t> values;
 
             if (specifier == "identity") {
-                outerIndexPtr.reserve(dim + 1);
-                innerIndices.reserve(dim);
-                values.reserve(dim);
-
-                for (int i = 0; i < dim; i++) {
+                outerIndexPtr.reserve(final_dim + 1);
+                const auto &final_kets = final_basis->get_kets();
+                for (size_t j = 0; j < final_kets.size(); ++j) {
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
-                    innerIndices.push_back(i);
-                    values.push_back(1);
+                    int col =
+                        initial_basis->get_ket_index_from_id(final_kets[j]->get_id_in_database());
+                    if (col >= 0) {
+                        innerIndices.push_back(col);
+                        values.push_back(1);
+                    }
                 }
                 outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
 
@@ -1020,45 +1021,54 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                 duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
                 if (specifier != "energy") {
                     result = con->Query(fmt::format(
-                        R"(WITH s AS (
+                        R"(WITH s_initial AS (
                             SELECT id, f, m, ketid FROM '{}'
                         ),
-                        b AS (
+                        s_final AS (
+                            SELECT id, f, m, ketid FROM '{}'
+                        ),
+                        b_initial AS (
                             SELECT MIN(f) AS min_f, MAX(f) AS max_f,
-                            MIN(id) AS min_id, MAX(id) AS max_id
-                            FROM s
+                            MIN(id) AS min_id, MAX(id) AS max_id FROM s_initial
+                        ),
+                        b_final AS (
+                            SELECT MIN(f) AS min_f, MAX(f) AS max_f,
+                            MIN(id) AS min_id, MAX(id) AS max_id FROM s_final
                         ),
                         w_filtered AS (
                             SELECT *
                             FROM '{}'
                             WHERE kappa = {} AND q = {} AND
-                            f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
-                            f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
+                            f_initial BETWEEN (SELECT min_f FROM b_initial) AND (SELECT max_f FROM b_initial) AND
+                            f_final BETWEEN (SELECT min_f FROM b_final) AND (SELECT max_f FROM b_final)
                         ),
                         e_filtered AS (
                             SELECT *
                             FROM '{}'
                             WHERE
-                            id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
-                            id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
+                            id_initial BETWEEN (SELECT min_id FROM b_initial) AND (SELECT max_id FROM b_initial) AND
+                            id_final BETWEEN (SELECT min_id FROM b_final) AND (SELECT max_id FROM b_final)
                         )
                         SELECT
-                        s2.ketid AS row,
-                        s1.ketid AS col,
+                        s_final.ketid AS row,
+                        s_initial.ketid AS col,
                         e.val*w.val AS val
                         FROM e_filtered AS e
-                        JOIN s AS s1 ON e.id_initial = s1.id
-                        JOIN s AS s2 ON e.id_final = s2.id
+                        JOIN s_initial ON e.id_initial = s_initial.id
+                        JOIN s_final ON e.id_final = s_final.id
                         JOIN w_filtered AS w ON
-                        w.f_initial = s1.f AND w.m_initial = s1.m AND
-                        w.f_final = s2.f AND w.m_final = s2.m
+                        w.f_initial = s_initial.f AND w.m_initial = s_initial.m AND
+                        w.f_final = s_final.f AND w.m_final = s_final.m
                         ORDER BY row ASC, col ASC)",
-                        id_of_kets, manager->get_path("misc", "wigner"), kappa, q,
-                        manager->get_path(species, specifier)));
+                        initial_id_of_kets, final_id_of_kets, manager->get_path("misc", "wigner"),
+                        kappa, q, manager->get_path(species, specifier)));
                 } else {
                     result = con->Query(fmt::format(
-                        R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
-                        id_of_kets));
+                        R"(SELECT f.ketid AS row, i.ketid AS col, i.energy AS val
+                            FROM '{}' AS i
+                            JOIN '{}' AS f ON i.ketid = f.ketid
+                            ORDER BY row ASC)",
+                        initial_id_of_kets, final_id_of_kets));
                 }
 
                 if (result->HasError()) {
@@ -1082,7 +1092,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
 
                 // Construct the matrix
                 int num_entries = static_cast<int>(result->RowCount());
-                outerIndexPtr.reserve(dim + 1);
+                outerIndexPtr.reserve(final_dim + 1);
                 innerIndices.reserve(num_entries);
                 values.reserve(num_entries);
 
@@ -1108,13 +1118,14 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                     }
                 }
 
-                for (; last_row < dim + 1; last_row++) {
+                for (; last_row < final_dim; last_row++) {
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
 
-            Eigen::Map<const cached_matrix_t> matrix_map(
-                dim, dim, values.size(), outerIndexPtr.data(), innerIndices.data(), values.data());
+            Eigen::Map<const cached_matrix_t> matrix_map(final_dim, initial_dim, values.size(),
+                                                         outerIndexPtr.data(), innerIndices.data(),
+                                                         values.data());
 
             auto cached_matrix = std::make_shared<const cached_matrix_t>(matrix_map);
             matrix_promise.set_value(std::move(cached_matrix));
@@ -1205,12 +1216,23 @@ struct database_dir_noexcept : std::filesystem::path {
 
 const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
+template <typename Scalar>
+std::shared_ptr<const BasisAtom<Scalar>>
+Database::make_trivial_basis(std::shared_ptr<const KetAtom> ket) {
+    typename BasisAtom<Scalar>::ketvec_t kets = {ket};
+    std::string id_of_kets = "trivial:" + std::to_string(ket->get_id_in_database());
+    return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private{},
+                                                     std::move(kets), std::move(id_of_kets), *this);
+}
+
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GETTERS(SCALAR)                                                                \
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
+    template std::shared_ptr<const BasisAtom<SCALAR>> Database::make_trivial_basis<SCALAR>(        \
+        std::shared_ptr<const KetAtom> ket);                                                       \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \

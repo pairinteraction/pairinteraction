@@ -30,7 +30,7 @@ def test_energy_range(pi_module: PairinteractionModule) -> None:
 
     # Diagonalize the systems for different distances in parallel and get all eigenenergies
     system_pairs = [pi_module.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
-    with no_log_propagation("cpp"):  # surpress warning: "A bijective map between states and kets could not be found."
+    with no_log_propagation("cpp"):  # suppress warning: "A bijective map between states and kets could not be found."
         pi_module.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
     eigenenergies_all = [system.get_eigenenergies(unit="GHz") for system in system_pairs]
 

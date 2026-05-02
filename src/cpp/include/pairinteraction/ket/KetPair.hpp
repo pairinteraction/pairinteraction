@@ -21,6 +21,9 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
+class BasisPair;
+
+template <typename Scalar>
 class KetPair : public Ket {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
@@ -38,6 +41,7 @@ public:
     std::shared_ptr<KetPair<Scalar>>
     get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
+    std::shared_ptr<const BasisPair<Scalar>> to_trivial_state() const;
 
     bool operator==(const KetPair<Scalar> &other) const;
     bool operator!=(const KetPair<Scalar> &other) const;
