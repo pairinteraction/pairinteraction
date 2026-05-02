@@ -58,7 +58,6 @@ dependencies = [
   "colorama >= 0.4.6",
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
-  "mplcursors >= 0.6",
   "attrs >= 24.0",
   "nbconvert >= 7.8",
   "nbformat >= 5.10",
@@ -286,10 +285,6 @@ disallow_untyped_calls = false
 warn_unused_ignores = false  # fails for pre-commit, eneabled in the ci
 disallow_subclassing_any = false  # fails for pre-commit, eneabled in the ci
 warn_return_any = false  # fails for pre-commit, eneabled in the ci
-
-[[tool.mypy.overrides]]
-module = "mplcursors"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "pytestqt.qtbot"

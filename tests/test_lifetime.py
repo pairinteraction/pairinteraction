@@ -56,7 +56,7 @@ def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
     # S states
     kets = [pi_module.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
     nu = [ket.nu for ket in kets]
-    with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
+    with no_log_propagation("cpp"):  # suppress low n state warnings from lifetime calculation
         lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
     popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
     assert np.isclose(popt[0], 3, atol=0.02)
@@ -72,7 +72,7 @@ def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
             raise
     else:
         nu = [ket.nu for ket in kets]
-        with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
+        with no_log_propagation("cpp"):  # suppress low n state warnings from lifetime calculation
             lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
         popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
         assert np.isclose(popt[0], 5, atol=0.02)
@@ -86,7 +86,7 @@ def test_transition_rates(pi_module: PairinteractionModule) -> None:
     """
     ket = pi_module.KetAtom("Yb174_mqdt", n=60, l=0, j=0, m=0)
 
-    with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
+    with no_log_propagation("cpp"):  # suppress low n state warnings from lifetime calculation
         lifetime = ket.get_lifetime(temperature=300, temperature_unit="K", unit="us")
         kets_sp, rates_sp = ket.get_spontaneous_transition_rates(unit="MHz")
         kets_bbr, rates_bbr = ket.get_black_body_transition_rates(temperature=300, temperature_unit="K", unit="MHz")

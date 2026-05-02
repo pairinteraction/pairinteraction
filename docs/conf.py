@@ -128,6 +128,7 @@ autodoc_default_options: dict[str, Any] = {
     "class-doc-from": "class",
 }
 autodoc_type_aliases = {
+    "Sequence": "collections.abc.Sequence",
     "NDArray": "pairinteraction.units.NDArray",
     "ArrayLike": "pairinteraction.units.ArrayLike",
     "PintFloat": "pairinteraction.units.PintFloat",
@@ -135,9 +136,9 @@ autodoc_type_aliases = {
     "PintArrayLike": "pairinteraction.units.PintArrayLike",
     "PintSparse": "pairinteraction.units.PintSparse",
     "PintComplex": "pairinteraction.units.PintComplex",
-    "KetPairLike": "pairinteraction.ket.ket_pair.KetPairLike",
-    "KetAtomTuple": "pairinteraction.ket.ket_pair.KetAtomTuple",
     "KetAtom": "pairinteraction.ket.ket_atom.KetAtom",
+    "StateAtom": "pairinteraction.state.state_atom.StateAtom",
+    "BasisAtom": "pairinteraction.basis.basis_atom.BasisAtom",
     "PermittivityLike": "pairinteraction.green_tensor.green_tensor_base.PermittivityLike",
 }
 
