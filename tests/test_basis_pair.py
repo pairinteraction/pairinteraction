@@ -107,8 +107,8 @@ def test_error_handling(basis: BasisPair) -> None:
         basis.get_matrix_elements("not a ket", ("energy", "energy"), (0, 0))  # type: ignore [arg-type]
 
 
-def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:
-    """Test BasisPair.from_ket_atoms."""
+def test_from_kets(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:
+    """Test BasisPair.from_kets."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket1 = pi_module.KetAtom("Rb", n=59, l=1, j=0.5, m=0.5)
     ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
@@ -119,7 +119,7 @@ def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAto
 
     for ket_atoms in ket_atoms_dict.values():
         # delta_energy restriction
-        pair_basis = pi_module.BasisPair.from_ket_atoms(
+        pair_basis = pi_module.BasisPair.from_kets(
             ket_atoms, [system_atom, system_atom], delta_energy=3, delta_energy_unit="GHz", delta_m=1
         )
         assert pair_basis.number_of_kets > 0
@@ -128,7 +128,7 @@ def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAto
         ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
         for target in [50, 100, 1000]:
             with no_log_propagation("pairinteraction.basis.basis_pair"):  # surpress number_of_kets warning
-                pair_basis = pi_module.BasisPair.from_ket_atoms(
+                pair_basis = pi_module.BasisPair.from_kets(
                     ket_atoms, [system_atom, system_atom], number_of_kets=target, delta_m=1
                 )
             assert pair_basis.number_of_kets >= target
@@ -136,11 +136,11 @@ def test_from_ket_atoms(pi_module: PairinteractionModule, system_atom: SystemAto
 
     # test error cases
     with pytest.raises(ValueError, match="empty"):
-        pi_module.BasisPair.from_ket_atoms([], [system_atom, system_atom])
+        pi_module.BasisPair.from_kets([], [system_atom, system_atom])
 
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     with pytest.raises(ValueError, match="number_of_kets"):
-        pi_module.BasisPair.from_ket_atoms(
+        pi_module.BasisPair.from_kets(
             (ket, ket),
             [system_atom, system_atom],
             delta_energy=3,
