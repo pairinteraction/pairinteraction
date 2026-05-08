@@ -77,7 +77,8 @@ class StateBase(ABC, Generic[KetType]):
             label += " + "
         if overlap <= norm_squared - 100 * np.finfo(float).eps:
             label += " + ... "
-        return label
+
+        return label.replace("+ -", "- ")
 
     @property
     def kets(self) -> list[KetType]:

@@ -209,7 +209,7 @@ class PlotEnergies(PlotWidget):
                 return
             idstep, idstate = self._point_index_map[selected]
             state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)
-            label = state.get_label().replace(" + ", "\n + ").replace("+ -", " - ")
+            label = state.get_label().replace(" + ", "\n + ").replace(" - ", "\n - ")
             xlim = self.canvas.ax.get_xlim()
             ylim = self.canvas.ax.get_ylim()
             x_frac = (pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])

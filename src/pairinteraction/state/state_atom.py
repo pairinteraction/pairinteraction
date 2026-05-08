@@ -39,7 +39,7 @@ class StateAtom(StateBase[KetAtom]):
         >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
         >>> state2 = pi.StateAtom(ket2, basis)
         >>> print((2 * state2 - state).normalize())
-        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ + -0.45 |Rb:60,S_1/2,1/2⟩)
+        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
 
 
     """
