@@ -58,7 +58,7 @@ def test_coefficients(basis: BasisPair) -> None:
 def test_get_amplitudes_and_overlaps(basis: BasisPair) -> None:
     """Test amplitude and overlap calculations."""
     # Test with ket
-    test_ket = basis.kets[0]
+    test_ket = basis.get_ket(0)
     amplitudes = basis.get_amplitudes(test_ket)
     assert len(amplitudes) == basis.number_of_states
     assert pytest.approx(amplitudes[0]) == 1.0  # NOSONAR
@@ -78,7 +78,7 @@ def test_get_amplitudes_and_overlaps(basis: BasisPair) -> None:
 def test_get_matrix_elements(basis: BasisPair) -> None:
     """Test matrix element calculations."""
     # Test with ket
-    test_ket = basis.kets[0]
+    test_ket = basis.get_ket(0)
     elements_dipole = basis.get_matrix_elements(
         test_ket, ("electric_dipole", "electric_dipole"), qs=(0, 0), unit="e^2 * a0^2"
     )

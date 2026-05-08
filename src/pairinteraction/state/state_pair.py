@@ -21,6 +21,19 @@ class StatePair(StateBase[KetPair]):
     _cpp: _backend.BasisPairComplex
     _ket_class = KetPair
 
+    def __init__(self, ket: KetPair, basis: Any) -> None:
+        """Initialize a state object representing a ket in a given basis.
+
+        Args:
+            ket: The ket to represent in the state.
+            basis: The basis to which the state belongs.
+
+        """
+        raise NotImplementedError(
+            "StatePair objects cannot be created directly. "
+            "You can use `basis_pair.get_corresponding_state(ket)` or `basis_pair.get_state(i)` instead."
+        )
+
     def get_amplitude(self, other: Any) -> Any:
         raise NotImplementedError("StatePair.get_amplitude not implemented yet")
 

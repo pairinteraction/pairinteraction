@@ -98,6 +98,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 Default None, i.e. energy is provided as pint object.
 
         """
+        super().__init__()
         assert len(systems) == 2, "BasisPair requires exactly two SystemAtom objects."
         creator = self._cpp_creator()
         for system in systems:

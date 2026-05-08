@@ -38,16 +38,14 @@ class StateBase(ABC, Generic[KetType]):
     _cpp: UnionCPPBasis
     _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        raise NotImplementedError(
-            "State objects cannot be created directly. "
-            "You can use `basis.get_corresponding_state(ket)` or `basis.states[i]` instead."
-        )
+    def __init__(self) -> None:
+        self._kets_cache: dict[int, KetType] = {}
 
     @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis) -> Self:
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
+        obj._kets_cache = {}
         return obj
 
     def __repr__(self) -> str:
@@ -72,7 +70,7 @@ class StateBase(ABC, Generic[KetType]):
         label = ""
         overlap = 0
         for i, ind in enumerate(sorted_inds, 1):
-            label += f"{np.real_if_close(coefficients[ind]):.2f} {self.kets[ind].get_label('ket')}"
+            label += f"{np.real_if_close(coefficients[ind]):.2f} {self.get_ket(ind).get_label('ket')}"
             overlap += abs(coefficients[ind]) ** 2
             if overlap > (0.95 * norm_squared) or i >= max_kets:
                 break
@@ -84,7 +82,16 @@ class StateBase(ABC, Generic[KetType]):
     @property
     def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
-        return [self._ket_class._from_cpp_object(ket_cpp) for ket_cpp in self._cpp.get_kets()]
+        return [self.get_ket(i) for i in range(self.number_of_kets)]
+
+    def get_ket(self, index: int) -> KetType:
+        """Return the ket at the given index."""
+        if index not in self._kets_cache:
+            if index < 0 or index >= self.number_of_kets:
+                raise IndexError(f"Ket index {index} out of range (number of kets: {self.number_of_kets}).")
+            ket_cpp = self._cpp.get_ket(index)
+            self._kets_cache[index] = self._ket_class._from_cpp_object(ket_cpp)
+        return self._kets_cache[index]
 
     @property
     def number_of_kets(self) -> int:
@@ -108,7 +115,7 @@ class StateBase(ABC, Generic[KetType]):
 
     def get_corresponding_ket(self) -> KetType:
         """Return the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
-        return self.kets[self.get_corresponding_ket_index()]
+        return self.get_ket(self.get_corresponding_ket_index())
 
     def get_corresponding_ket_index(self) -> int:
         """Return the index of the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
