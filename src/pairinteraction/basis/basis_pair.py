@@ -253,18 +253,22 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         return obj
 
     @overload
-    def get_amplitudes(self, other: KetPairLike) -> NDArray: ...
+    def get_amplitudes(self, other: KetPairLike | StatePair) -> NDArray: ...
 
     @overload
     def get_amplitudes(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
+    def get_amplitudes(self, other: KetPairLike | StatePair | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if is_ket_atom_tuple(other):
             ket_cpp = (other[0]._cpp, other[1]._cpp)
             return np.array(self._cpp.get_amplitudes(*ket_cpp))
+
+        # StatePair
+        if isinstance(other, StatePair):
+            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()
 
         # BasisPair like
         if isinstance(other, BasisPair):
@@ -276,18 +280,22 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         raise TypeError(f"Unknown type: {type(other)=}")
 
     @overload
-    def get_overlaps(self, other: KetPairLike) -> NDArray: ...
+    def get_overlaps(self, other: KetPairLike | StatePair) -> NDArray: ...
 
     @overload
     def get_overlaps(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_overlaps(self, other: KetPairLike | BasisPairLike) -> NDArray | csr_matrix:
+    def get_overlaps(self, other: KetPairLike | StatePair | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if is_ket_atom_tuple(other):
             ket_cpp = (other[0]._cpp, other[1]._cpp)
             return np.array(self._cpp.get_overlaps(*ket_cpp))
+
+        # StatePair
+        if isinstance(other, StatePair):
+            return self._cpp.get_overlaps(other._cpp).toarray().flatten()
 
         # BasisPair like
         if isinstance(other, BasisPair):
