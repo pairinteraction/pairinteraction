@@ -46,19 +46,29 @@ class KetPair(KetBase):
         """Creating a KetPair object directly is not possible."""  # noqa: D401
         raise NotImplementedError("KetPair objects cannot be created directly.")
 
-    def get_label(self, fmt: Literal["raw", "ket", "bra", "detailed"] = "raw", *, max_kets: int = 3) -> str:
+    def get_label(
+        self,
+        fmt: Literal["raw", "ket", "bra", "detailed"] = "raw",
+        *,
+        stop_after_num_kets: int = 3,
+        stop_after_accumulated_overlap: float = 0.95,
+    ) -> str:
         """Label representing the ket pair.
 
         Args:
             fmt: The format of the label, i.e. whether to return the raw label, or the label in ket or bra notation.
-            max_kets: Maximum number of single atom kets to include in the label for each StateAtom.
+            stop_after_num_kets: Maximum number of single atom kets to include in the label for each StateAtom.
+            stop_after_accumulated_overlap: Stop including kets in the single atom label,
+                if the accumulated overlap of the included kets exceeds this value.
 
         Returns:
             A string representation of the ket pair.
 
         """
         if fmt == "detailed":
-            atom_labels = [atom.get_label(max_kets=max_kets) for atom in self.state_atoms]
+            atom_labels = [
+                atom.get_label(stop_after_num_kets, stop_after_accumulated_overlap) for atom in self.state_atoms
+            ]
             return f"({atom_labels[0]}) ⊗ ({atom_labels[1]})"
         return super().get_label(fmt)
 
