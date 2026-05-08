@@ -289,10 +289,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
         # StatePair
         if isinstance(other, StatePair):
-            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()
+            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()
         if is_state_atom_tuple(other):
             state_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_amplitudes(*state_cpp).toarray().flatten()
+            return self._cpp.get_amplitudes(*state_cpp).toarray().ravel()
 
         # BasisPair like
         if isinstance(other, BasisPair):
@@ -319,10 +319,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
         # StatePair
         if isinstance(other, StatePair):
-            return self._cpp.get_overlaps(other._cpp).toarray().flatten()
+            return self._cpp.get_overlaps(other._cpp).toarray().ravel()
         if is_state_atom_tuple(other):
             state_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_overlaps(*state_cpp).toarray().flatten()
+            return self._cpp.get_overlaps(*state_cpp).toarray().ravel()
 
         # BasisPair like
         if isinstance(other, BasisPair):
@@ -390,11 +390,11 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
         # StatePair like
         if isinstance(other, StatePair):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs).toarray().flatten()
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs).toarray().ravel()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
         if is_state_atom_tuple(other):
             state_cpp = (other[0]._cpp, other[1]._cpp)
-            matrix_elements_au = self._cpp.get_matrix_elements(*state_cpp, *operators_cpp, *qs).toarray().flatten()
+            matrix_elements_au = self._cpp.get_matrix_elements(*state_cpp, *operators_cpp, *qs).toarray().ravel()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
 
         # BasisPair like

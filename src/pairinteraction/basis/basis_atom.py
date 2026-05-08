@@ -298,7 +298,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if isinstance(other, StateAtom):
-            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()
+            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()
         if isinstance(other, BasisAtom):
             return self._cpp.get_amplitudes(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
@@ -313,7 +313,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if isinstance(other, StateAtom):
-            return self._cpp.get_overlaps(other._cpp).toarray().flatten()
+            return self._cpp.get_overlaps(other._cpp).toarray().ravel()
         if isinstance(other, BasisAtom):
             return self._cpp.get_overlaps(other._cpp)
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
@@ -344,7 +344,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().flatten()
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
             matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)

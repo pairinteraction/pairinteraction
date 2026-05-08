@@ -647,7 +647,7 @@ class EffectiveSystemPair:
 
             inf_data_inds = np.isinf(overlaps_i.data)
             if inf_data_inds.any():
-                indices = overlaps_i.indices[np.argwhere(inf_data_inds).flatten()]
+                indices = overlaps_i.indices[np.argwhere(inf_data_inds).ravel()]
                 logger.critical(
                     "Detected 'inf' entries in the effective eigenvectors.\n"
                     " This might happen, if you forgot to include a degenerate state in the model space.\n"

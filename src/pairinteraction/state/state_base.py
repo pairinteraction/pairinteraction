@@ -112,7 +112,7 @@ class StateBase(ABC, Generic[KetType]):
         The coefficients are normalized, i.e. the sum of the absolute values of the coefficients is equal to 1.
 
         """
-        return self._cpp.get_coefficients().toarray().flatten()
+        return self._cpp.get_coefficients().toarray().ravel()
 
     def get_corresponding_ket(self) -> KetType:
         """Return the ket corresponding to the state (i.e. the ket with the maximal overlap)."""

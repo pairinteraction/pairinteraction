@@ -176,7 +176,7 @@ class StateAtom(StateBase[KetAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))[0]  # type: ignore [no-any-return]
         if isinstance(other, StateAtom):
-            return self._cpp.get_amplitudes(other._cpp).toarray().flatten()[0]  # type: ignore [no-any-return]
+            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()[0]  # type: ignore [no-any-return]
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     def get_overlap(self, other: Self | KetAtom) -> float:
@@ -197,7 +197,7 @@ class StateAtom(StateBase[KetAtom]):
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))[0]  # type: ignore [no-any-return]
         if isinstance(other, StateAtom):
-            return self._cpp.get_overlaps(other._cpp).toarray().flatten()[0]  # type: ignore [no-any-return]
+            return self._cpp.get_overlaps(other._cpp).toarray().ravel()[0]  # type: ignore [no-any-return]
         raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
 
     @overload
@@ -237,7 +237,7 @@ class StateAtom(StateBase[KetAtom]):
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))[0]
             return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().flatten()[0]
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()[0]
             return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 

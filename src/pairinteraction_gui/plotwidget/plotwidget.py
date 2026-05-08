@@ -145,7 +145,7 @@ class PlotEnergies(PlotWidget):
         overlaps_flattened = np.hstack(results.ket_overlaps)
 
         min_overlap = 1e-4
-        inds: NDArray[Any] = np.argwhere(overlaps_flattened > min_overlap).flatten()
+        inds: NDArray[Any] = np.argwhere(overlaps_flattened > min_overlap).ravel()
         inds = inds[np.argsort(overlaps_flattened[inds])]
 
         if len(inds) > 0:
