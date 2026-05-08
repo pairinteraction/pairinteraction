@@ -54,11 +54,13 @@ class StateBase(ABC, Generic[KetType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def get_label(self, max_kets: int = 3) -> str:
+    def get_label(self, stop_after_num_kets: int = 3, stop_after_accumulated_overlap: float = 0.95) -> str:
         """Label representing the state.
 
         Args:
-            max_kets: Maximum number of kets to include in the label.
+            stop_after_num_kets: Maximum number of kets to include in the label.
+            stop_after_accumulated_overlap: Stop including kets in the label,
+                if the accumulated overlap of the included kets exceeds this value.
 
         Returns:
             The label of the ket in the given format.
@@ -72,7 +74,7 @@ class StateBase(ABC, Generic[KetType]):
         for i, ind in enumerate(sorted_inds, 1):
             label += f"{np.real_if_close(coefficients[ind]):.2f} {self.get_ket(ind).get_label('ket')}"
             overlap += abs(coefficients[ind]) ** 2
-            if overlap > (0.95 * norm_squared) or i >= max_kets:
+            if overlap > (stop_after_accumulated_overlap * norm_squared) or i >= stop_after_num_kets:
                 break
             label += " + "
         if overlap <= norm_squared - 100 * np.finfo(float).eps:
