@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeGuard
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeGuard, overload
 
 from pairinteraction.ket.ket_atom import KetAtom
 from pairinteraction.ket.ket_base import KetBase
@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
     from pairinteraction import _backend
     from pairinteraction.state import StateAtom
+    from pairinteraction.system.system_atom import SystemAtom
+    from pairinteraction.units import PintFloat
 
 
 KetAtomTuple: TypeAlias = "tuple[KetAtom, KetAtom] | Sequence[KetAtom]"
@@ -76,3 +78,35 @@ class KetPair(KetBase):
 
 class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal  # type: ignore [assignment]
+
+
+def get_ketpairlike_m(ket: KetPair | KetAtomTuple) -> float:
+    if is_ket_atom_tuple(ket):
+        m1 = ket[0].m
+        m2 = ket[1].m
+        return m1 + m2
+    if isinstance(ket, KetPair):
+        return ket.m
+    raise TypeError(f"Unknown type: {type(ket)=}")
+
+
+@overload
+def get_ketpairlike_energy(
+    ket: KetPair | KetAtomTuple, system_atoms: Sequence[SystemAtom], unit: None
+) -> PintFloat: ...
+
+
+@overload
+def get_ketpairlike_energy(ket: KetPair | KetAtomTuple, system_atoms: Sequence[SystemAtom], unit: str) -> float: ...
+
+
+def get_ketpairlike_energy(
+    ket: KetPair | KetAtomTuple, system_atoms: Sequence[SystemAtom], unit: str | None
+) -> float | PintFloat:
+    if is_ket_atom_tuple(ket):
+        energy1 = system_atoms[0].get_corresponding_energy(ket[0], unit)
+        energy2 = system_atoms[1].get_corresponding_energy(ket[1], unit)
+        return energy1 + energy2
+    if isinstance(ket, KetPair):
+        return ket.get_energy(unit)
+    raise TypeError(f"Unknown type: {type(ket)=}")
