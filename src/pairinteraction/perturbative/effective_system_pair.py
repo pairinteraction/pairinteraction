@@ -597,29 +597,38 @@ class EffectiveSystemPair:
     # # # Other stuff # # #
     @cached_property
     def model_inds(self) -> list[int]:
-        """The indices of the corresponding KetPairs of the given ket_tuples in the basis of the pair system."""
+        """The indices of the corresponding KetPairs of the given ket_tuples in the basis_pair."""
         model_inds = []
         for kets in self.ket_tuples:
             overlap = self.basis_pair.get_overlaps(kets)
             inds = np.argsort(overlap)[::-1]
             model_inds.append(int(inds[0]))
-
-            if overlap[inds[0]] > 0.6:
-                continue
-            if overlap[inds[0]] == 0:
-                raise ValueError(f"The pairstate {kets} is not part of the basis of the pair system.")
-            logger.critical(
-                "The ket_pair %s only has an overlap of %.3f with its corresponding pair_state."
-                " The most perturbing states are:",
-                kets,
-                overlap[inds[0]],
-            )
-            for i in inds[1:5]:
-                logger.error("  - %s with overlap %.3e", self.system_pair.basis.get_ket(i), overlap[i])
-
+            self._warn_model_inds_overlap(overlap, inds, kets)
         return model_inds
 
-    def check_for_resonances(self, required_overlap: float = 0.95) -> None:
+    def _warn_model_inds_overlap(self, overlap: NDArray, inds: NDArray, kets: KetAtomTuple) -> None:
+        if overlap[inds[0]] > 0.8:
+            return
+
+        if overlap[inds[0]] == 0:
+            raise ValueError(f"The pairstate {kets} is not part of the basis_pair.")
+
+        msg = ""
+        accumulated = overlap[inds[0]]
+        for i in inds[1:5]:
+            msg += f"\n  - {self.basis_pair.get_state(i)} with overlap {overlap[i]:.3e}"
+            accumulated += overlap[i]
+            if accumulated > 0.8:
+                break
+
+        logger.warning(
+            "The pairstate %s has only an overlap of %.3f with its corresponding state in the basis_pair.\n"
+            "Note that the effective hamiltonian is calculated with respect to the corresponding state %s.\n"
+            "The most perturbing other states in the basis_pair are:\n%s",
+            *(kets, overlap[inds[0]], self.basis_pair.get_state(inds[0]), msg),
+        )
+
+    def check_for_resonances(self, max_perturber_weight: float = 0.05) -> None:
         r"""Check if states of the model space have strong resonances with states outside the model space."""
         # Get the effective eigenvectors without potential warning
         if self._eff_vecs is None:
@@ -629,40 +638,33 @@ class EffectiveSystemPair:
 
         overlaps = (eff_vecs.multiply(eff_vecs.conj())).real  # elementwise multiplication
 
-        model_inds = self.model_inds
-        for i, m_ind in enumerate(model_inds):
+        for i, m_ind in enumerate(self.model_inds):
             overlaps_i = overlaps[i, :]
-
-            inf_data_inds = np.isinf(overlaps_i.data)
-            if inf_data_inds.any():
-                indices = overlaps_i.indices[np.argwhere(inf_data_inds).ravel()]
-                logger.critical(
-                    "Detected 'inf' entries in the effective eigenvectors.\n"
-                    " This might happen, if you forgot to include a degenerate state in the model space.\n"
-                    " Consider adding the following states to the model space:"
-                )
-                for index in indices:
-                    logger.critical("  - %s has infinite admixture", self.system_pair.basis.get_ket(index))
+            other_weight = np.sum(overlaps_i.data) - 1
+            if other_weight < max_perturber_weight:
                 continue
 
-            overlaps_i /= np.sum(overlaps_i.data)  # normalize the overlaps to 1
-            if overlaps_i[0, m_ind] >= required_overlap:
-                continue
-            logger.error(
-                "The ket %s has only %.3f overlap with its corresponding effective eigenvector.\n"
-                " Thus, the calculation might lead to unexpected or wrong results.\n"
-                " Consider adding the most perturbing states to the model space.\n"
-                " The most perturbing states are:",
-                self.system_pair.basis.get_ket(m_ind),
-                overlaps_i[0, m_ind],
-            )
-            print_above_admixture = (1 - overlaps_i[0, m_ind]) * 0.05
-            indices = list(sparse.find(overlaps_i >= print_above_admixture)[1])
+            msg = ""
+            indices = [
+                int(index) for index in sparse.find(overlaps_i >= 0.1 * max_perturber_weight)[1] if index != m_ind
+            ]
             indices = sorted(indices, key=lambda index, ov=overlaps_i: ov[0, index], reverse=True)  # type: ignore [misc]
-            for index in indices:
-                if index != m_ind:
-                    admixture = overlaps_i[0, index]
-                    logger.error("  - %s with overlap %.3e", self.system_pair.basis.get_ket(index), admixture)
+            overlap = 0
+            for index in indices[:5]:
+                admixture = overlaps_i[0, index]
+                msg += f"\n  - {self.basis_pair.get_state(index)} has admixture {overlaps_i[0, index]:.3e}"
+                overlap += admixture
+                if overlap > 0.8 * other_weight:
+                    break
+
+            logger.warning(
+                "The state (from the model space) %s gets a large dressing (%.3f overlap) "
+                "in perturbation theory from other states from the basis_pair.\n"
+                "Thus, treating these states perturbatively might not be accurate. "
+                "Consider adding these states to the model space.\n"
+                "The most perturbing states are:\n%s",
+                *(self.basis_pair.get_state(m_ind), other_weight, msg),
+            )
 
 
 class EffectiveSystemPairReal(EffectiveSystemPair):
