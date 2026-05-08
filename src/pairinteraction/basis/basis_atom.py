@@ -291,9 +291,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_amplitudes(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_amplitudes(self, other: Self) -> csr_matrix: ...
+    def get_amplitudes(self, other: BasisAtom) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
+    def get_amplitudes(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_amplitudes(other._cpp))
         if isinstance(other, StateAtom):
@@ -306,9 +306,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_overlaps(self, other: KetAtom | StateAtom) -> NDArray: ...
 
     @overload
-    def get_overlaps(self, other: Self) -> csr_matrix: ...
+    def get_overlaps(self, other: BasisAtom) -> csr_matrix: ...
 
-    def get_overlaps(self, other: KetAtom | StateAtom | Self) -> NDArray | csr_matrix:
+    def get_overlaps(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
         if isinstance(other, KetAtom):
             return np.array(self._cpp.get_overlaps(other._cpp))
         if isinstance(other, StateAtom):
@@ -326,13 +326,15 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_matrix_elements(self, other: KetAtom | StateAtom, operator: OperatorType, q: int, unit: str) -> NDArray: ...
 
     @overload
-    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: None = None) -> PintSparse: ...
+    def get_matrix_elements(
+        self, other: BasisAtom, operator: OperatorType, q: int, unit: None = None
+    ) -> PintSparse: ...
 
     @overload
-    def get_matrix_elements(self, other: Self, operator: OperatorType, q: int, unit: str) -> csr_matrix: ...
+    def get_matrix_elements(self, other: BasisAtom, operator: OperatorType, q: int, unit: str) -> csr_matrix: ...
 
     def get_matrix_elements(
-        self, other: KetAtom | StateAtom | Self, operator: OperatorType, q: int, unit: str | None = None
+        self, other: KetAtom | StateAtom | BasisAtom, operator: OperatorType, q: int, unit: str | None = None
     ) -> NDArray | PintArray | csr_matrix | PintSparse:
         cpp_op = get_cpp_operator_type(operator)
 

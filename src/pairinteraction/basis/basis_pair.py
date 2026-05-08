@@ -14,6 +14,7 @@ from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.state import StatePair, StatePairReal
+from pairinteraction.state.state_pair import is_state_atom_tuple
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -24,10 +25,11 @@ if TYPE_CHECKING:
     from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.ket import KetAtomTuple, KetPairLike
+    from pairinteraction.state.state_pair import StatePairLike
     from pairinteraction.system import SystemAtom
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
-    BasisPairLike: TypeAlias = "BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom]"
+BasisPairLike: TypeAlias = "BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom]"
 
 logger = logging.getLogger(__name__)
 
@@ -271,12 +273,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         raise TypeError(f"Unknown type: {type(ket)=}")
 
     @overload
-    def get_amplitudes(self, other: KetPairLike | StatePair) -> NDArray: ...
+    def get_amplitudes(self, other: KetPairLike | StatePairLike) -> NDArray: ...
 
     @overload
     def get_amplitudes(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_amplitudes(self, other: KetPairLike | StatePair | BasisPairLike) -> NDArray | csr_matrix:
+    def get_amplitudes(self, other: KetPairLike | StatePairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_amplitudes(other._cpp))
@@ -287,6 +289,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         # StatePair
         if isinstance(other, StatePair):
             return self._cpp.get_amplitudes(other._cpp).toarray().flatten()
+        if is_state_atom_tuple(other):
+            state_cpp = (other[0]._cpp, other[1]._cpp)
+            return self._cpp.get_amplitudes(*state_cpp).toarray().flatten()
 
         # BasisPair like
         if isinstance(other, BasisPair):
@@ -298,12 +303,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         raise TypeError(f"Unknown type: {type(other)=}")
 
     @overload
-    def get_overlaps(self, other: KetPairLike | StatePair) -> NDArray: ...
+    def get_overlaps(self, other: KetPairLike | StatePairLike) -> NDArray: ...
 
     @overload
     def get_overlaps(self, other: BasisPairLike) -> csr_matrix: ...
 
-    def get_overlaps(self, other: KetPairLike | StatePair | BasisPairLike) -> NDArray | csr_matrix:
+    def get_overlaps(self, other: KetPairLike | StatePairLike | BasisPairLike) -> NDArray | csr_matrix:
         # KetPair like
         if isinstance(other, KetPair):
             return np.array(self._cpp.get_overlaps(other._cpp))
@@ -314,6 +319,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         # StatePair
         if isinstance(other, StatePair):
             return self._cpp.get_overlaps(other._cpp).toarray().flatten()
+        if is_state_atom_tuple(other):
+            state_cpp = (other[0]._cpp, other[1]._cpp)
+            return self._cpp.get_overlaps(*state_cpp).toarray().flatten()
 
         # BasisPair like
         if isinstance(other, BasisPair):
@@ -327,7 +335,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     @overload
     def get_matrix_elements(
         self,
-        other: KetPairLike,
+        other: KetPairLike | StatePairLike,
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: None = None,
@@ -335,7 +343,11 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     @overload
     def get_matrix_elements(
-        self, other: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
+        self,
+        other: KetPairLike | StatePairLike,
+        operators: tuple[OperatorType, OperatorType],
+        qs: tuple[int, int],
+        unit: str,
     ) -> NDArray: ...
 
     @overload
@@ -358,12 +370,13 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     def get_matrix_elements(
         self,
-        other: KetPairLike | BasisPairLike,
+        other: KetPairLike | StatePairLike | BasisPairLike,
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
         unit: str | None = None,
     ) -> NDArray | PintArray | csr_matrix | PintSparse:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
+        matrix_elements_au: NDArray
 
         # KetPair like
         if isinstance(other, KetPair):
@@ -372,6 +385,15 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         if is_ket_atom_tuple(other):
             ket_cpp = (other[0]._cpp, other[1]._cpp)
             matrix_elements_au = np.array(self._cpp.get_matrix_elements(*ket_cpp, *operators_cpp, *qs))
+            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
+
+        # StatePair like
+        if isinstance(other, StatePair):
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs).toarray().flatten()
+            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
+        if is_state_atom_tuple(other):
+            state_cpp = (other[0]._cpp, other[1]._cpp)
+            matrix_elements_au = self._cpp.get_matrix_elements(*state_cpp, *operators_cpp, *qs).toarray().flatten()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
 
         # BasisPair like

@@ -3,6 +3,21 @@
 
 from pairinteraction.basis.basis_atom import BasisAtom, BasisAtomReal
 from pairinteraction.basis.basis_base import BasisBase
-from pairinteraction.basis.basis_pair import BasisPair, BasisPairReal
+from pairinteraction.basis.basis_pair import (
+    BasisPair,
+    BasisPairLike,
+    BasisPairReal,
+    is_basis_atom_tuple,
+    is_basis_pair_like,
+)
 
-__all__ = ["BasisAtom", "BasisAtomReal", "BasisBase", "BasisPair", "BasisPairReal"]
+__all__ = [
+    "BasisAtom",
+    "BasisAtomReal",
+    "BasisBase",
+    "BasisPair",
+    "BasisPairLike",
+    "BasisPairReal",
+    "is_basis_atom_tuple",
+    "is_basis_pair_like",
+]
