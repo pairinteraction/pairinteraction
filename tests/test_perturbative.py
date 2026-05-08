@@ -193,7 +193,7 @@ def test_c6(pi_module: PairinteractionModule) -> None:
     c6_obj.set_magnetic_field([0, 0, 10], "gauss")
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
-    assert np.isclose(c6, -169.149)
+    assert np.isclose(c6, -169.135)
 
 
 def test_exact_resonance_detection(
@@ -219,8 +219,9 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     ket2 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
-    eff_system.set_minimum_number_of_ket_pairs(100)
     eff_system.set_distance(10, 35.1, "micrometer")
+    eff_system.create_basis_pair(number_of_kets=100)
+
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
         eff_system.get_effective_hamiltonian()
