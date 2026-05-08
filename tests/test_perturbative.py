@@ -209,8 +209,8 @@ def test_exact_resonance_detection(
     with no_log_propagation("pairinteraction"), np.errstate(invalid="ignore"):
         eff_system.get_effective_hamiltonian()
     captured = capsys.readouterr()
-    assert "Detected 'inf' entries" in captured.err
-    assert "|~Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩ has infinite admixture" in captured.err
+    assert "gets a large dressing (inf overlap)" in captured.err
+    assert "|Rb:61,P_3/2,1/2; Rb:61,S_1/2,1/2⟩" in captured.err
 
 
 def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pytest.CaptureFixture[str]) -> None:
@@ -225,7 +225,7 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
         eff_system.get_effective_hamiltonian()
-        eff_system.check_for_resonances(0.99)
+        eff_system.check_for_resonances(0.01)
     captured = capsys.readouterr()
     assert "The most perturbing states are" in captured.err
     assert "Rb:60,P_3/2,1/2; Rb:60,P_3/2,3/2" in captured.err
