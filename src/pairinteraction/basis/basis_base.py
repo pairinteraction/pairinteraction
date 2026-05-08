@@ -35,7 +35,9 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     _ket_class: type[KetType]  # should be ClassVar, but cannot be nested yet
     _state_class: type[StateType]  # should be ClassVar, but cannot be nested yet
 
-    def __init__(self) -> None:
+    def _post_init(self) -> None:
+        if self.number_of_kets == 0:
+            raise ValueError("Cannot create a basis with zero kets.")
         self._kets_cache: dict[int, KetType] = {}
 
     @classmethod
@@ -43,7 +45,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         assert len(kwargs) == len(args) == 0, "No additional arguments expected."
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
-        obj._kets_cache = {}
+        obj._post_init()
         return obj
 
     def __repr__(self) -> str:
