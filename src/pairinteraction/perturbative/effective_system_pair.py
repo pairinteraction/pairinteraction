@@ -10,12 +10,13 @@ from typing import TYPE_CHECKING, Literal, overload
 
 import numpy as np
 from scipy import sparse
+from typing_extensions import deprecated
 
 from pairinteraction.basis import BasisAtom, BasisAtomReal, BasisPair, BasisPairReal
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
-from pairinteraction.units import QuantityArray, QuantityScalar
+from pairinteraction.units import QuantityArray
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -60,7 +61,7 @@ class EffectiveSystemPair:
         >>> eff_h -= np.eye(3) * eff_system.get_pair_energies("MHz")[1]
         >>> print(np.round(eff_h, 0), "MHz")
         [[292.   3.   0.]
-         [  3.   0.   3.]
+         [  3.  -0.   3.]
          [  0.   3. 292.]] MHz
 
     """
@@ -90,8 +91,6 @@ class EffectiveSystemPair:
         self._diamagnetism_enabled: bool | None = None
 
         # BasisPair and SystemPair attributes
-        self._minimum_number_of_ket_pairs: int | None = None
-        self._maximum_number_of_ket_pairs: int | None = None
         self._interaction_order: int | None = None
         self._distance_vector: PintArray | None = None
 
@@ -361,80 +360,69 @@ class EffectiveSystemPair:
     def basis_pair(self) -> BasisPair:
         """The basis pair object for the pair system."""
         if not self._is_created("basis_pair"):
-            self._create_basis_pair()
+            self.create_basis_pair()
         return self._basis_pair
 
     @basis_pair.setter
     def basis_pair(self, basis_pair: BasisPair) -> None:
         self._ensure_not_created()
-        if self._minimum_number_of_ket_pairs is not None or self._maximum_number_of_ket_pairs is not None:
-            logger.warning("Setting basis_pair will overwrite parameters defined for basis_pair.")
         self._user_set_parts.add("basis_pair")
         self._basis_pair = basis_pair
         self.system_atoms = basis_pair.system_atoms
 
-    def set_minimum_number_of_ket_pairs(self: Self, number_of_kets: int) -> Self:
-        """Set the minimum number of ket pairs in the basis pair.
+    @deprecated("set_minimum_number_of_ket_pairs is deprecated, use create_basis_pair(...) instead.")
+    def set_minimum_number_of_ket_pairs(self: Self, number_of_kets: int) -> Self:  # noqa: ARG002
+        raise DeprecationWarning("set_minimum_number_of_ket_pairs is deprecated, use create_basis_pair(...) instead.")
 
-        Args:
-            number_of_kets: The minimum number of ket pairs to set in the basis pair, by default we use 2000.
+    @deprecated("set_maximum_number_of_ket_pairs is deprecated, use create_basis_pair(...) instead.")
+    def set_maximum_number_of_ket_pairs(self: Self, number_of_kets: int) -> Self:  # noqa: ARG002
+        raise DeprecationWarning("set_maximum_number_of_ket_pairs is deprecated, use create_basis_pair(...) instead.")
 
-        """
-        self._delete_created("basis_pair")
-        if self._maximum_number_of_ket_pairs is not None and number_of_kets > self._maximum_number_of_ket_pairs:
-            raise ValueError("The minimum number of ket pairs cannot be larger than the maximum number of ket pairs.")
-        self._minimum_number_of_ket_pairs = number_of_kets
-        return self
+    def create_basis_pair(
+        self,
+        delta_energy: float | PintFloat | None = None,
+        delta_energy_unit: str | None = None,
+        number_of_kets: int | None = None,
+        *,
+        allow_large_basis: bool = False,
+    ) -> None:
+        if self._is_created("basis_pair"):
+            raise RuntimeError("The basis_pair has already been created. Cannot create it again.")
 
-    def set_maximum_number_of_ket_pairs(self: Self, number_of_kets: int) -> Self:
-        """Set the maximum number of ket pairs in the basis pair.
-
-        Args:
-            number_of_kets: The maximum number of ket pairs to set in the basis pair.
-
-        """
-        self._delete_created("basis_pair")
-        if self._minimum_number_of_ket_pairs is not None and number_of_kets < self._minimum_number_of_ket_pairs:
-            raise ValueError("The maximum number of ket pairs cannot be smaller than the minimum number of ket pairs.")
-        self._maximum_number_of_ket_pairs = number_of_kets
-        return self
-
-    def _create_basis_pair(self) -> None:
-        max_number_of_kets: float | None = self._maximum_number_of_ket_pairs
-        if max_number_of_kets is None:
-            max_number_of_kets = np.inf
-        min_number_of_kets: float | None = self._minimum_number_of_ket_pairs
-        if min_number_of_kets is None:
-            min_number_of_kets = min(2_000, max_number_of_kets)
-
-        pair_energies_au = self.get_pair_energies(unit="hartree")
-        min_energy_au = min(pair_energies_au)
-        max_energy_au = max(pair_energies_au)
-
-        mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")
-        delta_energy_au = 100 * mhz_au
-        min_delta, max_delta = 0.1 * mhz_au, 1.0
-
-        # make a bisect search to get a sensible basis size between:
-        # min_number_of_kets and max_number_of_kets
-        while True:
-            basis_pair = self._basis_pair_class(
-                self.system_atoms,
-                energy=(min_energy_au - delta_energy_au, max_energy_au + delta_energy_au),
-                energy_unit="hartree",
+        if delta_energy is not None or number_of_kets is not None:
+            self._basis_pair = self._basis_pair_class.from_kets(
+                self.ket_tuples,
+                system_atoms=self.system_atoms,
+                delta_energy=delta_energy,
+                delta_energy_unit=delta_energy_unit,
+                number_of_kets=number_of_kets,
             )
+            return
 
-            if max_delta - min_delta < mhz_au:
-                break  # stop condition if delta_energy_au does not change anymore
+        min_nu = min(ket.nu for ket_tuple in self.ket_tuples for ket in ket_tuple)
+        # for nu = 40 use delta_energy = 8GHz and scale with nu^3 (i.e. for nu=80 use 1GHz)
+        delta_energy_ghz = 8 * (40 / min_nu) ** 3
+        basis_pair = self._basis_pair_class.from_kets(
+            self.ket_tuples,
+            system_atoms=self.system_atoms,
+            delta_energy=delta_energy_ghz,
+            delta_energy_unit="GHz",
+        )
 
-            if basis_pair.number_of_kets < min_number_of_kets:
-                min_delta = delta_energy_au
-                delta_energy_au = min(2 * delta_energy_au, (delta_energy_au + max_delta) / 2)
-            elif basis_pair.number_of_kets > max_number_of_kets:
-                max_delta = delta_energy_au
-                min_delta = max(0.5 * delta_energy_au, (delta_energy_au + min_delta) / 2)
-            else:
-                break
+        if basis_pair.number_of_kets > 25_000:
+            msg = (
+                f"The automatically generated basis_pair contains {basis_pair.number_of_kets} kets. "
+                "This might lead to long calculation times for the effective Hamiltonian. "
+            )
+            if not allow_large_basis:
+                raise RuntimeError(
+                    msg
+                    + "If this is on purpose, consider calling `create_basis_pair(allow_large_basis=True)`. "
+                    + "If not, consider calling `create_basis_pair(delta_energy=..., delta_energy_unit=...)` "
+                    + "or `create_basis_pair(number_of_kets=...)` "
+                    + "with custom parameters to control the basis size. "
+                )
+            logger.warning(msg)
 
         self._basis_pair = basis_pair
         logger.debug("The pair basis for the perturbative calculations consists of %d kets.", basis_pair.number_of_kets)
