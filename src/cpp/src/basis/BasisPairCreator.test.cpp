@@ -392,6 +392,72 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                       canonical_basis->get_number_of_states());
     }
 
+    DOCTEST_SUBCASE("restrict permutation parity to EVEN includes identical-state kets") {
+        auto symmetrized_basis_even = BasisPairCreator<double>()
+                                          .add(system)
+                                          .add(system)
+                                          .restrict_parity_under_permutation(Parity::EVEN)
+                                          .create();
+
+        auto symmetrized_basis_odd = BasisPairCreator<double>()
+                                         .add(system)
+                                         .add(system)
+                                         .restrict_parity_under_permutation(Parity::ODD)
+                                         .create();
+
+        // Count kets in the canonical basis where both atoms are in the same state (id1 == id2).
+        // Such kets are always permutation-symmetric and must appear in EVEN but not ODD.
+        size_t num_diagonal_kets = 0;
+        for (const auto &ket : *canonical_basis) {
+            auto atomic_states = ket->get_atomic_states();
+            DOCTEST_REQUIRE(atomic_states.size() == 2);
+            size_t id1 = atomic_states[0]->get_corresponding_ket(0)->get_id_in_database();
+            size_t id2 = atomic_states[1]->get_corresponding_ket(0)->get_id_in_database();
+            if (id1 == id2) {
+                ++num_diagonal_kets;
+            }
+        }
+        DOCTEST_REQUIRE(num_diagonal_kets > 0);
+
+        // EVEN and ODD together partition all canonical kets: off-diagonal pairs contribute one
+        // state to each sector, diagonal kets only contribute to EVEN.
+        DOCTEST_CHECK(symmetrized_basis_even->get_number_of_states() +
+                          symmetrized_basis_odd->get_number_of_states() ==
+                      canonical_basis->get_number_of_states());
+        DOCTEST_CHECK(symmetrized_basis_odd->get_number_of_states() -
+                          symmetrized_basis_even->get_number_of_states() ==
+                      num_diagonal_kets);
+
+        // The eigenenergies of the EVEN and ODD bases together must reproduce the
+        // eigenenergies of the canonical (non-symmetrized) basis.
+        auto system_pair_canonical =
+            SystemPair<double>(canonical_basis).set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
+        auto system_pair_even = SystemPair<double>(symmetrized_basis_even)
+                                    .set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
+        auto system_pair_odd = SystemPair<double>(symmetrized_basis_odd)
+                                   .set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
+
+        system_pair_canonical.diagonalize(diagonalizer);
+        system_pair_even.diagonalize(diagonalizer);
+        system_pair_odd.diagonalize(diagonalizer);
+
+        auto canonical_eigenenergies = system_pair_canonical.get_eigenenergies();
+        auto even_eigenenergies = system_pair_even.get_eigenenergies();
+        auto odd_eigenenergies = system_pair_odd.get_eigenenergies();
+
+        DOCTEST_REQUIRE(canonical_eigenenergies.size() ==
+                        even_eigenenergies.size() + odd_eigenenergies.size());
+
+        Eigen::VectorXd combined_eigenenergies(canonical_eigenenergies.size());
+        combined_eigenenergies << even_eigenenergies, odd_eigenenergies;
+        std::sort(combined_eigenenergies.data(),
+                  combined_eigenenergies.data() + combined_eigenenergies.size());
+        std::sort(canonical_eigenenergies.data(),
+                  canonical_eigenenergies.data() + canonical_eigenenergies.size());
+
+        DOCTEST_CHECK(combined_eigenenergies.isApprox(canonical_eigenenergies, 1e-11));
+    }
+
     DOCTEST_SUBCASE("combine inversion and permutation parity") {
         auto symmetrized_basis = BasisPairCreator<double>()
                                      .add(system)
