@@ -2,14 +2,20 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, overload
 
+import numpy as np
+
 from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair, EffectiveSystemPairReal
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
-    from pairinteraction.ket import KetAtom
-    from pairinteraction.units import PintFloat
+    from pairinteraction.ket import KetAtom, KetPair
+    from pairinteraction.units import PintArray, PintFloat
+
+
+logger = logging.getLogger(__name__)
 
 
 class C6(EffectiveSystemPair):
@@ -74,6 +80,29 @@ class C6(EffectiveSystemPair):
         distance = self.system_pair.get_distance()
         c6_pint = -h_eff_pint[0, 0] * distance**6  # type: ignore [index]  # pint does not know it can be indexed
         return QuantityScalar.convert_pint_to_user(c6_pint, "c6", unit)
+
+    def get_kets_with_contributions(self) -> tuple[list[KetPair], PintArray, PintArray]:
+        """Get all kets with their respective energy gap and coupling to the state of interest."""
+        ket_pairs = self.system_pair.basis.kets
+
+        hamiltonian_au = self.system_pair.get_hamiltonian("hartree")
+        gaps_au = np.real_if_close(hamiltonian_au.diagonal() - self.get_pair_energies("hartree")[0])
+
+        # set all elements in the model space to zero, to only get the couplings to the other space
+        hamiltonian_au[np.ix_(self.model_inds, self.model_inds)] = 0
+        couplings_au = hamiltonian_au.getrow(self.model_inds[0]).toarray()[0]
+
+        inds_of_interest = np.array([i for i, coupling in enumerate(couplings_au) if coupling != 0])
+        if len(inds_of_interest) == 0:
+            logger.warning("get_kets_with_contributions: No valid contributions found.")
+
+        ket_pairs = np.array(ket_pairs)[inds_of_interest].tolist()
+        gaps_au = np.array(gaps_au)[inds_of_interest].tolist()
+        couplings_au = np.array(couplings_au)[inds_of_interest].tolist()
+
+        gaps_pint = QuantityArray.from_au(gaps_au, "energy").to_pint()
+        couplings_pint = QuantityArray.from_au(couplings_au, "energy").to_pint()
+        return ket_pairs, gaps_pint, couplings_pint
 
 
 class C6Real(C6, EffectiveSystemPairReal):
