@@ -13,7 +13,7 @@ from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import Item, QnItemInt, RangeItem
 
 if TYPE_CHECKING:
-    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, OneAtomPage, TwoAtomsPage
 
 
 RangesKeys = Literal["Ex", "Ey", "Ez", "Bx", "By", "Bz", "Distance", "Angle"]
@@ -26,7 +26,7 @@ class SystemConfig(BaseConfig):
     spacing = 10
 
     title = "System"
-    page: OneAtomPage | TwoAtomsPage
+    page: OneAtomPage | TwoAtomsPage | C6Page
 
     def setupEField(self) -> None:
         efield_label = QLabel("<b>Electric field</b>")
@@ -84,7 +84,7 @@ class SystemConfigOneAtom(SystemConfig):
 
 
 class SystemConfigTwoAtoms(SystemConfig):
-    page: TwoAtomsPage
+    page: TwoAtomsPage | C6Page
 
     def setupWidget(self) -> None:
         self.setupEField()
@@ -124,3 +124,18 @@ class SystemConfigTwoAtoms(SystemConfig):
     def _get_all_ranges(self) -> list[RangeItem]:
         """Return all range items."""
         return [*super()._get_all_ranges(), self.distance, self.angle]
+
+
+class SystemConfigC6(SystemConfigTwoAtoms):
+    page: C6Page
+
+    def setupWidget(self) -> None:
+        self.setupEField()
+        self.setupBField()
+        self.setupDiamagnetism()
+        self.setupAngle()
+        self.setupOrder()
+
+    def _get_all_parameters(self) -> list[ParameterItemBase]:
+        """Return all range items."""
+        return [*SystemConfig._get_all_parameters(self), self.angle]
