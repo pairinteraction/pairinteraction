@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
+class ParametersTwoAtoms(Parameters["TwoAtomsPage | C6Page"]):
     """Parameters for the two atoms calculation."""
 
     pair_delta_energy: float = np.inf

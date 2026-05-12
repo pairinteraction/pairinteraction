@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
     from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.config.system_config import RangesKeys
-    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, OneAtomPage, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ VariableNameFromRangeKey: dict[RangesKeys, str] = {
     "Angle": "angle",
 }
 
-PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
+PageType = TypeVar("PageType", bound="OneAtomPage | TwoAtomsPage | C6Page")
 
 
 @dataclass
@@ -86,7 +86,7 @@ class Parameters(ABC, Generic[PageType]):
         ranges = page.system_config.get_parameter_dict()
         diamagnetism_enabled = page.system_config.diamagnetism.isChecked()
 
-        diagonalize_kwargs = {}
+        diagonalize_kwargs: dict[str, str] = {}
         diagonalize_relative_energy_range = None
         if page.calculation_config is not None:
             if page.calculation_config.fast_mode.isChecked():

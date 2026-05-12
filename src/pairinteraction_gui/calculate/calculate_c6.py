@@ -62,7 +62,7 @@ def calculate_c6(parameters: ParametersC6) -> ResultsC6:
         for basis in basis_atoms
     )
 
-    c6_obj.system_atoms = system_atoms
+    c6_obj.system_atoms = system_atoms  # type: ignore [assignment]
 
     if np.isfinite(parameters.pair_delta_energy):
         c6_obj.create_basis_pair(delta_energy=parameters.pair_delta_energy, delta_energy_unit="GHz")
@@ -79,7 +79,7 @@ def calculate_c6(parameters: ParametersC6) -> ResultsC6:
     distance_um = c6_obj.system_pair.get_distance("micrometer")
     with np.errstate(divide="ignore", invalid="ignore"):
         contributions_c6 = np.abs(couplings_ghz) ** 2 / gaps_ghz * distance_um**6
-        admixtures = np.abs(couplings_ghz / gaps_ghz)**2
+        admixtures = np.abs(couplings_ghz / gaps_ghz) ** 2
 
     return ResultsC6(
         c6_obj=c6_obj,
