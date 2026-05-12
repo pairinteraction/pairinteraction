@@ -48,6 +48,16 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
         replacements["$PAIR_M_RANGE"] = str(self.pair_m_range)
         return replacements
 
+    def get_distance(self, step: int) -> float:
+        """Return the distance for the given step."""
+        key = "Distance"
+        return self.ranges[key][step] if key in self.ranges else np.inf
+
+    def get_angle(self, step: int) -> float:
+        """Return the angle for the given step."""
+        key = "Angle"
+        return self.ranges[key][step] if key in self.ranges else 0
+
 
 @dataclass
 class ResultsTwoAtoms(Results):
@@ -135,11 +145,9 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     for step in range(parameters.steps):
         system = pi.SystemPair(basis_pair_list[step])
         system.set_interaction_order(parameters.order)
-        if "Distance" in parameters.ranges:
-            distance = parameters.ranges["Distance"][step]
-            angle: float = 0
-            if "Angle" in parameters.ranges:
-                angle = parameters.ranges["Angle"][step]
+        distance = parameters.get_distance(step)
+        if not np.isinf(distance):
+            angle = parameters.get_angle(step)
             system.set_distance(distance, angle, unit="micrometer")
         system_pair_list.append(system)
 
