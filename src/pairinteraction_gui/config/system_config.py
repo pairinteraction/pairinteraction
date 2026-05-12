@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 )
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import Item, QnItemInt, RangeItem
+from pairinteraction_gui.qobjects import CheckboxItem, QnItemInt, RangeItem
 
 if TYPE_CHECKING:
     from pairinteraction_gui.page import C6Page, OneAtomPage, TwoAtomsPage
@@ -54,7 +54,7 @@ class SystemConfig(BaseConfig):
 
     def setupDiamagnetism(self) -> None:
         self.layout().addWidget(QLabel("<b>Diamagnetism</b>"))
-        self.diamagnetism = Item(self, "Enable diamagnetism", checked=True)
+        self.diamagnetism = CheckboxItem(self, "Enable diamagnetism", checked=True)
         self.layout().addWidget(self.diamagnetism)
 
     def get_ranges_dict(self) -> dict[RangesKeys, list[float]]:

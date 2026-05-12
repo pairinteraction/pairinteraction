@@ -35,7 +35,7 @@ class NotSet(t.Protocol):
     def __not_set() -> None: ...
 
 
-class Item(WidgetH):
+class CheckboxItem(WidgetH):
     margin = (20, 0, 20, 0)
     spacing = 10
 
