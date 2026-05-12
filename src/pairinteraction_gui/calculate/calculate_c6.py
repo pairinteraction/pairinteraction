@@ -39,6 +39,7 @@ class ResultsC6:
     gaps_ghz: NDArray[np.float64]
     couplings_ghz: NDArray[np.float64]
     contributions_c6: NDArray[np.float64]
+    admixtures: NDArray[np.float64]
 
 
 def calculate_c6(parameters: ParametersC6) -> ResultsC6:
@@ -77,7 +78,8 @@ def calculate_c6(parameters: ParametersC6) -> ResultsC6:
     # sum to the displayed C6 value.
     distance_um = c6_obj.system_pair.get_distance("micrometer")
     with np.errstate(divide="ignore", invalid="ignore"):
-        contributions_c6 = np.where(gaps_ghz != 0, np.abs(couplings_ghz) ** 2 / gaps_ghz * distance_um**6, np.inf)
+        contributions_c6 = np.abs(couplings_ghz) ** 2 / gaps_ghz * distance_um**6
+        admixtures = np.abs(couplings_ghz / gaps_ghz)**2
 
     return ResultsC6(
         c6_obj=c6_obj,
@@ -86,4 +88,5 @@ def calculate_c6(parameters: ParametersC6) -> ResultsC6:
         gaps_ghz=gaps_ghz,
         couplings_ghz=couplings_ghz,
         contributions_c6=contributions_c6,
+        admixtures=admixtures,
     )
