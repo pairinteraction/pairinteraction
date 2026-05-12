@@ -44,7 +44,7 @@ def window_starkmap(base_window: MainWindow) -> MainWindow:
     calculation_config = one_atom_page.calculation_config
     calculation_config.steps.setValue(11)
     system_config = one_atom_page.system_config
-    system_config.Ez.spinboxes[1].setValue(10)
+    system_config.Ez.setValues(0, 10)  # type: ignore [union-attr]
 
     return base_window
 
