@@ -220,10 +220,10 @@ def test_near_resonance_detection(pi_module: PairinteractionModule, capsys: pyte
     eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
     eff_system.set_magnetic_field([0, 0, 245], "gauss")
     eff_system.set_distance(10, 35.1, "micrometer")
-    eff_system.create_basis_pair(number_of_kets=100)
 
     # workaround to test for errors, without showing them in the std output
     with no_log_propagation("pairinteraction"):
+        eff_system.create_basis_pair(number_of_kets=100)
         eff_system.get_effective_hamiltonian()
         eff_system.check_for_resonances(0.01)
     captured = capsys.readouterr()
