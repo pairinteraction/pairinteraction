@@ -29,7 +29,9 @@ from pairinteraction_gui.utils import (
 if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
+    from pairinteraction_gui.page.c6_page import C6Page
     from pairinteraction_gui.page.lifetimes_page import LifetimesPage
+    from pairinteraction_gui.page.two_atoms_page import TwoAtomsPage
     from pairinteraction_gui.qobjects.item import _QnItem
 
 CORE_SPIN_DICT = {"Sr87": 9 / 2, "Sr88": 0, "Yb171": 1 / 2, "Yb173": 5 / 2, "Yb174": 0}
@@ -217,6 +219,8 @@ class KetConfigLifetimes(KetConfig):
 
 
 class KetConfigTwoAtoms(KetConfig):
+    page: TwoAtomsPage | C6Page
+
     def setupWidget(self) -> None:
         super().setupWidget()
 
@@ -225,7 +229,65 @@ class KetConfigTwoAtoms(KetConfig):
         self.layout().addSpacing(15)
 
         self.layout().addWidget(QLabel("<b>Atom 2</b>"))
+
+        self.same_ket_checkbox = QCheckBox("Use same ket for both atoms")
+        self.same_ket_checkbox.setToolTip("Mirror Atom 1's species and quantum numbers to Atom 2")
+        self.same_ket_checkbox.toggled.connect(self._on_same_ket_toggled)
+        self.layout().addWidget(self.same_ket_checkbox)
+
         self.setupOneKetAtom()
+
+    def _on_same_ket_toggled(self, checked: bool) -> None:
+        """Hide/show Atom 2's controls and mirror Atom 1 to Atom 2."""
+        self.species_combo_list[1].parentWidget().setVisible(not checked)
+        self.stacked_qn_list[1].setVisible(not checked)
+        self.ket_label_list[1].setVisible(not checked)
+
+        basis_config = self.page.basis_config
+        basis_config.set_atom2_visible(not checked)
+
+        self._mirror_atom1_to_atom2()
+
+    def _mirror_atom1_to_atom2(self) -> None:
+        """Copy species and quantum numbers from Atom 1 to Atom 2."""
+        species = self.get_species(atom=0)
+        self.species_combo_list[1].setCurrentText(species)
+
+        qn_src = self.stacked_qn_list[0].currentWidget()
+        qn_dst = self.stacked_qn_list[1].currentWidget()
+        for key, item_src in qn_src.items.items():
+            item_dst = qn_dst.items[key]
+            item_dst.setValue(item_src.value())
+            item_dst.setChecked(item_src.isChecked())
+
+    def on_qnitem_changed(self, atom: int) -> None:
+        super().on_qnitem_changed(atom)
+        if atom == 0 and self.same_ket_checkbox.isChecked():
+            self._mirror_atom1_to_atom2()
+
+
+class KetConfigC6(KetConfigTwoAtoms):
+    page: C6Page
+
+    def setupWidget(self) -> None:
+        super().setupWidget()
+        self.layout().addSpacing(15)
+
+        self.c6_label = QLabel()
+        self.layout().addWidget(self.c6_label)
+
+    def on_qnitem_changed(self, atom: int) -> None:
+        super().on_qnitem_changed(atom)
+        self._reset_results()
+
+    def _reset_results(self) -> None:
+        self.c6_label.setText("C6: —")  # — = em dash
+        self._set_theme_role(self.c6_label, "info")
+        self.page.plotwidget.clear()
+
+    def set_c6(self, c6: float) -> None:
+        self.c6_label.setText(f"C6: {c6:.3f} GHz·μm⁶")  # GHz·μm⁶
+        self._set_theme_role(self.c6_label, "info")
 
 
 class QnBase(WidgetV):
@@ -287,7 +349,7 @@ class QnSQDT(QnBase):
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=80, tooltip="Principal quantum number n")
+        self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=60, tooltip="Principal quantum number n")
         self.items["l"] = QnItemInt(self, "l", vmin=0, tooltip="Orbital angular momentum l")
 
         s = self.s
