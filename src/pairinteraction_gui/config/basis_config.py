@@ -10,7 +10,7 @@ import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
-from pairinteraction_gui.qobjects.item import RangeItem
+from pairinteraction_gui.qobjects.item import ParameterItemRange
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
 
@@ -175,7 +175,7 @@ class BasisConfigTwoAtoms(BasisConfig):
             tooltip="Restriction for the pair energy difference to the state of interest",
         )
         self.layout().addWidget(self.pair_delta_energy)
-        self.pair_m_range = RangeItem(
+        self.pair_m_range = ParameterItemRange(
             self,
             "Total m",
             tooltip_label="pair total angular momentum m",

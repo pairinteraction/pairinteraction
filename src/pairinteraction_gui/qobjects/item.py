@@ -180,19 +180,20 @@ class QnItemDouble(_QnItem[float]):
     _spinbox_class = DoubleSpinBox
 
 
-class RangeItem(WidgetH):
-    """Widget for displaying a range with min and max spinboxes."""
+class ParameterItemBase(WidgetH):
+    """Widget for displaying a parameter item."""
 
     margin = (20, 0, 20, 0)
     spacing = 10
+
+    checkbox: QCheckBox | None
+    label: QLabel
+    all_spinboxes: list[DoubleSpinBox]
 
     def __init__(
         self,
         parent: QWidget,
         label: str,
-        vdefaults: tuple[float, float] = (0, 0),
-        vrange: tuple[float, float] = (-np.inf, np.inf),
-        unit: str = "",
         tooltip_label: str | None = None,
         checkable: bool = True,
         checked: bool = True,
@@ -211,13 +212,6 @@ class RangeItem(WidgetH):
         self.label = QLabel(label)
         self.label.setMinimumWidth(25)
 
-        self.min_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[0], tooltip=f"Minimum {tooltip_label} in {unit}")
-        self.max_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[1], tooltip=f"Maximum {tooltip_label} in {unit}")
-        self.min_spinbox.setObjectName(f"{label_to_object_name(label)}_min")
-        self.max_spinbox.setObjectName(f"{label_to_object_name(label)}_max")
-
-        self.unit = QLabel(unit)
-
         super().__init__(parent)
 
     def setupWidget(self) -> None:
@@ -225,31 +219,20 @@ class RangeItem(WidgetH):
             self.layout().addWidget(self.checkbox)
         self.layout().addWidget(self.label)
 
-        self.layout().addWidget(self.min_spinbox)
-        self.layout().addWidget(QLabel("to"))
-        self.layout().addWidget(self.max_spinbox)
-
-        self.layout().addWidget(self.unit)
-
     def postSetupWidget(self) -> None:
         self.layout().addStretch(1)
         self._on_checkbox_changed(self.isChecked())
-
-    @property
-    def spinboxes(self) -> tuple[DoubleSpinBox, DoubleSpinBox]:
-        """Return the min and max spinboxes."""
-        return (self.min_spinbox, self.max_spinbox)
 
     def connectAll(self, func: Callable[[], None]) -> None:
         """Connect the function to the spinbox.valueChanged signal."""
         if isinstance(self.checkbox, QCheckBox):
             self.checkbox.stateChanged.connect(lambda state: func())
-        for spinbox in self.spinboxes:
+        for spinbox in self.all_spinboxes:
             spinbox.valueChanged.connect(lambda value: func())
 
     def _on_checkbox_changed(self, state: bool) -> None:
         """Update the enabled state of widgets when checkbox changes."""
-        for spinbox in self.spinboxes:
+        for spinbox in self.all_spinboxes:
             spinbox.setEnabled(state)
 
     def isChecked(self) -> bool:
@@ -263,6 +246,41 @@ class RangeItem(WidgetH):
         if isinstance(self.checkbox, QCheckBox):
             return self.checkbox.setChecked(checked)
         raise ValueError("Cannot (un)check a non-checkable item.")
+
+
+class ParameterItemRange(ParameterItemBase):
+    """Widget for displaying a range with min and max spinboxes."""
+
+    def __init__(
+        self,
+        parent: QWidget,
+        label: str,
+        vdefaults: tuple[float, float] = (0, 0),
+        vrange: tuple[float, float] = (-np.inf, np.inf),
+        unit: str = "",
+        tooltip_label: str | None = None,
+        checkable: bool = True,
+        checked: bool = True,
+    ) -> None:
+        super().__init__(parent, label, tooltip_label, checkable, checked)
+
+        self.min_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[0], tooltip=f"Minimum {tooltip_label} in {unit}")
+        self.max_spinbox = DoubleSpinBox(parent, *vrange, vdefaults[1], tooltip=f"Maximum {tooltip_label} in {unit}")
+        self.min_spinbox.setObjectName(f"{label_to_object_name(label)}_min")
+        self.max_spinbox.setObjectName(f"{label_to_object_name(label)}_max")
+
+        self.all_spinboxes = [self.min_spinbox, self.max_spinbox]
+
+        self.unit = QLabel(unit)
+
+    def setupWidget(self) -> None:
+        super().setupWidget()
+
+        self.layout().addWidget(self.min_spinbox)
+        self.layout().addWidget(QLabel("to"))
+        self.layout().addWidget(self.max_spinbox)
+
+        self.layout().addWidget(self.unit)
 
     def values(self, default: tuple[float, float] | P | NotSet = NotSet) -> tuple[float, float] | P:
         """Return the values of the min and max spinboxes."""

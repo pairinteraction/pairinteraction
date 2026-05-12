@@ -5,7 +5,7 @@
 from PySide6.QtWidgets import QLabel
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import CheckboxItem, QnItemInt, RangeItem
+from pairinteraction_gui.qobjects import CheckboxItem, ParameterItemRange, QnItemInt
 
 
 class CalculationConfig(BaseConfig):
@@ -36,7 +36,7 @@ class CalculationConfig(BaseConfig):
 
         self.layout().addWidget(QLabel("<b>Energy Range</b>"))
         self.layout().addWidget(QLabel("Calculate eigenenergies in the range"))
-        self.energy_range = RangeItem(
+        self.energy_range = ParameterItemRange(
             self,
             "from",
             vdefaults=(-80, 80),
