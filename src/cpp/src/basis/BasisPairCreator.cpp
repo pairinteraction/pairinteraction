@@ -24,10 +24,6 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisPairCreator<Scalar>::BasisPairCreator()
-    : parity_under_inversion(Parity::UNKNOWN), parity_under_permutation(Parity::UNKNOWN) {}
-
-template <typename Scalar>
 BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
     if (!system_atom.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized before it can be added.");
@@ -189,6 +185,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             size_t id1 = basis1->get_corresponding_ket(idx1)->get_id_in_database();
             size_t id2 = basis2->get_corresponding_ket(idx2)->get_id_in_database();
 
+            // Following the conventions from https://doi.org/10.1088/1361-6455/aa743a,
+            // pair states |a,a> cannot be of even parity
             if (id1 == id2 && parity_under_inversion != Parity::EVEN &&
                 parity_under_permutation != Parity::EVEN) {
                 // Obtain the column index of the symmetrized state
