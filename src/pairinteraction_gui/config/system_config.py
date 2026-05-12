@@ -62,7 +62,8 @@ class SystemConfig(BaseConfig):
 
     def get_parameter_dict(self) -> dict[RangesKeys, list[float]]:
         """Return the electric and magnetic field parameters."""
-        steps = self.page.calculation_config.steps.value()
+        steps = self.page.calculation_config.steps.value() if self.page.calculation_config is not None else 1
+
         all_parameters = self._get_all_parameters()
         ranges_min_max: dict[str, tuple[float, float]] = {}
         for item in all_parameters:

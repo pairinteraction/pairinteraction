@@ -87,13 +87,14 @@ class Parameters(ABC, Generic[PageType]):
         diamagnetism_enabled = page.system_config.diamagnetism.isChecked()
 
         diagonalize_kwargs = {}
-        if page.calculation_config.fast_mode.isChecked():
-            diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
-            diagonalize_kwargs["float_type"] = "float32"
-
         diagonalize_relative_energy_range = None
-        if page.calculation_config.energy_range.isChecked():
-            diagonalize_relative_energy_range = page.calculation_config.energy_range.values()
+        if page.calculation_config is not None:
+            if page.calculation_config.fast_mode.isChecked():
+                diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
+                diagonalize_kwargs["float_type"] = "float32"
+
+            if page.calculation_config.energy_range.isChecked():
+                diagonalize_relative_energy_range = page.calculation_config.energy_range.values()
 
         return cls(
             species,

@@ -153,7 +153,7 @@ class CalculationPage(SimulationPage):
             worker_plot.start()
 
         worker = MultiThreadWorker(self.calculate)
-        if hasattr(self, "calculation_config"):
+        if hasattr(self, "calculation_config") and self.calculation_config is not None:
             calculation_config: CalculationConfig = self.calculation_config
             number_of_steps = calculation_config.steps.value()
             worker.enable_busy_indicator(self.plotwidget, add_progress_label=True, number_of_steps=number_of_steps)

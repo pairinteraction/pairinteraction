@@ -16,7 +16,7 @@ from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction_gui.page import TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     order: int = 3
 
     @classmethod
-    def from_page(cls, page: TwoAtomsPage) -> Self:
+    def from_page(cls, page: TwoAtomsPage | C6Page) -> Self:
         obj = super().from_page(page)
         obj.pair_delta_energy = page.basis_config.pair_delta_energy.value(np.inf)
         obj.pair_m_range = (

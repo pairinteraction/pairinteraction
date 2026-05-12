@@ -38,6 +38,7 @@ class C6Page(CalculationPage):
         self.ket_config = KetConfigC6(self)
         self.basis_config = BasisConfigC6(self)
         self.system_config = SystemConfigC6(self)
+        self.calculation_config = None
 
         self.ket_config.signal_species_changed.connect(self.basis_config.on_species_changed)
         self.ket_config.signal_species_changed.connect(self.plotwidget.clear)
