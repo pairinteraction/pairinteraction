@@ -287,7 +287,7 @@ class QnSQDT(QnBase):
         super().__init__(parent)
 
     def setupWidget(self) -> None:
-        self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=80, tooltip="Principal quantum number n")
+        self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=60, tooltip="Principal quantum number n")
         self.items["l"] = QnItemInt(self, "l", vmin=0, tooltip="Orbital angular momentum l")
 
         s = self.s

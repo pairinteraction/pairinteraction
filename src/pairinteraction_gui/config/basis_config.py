@@ -46,8 +46,6 @@ class BasisConfig(BaseConfig):
 
     def setupOneBasisAtom(self) -> None:
         """Set up the UI components for a single basis atom."""
-        atom = len(self.stacked_basis_list)
-
         stacked_basis = NamedStackedWidget[RestrictionsBase]()
         self.layout().addWidget(stacked_basis)
 
@@ -60,7 +58,6 @@ class BasisConfig(BaseConfig):
         self.stacked_basis_list.append(stacked_basis)
         self.basis_label_list.append(basis_label)
         self._set_theme_role(basis_label, "info")
-        self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
         worker = MultiThreadWorker(self.get_basis, atom)
