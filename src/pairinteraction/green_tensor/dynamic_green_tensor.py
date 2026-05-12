@@ -120,7 +120,7 @@ def dynamic_green_tensor_scattered(
     height = abs(z1 - z2)
 
     rho = np.sqrt(distance[0] ** 2 + distance[1] ** 2)
-    phi = np.arccos(distance[0] / rho) if rho != 0 else 0
+    phi = np.atan2(distance[1], distance[0]) if rho != 0 else 0
 
     z_ges = pos1[2] + pos2[2] - 2 * min(z1, z2)
     z_diff = pos1[2] - pos2[2]
@@ -296,7 +296,7 @@ def B_plus(r_plus: complex, r_minus: complex, kz: complex, h: float, z_ges: floa
     """
     return (  # type: ignore [no-any-return]
         r_minus * np.exp(1j * kz * (z_ges - h))
-        + r_plus * np.exp(-1j * kz * (z_ges - h))
+        - r_plus * np.exp(-1j * kz * (z_ges - h))
         + 2j * r_plus * r_minus * np.sin(kz * z_diff) * np.exp(1j * kz * h)
     ) / D(r_plus, r_minus, kz, h)
 
@@ -369,13 +369,15 @@ def Gp(  # noqa: PLR0911
         if entry == "zx":
             Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
             return -1j * (k_rho / kz) * Bp_minus * J1 * math.cos(phi)
-        Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
         if entry == "xz":
+            Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
             return 1j * (k_rho / kz) * Bp_plus * J1 * math.cos(phi)
         if entry == "yz":
+            Bp_plus = B_plus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
             return 1j * (k_rho / kz) * Bp_plus * J1 * math.sin(phi)
         if entry == "zy":
-            return -1j * (k_rho / kz) * Bp_plus * J1 * math.sin(phi)
+            Bp_minus = B_minus(rp_plus, rp_minus, kz, h, z_ges, z_diff)
+            return -1j * (k_rho / kz) * Bp_minus * J1 * math.sin(phi)
 
     if entry == "zz":
         J0 = cached_bessel_function_0(k_rho * rho)
