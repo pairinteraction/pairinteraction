@@ -71,7 +71,7 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
     calculation_config = two_atoms_page.calculation_config
     calculation_config.steps.setValue(5)
     system_config = two_atoms_page.system_config
-    system_config.distance.setValues(1, 5)
+    system_config.distance.setValues(1, 5)  # type: ignore [union-attr]
     return base_window
 
 

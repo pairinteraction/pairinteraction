@@ -83,7 +83,7 @@ class Parameters(ABC, Generic[PageType]):
             page.basis_config.get_quantum_number_restrictions(atom) for atom in range(n_atoms)
         )
 
-        ranges = page.system_config.get_ranges_dict()
+        ranges = page.system_config.get_parameter_dict()
         diamagnetism_enabled = page.system_config.diamagnetism.isChecked()
 
         diagonalize_kwargs = {}

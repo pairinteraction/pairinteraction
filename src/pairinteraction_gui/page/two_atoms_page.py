@@ -75,7 +75,7 @@ class TwoAtomsPage(CalculationPage):
         return parameters.to_replacement_dict()
 
     def _get_export_notebook_template_name(self) -> str:
-        ranges = self.system_config.get_ranges_dict()
+        ranges = self.system_config.get_parameter_dict()
         if all(v[0] == v[-1] for k, v in ranges.items() if k in ["Ex", "Ey", "Ez", "Bx", "By", "Bz"]):
             return "two_atoms.ipynb"
         return "two_atoms_variable_fields.ipynb"
