@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.state import StateBase
     from pairinteraction_gui.calculate.calculate_base import Parameters, Results
+    from pairinteraction_gui.calculate.calculate_c6 import ParametersC6, ResultsC6
     from pairinteraction_gui.calculate.calculate_lifetimes import KetData, ParametersLifetimes, ResultsLifetimes
     from pairinteraction_gui.page import SimulationPage
 
@@ -42,6 +43,8 @@ class PlotWidget(WidgetV):
     margin = (0, 0, 0, 0)
     spacing = 15
     _annotations: dict[Any, mpl.text.Annotation]
+    parameters: Any | None
+    results: Any | None
 
     def __init__(self, parent: SimulationPage) -> None:
         """Initialize the base section."""
@@ -64,11 +67,36 @@ class PlotWidget(WidgetV):
 
         self.layout().addWidget(self.canvas, stretch=1)
 
+    def plot(self, parameters: Any, results: Any) -> None:
+        self.clear()
+
+        show_status_tip(self, "Plotting...")
+        self.canvas.ax.set_xmargin(0)
+
+        self.results = results
+        self.parameters = parameters
+
+    def setup_annotations(self, parameters: Any, results: Any) -> None:
+        """Add click-based annotations to the plot."""
+        show_status_tip(self, "Adding annotations...")
+
+        self.disconnect_click()
+        self._click_cid = self.canvas.mpl_connect("button_press_event", self.on_click)  # type: ignore [arg-type]
+
+        if self.clear_annotations not in self.navigation_toolbar._home_callbacks:
+            self.navigation_toolbar._home_callbacks += [self.clear_annotations]
+
+    def on_click(self, event: mpl.backend_bases.MouseEvent) -> None:
+        """Handle click events on the plot."""
+        raise NotImplementedError("Subclasses must implement on_click()")
+
     def clear(self) -> None:
         self.canvas.ax.clear()
         self.canvas.draw_idle()
         self.clear_annotations()
         self.disconnect_click()
+        self.results = None
+        self.parameters = None
 
     def clear_annotations(self) -> None:
         for ann in self._annotations.values():
@@ -86,9 +114,9 @@ class PlotWidget(WidgetV):
 class PlotEnergies(PlotWidget):
     """Plotwidget for plotting energy levels."""
 
-    parameters: Parameters[Any] | None = None
-    results: Results | None = None
     _annotations: dict[int, mpl.text.Annotation]
+    parameters: Parameters[Any] | None
+    results: Results | None
 
     def __init__(self, parent: SimulationPage) -> None:
         super().__init__(parent)
@@ -117,19 +145,12 @@ class PlotEnergies(PlotWidget):
         self.canvas.ax.set_zorder(1)
 
     def plot(self, parameters: Parameters[Any], results: Results) -> None:
-        self.clear()
-
-        show_status_tip(self, "Plotting energy curves...")
-        ax = self.canvas.ax
-        ax.set_xmargin(0)
-
-        # store data to allow fitting later on
-        self.parameters = parameters
-        self.results = results
+        super().plot(parameters, results)
 
         x_values = parameters.get_x_values()
         energies = results.energies
 
+        ax = self.canvas.ax
         if len({len(es) for es in energies}) <= 1:  # check if homogeneous shape
             ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
         else:
@@ -164,6 +185,8 @@ class PlotEnergies(PlotWidget):
 
     def setup_annotations(self, parameters: Parameters[Any], results: Results) -> None:
         """Connect click-based state annotation to the energy plot."""
+        super().setup_annotations(parameters, results)
+
         energies = results.energies
         overlaps = results.ket_overlaps
         x_values = parameters.get_x_values()
@@ -179,61 +202,64 @@ class PlotEnergies(PlotWidget):
                 all_y.append(float(energy))
                 all_overlaps.append(float(overlap))
                 self._point_index_map.append((idx, idstate))
-        pts_data = np.column_stack([all_x, all_y]) if all_x else np.empty((0, 2))
-        pts_overlaps = np.array(all_overlaps)
+        self.pts_data = np.column_stack([all_x, all_y]) if all_x else np.empty((0, 2))
+        self.pts_overlaps = np.array(all_overlaps)
 
-        def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if (
-                event.inaxes is not self.canvas.ax
-                or event.button not in [1, 3]
-                or len(pts_data) == 0
-                or self.navigation_toolbar.mode
-            ):
-                return
-            if event.button == 3:  # right click clears annotations
-                self.clear_annotations()
-                return
+    def on_click(self, event: mpl.backend_bases.MouseEvent) -> None:
+        if (
+            event.inaxes is not self.canvas.ax
+            or event.button not in [1, 3]
+            or len(self.pts_data) == 0
+            or self.navigation_toolbar.mode
+        ):
+            return
+        if event.button == 3:  # right click clears annotations
+            self.clear_annotations()
+            return
 
-            pts_pos = self.canvas.ax.transData.transform(pts_data)
-            click_pos = np.array([event.x, event.y])
-            dists = np.hypot(pts_pos[:, 0] - click_pos[0], pts_pos[:, 1] - click_pos[1])
-            candidates = np.flatnonzero(dists <= 10)  # threshold in pixels
-            if len(candidates) == 0:
-                self.clear_annotations()
-                return
-            selected = int(candidates[np.argmax(pts_overlaps[candidates])])
-            if selected in self._annotations:
-                self._annotations[selected].remove()
-                del self._annotations[selected]
-                self.canvas.draw_idle()
-                return
-            idstep, idstate = self._point_index_map[selected]
-            state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)
-            label = state.get_label().replace(" + ", "\n + ").replace(" - ", "\n - ")
-            xlim = self.canvas.ax.get_xlim()
-            ylim = self.canvas.ax.get_ylim()
-            x_frac = (pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])
-            y_frac = (pts_data[selected, 1] - ylim[0]) / (ylim[1] - ylim[0])
-            x_offset = -100 if isinstance(state, StateAtom) else -250
-            x_offset = x_offset if x_frac > 0.5 else 0
-            y_offset = 15 + 10 * label.count("\n")
-            y_offset = -y_offset if y_frac > 0.5 else y_offset
-            ann = self.canvas.ax.annotate(
-                label,
-                xy=(pts_data[selected, 0], pts_data[selected, 1]),
-                xytext=(x_offset, y_offset),
-                textcoords="offset points",
-                va="center",
-                bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
-                arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
-                clip_on=False,
-            )
-            ann.set_in_layout(False)
-            self._annotations[selected] = ann
+        pts_pos = self.canvas.ax.transData.transform(self.pts_data)
+        click_pos = np.array([event.x, event.y])
+        dists = np.hypot(pts_pos[:, 0] - click_pos[0], pts_pos[:, 1] - click_pos[1])
+        candidates = np.flatnonzero(dists <= 10)  # threshold in pixels
+        if len(candidates) == 0:
+            self.clear_annotations()
+            return
+        selected = int(candidates[np.argmax(self.pts_overlaps[candidates])])
+        if selected in self._annotations:
+            self._annotations[selected].remove()
+            del self._annotations[selected]
             self.canvas.draw_idle()
+            return
+        if self.results is None:
+            return
+        idstep, idstate = self._point_index_map[selected]
+        state: StateBase[Any] = self.results.systems[idstep].get_eigenbasis().get_state(idstate)
+        label = state.get_label().replace(" + ", "\n + ").replace(" - ", "\n - ")
+        xlim = self.canvas.ax.get_xlim()
+        ylim = self.canvas.ax.get_ylim()
+        x_frac = (self.pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])
+        y_frac = (self.pts_data[selected, 1] - ylim[0]) / (ylim[1] - ylim[0])
+        x_offset = -100 if isinstance(state, StateAtom) else -250
+        x_offset = x_offset if x_frac > 0.5 else 0
+        y_offset = 15 + 10 * label.count("\n")
+        y_offset = -y_offset if y_frac > 0.5 else y_offset
+        ann = self.canvas.ax.annotate(
+            label,
+            xy=(self.pts_data[selected, 0], self.pts_data[selected, 1]),
+            xytext=(x_offset, y_offset),
+            textcoords="offset points",
+            va="center",
+            bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
+            arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+            clip_on=False,
+        )
+        ann.set_in_layout(False)
+        self._annotations[selected] = ann
+        self.canvas.draw_idle()
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
-        self.navigation_toolbar._home_callbacks = [self.clear_annotations]
+    def get_annotation_text(self, key: Any) -> str:
+        """Return the annotation text for the given bar key."""
+        raise NotImplementedError("Subclasses must implement get_annotation_text()")
 
     def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, PLR0915, C901
         """Fits a potential curve and displays the fit values.
@@ -350,10 +376,11 @@ class PlotEnergies(PlotWidget):
         self.fit_curve = None
 
 
-class PlotLifetimes(PlotWidget):
-    """Plotwidget for plotting lifetime/transition rate bar charts."""
+class PlotBars(PlotWidget):
+    """Plotwidget for plotting bar charts."""
 
-    _annotations: dict[tuple[str, int], mpl.text.Annotation]
+    _annotations: dict[Any, mpl.text.Annotation]
+    _bar_data: dict[Any, mpl.patches.Rectangle]
 
     def setupWidget(self) -> None:
         super().setupWidget()
@@ -368,8 +395,76 @@ class PlotLifetimes(PlotWidget):
             hspace=0.0,
         )
 
+    def on_click(self, event: mpl.backend_bases.MouseEvent) -> None:
+        if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or self.navigation_toolbar.mode:
+            return
+        if event.button == 3:  # right click clears annotations
+            self.clear_annotations()
+            return
+
+        if event.xdata is None or event.ydata is None:
+            return
+        click_coords = np.array([event.xdata, event.ydata])
+
+        for _key, rect in self._bar_data.items():
+            x0, x1 = rect.get_x(), rect.get_x() + rect.get_width()
+            y0, y1 = rect.get_y(), rect.get_y() + rect.get_height()
+            inside_x = min(x0, x1) <= click_coords[0] <= max(x0, x1)
+            inside_y = min(y0, y1) <= click_coords[1] <= max(y0, y1)
+            if inside_x and inside_y:
+                key = _key
+                break
+        else:  # no break -> no bar found
+            self.clear_annotations()
+            return
+
+        # if we click the same bar again, remove the annotation
+        if key in self._annotations:
+            self._annotations[key].remove()
+            del self._annotations[key]
+            self.canvas.draw_idle()
+            return
+
+        text = self.get_annotation_text(key)
+
+        xlim = self.canvas.ax.get_xlim()
+        ylim = self.canvas.ax.get_ylim()
+        bar_cx = rect.get_x() + rect.get_width() / 2
+        bar_top = rect.get_y() + rect.get_height()
+        x_frac = (bar_cx - xlim[0]) / (xlim[1] - xlim[0])
+        y_frac = (bar_top - ylim[0]) / (ylim[1] - ylim[0])
+        x_offset = -200 if x_frac > 0.5 else 25
+        y_offset = -50 if y_frac > 0.5 else 50
+        ann = self.canvas.ax.annotate(
+            text,
+            xy=(bar_cx, bar_top),
+            xytext=(x_offset, y_offset),
+            textcoords="offset points",
+            bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
+            arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
+            clip_on=False,
+        )
+
+        ann.set_in_layout(False)
+        self._annotations[key] = ann
+        self.canvas.draw_idle()
+
+    def get_annotation_text(self, key: Any) -> str:
+        """Return the annotation text for the given bar key."""
+        raise NotImplementedError("Subclasses must implement get_annotation_text()")
+
+
+class PlotLifetimes(PlotBars):
+    """Plotwidget for plotting lifetime/transition rate bar charts."""
+
+    _annotations: dict[tuple[str, int], mpl.text.Annotation]
+    _bar_data: dict[tuple[str, int], mpl.patches.Rectangle]
+    parameters: ParametersLifetimes | None
+    results: ResultsLifetimes | None
+
     def plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:
-        self.clear()
+        super().plot(parameters, results)
+
         ax = self.canvas.ax
 
         show_status_tip(self, "Preparing transition rates...")
@@ -387,80 +482,152 @@ class PlotLifetimes(PlotWidget):
         rates_summed = {key: [sum(r for _, r in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}
 
         show_status_tip(self, "Plotting transition rates...")
-        self.artists: list[mpl.container.BarContainer] = []
+        self._bar_data = {}
         for label, color in zip(labels, ["blue", "red"], strict=True):
-            bar = ax.bar(n_list, rates_summed[label], label=label, color=color, alpha=0.8)
-            self.artists.append(bar)
+            artist = ax.bar(n_list, rates_summed[label], label=label, color=color, alpha=0.8)
+            for n, rect in zip(n_list, artist.patches, strict=True):
+                self._bar_data[(label, n)] = rect
+
         ax.legend()
 
         ax.set_xlabel("Principal Quantum Number $n$")
         ax.set_ylabel(r"Transition Rates (1 / ms)")
 
-    def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -> None:  # noqa: C901
-        """Add click-based annotations to the plot."""
-        show_status_tip(self, "Adding transition rate annotations...")
+    def get_annotation_text(self, key: tuple[str, int]) -> str:
+        label, n = key
+        state_text = "\n".join(f"  - {s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[label][n])
+        return f"{label} to n={n}:\n{state_text}"
 
-        self._bar_data: list[tuple[str, int, mpl.patches.Rectangle]] = []
-        for container in reversed(self.artists):
-            label = container.get_label()
-            if label is None:
-                continue
-            for rect in container.patches:
-                n = round(rect.get_x() + rect.get_width() / 2)
-                self._bar_data.append((label, n, rect))
 
-        def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or self.navigation_toolbar.mode:
-                return
-            if event.button == 3:  # right click clears annotations
-                self.clear_annotations()
-                return
+class PlotC6(PlotBars):
+    """Plotwidget for plotting C6 contributions binned by energy gap."""
 
-            if event.xdata is None or event.ydata is None:
-                return
-            click_coords = np.array([event.xdata, event.ydata])
+    BIN_WIDTH_FRACTION = 0.05
 
-            for _label, _n, rect in self._bar_data:
-                x, y = rect.get_x(), rect.get_y()
-                if x <= click_coords[0] <= x + rect.get_width() and y <= click_coords[1] <= y + rect.get_height():
-                    label, n = _label, _n
-                    break
-            else:  # no break -> no bar found
-                self.clear_annotations()
-                return
+    _annotations: dict[int, mpl.text.Annotation]
+    _bar_data: dict[int, mpl.patches.Rectangle]
+    parameters: ParametersC6 | None
+    results: ResultsC6 | None
 
-            # if we click the same bar again, remove the annotation
-            if (label, n) in self._annotations:
-                self._annotations[(label, n)].remove()
-                del self._annotations[(label, n)]
-                self.canvas.draw_idle()
-                return
+    def __init__(self, parent: SimulationPage) -> None:
+        super().__init__(parent)
 
-            state_text = "\n".join(f"  - {s}: {r:.5f}/ms" for (s, r) in self.sorted_rates[label][n])
-            text = f"{label} to n={n}:\n{state_text}"
-            xlim = self.canvas.ax.get_xlim()
-            ylim = self.canvas.ax.get_ylim()
-            bar_cx = rect.get_x() + rect.get_width() / 2
-            bar_top = rect.get_y() + rect.get_height()
-            x_frac = (bar_cx - xlim[0]) / (xlim[1] - xlim[0])
-            y_frac = (bar_top - ylim[0]) / (ylim[1] - ylim[0])
-            x_offset = -200 if x_frac > 0.5 else 25
-            y_offset = -50 if y_frac > 0.5 else 50
-            ann = self.canvas.ax.annotate(
-                text,
-                xy=(bar_cx, bar_top),
-                xytext=(x_offset, y_offset),
-                textcoords="offset points",
-                bbox={"boxstyle": "round,pad=0.5", "fc": "white", "alpha": 0.9, "ec": "gray"},
-                arrowprops={"arrowstyle": "->", "connectionstyle": "arc3", "color": "gray"},
-                clip_on=False,
-            )
-            ann.set_in_layout(False)
-            self._annotations[(label, n)] = ann
-            self.canvas.draw_idle()
+        self._xlim_cid: int | None = None
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
-        self.navigation_toolbar._home_callbacks = [self.clear_annotations]
+    def setupWidget(self) -> None:
+        super().setupWidget()
+
+        self._mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
+        self._cbar = self.canvas.fig.colorbar(
+            self._mappable,
+            ax=self.canvas.ax,
+            label=r"Admixture to perturbed state $\sum |V / \Delta E|$",
+            aspect=60,
+        )
+
+    def plot(self, parameters: ParametersC6, results: ResultsC6) -> None:
+        super().plot(parameters, results)
+
+        if len(results.gaps_ghz) == 0:
+            logger.warning("C6 Page: No contributions to plot.")
+            return
+
+        max_gap = np.max(np.abs(results.gaps_ghz))
+        xlim = (-max_gap * 1.1, max_gap * 1.1) if max_gap > 0 else (-1, 1)
+
+        self.draw_bars(parameters, results, xlim=xlim, ylim=None)
+
+    def draw_bars(
+        self,
+        parameters: ParametersC6,
+        results: ResultsC6,
+        xlim: tuple[float, float],
+        ylim: tuple[float, float] | None = None,
+    ) -> None:
+        ax = self.canvas.ax
+        self.clear()
+        self.parameters = parameters
+        self.results = results
+
+        self.bin_width_ghz = self.BIN_WIDTH_FRACTION * (xlim[1] - xlim[0])
+
+        bin_to_stateinds: dict[int, list[int]] = {}
+        bin_to_total: dict[int, float] = {}
+        bin_to_admixture: dict[int, float] = {}
+        for i, gap in enumerate(results.gaps_ghz):
+            _bin = int(np.floor(gap / self.bin_width_ghz))
+            contribution = results.contributions_c6[i]
+            bin_to_stateinds.setdefault(_bin, []).append(i)
+            bin_to_total[_bin] = bin_to_total.get(_bin, 0.0) + contribution
+            bin_to_admixture[_bin] = bin_to_admixture.get(_bin, 0.0) + results.admixtures[i]
+
+        show_status_tip(self, "Plotting contributions...")
+        bins = sorted(bin_to_total)
+        centers = [(b + 0.5) * self.bin_width_ghz for b in bins]
+        heights = [bin_to_total[b] for b in bins]
+        admixtures = np.array([bin_to_admixture[b] for b in bins])
+
+        vmax = float(admixtures.max()) if len(admixtures) and admixtures.max() > 0 else 1.0
+        self._mappable.set_norm(Normalize(vmin=0, vmax=vmax))
+        self._cbar.update_normal(self._mappable)
+        colors = self._mappable.to_rgba(admixtures)
+
+        self.artist = ax.bar(centers, heights, width=self.bin_width_ghz * 0.9, color=colors)
+        self._bar_data = {}
+        for _bin, rect in zip(bins, self.artist.patches, strict=True):
+            self._bar_data[_bin] = rect
+
+        ax.scatter(centers, heights, color="black", s=10, zorder=5)
+
+        ax.axhline(0, color="black", lw=0.5)
+        ax.axvline(0, color="black", lw=0.5)
+        ax.set_xlabel("Energy gap to state of interest (GHz)")
+        ax.set_ylabel(r"Contribution to $C_6$ (GHz·μm⁶)")
+        ax.set_xlim(xlim)
+        if ylim is not None:
+            ax.set_ylim(ylim)
+        else:
+            ylim_max = np.max(np.abs(ax.get_ylim()))
+            ax.set_ylim((-ylim_max, ylim_max))
+
+        self.bin_to_stateinds = bin_to_stateinds
+        self._xlim_cid = ax.callbacks.connect("xlim_changed", self._on_xlim_changed)
+
+    def _on_xlim_changed(self, ax: mpl.axes.Axes) -> None:
+        xlim = ax.get_xlim()
+
+        new_bin_width_ghz = self.BIN_WIDTH_FRACTION * (xlim[1] - xlim[0])
+        if abs(new_bin_width_ghz / self.bin_width_ghz - 1.0) < 0.1:
+            return
+
+        ylim = ax.get_ylim()
+        parameters, results = self.parameters, self.results
+        if parameters is None or results is None:
+            return
+        self.draw_bars(parameters, results, xlim=xlim, ylim=ylim)
+        self.setup_annotations(parameters, results)
+
+    def get_annotation_text(self, key: int) -> str:
+        results = self.results
+        if results is None:
+            return "No data available."
+
+        stateinds = self.bin_to_stateinds[key]
+        stateinds = sorted(stateinds, key=lambda i: -abs(results.contributions_c6[i]))
+
+        states = [results.kets[i] for i in stateinds]
+        contributions = [results.contributions_c6[i] for i in stateinds]
+        text = ""
+        for state, contrib in zip(states, contributions, strict=True):
+            text += f"  - {state}: {contrib:+.3f} GHz·μm⁶\n"
+
+        return text
+
+    def clear(self) -> None:
+        super().clear()
+        if self._xlim_cid is not None:
+            self.canvas.ax.callbacks.disconnect(self._xlim_cid)
+            self._xlim_cid = None
 
 
 def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -> NDArray[Any]:
