@@ -10,7 +10,7 @@ import pairinteraction as pi_complex
 import pairinteraction.real as pi_real
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.qobjects import NamedStackedWidget, QnItemDouble, QnItemInt, WidgetV
-from pairinteraction_gui.qobjects.item import RangeItem
+from pairinteraction_gui.qobjects.item import ParameterItemRange
 from pairinteraction_gui.utils import DatabaseMissingError, NoStateFoundError, get_species_type
 from pairinteraction_gui.worker import MultiThreadWorker
 
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from PySide6.QtWidgets import QWidget
 
     from pairinteraction_gui.config.ket_config import QuantumNumbers
-    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, OneAtomPage, TwoAtomsPage
     from pairinteraction_gui.qobjects.item import _QnItem
 
 
@@ -38,7 +38,7 @@ class BasisConfig(BaseConfig):
     """Section for configuring the basis."""
 
     title = "Basis"
-    page: OneAtomPage | TwoAtomsPage
+    page: OneAtomPage | TwoAtomsPage | C6Page
 
     def setupWidget(self) -> None:
         self.stacked_basis_list: list[NamedStackedWidget[RestrictionsBase]] = []
@@ -46,8 +46,6 @@ class BasisConfig(BaseConfig):
 
     def setupOneBasisAtom(self) -> None:
         """Set up the UI components for a single basis atom."""
-        atom = len(self.stacked_basis_list)
-
         stacked_basis = NamedStackedWidget[RestrictionsBase]()
         self.layout().addWidget(stacked_basis)
 
@@ -60,7 +58,6 @@ class BasisConfig(BaseConfig):
         self.stacked_basis_list.append(stacked_basis)
         self.basis_label_list.append(basis_label)
         self._set_theme_role(basis_label, "info")
-        self.update_basis_label(atom)
 
     def update_basis_label(self, atom: int) -> None:
         worker = MultiThreadWorker(self.get_basis, atom)
@@ -154,15 +151,18 @@ class BasisConfigTwoAtoms(BasisConfig):
     def setupWidget(self) -> None:
         super().setupWidget()
 
-        self.layout().addWidget(QLabel("<b>Atom 1</b>"))
+        self._atom1_label = QLabel("<b>Basis Atom 1</b>")
+        self.layout().addWidget(self._atom1_label)
         self.setupOneBasisAtom()
         self.layout().addSpacing(15)
 
-        self.layout().addWidget(QLabel("<b>Atom 2</b>"))
+        self._atom2_label = QLabel("<b>Basis Atom 2</b>")
+        self.layout().addWidget(self._atom2_label)
         self.setupOneBasisAtom()
         self.layout().addSpacing(15)
 
-        self.layout().addWidget(QLabel("<b>Pair Basis Restrictions</b>"))
+        self._pair_label = QLabel("<b>Basis Pair Restrictions</b>")
+        self.layout().addWidget(self._pair_label)
         self.pair_delta_energy = QnItemDouble(
             self,
             "ΔEnergy",
@@ -172,7 +172,7 @@ class BasisConfigTwoAtoms(BasisConfig):
             tooltip="Restriction for the pair energy difference to the state of interest",
         )
         self.layout().addWidget(self.pair_delta_energy)
-        self.pair_m_range = RangeItem(
+        self.pair_m_range = ParameterItemRange(
             self,
             "Total m",
             tooltip_label="pair total angular momentum m",
@@ -193,6 +193,26 @@ class BasisConfigTwoAtoms(BasisConfig):
     def clear_basis_pair_label(self) -> None:
         """Clear the basis pair label."""
         self.basis_pair_label.setText("")
+
+    def set_atom2_visible(self, visible: bool) -> None:
+        """Show or hide Atom 2's basis restriction widgets."""
+        if visible:
+            self._atom1_label.setText("<b>Basis Atom 1</b>")
+        else:
+            self._atom1_label.setText("<b>Basis Atom</b>")
+        self._atom2_label.setVisible(visible)
+        self.stacked_basis_list[1].setVisible(visible)
+        self.basis_label_list[1].setVisible(visible)
+
+
+class BasisConfigC6(BasisConfigTwoAtoms):
+    """Basis configuration for the C6 page.
+
+    Two per-atom quantum-number restrictions plus a pair-energy restriction that is forwarded to
+    ``EffectiveSystemPair.create_basis_pair(delta_energy=..., delta_energy_unit="GHz")``.
+    """
+
+    page: C6Page
 
 
 class RestrictionsBase(WidgetV):

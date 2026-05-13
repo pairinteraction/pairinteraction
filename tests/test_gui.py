@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from pairinteraction_gui.main_window import MainWindow
@@ -44,7 +45,7 @@ def window_starkmap(base_window: MainWindow) -> MainWindow:
     calculation_config = one_atom_page.calculation_config
     calculation_config.steps.setValue(11)
     system_config = one_atom_page.system_config
-    system_config.Ez.spinboxes[1].setValue(10)
+    system_config.Ez.setValues(0, 10)  # type: ignore [union-attr]
 
     return base_window
 
@@ -71,7 +72,7 @@ def window_pair_potential(base_window: MainWindow) -> MainWindow:
     calculation_config = two_atoms_page.calculation_config
     calculation_config.steps.setValue(5)
     system_config = two_atoms_page.system_config
-    system_config.distance.setValues(1, 5)
+    system_config.distance.setValues(1, 5)  # type: ignore [union-attr]
     return base_window
 
 
@@ -205,6 +206,7 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     ket_qn.items["n"].setValue(222)
     ket_qn.items["l"].setValue(999)
     window.close()
+    plt.close("all")  # make sure to close all matplotlib figures
 
     window = MainWindow(cache_dir=tmp_path)
     window.show()
@@ -214,3 +216,6 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
 
     assert ket_qn.items["n"].value() == 222
     assert ket_qn.items["l"].value() == 999
+
+    window.close()
+    plt.close("all")  # make sure to close all matplotlib figures

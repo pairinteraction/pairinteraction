@@ -5,7 +5,7 @@
 from PySide6.QtWidgets import QLabel
 
 from pairinteraction_gui.config.base_config import BaseConfig
-from pairinteraction_gui.qobjects import Item, QnItemInt, RangeItem
+from pairinteraction_gui.qobjects import CheckboxItem, ParameterItemRange, QnItemInt
 
 
 class CalculationConfig(BaseConfig):
@@ -31,12 +31,12 @@ class CalculationConfig(BaseConfig):
         self.layout().addWidget(self.steps)
 
         self.layout().addWidget(QLabel("<b>Fast mode</b>"))
-        self.fast_mode = Item(self, "Use fast calculation mode", checked=True)
+        self.fast_mode = CheckboxItem(self, "Use fast calculation mode", checked=True)
         self.layout().addWidget(self.fast_mode)
 
         self.layout().addWidget(QLabel("<b>Energy Range</b>"))
         self.layout().addWidget(QLabel("Calculate eigenenergies in the range"))
-        self.energy_range = RangeItem(
+        self.energy_range = ParameterItemRange(
             self,
             "from",
             vdefaults=(-80, 80),

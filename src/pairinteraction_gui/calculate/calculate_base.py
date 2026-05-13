@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions
     from pairinteraction_gui.config.ket_config import QuantumNumbers
     from pairinteraction_gui.config.system_config import RangesKeys
-    from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, OneAtomPage, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ VariableNameFromRangeKey: dict[RangesKeys, str] = {
     "Angle": "angle",
 }
 
-PageType = TypeVar("PageType", "OneAtomPage", "TwoAtomsPage")
+PageType = TypeVar("PageType", bound="OneAtomPage | TwoAtomsPage | C6Page")
 
 
 @dataclass
@@ -83,17 +83,18 @@ class Parameters(ABC, Generic[PageType]):
             page.basis_config.get_quantum_number_restrictions(atom) for atom in range(n_atoms)
         )
 
-        ranges = page.system_config.get_ranges_dict()
+        ranges = page.system_config.get_parameter_dict()
         diamagnetism_enabled = page.system_config.diamagnetism.isChecked()
 
-        diagonalize_kwargs = {}
-        if page.calculation_config.fast_mode.isChecked():
-            diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
-            diagonalize_kwargs["float_type"] = "float32"
-
+        diagonalize_kwargs: dict[str, str] = {}
         diagonalize_relative_energy_range = None
-        if page.calculation_config.energy_range.isChecked():
-            diagonalize_relative_energy_range = page.calculation_config.energy_range.values()
+        if page.calculation_config is not None:
+            if page.calculation_config.fast_mode.isChecked():
+                diagonalize_kwargs["diagonalizer"] = "lapacke_evr"
+                diagonalize_kwargs["float_type"] = "float32"
+
+            if page.calculation_config.energy_range.isChecked():
+                diagonalize_relative_energy_range = page.calculation_config.energy_range.values()
 
         return cls(
             species,

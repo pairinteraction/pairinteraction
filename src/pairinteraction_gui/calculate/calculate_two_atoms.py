@@ -16,13 +16,13 @@ from pairinteraction_gui.calculate.calculate_base import Parameters, Results
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction_gui.page import TwoAtomsPage
+    from pairinteraction_gui.page import C6Page, TwoAtomsPage
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
+class ParametersTwoAtoms(Parameters["TwoAtomsPage | C6Page"]):
     """Parameters for the two atoms calculation."""
 
     pair_delta_energy: float = np.inf
@@ -30,7 +30,7 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
     order: int = 3
 
     @classmethod
-    def from_page(cls, page: TwoAtomsPage) -> Self:
+    def from_page(cls, page: TwoAtomsPage | C6Page) -> Self:
         obj = super().from_page(page)
         obj.pair_delta_energy = page.basis_config.pair_delta_energy.value(np.inf)
         obj.pair_m_range = (
@@ -47,6 +47,16 @@ class ParametersTwoAtoms(Parameters["TwoAtomsPage"]):
         )
         replacements["$PAIR_M_RANGE"] = str(self.pair_m_range)
         return replacements
+
+    def get_distance(self, step: int) -> float:
+        """Return the distance for the given step."""
+        key = "Distance"
+        return self.ranges[key][step] if key in self.ranges else np.inf
+
+    def get_angle(self, step: int) -> float:
+        """Return the angle for the given step."""
+        key = "Angle"
+        return self.ranges[key][step] if key in self.ranges else 0
 
 
 @dataclass
@@ -135,11 +145,9 @@ def _calculate_two_atoms(parameters: ParametersTwoAtoms) -> ResultsTwoAtoms:
     for step in range(parameters.steps):
         system = pi.SystemPair(basis_pair_list[step])
         system.set_interaction_order(parameters.order)
-        if "Distance" in parameters.ranges:
-            distance = parameters.ranges["Distance"][step]
-            angle: float = 0
-            if "Angle" in parameters.ranges:
-                angle = parameters.ranges["Angle"][step]
+        distance = parameters.get_distance(step)
+        if not np.isinf(distance):
+            angle = parameters.get_angle(step)
             system.set_distance(distance, angle, unit="micrometer")
         system_pair_list.append(system)
 

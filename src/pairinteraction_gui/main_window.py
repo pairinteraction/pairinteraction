@@ -23,6 +23,7 @@ from pairinteraction.cli import download_databases
 from pairinteraction_gui.app import Application
 from pairinteraction_gui.config.base_config import BaseConfig
 from pairinteraction_gui.page import (
+    C6Page,
     LifetimesPage,
     OneAtomPage,
     TwoAtomsPage,
@@ -126,7 +127,7 @@ class MainWindow(QMainWindow):
         stacked_pages.addNamedWidget(OneAtomPage(), "OneAtomPage")
         stacked_pages.addNamedWidget(TwoAtomsPage(), "TwoAtomsPage")
         stacked_pages.addNamedWidget(LifetimesPage(), "LifetimesPage")
-        # stacked_pages.addNamedWidget(C6Page(), "C6Page")
+        stacked_pages.addNamedWidget(C6Page(), "C6Page")
 
         # stacked_pages.addNamedWidget(SettingsPage(), "SettingsPage")
         # stacked_pages.addNamedWidget(AboutPage(), "AboutPage")
