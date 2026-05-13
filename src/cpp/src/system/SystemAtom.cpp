@@ -8,18 +8,24 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/operator.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
 #include <Eigen/Dense>
+#include <Eigen/SparseCore>
 #include <algorithm>
 #include <cmath>
+#include <initializer_list>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <set>
 #include <spdlog/spdlog.h>
+#include <variant>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -94,10 +100,33 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
 }
 
 template <typename Scalar>
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_green_tensor_interpolator(
+    const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
+    this->hamiltonian_requires_construction = true;
+    this->green_tensor_interpolator = green_tensor_interpolator;
+    return *this;
+}
+
+template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto get_operator_matrix = [this](OperatorType type, int q = 0) {
         return this->basis->get_database().get_matrix_elements_in_canonical_basis(
             this->basis, this->basis, type, q);
+    };
+    // Helper function for constructing matrices of spherical harmonics operators in the
+    // canonical basis. The full Hamiltonian is transformed into the actual basis at the end.
+    auto get_matrices = [](auto basis, OperatorType type, std::initializer_list<int> m,
+                           bool conjugate) {
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrices;
+        matrices.reserve(m.size());
+        int factor = conjugate ? -1 : 1;
+        std::transform(m.begin(), m.end(), std::back_inserter(matrices), [&](int q) {
+            return (std::pow(factor, q) *
+                    basis->get_database().get_matrix_elements_in_canonical_basis(basis, basis, type,
+                                                                                 factor * q))
+                .eval();
+        });
+        return matrices;
     };
 
     // Construct the unperturbed Hamiltonian in the canonical atomic basis
@@ -272,6 +301,49 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, -2);
             sort_by_quantum_number_f = false;
             sort_by_quantum_number_m = false;
+        }
+    }
+
+    // Add self-interaction via Green tensor
+    // H_self = (1/2) * Σ_{ij} D_left[i] * G_{ij} * D_right[j]
+    // where D_left uses conjugated convention and
+    // D_right uses normal convention.
+
+    // Helper function for adding self interaction
+    auto add_interaction = [this, &sort_by_quantum_number_f,
+                            &sort_by_quantum_number_m](const auto &entries, const auto &op_left,
+                                                       const auto &op_right, int delta) {
+        for (const auto &entry : entries) {
+            if (std::holds_alternative<
+                    typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry>(entry)) {
+                throw std::logic_error(
+                    "Green tensor with omega dependent entries is currently not supported.");
+            }
+
+            const auto &constant_entry =
+                std::get<typename GreenTensorInterpolator<Scalar>::ConstantEntry>(entry);
+            Eigen::SparseMatrix<Scalar, Eigen::RowMajor> self_interaction =
+                (constant_entry.val() / 2. * op_left[constant_entry.row()] *
+                 op_right[constant_entry.col()])
+                    .eval();
+            this->matrix += self_interaction;
+
+            sort_by_quantum_number_f = false;
+            if (constant_entry.row() != constant_entry.col() + delta) {
+                sort_by_quantum_number_m = false;
+            }
+        }
+    };
+
+    if (green_tensor_interpolator) {
+        if (!green_tensor_interpolator->get_spherical_entries(1, 1).empty()) {
+            auto dipole_left =
+                get_matrices(this->basis, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
+            auto dipole_right =
+                get_matrices(this->basis, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
+
+            add_interaction(green_tensor_interpolator->get_spherical_entries(1, 1), dipole_left,
+                            dipole_right, 0);
         }
     }
 
