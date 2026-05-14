@@ -109,6 +109,7 @@ nbsphinx_prolog = """
     <div class="admonition note">
       Open as Jupyter notebook in
       <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/{{ docname|e }}">Google Colab</a>.
+      In Google Colab, run <code>pip install pairinteraction</code> before the first notebook cell to install PairInteraction.
     </div>
 """  # noqa: E501
 
