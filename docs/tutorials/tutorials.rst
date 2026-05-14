@@ -49,8 +49,8 @@ Some examples showcasing the usage of custom green tensors.
 
 .. nbgallery::
 
-    examples_python/green_tensor/green_tensor_example_cavity
     examples_python/green_tensor/c6_near_surfaces.ipynb
+    examples_python/green_tensor/self_interaction.ipynb
 
 **Examples From Publications**
 
