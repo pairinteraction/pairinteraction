@@ -112,7 +112,7 @@ class GreenTensorCavity(GreenTensorBase):
 
 
         """
-        if self.without_vacuum_contribution and epsilon != 1.0:
+        if self.without_vacuum_contribution and epsilon != 1.0:  # NOSONAR
             raise ValueError(
                 "If the Green tensor is provided without the vacuum contribution, "
                 "the relative permittivity of the medium needs to be set to 1."
