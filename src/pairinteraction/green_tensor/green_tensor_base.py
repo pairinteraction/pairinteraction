@@ -12,7 +12,6 @@ from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Collection
-    from typing import TypeAlias
 
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction.units import (
@@ -23,8 +22,6 @@ if TYPE_CHECKING:
         PintArrayLike,
         PintFloat,
     )
-
-    PermittivityLike: TypeAlias = "complex | Callable[[PintFloat], complex]"
 
 
 class GreenTensorBase(ABC):
@@ -226,27 +223,3 @@ class GreenTensorBase(ABC):
         raise ValueError(
             "You must either specify transition_energies or set static_limit to True to get an interpolator object."
         )
-
-
-def evaluate_relative_permittivity(
-    epsilon: PermittivityLike, transition_energy: float, transition_energy_unit: str | None = None
-) -> complex:
-    """Get the electric permittivity for the given frequency.
-
-    Args:
-        epsilon: The electric permittivity (dimensionless) or a callable function that returns it.
-        transition_energy: The angular frequency at which to evaluate the permittivity.
-            Only needed if the permittivity is frequency dependent.
-        transition_energy_unit: The unit of the angular frequency.
-            Default None, which means that the angular frequency must be given as pint object.
-
-    Returns:
-        The electric permittivity at the given angular frequency.
-
-    """
-    omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
-    if np.isscalar(epsilon):
-        return epsilon  # type: ignore [return-value]
-    if callable(epsilon):
-        return epsilon(ureg.Quantity(omega_au, "hartree"))
-    raise TypeError("epsilon must be either a complex number or a callable function.")

@@ -139,7 +139,7 @@ autodoc_type_aliases = {
     "KetAtom": "pairinteraction.ket.ket_atom.KetAtom",
     "StateAtom": "pairinteraction.state.state_atom.StateAtom",
     "BasisAtom": "pairinteraction.basis.basis_atom.BasisAtom",
-    "PermittivityLike": "pairinteraction.green_tensor.green_tensor_base.PermittivityLike",
+    "PermittivityLike": "pairinteraction.green_tensor.utils.PermittivityLike",
 }
 
 

@@ -10,13 +10,14 @@ import scipy.constants as const
 from typing_extensions import override
 
 from pairinteraction.green_tensor.dynamic_green_tensor import dynamic_green_tensor_homogeneous
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
+from pairinteraction.green_tensor.utils import evaluate_relative_permittivity
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor.green_tensor_base import PermittivityLike
+    from pairinteraction.green_tensor.utils import PermittivityLike
     from pairinteraction.units import ArrayLike, NDArray, PintArrayLike
 
 

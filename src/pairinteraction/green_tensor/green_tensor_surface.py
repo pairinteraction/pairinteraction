@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 PairInteraction Developers
+# SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 from __future__ import annotations
@@ -13,14 +13,20 @@ from pairinteraction.green_tensor.dynamic_green_tensor import (
     dynamic_green_tensor_homogeneous,
     dynamic_green_tensor_scattered,
 )
-from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase, evaluate_relative_permittivity
+from pairinteraction.green_tensor.green_tensor_base import GreenTensorBase
+from pairinteraction.green_tensor.utils import (
+    evaluate_relative_permittivity,
+    get_lab_to_local_rotation_matrix,
+    rotate_tensor_to_lab,
+    rotate_vector_to_local,
+)
 from pairinteraction.units import QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor.green_tensor_base import PermittivityLike
-    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike, PintFloat
+    from pairinteraction.green_tensor.utils import PermittivityLike
+    from pairinteraction.units import ArrayLike, NDArray, PintArrayLike
 
 
 class GreenTensorSurface(GreenTensorBase):
@@ -28,7 +34,9 @@ class GreenTensorSurface(GreenTensorBase):
 
     Examples:
         >>> from pairinteraction.green_tensor import GreenTensorSurface
-        >>> gt = GreenTensorSurface([0, 0, 0], [10, 0, 0], z=-5, unit="micrometer")
+        >>> gt = GreenTensorSurface(
+        ...     [0, 0, 0], [10, 0, 0], point_on_plane=[0, 0, -5], surface_normal=[0, 0, 1], unit="micrometer"
+        ... )
         >>> transition_energy = 2  # h * GHz
         >>> gt_dipole_dipole = gt.get(1, 1, transition_energy, "planck_constant * GHz")
         >>> print(f"{gt_dipole_dipole[0, 0]:.2f}")
@@ -40,7 +48,8 @@ class GreenTensorSurface(GreenTensorBase):
         self,
         pos1: ArrayLike | PintArrayLike,
         pos2: ArrayLike | PintArrayLike,
-        z: float | PintFloat,
+        point_on_plane: ArrayLike | PintArrayLike,
+        surface_normal: ArrayLike,
         unit: str | None = None,
         static_limit: bool = True,
         interaction_order: int = 3,
@@ -49,14 +58,15 @@ class GreenTensorSurface(GreenTensorBase):
     ) -> None:
         """Create a Green tensor for two atoms near a single infinite surface.
 
-        The surface is assumed to be infinite in the x-y plane.
+        The surface is an infinite plane specified by a point on the plane and its normal vector.
         If not specified otherwise (see `set_relative_permittivities`), the surface is treated as a perfect mirror.
 
 
         Args:
             pos1: Position of the first atom in the given unit.
             pos2: Position of the second atom in the given unit.
-            z: The z-position of the surface in the given unit.
+            point_on_plane: A point on the surface plane in the given unit.
+            surface_normal: The surface normal vector.
             unit: The unit of the distance, e.g. "micrometer".
                 Default None expects a `pint.Quantity`.
             static_limit: If True, the static limit is used.
@@ -70,8 +80,14 @@ class GreenTensorSurface(GreenTensorBase):
         super().__init__(
             pos1, pos2, unit, static_limit, interaction_order, without_vacuum_contribution=without_vacuum_contribution
         )
-        self.surface_z_au = QuantityScalar.convert_user_to_au(z, unit, "distance")
-        self.surface_epsilon: PermittivityLike = 1e9  # Almost perfect mirror # TODO make utils be able to handle inf
+        self.point_on_plane_au = np.array(
+            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane]
+        )
+        if np.isclose(np.linalg.norm(surface_normal), 0):
+            raise ValueError("Normal vector cannot be zero.")
+        self.surface_normal = np.array(surface_normal, dtype=float)
+        # Almost perfect mirror # TODO make utils be able to handle inf
+        self.surface_epsilon: PermittivityLike = 1e9
 
     def set_relative_permittivities(self, epsilon: PermittivityLike, surface_epsilon: PermittivityLike) -> Self:
         """Set the relative permittivities of the system.
@@ -109,32 +125,35 @@ class GreenTensorSurface(GreenTensorBase):
 
         """
         au_to_meter: float = ureg.Quantity(1, "atomic_unit_of_length").to("meter").magnitude
-        pos1_m = np.array(self.pos1_au) * au_to_meter
-        pos2_m = np.array(self.pos2_au) * au_to_meter
-        epsilon = evaluate_relative_permittivity(self.epsilon, transition_energy_au, "hartree")
+        lab_to_local_rotation = get_lab_to_local_rotation_matrix(self.surface_normal)
 
-        omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz", "spectroscopy").magnitude
+        pos1_local_m = rotate_vector_to_local(self.pos1_au * au_to_meter, lab_to_local_rotation)
+        pos2_local_m = rotate_vector_to_local(self.pos2_au * au_to_meter, lab_to_local_rotation)
+        point_on_plane_local_m = rotate_vector_to_local(self.point_on_plane_au * au_to_meter, lab_to_local_rotation)
 
+        z1_m = point_on_plane_local_m[2]
         # Assume two surfaces, where the further apart atom is located in the center
         # but the second surface has the same permittivity as the inbetween medium
-        z1_m = self.surface_z_au * au_to_meter
-        height = 2 * max(abs(pos1_m[2] - z1_m), abs(pos2_m[2] - z1_m))
-        if pos1_m[2] < z1_m and pos2_m[2] < z1_m:
+        height = 2 * max(abs(pos1_local_m[2] - z1_m), abs(pos2_local_m[2] - z1_m))
+        if pos1_local_m[2] < z1_m and pos2_local_m[2] < z1_m:
             z2_m = z1_m - height
-        elif pos1_m[2] > z1_m and pos2_m[2] > z1_m:
+        elif pos1_local_m[2] > z1_m and pos2_local_m[2] > z1_m:
             z2_m = z1_m + height
         else:
             raise ValueError("Both atoms must be located either above or below the surface.")
 
+        omega_hz = ureg.Quantity(transition_energy_au, "hartree").to("hbar Hz").magnitude
+        epsilon = evaluate_relative_permittivity(self.epsilon, transition_energy_au, "hartree")
         epsilon1 = evaluate_relative_permittivity(self.surface_epsilon, transition_energy_au, "hartree")
         epsilon2 = epsilon
 
         # unit: # m^(-3) [hbar]^(-1) [epsilon_0]^(-1)
         gt = dynamic_green_tensor_scattered(
-            pos1_m, pos2_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
+            pos1_local_m, pos2_local_m, z1_m, z2_m, omega_hz, epsilon, epsilon1, epsilon2, only_real_part=True
         )
         if not self.without_vacuum_contribution:
-            gt += dynamic_green_tensor_homogeneous(pos1_m, pos2_m, omega_hz, epsilon, only_real_part=True)
+            gt += dynamic_green_tensor_homogeneous(pos1_local_m, pos2_local_m, omega_hz, epsilon, only_real_part=True)
+        gt = rotate_tensor_to_lab(gt, lab_to_local_rotation)
         to_au = au_to_meter ** (-3) * ((4 * np.pi) ** (-1)) / (const.epsilon_0 * const.hbar)
         # hbar * epsilon_0 = (4*np.pi)**(-1) in atomic units
         return np.real(gt) / to_au

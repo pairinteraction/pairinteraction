@@ -30,11 +30,26 @@ def test_static_green_tensor(distance_vector_mum: list[float]) -> None:
     gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
     np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference)
 
-    gt = GreenTensorSurface([0, 0, 0], distance_vector_mum, z=1000, unit="micrometer", static_limit=True)
+    gt = GreenTensorSurface(
+        [0, 0, 0],
+        distance_vector_mum,
+        point_on_plane=[0, 0, 1000],
+        surface_normal=[0, 0, 1],
+        unit="micrometer",
+        static_limit=True,
+    )
     gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
     np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference, rtol=1e-6, atol=1e-16)
 
-    gt = GreenTensorCavity([0, 0, 0], distance_vector_mum, z1=-1000, z2=1000, unit="micrometer", static_limit=True)
+    gt = GreenTensorCavity(
+        [0, 0, 0],
+        distance_vector_mum,
+        point_on_plane1=[0, 0, -1000],
+        point_on_plane2=[0, 0, 1000],
+        surface_normal=[0, 0, 1],
+        unit="micrometer",
+        static_limit=True,
+    )
     gt_dipole_dipole = gt.get(1, 1, transition_energy=0, scaled=True)
     np.testing.assert_allclose(gt_dipole_dipole.m, gt_reference, rtol=1e-6, atol=1e-16)
 
@@ -112,3 +127,108 @@ def reference_green_tensor_vacuum(distance_vector_mum: list[float]) -> NDArray:
         np.eye(3) - 3 * np.outer(distance_vector_mum, distance_vector_mum) / distance_mum**2
     ) / distance_au**3
     return gt
+
+
+def rotation_matrix_from_axis_angle(axis: list[float], angle: float) -> NDArray:
+    axis_array = np.array(axis, dtype=float)
+    axis_array /= np.linalg.norm(axis_array)
+    cross_matrix = np.array(
+        [
+            [0, -axis_array[2], axis_array[1]],
+            [axis_array[2], 0, -axis_array[0]],
+            [-axis_array[1], axis_array[0], 0],
+        ]
+    )
+    return np.eye(3) + np.sin(angle) * cross_matrix + (1 - np.cos(angle)) * cross_matrix @ cross_matrix  # type: ignore [no-any-return]
+
+
+def test_surface_green_tensor_rotation_invariance() -> None:
+    rotation = rotation_matrix_from_axis_angle([1, 2, 0.5], np.deg2rad(37))
+    pos1 = np.array([0.4, -0.2, 0.8])
+    pos2 = np.array([1.1, 0.3, 1.4])
+    point_on_plane = np.array([0.0, 0.0, 0.0])
+
+    gt_reference = GreenTensorSurface(
+        pos1,
+        pos2,
+        point_on_plane=point_on_plane,
+        surface_normal=[0, 0, 1],
+        unit="micrometer",
+        static_limit=True,
+    ).get(1, 1, transition_energy=0, scaled=True)
+    gt_rotated = GreenTensorSurface(
+        rotation.T @ pos1,
+        rotation.T @ pos2,
+        point_on_plane=rotation.T @ point_on_plane,
+        surface_normal=rotation.T @ np.array([0, 0, 1]),
+        unit="micrometer",
+        static_limit=True,
+    ).get(1, 1, transition_energy=0, scaled=True)
+
+    np.testing.assert_allclose(
+        gt_rotated.m,
+        rotation.T @ gt_reference.m @ rotation,
+        rtol=1e-10,
+        atol=1e-12,
+    )
+
+
+def test_cavity_green_tensor_rotation_invariance() -> None:
+    rotation = rotation_matrix_from_axis_angle([0.3, 1.0, -0.2], np.deg2rad(51))
+    pos1 = np.array([0.2, -0.1, -0.2])
+    pos2 = np.array([0.8, 0.5, 0.4])
+    point_on_plane1 = np.array([0.0, 0.0, -1.0])
+    point_on_plane2 = np.array([0.0, 0.0, 1.5])
+
+    gt_reference = GreenTensorCavity(
+        pos1,
+        pos2,
+        point_on_plane1=point_on_plane1,
+        point_on_plane2=point_on_plane2,
+        surface_normal=[0, 0, 1],
+        unit="micrometer",
+        static_limit=True,
+    ).get(1, 1, transition_energy=0, scaled=True)
+    gt_rotated = GreenTensorCavity(
+        rotation.T @ pos1,
+        rotation.T @ pos2,
+        point_on_plane1=rotation.T @ point_on_plane1,
+        point_on_plane2=rotation.T @ point_on_plane2,
+        surface_normal=rotation.T @ np.array([0, 0, 1]),
+        unit="micrometer",
+        static_limit=True,
+    ).get(1, 1, transition_energy=0, scaled=True)
+
+    np.testing.assert_allclose(
+        gt_rotated.m,
+        rotation.T @ gt_reference.m @ rotation,
+        rtol=1e-10,
+        atol=1e-12,
+    )
+
+
+def test_surface_green_tensor_rejects_zero_normal() -> None:
+    with pytest.raises(ValueError, match="cannot be zero"):
+        GreenTensorSurface(
+            [0, 0, 0],
+            [0, 0, 1],
+            point_on_plane=[0, 0, 0],
+            surface_normal=[0, 0, 0],
+            unit="micrometer",
+            static_limit=True,
+        )
+
+
+def test_cavity_green_tensor_rejects_coincident_planes() -> None:
+    gt = GreenTensorCavity(
+        [0, 0, 0],
+        [0, 0, 1],
+        point_on_plane1=[0, 0, 0],
+        point_on_plane2=[1, 0, 0],
+        surface_normal=[0, 0, 1],
+        unit="micrometer",
+        static_limit=True,
+    )
+
+    with pytest.raises(ValueError, match="must be distinct"):
+        gt.get(1, 1, transition_energy=0, scaled=True)
