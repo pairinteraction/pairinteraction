@@ -1,0 +1,80 @@
+.. _tutorials:
+
+###########
+ Tutorials
+###########
+
+The PairInteraction software comes with a graphical user interface (GUI) and a Python API. The GUI provides a quick way
+to calculate Rydberg interaction potentials, lifetimes, and energy shifts in the presence of external fields. The Python
+API is designed to automate calculations and to have more fine-grained control.
+
+.. _tutorial-api:
+
+************************
+ Tutorials - Python API
+************************
+
+**Introduction**
+
+The following Jupyter notebooks introduce the Python API. The other tutorials build on this introduction.
+
+.. nbgallery::
+
+    examples_python/quick_start.ipynb
+    examples_python/concepts.ipynb
+
+**Examples Demonstrating Basic Usage**
+
+We show exemplary applications of the Python API, ranging from the calculation of single-atom properties such as
+lifetimes to calculations of pair potentials.
+
+.. nbgallery::
+
+    examples_python/stark_map.ipynb
+    examples_python/stark_map_yb174.ipynb
+    examples_python/pair_potentials.ipynb
+    examples_python/lifetimes.ipynb
+    examples_python/state_atom_object.ipynb
+
+Some examples showcasing how to calculate C3 and C6 coefficients and effective Hamiltonians
+
+.. nbgallery::
+
+    examples_python/effective_hamiltonian/c3_c6_coefficients.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one_half.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one.ipynb
+
+Some examples showcasing the usage of custom green tensors.
+
+.. nbgallery::
+
+    examples_python/green_tensor/c6_near_surfaces.ipynb
+    examples_python/green_tensor/self_interaction.ipynb
+
+**Examples From Publications**
+
+We show how PairInteraction's Python API can be applied to solve complex problems and reproduce results from literature.
+
+.. nbgallery::
+
+    examples_python/pair_potential_efield_sensitivity.ipynb
+    examples_python/atom_ion_interaction.ipynb
+    examples_python/mqdt.ipynb
+
+.. _tutorial-gui:
+
+**************************************
+ Tutorials - Graphical User Interface
+**************************************
+
+The graphical user interface (GUI) of PairInteraction can be started by executing
+
+.. code-block:: bash
+
+    pairinteraction
+
+from the command line. Below we show a few examples of how one can use the GUI.
+
+.. raw:: html
+    :file: examples_gui/slideshow.html

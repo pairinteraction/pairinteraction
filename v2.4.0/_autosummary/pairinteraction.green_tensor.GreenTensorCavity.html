@@ -1,0 +1,415 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenTensorCavity &mdash; PairInteraction 2.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=4d935f96"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../about.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="GreenTensorInterpolator" href="pairinteraction.green_tensor.GreenTensorInterpolator.html" />
+    <link rel="prev" title="GreenTensorSurface" href="pairinteraction.green_tensor.GreenTensorSurface.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/tutorials.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_reference.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.Database.html">Database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetAtom.html">KetAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StateAtom.html">StateAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisAtom.html">BasisAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.SystemAtom.html">SystemAtom</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.KetPair.html">KetPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.StatePair.html">StatePair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.BasisPair.html">BasisPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.SystemPair.html">SystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.diagonalize.html">diagonalize</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.EffectiveSystemPair.html">EffectiveSystemPair</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C3.html">C3</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.C6.html">C6</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.green_tensor.GreenTensorFreeSpace.html">GreenTensorFreeSpace</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.green_tensor.GreenTensorSurface.html">GreenTensorSurface</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">GreenTensorCavity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.__init__"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.surface1_epsilon"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.surface1_epsilon</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.surface2_epsilon"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.surface2_epsilon</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.set_relative_permittivities"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.set_relative_permittivities()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.get"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.get_interpolator"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.get_interpolator()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.epsilon"><code class="docutils literal notranslate"><span class="pre">GreenTensorCavity.epsilon</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="pairinteraction.green_tensor.GreenTensorInterpolator.html">GreenTensorInterpolator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_reference.html">API Reference</a></li>
+      <li class="breadcrumb-item active">GreenTensorCavity</li>
+<li class="wy-breadcrumbs-aside">
+      <a href="https://github.com/pairinteraction/pairinteraction/blob/master/docs/_autosummary/pairinteraction.green_tensor.GreenTensorCavity.rst" class="fa fa-github"> View on GitHub</a>
+</li>
+
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="greentensorcavity">
+<h1>GreenTensorCavity<a class="headerlink" href="#greentensorcavity" title="Link to this heading"></a></h1>
+<p class="rubric">Class Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.__init__" title="pairinteraction.green_tensor.GreenTensorCavity.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(pos1, pos2, z1, z2[, unit, ...])</p></td>
+<td><p>Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.get" title="pairinteraction.green_tensor.GreenTensorCavity.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(kappa1, kappa2, transition_energy[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.get_interpolator" title="pairinteraction.green_tensor.GreenTensorCavity.get_interpolator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_interpolator</span></code></a>([transition_energies, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.set_relative_permittivities" title="pairinteraction.green_tensor.GreenTensorCavity.set_relative_permittivities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_relative_permittivities</span></code></a>(epsilon, ...)</p></td>
+<td><p>Set the relative permittivities of the system.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Class Attributes and Properties</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pairinteraction.green_tensor.GreenTensorCavity.epsilon" title="pairinteraction.green_tensor.GreenTensorCavity.epsilon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epsilon</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">GreenTensorCavity</span></span><a class="reference internal" href="../_modules/pairinteraction/green_tensor/green_tensor_cavity.html#GreenTensorCavity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity" title="Link to this definition"></a></dt>
+<dd><p>Green tensor for two atoms in a cavity (between two infinite planar surfaces).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.green_tensor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreenTensorCavity</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt</span> <span class="o">=</span> <span class="n">GreenTensorCavity</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">z1</span><span class="o">=-</span><span class="mi">5</span><span class="p">,</span> <span class="n">z2</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transition_energy</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># h * GHz</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gt_dipole_dipole</span> <span class="o">=</span> <span class="n">gt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transition_energy</span><span class="p">,</span> <span class="s2">&quot;planck_constant * GHz&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">gt_dipole_dipole</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">-3.84 / bohr</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pos1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pos2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interaction_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/green_tensor/green_tensor_cavity.html#GreenTensorCavity.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.__init__" title="Link to this definition"></a></dt>
+<dd><p>Create a Green tensor for two atoms inside a planar cavity formed by two infinite surfaces.</p>
+<p>The two surfaces of the cavity are assumed to be infinite in the x-y plane.
+If not specified otherwise (see <cite>set_relative_permittivities</cite>), the surfaces are treated as perfect mirrors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pos1</strong> (<span class="sphinx_autodoc_typehints-type">pairinteraction.units.ArrayLike | pairinteraction.units.PintArrayLike</span>) – Position of the first atom in the given unit.</p></li>
+<li><p><strong>pos2</strong> (<span class="sphinx_autodoc_typehints-type">pairinteraction.units.ArrayLike | pairinteraction.units.PintArrayLike</span>) – Position of the second atom in the given unit.</p></li>
+<li><p><strong>z1</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | pairinteraction.units.PintFloat</span>) – The z-position of the first surface in the given unit.</p></li>
+<li><p><strong>z2</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | pairinteraction.units.PintFloat</span>) – The z-position of the second surface in the given unit.</p></li>
+<li><p><strong>unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit of the distance, e.g. “micrometer”.
+Default None expects a <cite>pint.Quantity</cite>.</p></li>
+<li><p><strong>static_limit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, the static limit is used.
+Default False.</p></li>
+<li><p><strong>interaction_order</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The order of interaction, e.g., 3 for dipole-dipole.
+Defaults to 3.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.surface1_epsilon">
+<span class="sig-name descname"><span class="pre">surface1_epsilon</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PermittivityLike</span></span><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.surface1_epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.surface2_epsilon">
+<span class="sig-name descname"><span class="pre">surface2_epsilon</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">PermittivityLike</span></span><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.surface2_epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.set_relative_permittivities">
+<span class="sig-name descname"><span class="pre">set_relative_permittivities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epsilon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/pairinteraction/green_tensor/green_tensor_cavity.html#GreenTensorCavity.set_relative_permittivities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.set_relative_permittivities" title="Link to this definition"></a></dt>
+<dd><p>Set the relative permittivities of the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epsilon</strong> (<span class="sphinx_autodoc_typehints-type">pairinteraction.green_tensor.green_tensor_base.PermittivityLike</span>) – The relative permittivity (dimensionless) of the medium inside the cavity.</p></li>
+<li><p><strong>epsilon1</strong> (<span class="sphinx_autodoc_typehints-type">pairinteraction.green_tensor.green_tensor_base.PermittivityLike</span>) – The relative permittivity (dimensionless) of the first surface.</p></li>
+<li><p><strong>epsilon2</strong> (<span class="sphinx_autodoc_typehints-type">pairinteraction.green_tensor.green_tensor_base.PermittivityLike</span>) – The relative permittivity (dimensionless) of the second surface.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">Self</span></code></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kappa1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappa2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_energy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_energy_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaled</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.get" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Overloads<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong>, <strong>kappa1</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>kappa2</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>transition_energy</strong> (<span class="sphinx_autodoc_typehints-type">float | PintFloat</span>), <strong>transition_energy_unit</strong> (<span class="sphinx_autodoc_typehints-type">str | None</span>), <strong>unit</strong> (<span class="sphinx_autodoc_typehints-type">None</span>), <strong>scaled</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">PintArray</span></p></li>
+<li><p><strong>self</strong>, <strong>kappa1</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>kappa2</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>transition_energy</strong> (<span class="sphinx_autodoc_typehints-type">float</span>), <strong>transition_energy_unit</strong> (<span class="sphinx_autodoc_typehints-type">str</span>), <strong>unit</strong> (<span class="sphinx_autodoc_typehints-type">str</span>), <strong>scaled</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">NDArray</span></p></li>
+<li><p><strong>self</strong>, <strong>kappa1</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>kappa2</strong> (<span class="sphinx_autodoc_typehints-type">int</span>), <strong>transition_energy</strong> (<span class="sphinx_autodoc_typehints-type">PintFloat</span>), <strong>unit</strong> (<span class="sphinx_autodoc_typehints-type">str</span>), <strong>scaled</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">NDArray</span></p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>kappa1</strong> (<em>int</em>)</p></li>
+<li><p><strong>kappa2</strong> (<em>int</em>)</p></li>
+<li><p><strong>transition_energy</strong> (<em>float</em><em> | </em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.PintFloat'</em><em>)</em>)</p></li>
+<li><p><strong>transition_energy_unit</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>unit</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>scaled</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TypeAliasForwardRef(‘pairinteraction.units.PintArray’) | TypeAliasForwardRef(‘pairinteraction.units.NDArray’)</p>
+</dd>
+</dl>
+<p>Calculate the Green tensor in cartesian coordinates for the given ranks kappa1, kappa2 and frequency omega.</p>
+<p>kappa = 1 corresponds to dipole operator with the cartesian basis: [x, y, z]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kappa1</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The rank of the first multipole operator.</p></li>
+<li><p><strong>kappa2</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></span>) – The rank of the second multipole operator.</p></li>
+<li><p><strong>transition_energy</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code> | pairinteraction.units.PintFloat</span>) – The transition energy at which to evaluate the Green tensor.
+Only needed if the Green tensor is frequency dependent.</p></li>
+<li><p><strong>transition_energy_unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit of the transition energy.
+Default None, which means that the transition energy must be given as pint object.</p></li>
+<li><p><strong>unit</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code> | <code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></span>) – The unit to which to convert the result.
+Default None, which means that the result is returned as pint object.</p></li>
+<li><p><strong>scaled</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></span>) – If True, the Green tensor is returned with the prefactor for the interaction
+already included (the unit has to be adopted accordingly).
+Default False, which means that the bare Green tensor is returned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Green tensor as a 2D array in cartesian coordinates.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>TypeAliasForwardRef(‘pairinteraction.units.PintArray’) | TypeAliasForwardRef(‘pairinteraction.units.NDArray’)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.get_interpolator">
+<span class="sig-name descname"><span class="pre">get_interpolator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transition_energies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_energies_unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_real</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.get_interpolator" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Overloads<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong>, <strong>use_real</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">GreenTensorInterpolator</span></p></li>
+<li><p><strong>self</strong>, <strong>transition_energies</strong> (<span class="sphinx_autodoc_typehints-type">Collection[PintFloat] | PintArray</span>), <strong>transition_energies_unit</strong> (<span class="sphinx_autodoc_typehints-type">None</span>), <strong>use_real</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">GreenTensorInterpolator</span></p></li>
+<li><p><strong>self</strong>, <strong>transition_energies</strong> (<span class="sphinx_autodoc_typehints-type">Collection[float] | NDArray</span>), <strong>transition_energies_unit</strong> (<span class="sphinx_autodoc_typehints-type">str</span>), <strong>use_real</strong> (<span class="sphinx_autodoc_typehints-type">bool</span>) → <span class="sphinx_autodoc_typehints-type">GreenTensorInterpolator</span></p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>transition_energies</strong> (<em>Collection</em><em>[</em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.PintFloat'</em><em>)</em><em>] </em><em>| </em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.PintArray'</em><em>) </em><em>| </em><em>Collection</em><em>[</em><em>float</em><em>] </em><em>| </em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.NDArray'</em><em>) </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>transition_energies_unit</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>use_real</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pairinteraction.green_tensor.GreenTensorInterpolator.html#pairinteraction.green_tensor.GreenTensorInterpolator" title="pairinteraction.green_tensor.green_tensor_interpolator.GreenTensorInterpolator"><em>GreenTensorInterpolator</em></a></p>
+</dd>
+</dl>
+<p>Get a GreenTensorInterpolator from this Green tensor.</p>
+<p>The GreenTensorInterpolator can be used for the interaction of a SystemPair.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A GreenTensorInterpolator that interpolates the Green tensor at given frequency points.</p>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>transition_energies</strong> (<em>Collection</em><em>[</em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.PintFloat'</em><em>)</em><em>] </em><em>| </em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.PintArray'</em><em>) </em><em>| </em><em>Collection</em><em>[</em><em>float</em><em>] </em><em>| </em><em>TypeAliasForwardRef</em><em>(</em><em>'pairinteraction.units.NDArray'</em><em>) </em><em>| </em><em>None</em>)</p></li>
+<li><p><strong>transition_energies_unit</strong> (<em>str</em><em> | </em><em>None</em>)</p></li>
+<li><p><strong>use_real</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="pairinteraction.green_tensor.GreenTensorInterpolator.html#pairinteraction.green_tensor.GreenTensorInterpolator" title="pairinteraction.green_tensor.green_tensor_interpolator.GreenTensorInterpolator"><em>GreenTensorInterpolator</em></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pairinteraction.green_tensor.GreenTensorCavity.epsilon">
+<span class="sig-name descname"><span class="pre">epsilon</span></span><a class="headerlink" href="#pairinteraction.green_tensor.GreenTensorCavity.epsilon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="pairinteraction.green_tensor.GreenTensorSurface.html" class="btn btn-neutral float-left" title="GreenTensorSurface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pairinteraction.green_tensor.GreenTensorInterpolator.html" class="btn btn-neutral float-right" title="GreenTensorInterpolator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.4.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.5.0 (stable)</a></dd>
+      
+        <dd><a href="../v2.4.0/index.html">v2.4.0</a></dd>
+      
+        <dd><a href="../v2.3.1/index.html">v2.3.1</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
