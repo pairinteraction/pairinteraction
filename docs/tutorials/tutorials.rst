@@ -31,6 +31,7 @@ lifetimes to calculations of pair potentials.
 .. nbgallery::
 
     examples_python/stark_map
+    examples_python/stark_map_yb174
     examples_python/pair_potentials
     examples_python/lifetimes
     examples_python/state_atom_object
@@ -43,7 +44,6 @@ Some examples showcasing how to calculate C3 and C6 coefficients and effective H
     examples_python/effective_hamiltonian/effective_hamiltonian
     examples_python/effective_hamiltonian/effective_hamiltonian_spin_one_half
     examples_python/effective_hamiltonian/effective_hamiltonian_spin_one
-
 
 Some examples showcasing the usage of custom green tensors.
 
