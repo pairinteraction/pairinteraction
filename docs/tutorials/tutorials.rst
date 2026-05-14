@@ -20,8 +20,8 @@ The following Jupyter notebooks introduce the Python API. The other tutorials bu
 
 .. nbgallery::
 
-    examples_python/quick_start
-    examples_python/concepts
+    examples_python/quick_start.ipynb
+    examples_python/concepts.ipynb
 
 **Examples Demonstrating Basic Usage**
 
@@ -30,20 +30,20 @@ lifetimes to calculations of pair potentials.
 
 .. nbgallery::
 
-    examples_python/stark_map
-    examples_python/stark_map_yb174
-    examples_python/pair_potentials
-    examples_python/lifetimes
-    examples_python/state_atom_object
+    examples_python/stark_map.ipynb
+    examples_python/stark_map_yb174.ipynb
+    examples_python/pair_potentials.ipynb
+    examples_python/lifetimes.ipynb
+    examples_python/state_atom_object.ipynb
 
 Some examples showcasing how to calculate C3 and C6 coefficients and effective Hamiltonians
 
 .. nbgallery::
 
-    examples_python/effective_hamiltonian/c3_c6_coefficients
-    examples_python/effective_hamiltonian/effective_hamiltonian
-    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one_half
-    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one
+    examples_python/effective_hamiltonian/c3_c6_coefficients.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one_half.ipynb
+    examples_python/effective_hamiltonian/effective_hamiltonian_spin_one.ipynb
 
 Some examples showcasing the usage of custom green tensors.
 
@@ -58,9 +58,9 @@ We show how PairInteraction's Python API can be applied to solve complex problem
 
 .. nbgallery::
 
-    examples_python/pair_potential_efield_sensitivity
-    examples_python/atom_ion_interaction
-    examples_python/mqdt
+    examples_python/pair_potential_efield_sensitivity.ipynb
+    examples_python/atom_ion_interaction.ipynb
+    examples_python/mqdt.ipynb
 
 .. _tutorial-gui:
 
