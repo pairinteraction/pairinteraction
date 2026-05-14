@@ -72,9 +72,7 @@ documented below:
        green_tensor.GreenTensorSurface
        green_tensor.GreenTensorCavity
 
-**TypeAliases**
-
 .. toctree::
-    :maxdepth: 2
+    :hidden:
 
     type_aliases.rst

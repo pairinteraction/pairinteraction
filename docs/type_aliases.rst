@@ -5,7 +5,7 @@
 .. py:currentmodule:: pairinteraction.ket.ket_pair
 
 .. py:type:: KetPairLike
-    :canonical: KetPair | tuple[KetAtom, KetAtom]
+    :canonical: KetPair | KetAtomTuple
 
     Accepted ket-pair input.
 

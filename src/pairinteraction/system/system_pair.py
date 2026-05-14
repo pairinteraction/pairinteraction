@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.green_tensor import GreenTensorBase
-    from pairinteraction.ket import KetAtomTuple
+    from pairinteraction.ket import KetAtom, KetAtomTuple  # noqa: F401
     from pairinteraction.units import (
         ArrayLike,
         NDArray,

@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
-    from pairinteraction.ket import KetAtomTuple
+    from pairinteraction.ket import KetAtom, KetAtomTuple  # noqa: F401
     from pairinteraction.units import ArrayLike, NDArray, PintArray, PintFloat
 
 

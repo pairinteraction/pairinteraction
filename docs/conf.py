@@ -136,9 +136,6 @@ autodoc_type_aliases = {
     "PintArrayLike": "pairinteraction.units.PintArrayLike",
     "PintSparse": "pairinteraction.units.PintSparse",
     "PintComplex": "pairinteraction.units.PintComplex",
-    "KetAtom": "pairinteraction.ket.ket_atom.KetAtom",
-    "StateAtom": "pairinteraction.state.state_atom.StateAtom",
-    "BasisAtom": "pairinteraction.basis.basis_atom.BasisAtom",
     "PermittivityLike": "pairinteraction.green_tensor.utils.PermittivityLike",
 }
 
