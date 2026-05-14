@@ -10,7 +10,7 @@ import pytest
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
-    from pairinteraction.green_tensor import GreenTensorInterpolator
+    from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
 
     from .utils import PairinteractionModule
 
@@ -49,7 +49,8 @@ def test_static_green_tensor_interpolator(
     tensor_spherical = gti.get(1, 1, ureg.Quantity(2.5, "GHz"), unit=tensor_unit, scaled=True, coordinates="spherical")
     np.testing.assert_allclose(tensor_spherical, tensor_spherical_ref)
 
-    system_pairs = pi_module.SystemPair(basis_pair)._set_green_tensor_interpolator(gti)
+    system_pairs = pi_module.SystemPair(basis_pair)
+    system_pairs._cpp.set_green_tensor_interpolator(gti._cpp)
 
     # Create a reference system using the build in dipole-dipole interaction
     system_pairs_reference = (
@@ -122,6 +123,7 @@ def test_system_atom_green_tensor_interpolator(
         "hartree / (e * a0)^2",
     )
 
-    hamiltonian = system._set_green_tensor_interpolator(gti).get_hamiltonian("hartree").toarray()
+    system._cpp.set_green_tensor_interpolator(gti._cpp)
+    hamiltonian = system.get_hamiltonian("hartree").toarray()
     expected_shift = green_tensor_zz * abs(dipole) ** 2 / 2
     np.testing.assert_allclose(hamiltonian, reference_hamiltonian + expected_shift * np.eye(2))

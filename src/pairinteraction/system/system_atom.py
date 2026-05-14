@@ -15,7 +15,7 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction.green_tensor import GreenTensorBase, GreenTensorInterpolator
+    from pairinteraction.green_tensor import GreenTensorBase
     from pairinteraction.ket import KetAtom
     from pairinteraction.units import ArrayLike, PintArrayLike, PintFloat
 
@@ -126,16 +126,6 @@ class SystemAtom(SystemBase[BasisAtom]):
         self._cpp.set_ion_interaction_order(order)
         return self
 
-    def _set_green_tensor_interpolator(self, green_tensor_interpolator: GreenTensorInterpolator) -> Self:
-        """Set the Green tensor interpolator for the single atom system.
-
-        Args:
-            green_tensor_interpolator: The Green tensor interpolator to set for the system.
-
-        """
-        self._cpp.set_green_tensor_interpolator(green_tensor_interpolator._cpp)
-        return self
-
     def set_green_tensor(self, green_tensor: GreenTensorBase) -> Self:
         """Set the Green tensor for the single atom system.
 
@@ -168,7 +158,7 @@ class SystemAtom(SystemBase[BasisAtom]):
         use_real = isinstance(self, SystemAtomReal)
 
         gti = green_tensor.get_interpolator(use_real=use_real)
-        self._set_green_tensor_interpolator(gti)
+        self._cpp.set_green_tensor_interpolator(gti._cpp)
         return self
 
     @overload

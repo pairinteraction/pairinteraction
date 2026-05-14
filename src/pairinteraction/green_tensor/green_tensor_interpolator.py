@@ -25,11 +25,10 @@ class GreenTensorInterpolator:
 
     This class is mainly used internally, a user usually only has to access the GreenTensor classes.
     It allows to define constant or frequency-dependent Green tensor interpolators,
-    which can then be used for the interaction of a :class:`SystemPair`
-    (see :meth:`SystemPair._set_green_tensor_interpolator`).
+    which can then be used for the interaction of a :class:`SystemPair`.
 
     Examples:
-        >>> from pairinteraction.green_tensor import GreenTensorInterpolator
+        >>> from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
         >>> gt = GreenTensorInterpolator()
         >>> distance_mum = 5
         >>> transition_energy = 1  # planck_constant * GHz

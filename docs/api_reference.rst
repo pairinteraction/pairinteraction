@@ -71,7 +71,6 @@ documented below:
        green_tensor.GreenTensorFreeSpace
        green_tensor.GreenTensorSurface
        green_tensor.GreenTensorCavity
-       green_tensor.GreenTensorInterpolator
 
 **TypeAliases**
 

@@ -12,7 +12,7 @@ from pint import UnitRegistry
 if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.config.argparsing import Parser
-    from pairinteraction.green_tensor import GreenTensorInterpolator
+    from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
     from pairinteraction_gui.app import Application
 
     from .utils import PairinteractionModule
@@ -94,10 +94,10 @@ def pi_module(use_real: bool) -> PairinteractionModule:
 def green_tensor_interpolator_class(use_real: bool) -> type[GreenTensorInterpolator]:
     """Import and return the GreenTensorInterpolator class, either real or complex version."""
     if use_real:
-        from pairinteraction.green_tensor import GreenTensorInterpolatorReal as GTIClassReal
+        from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolatorReal as GTIClassReal
 
         return GTIClassReal
 
-    from pairinteraction.green_tensor import GreenTensorInterpolator as GTIClassComplex
+    from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator as GTIClassComplex
 
     return GTIClassComplex
