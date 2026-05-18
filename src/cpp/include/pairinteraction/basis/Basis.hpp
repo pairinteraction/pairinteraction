@@ -74,12 +74,6 @@ public:
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
     void set_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values);
-    Eigen::VectorX<scalar_t> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>
-    get_amplitudes(std::shared_ptr<const Derived> other) const;
-    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const ket_t> ket) const;
-    Eigen::SparseMatrix<real_t, Eigen::RowMajor>
-    get_overlaps(std::shared_ptr<const Derived> other) const;
     virtual Eigen::VectorX<scalar_t> get_matrix_elements(std::shared_ptr<const ket_t> ket,
                                                          OperatorType type, int q = 0) const = 0;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> virtual get_matrix_elements(

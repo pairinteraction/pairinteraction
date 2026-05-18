@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, overload
 
 import numpy as np
+from scipy.sparse import csr_matrix
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_base import BasisBase
@@ -17,7 +18,6 @@ from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
     from pairinteraction.enums import OperatorType, Parity
@@ -295,13 +295,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_amplitudes(self, other: BasisAtom) -> csr_matrix: ...
 
     def get_amplitudes(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
-        if isinstance(other, KetAtom):
-            return np.array(self._cpp.get_amplitudes(other._cpp))
-        if isinstance(other, StateAtom):
-            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()
-        if isinstance(other, BasisAtom):
-            return self._cpp.get_amplitudes(other._cpp)
-        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+        return self.get_matrix_elements(other, "identity", 0, unit="")
 
     @overload
     def get_overlaps(self, other: KetAtom | StateAtom) -> NDArray: ...
@@ -310,13 +304,10 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     def get_overlaps(self, other: BasisAtom) -> csr_matrix: ...
 
     def get_overlaps(self, other: KetAtom | StateAtom | BasisAtom) -> NDArray | csr_matrix:
-        if isinstance(other, KetAtom):
-            return np.array(self._cpp.get_overlaps(other._cpp))
-        if isinstance(other, StateAtom):
-            return self._cpp.get_overlaps(other._cpp).toarray().ravel()
-        if isinstance(other, BasisAtom):
-            return self._cpp.get_overlaps(other._cpp)
-        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+        amplitudes = self.get_amplitudes(other)
+        if isinstance(amplitudes, csr_matrix):
+            return amplitudes.multiply(amplitudes.conj()).real  # type: ignore [no-any-return]
+        return np.abs(amplitudes) ** 2
 
     @overload
     def get_matrix_elements(
