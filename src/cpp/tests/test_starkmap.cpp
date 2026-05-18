@@ -90,7 +90,10 @@ int main(int argc, char **argv) {
             systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
 
-        overlaps.row(i) = systems[i].get_eigenbasis()->get_overlaps(ket);
+        overlaps.row(i) = systems[i]
+                              .get_eigenbasis()
+                              ->get_matrix_elements(ket, pairinteraction::OperatorType::IDENTITY, 0)
+                              .cwiseAbs2();
     }
 
     // Compare with reference data

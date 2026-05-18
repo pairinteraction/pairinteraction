@@ -175,7 +175,11 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     }
 
     DOCTEST_SUBCASE("check overlap") {
-        auto overlaps = basis_pair_a->get_overlaps(ket, ket);
+        auto overlaps = basis_pair_a
+                            ->get_matrix_elements(ket, ket, OperatorType::IDENTITY,
+                                                  OperatorType::IDENTITY, 0, 0)
+                            .cwiseAbs2()
+                            .eval();
 
         // The total overlap is less than 1 because of the restricted energy window
         DOCTEST_CHECK(overlaps.sum() == doctest::Approx(0.9107819201));

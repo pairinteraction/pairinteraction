@@ -170,14 +170,7 @@ class StateAtom(StateBase[KetAtom]):
             The amplitude between self and other.
 
         """
-        if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
-            logger.warning("WARNING: get_amplitude is called with a non-normalized state.")
-
-        if isinstance(other, KetAtom):
-            return np.array(self._cpp.get_amplitudes(other._cpp))[0]  # type: ignore [no-any-return]
-        if isinstance(other, StateAtom):
-            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()[0]  # type: ignore [no-any-return]
-        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+        return self.get_matrix_element(other, "identity", 0, unit="")
 
     def get_overlap(self, other: Self | KetAtom) -> float:
         r"""Calculate the overlap of the state with respect to another state or ket.
@@ -191,14 +184,7 @@ class StateAtom(StateBase[KetAtom]):
             The overlap between self and other.
 
         """
-        if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
-            logger.warning("WARNING: get_overlap is called with a non-normalized state.")
-
-        if isinstance(other, KetAtom):
-            return np.array(self._cpp.get_overlaps(other._cpp))[0]  # type: ignore [no-any-return]
-        if isinstance(other, StateAtom):
-            return self._cpp.get_overlaps(other._cpp).toarray().ravel()[0]  # type: ignore [no-any-return]
-        raise TypeError(f"Incompatible types: {type(other)=}; {type(self)=}")
+        return abs(self.get_amplitude(other)) ** 2
 
     @overload
     def get_matrix_element(
@@ -229,7 +215,7 @@ class StateAtom(StateBase[KetAtom]):
 
         """
         if not self.is_normalized() or (isinstance(other, StateAtom) and not other.is_normalized()):
-            logger.warning("WARNING: get_matrix_element is called with a non-normalized state.")
+            logger.warning("get_matrix_element/get_overlap/get_amplitude is called with a non-normalized state.")
 
         cpp_op = get_cpp_operator_type(operator)
 

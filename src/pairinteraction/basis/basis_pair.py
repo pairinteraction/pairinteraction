@@ -6,6 +6,7 @@ import logging
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard, cast, overload
 
 import numpy as np
+from scipy.sparse import csr_matrix
 from typing_extensions import Self, deprecated
 
 from pairinteraction import _backend
@@ -20,8 +21,6 @@ from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-
-    from scipy.sparse import csr_matrix
 
     from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
@@ -307,28 +306,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     def get_amplitudes(self, other: BasisPairLike) -> csr_matrix: ...
 
     def get_amplitudes(self, other: KetPairLike | StatePairLike | BasisPairLike) -> NDArray | csr_matrix:
-        # KetPair like
-        if isinstance(other, KetPair):
-            return np.array(self._cpp.get_amplitudes(other._cpp))
-        if is_ket_atom_tuple(other):
-            ket_cpp = (other[0]._cpp, other[1]._cpp)
-            return np.array(self._cpp.get_amplitudes(*ket_cpp))
-
-        # StatePair
-        if isinstance(other, StatePair):
-            return self._cpp.get_amplitudes(other._cpp).toarray().ravel()
-        if is_state_atom_tuple(other):
-            state_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_amplitudes(*state_cpp).toarray().ravel()
-
-        # BasisPair like
-        if isinstance(other, BasisPair):
-            return self._cpp.get_amplitudes(other._cpp)
-        if is_basis_atom_tuple(other):
-            basis_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_amplitudes(*basis_cpp)
-
-        raise TypeError(f"Unknown type: {type(other)=}")
+        return self.get_matrix_elements(other, ("identity", "identity"), (0, 0), unit="")
 
     @overload
     def get_overlaps(self, other: KetPairLike | StatePairLike) -> NDArray: ...
@@ -337,28 +315,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
     def get_overlaps(self, other: BasisPairLike) -> csr_matrix: ...
 
     def get_overlaps(self, other: KetPairLike | StatePairLike | BasisPairLike) -> NDArray | csr_matrix:
-        # KetPair like
-        if isinstance(other, KetPair):
-            return np.array(self._cpp.get_overlaps(other._cpp))
-        if is_ket_atom_tuple(other):
-            ket_cpp = (other[0]._cpp, other[1]._cpp)
-            return np.array(self._cpp.get_overlaps(*ket_cpp))
-
-        # StatePair
-        if isinstance(other, StatePair):
-            return self._cpp.get_overlaps(other._cpp).toarray().ravel()
-        if is_state_atom_tuple(other):
-            state_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_overlaps(*state_cpp).toarray().ravel()
-
-        # BasisPair like
-        if isinstance(other, BasisPair):
-            return self._cpp.get_overlaps(other._cpp)
-        if is_basis_atom_tuple(other):
-            basis_cpp = (other[0]._cpp, other[1]._cpp)
-            return self._cpp.get_overlaps(*basis_cpp)
-
-        raise TypeError(f"Unknown type: {type(other)=}")
+        amplitudes = self.get_amplitudes(other)
+        if isinstance(amplitudes, csr_matrix):
+            return amplitudes.multiply(amplitudes.conj()).real  # type: ignore [no-any-return]
+        return np.abs(amplitudes) ** 2
 
     @overload
     def get_matrix_elements(

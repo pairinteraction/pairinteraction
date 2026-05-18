@@ -164,36 +164,6 @@ int Basis<Derived>::get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) con
 }
 
 template <typename Derived>
-Eigen::VectorX<typename Basis<Derived>::scalar_t>
-Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_ket(ket);
-    if (ket_index < 0) {
-        throw std::invalid_argument("The ket does not belong to the basis.");
-    }
-    // The following line is a more efficient alternative to
-    // "get_amplitudes(get_canonical_state_from_ket(ket)).transpose()"
-    return coefficients.matrix.row(ket_index);
-}
-
-template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor>
-Basis<Derived>::get_amplitudes(std::shared_ptr<const Derived> other) const {
-    return other->coefficients.matrix.adjoint() * coefficients.matrix;
-}
-
-template <typename Derived>
-Eigen::VectorX<typename Basis<Derived>::real_t>
-Basis<Derived>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
-    return get_amplitudes(ket).cwiseAbs2();
-}
-
-template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::real_t, Eigen::RowMajor>
-Basis<Derived>::get_overlaps(std::shared_ptr<const Derived> other) const {
-    return get_amplitudes(other).cwiseAbs2();
-}
-
-template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t state_index) const {
     real_t quantum_number_f = state_index_to_quantum_number_f.at(state_index);
     if (quantum_number_f == std::numeric_limits<real_t>::max()) {
