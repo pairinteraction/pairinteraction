@@ -1,7 +1,7 @@
 # PairInteraction - A Rydberg Interaction Calculator
 
 [![PyPI Package][pypi-svg]][pypi-link]
-[![arXiv:1612.08053][arXiv-svg]][arXiv-link]
+[![arXiv:2605.14993][arXiv-svg]][arXiv-link-v2]
 [![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
 [![CI Workflow][gh-workflow-svg]][gh-workflow-link]
 [![Quality Gate Status][sonarcloud-svg]][sonarcloud-link]
@@ -12,7 +12,6 @@
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
 [pypi-link]: https://pypi.org/project/pairinteraction/
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
-[arXiv-link]: https://arxiv.org/abs/1612.08053
 [license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
 [license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [gh-workflow-svg]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
@@ -66,9 +65,13 @@ pairinteraction
 
 ## How to Cite
 
-If you use PairInteraction in your research, please cite our tutorial paper:
+If you use PairInteraction in your research, please cite our paper:
 
-> Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
+> Johannes Mögerle, Frederic Hummel, Alicia Keil, Tangi Legrand, Eduard J. Braun, Henri Menke, Jonathan King, Beatriz Olmos, Sebastian Hofferberth, Hans Peter Büchler, Sebastian Weber, *Accurate Modeling of Rydberg Atoms and Their Interactions: Theory and Implementation in PairInteraction*, [arXiv:2605.14993][arXiv-link-v2]
+
+If you would like to read more about the underlying theory and methods, we also refer to the original tutorial paper:
+
+> Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link-v0.9], [arXiv:1612.08053][arXiv-link-v0.9]
 
 **Quantum Defects**
 <a id="quantum-defects"></a>
@@ -99,7 +102,9 @@ The identifier can be used to specify an atomic species in the PairInteraction s
 
 </details></p>
 
-[journal-link]: https://doi.org/10.1088/1361-6455/aa743a
+[arXiv-link-v2]: https://arxiv.org/abs/2605.14993
+[arXiv-link-v0.9]: https://arxiv.org/abs/1612.08053
+[journal-link-v0.9]: https://doi.org/10.1088/1361-6455/aa743a
 [10.1103/PhysRevA.34.2889]: https://doi.org/10.1103/PhysRevA.34.2889
 [10.1017/CBO9780511524530]: https://doi.org/10.1017/CBO9780511524530
 [10.1103/PhysRevA.45.4720]: https://doi.org/10.1103/PhysRevA.45.4720
