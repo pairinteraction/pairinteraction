@@ -7,24 +7,31 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pairinteraction import BasisAtom
+from pairinteraction.ket.ket_atom import KetAtom
+from pairinteraction.state.state_atom import StateAtom
+from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
-    from pairinteraction import BasisAtom
-
     from .utils import PairinteractionModule
 
 
 @pytest.fixture
 def basis(pi_module: PairinteractionModule) -> BasisAtom:
-    """Create a test basis with a few states around Rb 60S."""
+    return pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
+
+
+@pytest.fixture
+def basis2(pi_module: PairinteractionModule) -> BasisAtom:
+    return pi_module.BasisAtom("Rb", n=(58, 62), l=(2, 3))
+
+
+def test_basis_creation(pi_module: PairinteractionModule) -> None:
+    """Test basic properties of created basis."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     energy_min = ket.get_energy(unit="GHz") - 100
     energy_max = ket.get_energy(unit="GHz") + 100
-    return pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
-
-
-def test_basis_creation(pi_module: PairinteractionModule, basis: BasisAtom) -> None:
-    """Test basic properties of created basis."""
+    basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
     assert basis.species == "Rb"
     assert basis.number_of_kets == 80
     assert basis.number_of_states == basis.number_of_kets
@@ -64,56 +71,84 @@ def test_coefficients(basis: BasisAtom) -> None:
     assert pytest.approx(coeffs.sum()) == basis.number_of_kets  # NOSONAR
 
 
-def test_get_amplitudes_and_overlaps(basis: BasisAtom) -> None:
-    """Test amplitude and overlap calculations."""
-    # Test with ket
-    test_ket = basis.get_ket(0)
-    amplitudes = basis.get_amplitudes(test_ket)
-    assert len(amplitudes) == basis.number_of_states
-    assert pytest.approx(amplitudes[0]) == 1.0  # NOSONAR
-    overlaps = basis.get_overlaps(test_ket)
-    assert len(overlaps) == basis.number_of_states
-    assert pytest.approx(overlaps[0]) == 1.0  # NOSONAR
-
-    # Test with state
-    test_state = basis.get_state(0)
-    amplitudes = basis.get_amplitudes(test_state)
-    assert len(amplitudes) == basis.number_of_states
-    assert pytest.approx(amplitudes[0]) == 1.0  # NOSONAR
-    overlaps = basis.get_overlaps(test_state)
-    assert len(overlaps) == basis.number_of_states
-    assert pytest.approx(overlaps[0]) == 1.0  # NOSONAR
-
-    # Test with basis
-    matrix_amplitudes = basis.get_amplitudes(basis)
-    assert matrix_amplitudes.shape == (basis.number_of_kets, basis.number_of_states)
-    assert pytest.approx(matrix_amplitudes.diagonal()) == 1.0  # NOSONAR
-    matrix_overlaps = basis.get_overlaps(basis)
-    assert matrix_overlaps.shape == (basis.number_of_states, basis.number_of_states)
-    assert pytest.approx(matrix_overlaps.diagonal()) == 1.0  # NOSONAR
+def _get_expected_shape(other: KetAtom | StateAtom | BasisAtom, target_basis: BasisAtom) -> tuple[int, ...]:
+    if isinstance(other, (KetAtom, StateAtom)):
+        return (target_basis.number_of_states,)
+    if isinstance(other, BasisAtom):
+        return (other.number_of_states, target_basis.number_of_states)
+    raise ValueError("Invalid basis_like type")
 
 
-def test_get_matrix_elements(basis: BasisAtom) -> None:
-    """Test matrix element calculations."""
-    # Test with ket
-    test_ket = basis.get_ket(0)
-    elements_dipole = basis.get_matrix_elements(test_ket, "electric_dipole", q=0, unit="e * a0")
-    assert elements_dipole.shape == (basis.number_of_states,)
-    assert np.count_nonzero(elements_dipole) > 0
-    assert np.count_nonzero(elements_dipole) < basis.number_of_states
+@pytest.mark.parametrize(
+    "other_key",
+    [
+        "ket_from_basis",
+        "ket_from_basis2",
+        "other_ket_from_basis2",
+        "state_from_basis",
+        "state_from_basis2",
+        "basis",
+        "basis2",
+    ],
+)
+def test_get_methods(basis: BasisAtom, basis2: BasisAtom, other_key: str) -> None:
+    """Test amplitude, overlap and matrix element calculations with another ket, state and basis."""
+    ind = 5
+    other_dict: dict[str, KetAtom | StateAtom | BasisAtom] = {
+        "ket_from_basis": basis.get_ket(ind),
+        "ket_from_basis2": next(ket for ket in basis2.kets if ket in basis.kets),
+        "other_ket_from_basis2": next(ket for ket in basis2.kets if ket not in basis.kets and ket.j_ryd < 3),
+        "state_from_basis": basis.get_state(ind),
+        "state_from_basis2": basis2.get_state(0),
+        "basis": basis,
+        "basis2": basis2,
+    }
+    other = other_dict[other_key]
 
-    # Test with state
-    test_state = basis.get_state(0)
-    elements_dipole = basis.get_matrix_elements(test_state, "electric_dipole", q=0, unit="e * a0")
-    assert elements_dipole.shape == (basis.number_of_states,)
-    assert np.count_nonzero(elements_dipole) > 0
-    assert np.count_nonzero(elements_dipole) < basis.number_of_states
+    amplitudes = basis.get_amplitudes(other)
+    assert amplitudes.shape == _get_expected_shape(other, basis)
 
-    # Test with basis
-    matrix_elements = basis.get_matrix_elements(basis, "electric_dipole", q=0, unit="e * a0")
-    assert matrix_elements.shape == (basis.number_of_states, basis.number_of_states)
-    assert np.count_nonzero(matrix_elements.toarray()) > 0
-    assert np.count_nonzero(matrix_elements.toarray()) < basis.number_of_states**2
+    overlaps = basis.get_overlaps(other)
+    assert overlaps.shape == _get_expected_shape(other, basis)
+
+    matrix_elements = basis.get_matrix_elements(other, "electric_dipole", q=0, unit="e * a0")
+    assert matrix_elements.shape == _get_expected_shape(other, basis)
+
+    if other_key in ["ket_from_basis", "state_from_basis"]:
+        assert pytest.approx(amplitudes[ind]) == 1.0  # NOSONAR
+        assert pytest.approx(overlaps[ind]) == 1.0  # NOSONAR
+
+    if other_key == "ket_from_basis2":
+        assert isinstance(amplitudes, np.ndarray)
+        assert isinstance(overlaps, np.ndarray)
+        assert pytest.approx(np.max(amplitudes)) == 1.0  # NOSONAR
+        assert pytest.approx(np.max(overlaps)) == 1.0  # NOSONAR
+
+    if other_key == "other_ket_from_basis2":
+        assert isinstance(amplitudes, np.ndarray)
+        assert isinstance(overlaps, np.ndarray)
+        assert np.count_nonzero(amplitudes) == 0
+        assert np.count_nonzero(overlaps) == 0
+
+    if other_key == "basis":
+        assert isinstance(amplitudes, csr_matrix)
+        assert isinstance(overlaps, csr_matrix)
+        assert pytest.approx(amplitudes.diagonal()) == 1.0  # NOSONAR
+        assert pytest.approx(overlaps.diagonal()) == 1.0  # NOSONAR
+
+    if other_key == "basis2":
+        assert isinstance(amplitudes, csr_matrix)
+        assert isinstance(overlaps, csr_matrix)
+        n_matching_kets = len([ket for ket in basis2.kets if ket in basis.kets])
+        assert np.count_nonzero(amplitudes.toarray()) == n_matching_kets
+        assert np.count_nonzero(overlaps.toarray()) == n_matching_kets
+
+    if other_key.startswith("basis"):
+        assert isinstance(matrix_elements, csr_matrix)
+        assert 0 < np.count_nonzero(matrix_elements.toarray()) < basis.number_of_states**2
+    else:
+        assert isinstance(matrix_elements, np.ndarray)
+        assert 0 < np.count_nonzero(matrix_elements) < basis.number_of_states
 
 
 def test_error_handling(basis: BasisAtom) -> None:
