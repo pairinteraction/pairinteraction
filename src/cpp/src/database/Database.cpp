@@ -950,6 +950,17 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using cached_matrix_ptr_t = std::shared_ptr<const cached_matrix_t>;
 
+    if (&initial_basis->get_database() != this || &final_basis->get_database() != this) {
+        throw std::invalid_argument(
+            "The initial and final bases must belong to the Database instance used for the "
+            "matrix element calculation.");
+    }
+    if (initial_basis->get_species() != final_basis->get_species()) {
+        throw std::invalid_argument(fmt::format(
+            "The initial and final bases must have the same species, but got '{}' and '{}'.",
+            initial_basis->get_species(), final_basis->get_species()));
+    }
+
     std::string specifier;
     int kappa{};
     switch (type) {
@@ -985,12 +996,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
         throw std::invalid_argument("Unknown operator type.");
     }
 
-    if (initial_basis->get_id_of_kets() != final_basis->get_id_of_kets()) {
-        throw std::invalid_argument(
-            "The initial and final basis must be expressed using the same kets.");
-    }
-    std::string id_of_kets = initial_basis->get_id_of_kets();
-    std::string cache_key = fmt::format("{}_{}_{}", specifier, q, id_of_kets);
+    std::string id_of_kets_initial = initial_basis->get_id_of_kets();
+    std::string id_of_kets_final = final_basis->get_id_of_kets();
+    std::string cache_key =
+        fmt::format("{}_{}_{}_{}", specifier, q, id_of_kets_initial, id_of_kets_final);
     auto &matrix_elements_cache = get_matrix_elements_cache();
     std::promise<cached_matrix_ptr_t> matrix_promise;
     auto [cache_it, inserted] =
@@ -998,131 +1007,131 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
 
     if (inserted) {
         try {
-            Eigen::Index dim = initial_basis->get_number_of_kets();
+            Eigen::Index num_rows = final_basis->get_number_of_kets();
+            Eigen::Index num_cols = initial_basis->get_number_of_kets();
 
             std::vector<int> outerIndexPtr;
             std::vector<int> innerIndices;
             std::vector<real_t> values;
 
+            // Check that the specifications are valid
+            if (std::abs(q) > kappa) {
+                throw std::invalid_argument("Invalid q.");
+            }
+
+            // Ask the database for the operator
+            set_task_status("Loading matrix elements from database...");
+            std::string species = initial_basis->get_species();
+            duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
             if (specifier == "identity") {
-                outerIndexPtr.reserve(dim + 1);
-                innerIndices.reserve(dim);
-                values.reserve(dim);
-
-                for (int i = 0; i < dim; i++) {
-                    outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
-                    innerIndices.push_back(i);
-                    values.push_back(1);
-                }
-                outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
-
+                result = con->Query(fmt::format(
+                    R"(SELECT s2.ketid AS row, s1.ketid AS col, 1.0::DOUBLE AS val
+                    FROM '{}' AS s1
+                    INNER JOIN '{}' AS s2 ON s1.ketid = s2.ketid
+                    ORDER BY row ASC)",
+                    id_of_kets_initial, id_of_kets_final));
+            } else if (specifier == "energy") {
+                result = con->Query(fmt::format(
+                    R"(SELECT s2.ketid AS row, s1.ketid AS col, s1.energy AS val
+                    FROM '{}' AS s1
+                    INNER JOIN '{}' AS s2 ON s1.ketid = s2.ketid
+                    ORDER BY row ASC)",
+                    id_of_kets_initial, id_of_kets_final));
             } else {
-                // Check that the specifications are valid
-                if (std::abs(q) > kappa) {
-                    throw std::invalid_argument("Invalid q.");
-                }
+                result = con->Query(fmt::format(
+                    R"(WITH s1 AS (
+                        SELECT id, f, m, ketid FROM '{}'
+                    ),
+                    s2 AS (
+                        SELECT id, f, m, ketid FROM '{}'
+                    ),
+                    b AS (
+                        SELECT MIN(f) AS min_f, MAX(f) AS max_f,
+                        MIN(id) AS min_id, MAX(id) AS max_id
+                        FROM (SELECT f, id FROM s1 UNION ALL SELECT f, id FROM s2)
+                    ),
+                    w_filtered AS (
+                        SELECT *
+                        FROM '{}'
+                        WHERE kappa = {} AND q = {} AND
+                        f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
+                        f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
+                    ),
+                    e_filtered AS (
+                        SELECT *
+                        FROM '{}'
+                        WHERE
+                        id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
+                        id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
+                    )
+                    SELECT
+                    s2.ketid AS row,
+                    s1.ketid AS col,
+                    e.val*w.val AS val
+                    FROM e_filtered AS e
+                    JOIN s1 ON e.id_initial = s1.id
+                    JOIN s2 ON e.id_final = s2.id
+                    JOIN w_filtered AS w ON
+                    w.f_initial = s1.f AND w.m_initial = s1.m AND
+                    w.f_final = s2.f AND w.m_final = s2.m
+                    ORDER BY row ASC, col ASC)",
+                    id_of_kets_initial, id_of_kets_final, manager->get_path("misc", "wigner"),
+                    kappa, q, manager->get_path(species, specifier)));
+            }
 
-                // Ask the database for the operator
-                set_task_status("Loading matrix elements from database...");
-                std::string species = initial_basis->get_species();
-                duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
-                if (specifier != "energy") {
-                    result = con->Query(fmt::format(
-                        R"(WITH s AS (
-                            SELECT id, f, m, ketid FROM '{}'
-                        ),
-                        b AS (
-                            SELECT MIN(f) AS min_f, MAX(f) AS max_f,
-                            MIN(id) AS min_id, MAX(id) AS max_id
-                            FROM s
-                        ),
-                        w_filtered AS (
-                            SELECT *
-                            FROM '{}'
-                            WHERE kappa = {} AND q = {} AND
-                            f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
-                            f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
-                        ),
-                        e_filtered AS (
-                            SELECT *
-                            FROM '{}'
-                            WHERE
-                            id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
-                            id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
-                        )
-                        SELECT
-                        s2.ketid AS row,
-                        s1.ketid AS col,
-                        e.val*w.val AS val
-                        FROM e_filtered AS e
-                        JOIN s AS s1 ON e.id_initial = s1.id
-                        JOIN s AS s2 ON e.id_final = s2.id
-                        JOIN w_filtered AS w ON
-                        w.f_initial = s1.f AND w.m_initial = s1.m AND
-                        w.f_final = s2.f AND w.m_final = s2.m
-                        ORDER BY row ASC, col ASC)",
-                        id_of_kets, manager->get_path("misc", "wigner"), kappa, q,
-                        manager->get_path(species, specifier)));
-                } else {
-                    result = con->Query(fmt::format(
-                        R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
-                        id_of_kets));
-                }
+            if (result->HasError()) {
+                throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
+            }
 
-                if (result->HasError()) {
-                    throw cpptrace::runtime_error("Error querying the database: " +
-                                                  result->GetError());
-                }
-
-                // Check the types of the columns
-                const auto &types = result->types;
-                const auto &labels = result->names;
-                const std::vector<duckdb::LogicalType> ref_types = {duckdb::LogicalType::BIGINT,
-                                                                    duckdb::LogicalType::BIGINT,
-                                                                    duckdb::LogicalType::DOUBLE};
-                for (size_t i = 0; i < types.size(); i++) {
-                    if (types[i] != ref_types[i]) {
-                        throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
-                    }
-                }
-
-                set_task_status("Constructing matrix elements...");
-
-                // Construct the matrix
-                int num_entries = static_cast<int>(result->RowCount());
-                outerIndexPtr.reserve(dim + 1);
-                innerIndices.reserve(num_entries);
-                values.reserve(num_entries);
-
-                int last_row = -1;
-
-                for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
-                    auto *chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
-                    auto *chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
-                    auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
-
-                    for (size_t i = 0; i < chunk->size(); i++) {
-                        int row = final_basis->get_ket_index_from_id(chunk_row[i]);
-                        if (row != last_row) {
-                            if (row < last_row) {
-                                throw std::runtime_error("The rows are not sorted.");
-                            }
-                            for (; last_row < row; last_row++) {
-                                outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
-                            }
-                        }
-                        innerIndices.push_back(initial_basis->get_ket_index_from_id(chunk_col[i]));
-                        values.push_back(chunk_val[i]);
-                    }
-                }
-
-                for (; last_row < dim + 1; last_row++) {
-                    outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
+            // Check the types of the columns
+            const auto &types = result->types;
+            const auto &labels = result->names;
+            const std::vector<duckdb::LogicalType> ref_types = {duckdb::LogicalType::BIGINT,
+                                                                duckdb::LogicalType::BIGINT,
+                                                                duckdb::LogicalType::DOUBLE};
+            for (size_t i = 0; i < types.size(); i++) {
+                if (types[i] != ref_types[i]) {
+                    throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
                 }
             }
 
-            Eigen::Map<const cached_matrix_t> matrix_map(
-                dim, dim, values.size(), outerIndexPtr.data(), innerIndices.data(), values.data());
+            set_task_status("Constructing matrix elements...");
+
+            // Construct the matrix
+            int num_entries = static_cast<int>(result->RowCount());
+            outerIndexPtr.reserve(num_rows + 1);
+            innerIndices.reserve(num_entries);
+            values.reserve(num_entries);
+
+            int last_row = -1;
+
+            for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
+                auto *chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
+                auto *chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
+                auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
+
+                for (size_t i = 0; i < chunk->size(); i++) {
+                    int row = final_basis->get_ket_index_from_id(chunk_row[i]);
+                    if (row != last_row) {
+                        if (row < last_row) {
+                            throw std::runtime_error("The rows are not sorted.");
+                        }
+                        for (; last_row < row; last_row++) {
+                            outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
+                        }
+                    }
+                    innerIndices.push_back(initial_basis->get_ket_index_from_id(chunk_col[i]));
+                    values.push_back(chunk_val[i]);
+                }
+            }
+
+            for (; last_row < num_rows + 1; last_row++) {
+                outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
+            }
+
+            Eigen::Map<const cached_matrix_t> matrix_map(num_rows, num_cols, values.size(),
+                                                         outerIndexPtr.data(), innerIndices.data(),
+                                                         values.data());
 
             auto cached_matrix = std::make_shared<const cached_matrix_t>(matrix_map);
             matrix_promise.set_value(std::move(cached_matrix));

@@ -88,4 +88,24 @@ DOCTEST_TEST_CASE("get atomic matrix elements") {
     DOCTEST_MESSAGE("Number of basis states: ", basis->get_number_of_states());
     DOCTEST_MESSAGE("Number of non-zero entries: ", dipole.nonZeros());
 }
+
+DOCTEST_TEST_CASE("atomic matrix elements reject bases from a different database") {
+    Database &database = Database::get_global_instance();
+
+    AtomDescriptionByRanges description;
+    description.range_quantum_number_n = {60, 60};
+    description.range_quantum_number_l = {0, 1};
+
+    auto basis = database.get_basis<double>("Rb", description, {});
+
+    Database other_database(database.get_download_missing(), database.get_use_cache(),
+                            database.get_database_dir());
+
+    DOCTEST_CHECK_THROWS_WITH_AS(
+        other_database.get_matrix_elements_in_canonical_basis<double>(
+            basis, basis, OperatorType::ELECTRIC_DIPOLE, 0),
+        "The initial and final bases must belong to the Database instance used for the matrix "
+        "element calculation.",
+        std::invalid_argument);
+}
 } // namespace pairinteraction
