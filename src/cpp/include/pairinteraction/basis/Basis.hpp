@@ -68,9 +68,6 @@ public:
     std::shared_ptr<const Derived> get_corresponding_state(std::shared_ptr<const ket_t> ket) const;
     size_t get_corresponding_state_index(size_t ket_index) const;
     size_t get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const;
-    std::shared_ptr<const Derived> get_canonical_state_from_ket(size_t ket_index) const;
-    std::shared_ptr<const Derived>
-    get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
     void set_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values);

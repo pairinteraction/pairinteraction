@@ -4,6 +4,7 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -114,11 +115,9 @@ template <typename Scalar>
 Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
                                        OperatorType type2, int q1, int q2) const {
-    // Construct a pair basis containing only the pair ket
-    auto final = this->get_canonical_state_from_ket(ket);
-    assert(final->get_number_of_states() == 1);
-
-    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
+    auto atomic_states = ket->get_atomic_states();
+    return this->get_matrix_elements(atomic_states[0], atomic_states[1], type1, type2, q1, q2)
+        .row(0);
 }
 
 template <typename Scalar>
@@ -126,16 +125,13 @@ Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
                                        std::shared_ptr<const KetAtom> ket2, OperatorType type1,
                                        OperatorType type2, int q1, int q2) const {
-    // Construct a pair basis with the two single-atom kets
-    auto final1 = this->get_basis1()->get_canonical_state_from_ket(ket1);
-    auto final2 = this->get_basis2()->get_canonical_state_from_ket(ket2);
-    auto system1 = SystemAtom<Scalar>(final1);
-    auto system2 = SystemAtom<Scalar>(final2);
-    auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
-    assert(final->get_number_of_states() == 1);
-    assert(final->get_number_of_kets() == 1);
+    auto initial1 = this->get_basis1();
+    auto initial2 = this->get_basis2();
 
-    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
+    auto final1 = BasisAtomCreator<Scalar>().append_ket(ket1).create(initial1->get_database());
+    auto final2 = BasisAtomCreator<Scalar>().append_ket(ket2).create(initial2->get_database());
+
+    return this->get_matrix_elements(final1, final2, type1, type2, q1, q2).row(0);
 }
 
 // Explicit instantiations
