@@ -208,6 +208,8 @@ testpaths = [
 ]
 addopts = [
     "--import-mode=importlib",
+    "--durations=0",  # show durations of tests
+    "--durations-min=0.1",  # but only include times > 0.1s
     # "--nbmake",  # only run nbmake locally and in one dedicated CI job
     "--doctest-modules",
     "--ignore=src/pairinteraction/pireal.py", # throws an import error to signal previous users of the old PairInteraction version breaking changes
