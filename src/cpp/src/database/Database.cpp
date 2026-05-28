@@ -29,6 +29,17 @@
 
 namespace pairinteraction {
 
+namespace {
+std::string format_expectation_value_range(const std::string &value_column,
+                                           const std::string &std_column,
+                                           const Range<double> &range,
+                                           double standard_deviation_factor) {
+    return fmt::format("{} BETWEEN {}-{}*{} AND {}+{}*{}", value_column, range.min(),
+                       standard_deviation_factor, std_column, range.max(),
+                       standard_deviation_factor, std_column);
+}
+} // namespace
+
 void ensure_consistent_quantum_numbers(bool is_j_total_momentum, double quantum_number_f,
                                        double quantum_number_m, double quantum_number_j_exp) {
     if (is_j_total_momentum && quantum_number_f != quantum_number_j_exp) {
@@ -516,44 +527,41 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     }
     if (description.range_quantum_number_nui.is_finite()) {
         where += separator +
-            fmt::format("exp_nui BETWEEN {}-2*std_nui AND {}+2*std_nui",
-                        description.range_quantum_number_nui.min(),
-                        description.range_quantum_number_nui.max());
+            format_expectation_value_range("exp_nui", "std_nui",
+                                           description.range_quantum_number_nui,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (description.range_quantum_number_l.is_finite()) {
         where += separator +
-            fmt::format("exp_l BETWEEN {}-2*std_l AND {}+2*std_l",
-                        description.range_quantum_number_l.min(),
-                        description.range_quantum_number_l.max());
+            format_expectation_value_range("exp_l", "std_l", description.range_quantum_number_l,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (description.range_quantum_number_s.is_finite()) {
         where += separator +
-            fmt::format("exp_s BETWEEN {}-2*std_s AND {}+2*std_s",
-                        description.range_quantum_number_s.min(),
-                        description.range_quantum_number_s.max());
+            format_expectation_value_range("exp_s", "std_s", description.range_quantum_number_s,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (description.range_quantum_number_j.is_finite()) {
         where += separator +
-            fmt::format("exp_j BETWEEN {}-2*std_j AND {}+2*std_j",
-                        description.range_quantum_number_j.min(),
-                        description.range_quantum_number_j.max());
+            format_expectation_value_range("exp_j", "std_j", description.range_quantum_number_j,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (description.range_quantum_number_l_ryd.is_finite()) {
         where += separator +
-            fmt::format("exp_l_ryd BETWEEN {}-2*std_l_ryd AND {}+2*std_l_ryd",
-                        description.range_quantum_number_l_ryd.min(),
-                        description.range_quantum_number_l_ryd.max());
+            format_expectation_value_range("exp_l_ryd", "std_l_ryd",
+                                           description.range_quantum_number_l_ryd,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (description.range_quantum_number_j_ryd.is_finite()) {
         where += separator +
-            fmt::format("exp_j_ryd BETWEEN {}-2*std_j_ryd AND {}+2*std_j_ryd",
-                        description.range_quantum_number_j_ryd.min(),
-                        description.range_quantum_number_j_ryd.max());
+            format_expectation_value_range("exp_j_ryd", "std_j_ryd",
+                                           description.range_quantum_number_j_ryd,
+                                           description.quantum_number_standard_deviation_factor);
         separator = " AND ";
     }
     if (separator.empty()) {

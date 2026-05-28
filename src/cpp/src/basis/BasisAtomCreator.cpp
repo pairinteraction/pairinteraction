@@ -104,6 +104,17 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j_ry
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &
+BasisAtomCreator<Scalar>::set_quantum_number_standard_deviation_factor(real_t value) {
+    if (value < 0) {
+        throw std::invalid_argument(
+            "The quantum number standard deviation factor must be non-negative.");
+    }
+    quantum_number_standard_deviation_factor = value;
+    return *this;
+}
+
+template <typename Scalar>
+BasisAtomCreator<Scalar> &
 BasisAtomCreator<Scalar>::append_ket(const std::shared_ptr<const ket_t> &ket) {
     if (additional_ket_species.has_value() &&
         additional_ket_species.value() != ket->get_species()) {
@@ -143,7 +154,8 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
                                         range_quantum_number_s,
                                         range_quantum_number_j,
                                         range_quantum_number_l_ryd,
-                                        range_quantum_number_j_ryd};
+                                        range_quantum_number_j_ryd,
+                                        quantum_number_standard_deviation_factor};
 
     return database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);
 }
