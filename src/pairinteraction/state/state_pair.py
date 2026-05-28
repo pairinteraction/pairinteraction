@@ -104,7 +104,7 @@ class StatePair(StateBase[KetPair]):
                 ket_atom_tuple, system_atoms, number_of_kets=number_of_kets, warn_number_of_kets=False
             )
 
-            amplitudes = canonical_basis_pair.get_matrix_elements(self, ("identity", "identity"), (0, 0)).m
+            amplitudes = canonical_basis_pair.get_amplitudes(self)
             overlaps = np.abs(amplitudes) ** 2
 
             _stop_after_num_kets = min(stop_after_num_kets, len(overlaps))
