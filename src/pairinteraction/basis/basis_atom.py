@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -65,8 +65,10 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
         energy_unit: str | None = None,
         parity: Parity | None = None,
-        database: Database | None = None,
         additional_kets: Sequence[KetAtom] | None = None,
+        *,
+        database: Database | None = None,
+        mode: Literal["exact", "fuzzy"] | float = "fuzzy",
     ) -> None:
         """Create a basis for a single atom.
 
@@ -86,14 +88,36 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             energy_unit: In which unit the energy values are given, e.g. "GHz".
                 Default None, i.e. energy is provided as pint object.
             parity: The parity of the states to consider. Default None, i.e. add all available states.
-            database: Which database to use. Default None, i.e. use the global database instance.
             additional_kets: List of additional kets to add to the basis. Default None.
+            database: Which database to use. Default None, i.e. use the global database instance.
+            mode: Specifies how restrictions on expectation-value quantum numbers are applied.
+                ``"fuzzy"`` is equal to 2 and includes states whose expectation-value overlaps the requested range
+                within two standard deviations.
+                ``"exact"`` is equal to 0 and includes only states whose expectation-value itself lie in the range.
+                A non-negative number sets the factor applied to the standard deviation explicitly.
+                Default ``"fuzzy"``.
 
         """
+        if mode == "fuzzy":
+            quantum_number_standard_deviation_factor = 2.0
+        elif mode == "exact":
+            quantum_number_standard_deviation_factor = 0.0
+        else:
+            msg = "mode must be 'exact', 'fuzzy', or a non-negative number."
+            try:
+                quantum_number_standard_deviation_factor = float(mode)
+            except (TypeError, ValueError) as err:
+                raise ValueError(msg) from err
+            if quantum_number_standard_deviation_factor < 0:
+                raise ValueError(msg)
+
         creator = self._cpp_creator()
         creator.set_species(species)
+        creator.set_quantum_number_standard_deviation_factor(quantum_number_standard_deviation_factor)
 
         self._parameters_creator = {"qns": {}}
+        if mode != "fuzzy":
+            self._parameters_creator["mode"] = mode
         if n is not None:
             if not all(isinstance(x, int) or x.is_integer() for x in n):
                 raise ValueError("Quantum numbers n must be integers.")
@@ -166,6 +190,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         parity: Parity | None = None,
         database: Database | None = None,
         additional_kets: Sequence[KetAtom] | None = None,
+        *,
+        mode: Literal["exact", "fuzzy"] | float = "fuzzy",
     ) -> Self:
         """Create a BasisAtom from one or more kets and quantum number deltas.
 
@@ -212,6 +238,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 Default None uses the global database.
             additional_kets: Extra kets to force-include in the basis.
                 Default None.
+            mode: Passed to :class:`BasisAtom`. Default ``"fuzzy"``.
 
         Returns:
             A new :class:`BasisAtom` centered around the provided kets.
@@ -261,22 +288,26 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             parity=parity,
             database=database,
             additional_kets=additional_kets,
+            mode=mode,
         )
 
     def __repr__(self) -> str:
         if self._parameters_creator is None:
             return super().__repr__()
 
-        args = ""
+        args: list[str] = []
         if qns := self._parameters_creator.get("qns", None):
-            args += ", ".join(f"{k}={v}" for k, v in qns.items())
+            args.extend(f"{k}={v}" for k, v in qns.items())
         if (energy := self._parameters_creator.get("energy", None)) and (
             energy_unit := self._parameters_creator.get("energy_unit", None)
         ):
-            args += f", energy=({energy[0]:.4f}, {energy[1]:.4f}), energy_unit={energy_unit}"
+            args.append(f"energy=({energy[0]:.4f}, {energy[1]:.4f})")
+            args.append(f"energy_unit={energy_unit}")
         if additional_kets := self._parameters_creator.get("additional_kets", None):
-            args += f", additional_kets={additional_kets}"
-        return f"{type(self).__name__}({args})"
+            args.append(f"additional_kets={additional_kets}")
+        if (mode := self._parameters_creator.get("mode", None)) is not None:
+            args.append(f"mode={mode!r}")
+        return f"{type(self).__name__}({', '.join(args)})"
 
     @property
     def database(self) -> Database:

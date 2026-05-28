@@ -24,5 +24,6 @@ struct AtomDescriptionByRanges {
     Range<double> range_quantum_number_j;
     Range<double> range_quantum_number_l_ryd;
     Range<double> range_quantum_number_j_ryd;
+    double quantum_number_standard_deviation_factor{2};
 };
 } // namespace pairinteraction

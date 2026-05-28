@@ -33,6 +33,29 @@ def test_basis_creation(pi_module: PairinteractionModule, basis: BasisAtom) -> N
     assert all(x in str(basis) for x in ["BasisAtom", "n=(58, 62)", "l=(0, 2)"])
 
 
+def test_restriction_mode(pi_module: PairinteractionModule) -> None:
+    """Test exact, fuzzy, and numeric restrictions for expectation-value quantum numbers."""
+    l_range = (1, 1)
+    fuzzy_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5))
+    assert fuzzy_basis.number_of_kets > 0
+    assert any(ket.l > l_range[1] for ket in fuzzy_basis.kets)
+    assert any(ket.l < l_range[0] for ket in fuzzy_basis.kets)
+
+    exact_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode="exact")
+    assert exact_basis.number_of_kets > 0
+    assert all(l_range[0] <= ket.l <= l_range[1] for ket in exact_basis.kets)
+    assert exact_basis.number_of_kets < fuzzy_basis.number_of_kets
+
+    factor_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode=100)
+    assert factor_basis.number_of_kets > fuzzy_basis.number_of_kets
+
+    with pytest.raises(ValueError, match="mode"):
+        pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode="invalid")  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError, match="non-negative"):
+        pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode=-1)
+
+
 def test_coefficients(basis: BasisAtom) -> None:
     """Test coefficient matrix properties."""
     coeffs = basis.get_coefficients()

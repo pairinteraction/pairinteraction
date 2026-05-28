@@ -49,6 +49,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_l_ryd(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_j_ryd(real_t min, real_t max);
+    BasisAtomCreator<Scalar> &set_quantum_number_standard_deviation_factor(real_t value);
     BasisAtomCreator<Scalar> &append_ket(const std::shared_ptr<const ket_t> &ket);
     std::shared_ptr<const BasisAtom<Scalar>> create(Database &database) const;
 
@@ -66,6 +67,7 @@ private:
     Range<real_t> range_quantum_number_j;
     Range<real_t> range_quantum_number_l_ryd;
     Range<real_t> range_quantum_number_j_ryd;
+    real_t quantum_number_standard_deviation_factor{2};
     std::vector<size_t> additional_ket_ids;
     std::optional<std::string> additional_ket_species;
 };
