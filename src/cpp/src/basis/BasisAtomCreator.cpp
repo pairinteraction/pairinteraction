@@ -115,7 +115,7 @@ BasisAtomCreator<Scalar>::set_quantum_number_standard_deviation_factor(real_t va
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &
-BasisAtomCreator<Scalar>::append_ket(const std::shared_ptr<const ket_t> &ket) {
+BasisAtomCreator<Scalar>::add_ket(const std::shared_ptr<const ket_t> &ket) {
     if (additional_ket_species.has_value() &&
         additional_ket_species.value() != ket->get_species()) {
         throw std::invalid_argument("Species mismatch.");

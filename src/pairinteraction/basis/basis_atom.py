@@ -165,7 +165,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             database = Database.get_global_database()
         if additional_kets is not None:
             for ket in additional_kets:
-                creator.append_ket(ket._cpp)
+                creator.add_ket(ket._cpp)
             self._parameters_creator["additional_kets"] = additional_kets
         self._cpp = creator.create(database._cpp)
 

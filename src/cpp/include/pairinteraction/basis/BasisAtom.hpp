@@ -49,10 +49,11 @@ public:
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
 
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets, Database &database);
+    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
+              Database &database);
     Database &get_database() const;
     const std::string &get_species() const;
-    const std::string &get_id_of_kets() const;
+    const std::string &get_canonical_basis_id() const;
 
     int get_ket_index_from_id(size_t ket_id) const;
 
@@ -63,7 +64,7 @@ public:
                         int q = 0) const override;
 
 private:
-    std::string id_of_kets;
+    std::string canonical_basis_id;
     Database &database;
     std::string species;
     std::unordered_map<size_t, size_t> ket_id_to_ket_index;

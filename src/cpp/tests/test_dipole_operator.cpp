@@ -45,8 +45,7 @@ int main(int argc, char **argv) {
                     .create(database);
 
     auto basis_ket1_ket2 =
-        pairinteraction::BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).create(
-            database);
+        pairinteraction::BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).create(database);
 
     auto dipole_ket1_ket2 = database.get_matrix_elements_in_canonical_basis<double>(
         basis_ket1_ket2, basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);

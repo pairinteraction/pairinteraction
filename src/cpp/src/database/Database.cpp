@@ -13,7 +13,7 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/hash.hpp"
-#include "pairinteraction/utils/id_in_database.hpp"
+#include "pairinteraction/utils/ket_id.hpp"
 #include "pairinteraction/utils/paths.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 
@@ -577,13 +577,14 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     where_m += ")";
 
     // Create a table containing the described states
-    std::string id_of_kets;
+    std::string canonical_basis_id;
     {
         auto result = con->Query(R"(SELECT UUID()::varchar)");
         if (result->HasError()) {
-            throw cpptrace::runtime_error("Error selecting id_of_kets: " + result->GetError());
+            throw cpptrace::runtime_error("Error selecting canonical_basis_id: " +
+                                          result->GetError());
         }
-        id_of_kets =
+        canonical_basis_id =
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
     }
     {
@@ -596,16 +597,16 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                     SELECT * FROM '{}' WHERE {}
                 )
             ) WHERE {})",
-            id_of_kets, utils::KET_ID_STRIDE, utils::M_OFFSET, manager->get_path(species, "states"),
-            where, where_m));
+            canonical_basis_id, utils::KET_ID_STRIDE, utils::M_OFFSET,
+            manager->get_path(species, "states"), where, where_m));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error creating table: " + result->GetError());
         }
     }
     {
-        auto result =
-            con->Query(fmt::format(R"(ALTER TABLE '{}' ADD PRIMARY KEY (ketid))", id_of_kets));
+        auto result = con->Query(
+            fmt::format(R"(ALTER TABLE '{}' ADD PRIMARY KEY (ketid))", canonical_basis_id));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error adding primary key: " + result->GetError());
@@ -625,7 +626,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             R"(INSERT OR IGNORE INTO '{0}'
             SELECT s.*, v.m, v.ketid FROM '{1}' AS s
             JOIN (VALUES {2}) AS v(id, m, ketid) ON s.id = v.id)",
-            id_of_kets, manager->get_path(species, "states"), fmt::join(values, ",")));
+            canonical_basis_id, manager->get_path(species, "states"), fmt::join(values, ",")));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error adding additional kets: " + result->GetError());
@@ -683,7 +684,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         }
 
         if (!separator.empty()) {
-            auto result = con->Query(fmt::format(R"(SELECT {} FROM '{}')", select, id_of_kets));
+            auto result =
+                con->Query(fmt::format(R"(SELECT {} FROM '{}')", select, canonical_basis_id));
 
             if (result->HasError()) {
                 throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
@@ -862,7 +864,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, m, parity, ketid, n, nu, exp_nui, std_nui, exp_l, std_l,
         exp_s, std_s, exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution FROM '{}' ORDER BY ketid ASC)",
-        id_of_kets));
+        canonical_basis_id));
 
     if (result->HasError()) {
         throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
@@ -973,7 +975,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     }
 
     return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private(),
-                                                     std::move(kets), std::move(id_of_kets), *this);
+                                                     std::move(kets), std::move(canonical_basis_id),
+                                                     *this);
 }
 
 template <typename Scalar>
@@ -1029,10 +1032,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
         throw std::invalid_argument("Unknown operator type.");
     }
 
-    std::string id_of_kets_initial = initial_basis->get_id_of_kets();
-    std::string id_of_kets_final = final_basis->get_id_of_kets();
-    std::string cache_key =
-        fmt::format("{}_{}_{}_{}", specifier, q, id_of_kets_initial, id_of_kets_final);
+    std::string canonical_basis_id_initial = initial_basis->get_canonical_basis_id();
+    std::string canonical_basis_id_final = final_basis->get_canonical_basis_id();
+    std::string cache_key = fmt::format("{}_{}_{}_{}", specifier, q, canonical_basis_id_initial,
+                                        canonical_basis_id_final);
     auto &matrix_elements_cache = get_matrix_elements_cache();
     std::promise<cached_matrix_ptr_t> matrix_promise;
     auto [cache_it, inserted] =
@@ -1062,14 +1065,14 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                     FROM '{}' AS s1
                     INNER JOIN '{}' AS s2 ON s1.ketid = s2.ketid
                     ORDER BY row ASC)",
-                    id_of_kets_initial, id_of_kets_final));
+                    canonical_basis_id_initial, canonical_basis_id_final));
             } else if (specifier == "energy") {
                 result = con->Query(fmt::format(
                     R"(SELECT s2.ketid AS row, s1.ketid AS col, s1.energy AS val
                     FROM '{}' AS s1
                     INNER JOIN '{}' AS s2 ON s1.ketid = s2.ketid
                     ORDER BY row ASC)",
-                    id_of_kets_initial, id_of_kets_final));
+                    canonical_basis_id_initial, canonical_basis_id_final));
             } else {
                 result = con->Query(fmt::format(
                     R"(WITH s1 AS (
@@ -1108,8 +1111,9 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
                     w.f_initial = s1.f AND w.m_initial = s1.m AND
                     w.f_final = s2.f AND w.m_final = s2.m
                     ORDER BY row ASC, col ASC)",
-                    id_of_kets_initial, id_of_kets_final, manager->get_path("misc", "wigner"),
-                    kappa, q, manager->get_path(species, specifier)));
+                    canonical_basis_id_initial, canonical_basis_id_final,
+                    manager->get_path("misc", "wigner"), kappa, q,
+                    manager->get_path(species, specifier)));
             }
 
             if (result->HasError()) {

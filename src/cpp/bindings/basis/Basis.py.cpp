@@ -109,7 +109,7 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
         .def("restrict_quantum_number_j_ryd", &BasisAtomCreator<T>::restrict_quantum_number_j_ryd)
         .def("set_quantum_number_standard_deviation_factor",
              &BasisAtomCreator<T>::set_quantum_number_standard_deviation_factor)
-        .def("append_ket", &BasisAtomCreator<T>::append_ket)
+        .def("add_ket", &BasisAtomCreator<T>::add_ket)
         .def("create", &BasisAtomCreator<T>::create, nb::call_guard<nb::gil_scoped_release>());
 }
 

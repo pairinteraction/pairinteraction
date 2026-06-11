@@ -71,7 +71,7 @@ public:
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
                                                OperatorType /*type*/, int /*q*/) const override;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> /*final*/, OperatorType /*type*/,
+    get_matrix_elements(std::shared_ptr<const Type> /*final_state*/, OperatorType /*type*/,
                         int /*q*/) const override;
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
                                                OperatorType type2, int q1 = 0, int q2 = 0) const;
@@ -80,8 +80,8 @@ public:
                                                OperatorType type1, OperatorType type2, int q1 = 0,
                                                int q2 = 0) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> final, OperatorType type1, OperatorType type2,
-                        int q1 = 0, int q2 = 0) const;
+    get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
+                        OperatorType type2, int q1 = 0, int q2 = 0) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> final1,
                         std::shared_ptr<const BasisAtom<Scalar>> final2, OperatorType type1,

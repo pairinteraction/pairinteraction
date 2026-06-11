@@ -51,8 +51,7 @@ DOCTEST_TEST_CASE("create a basis from kets") {
     auto ket2 = KetAtomCreator("Sr88_singlet", 60, 0, 0, 0).create(database);
     auto ket3 = KetAtomCreator("Sr88_singlet", 61, 0, 0, 0).create(database);
     auto basis =
-        BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(
-            database);
+        BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
         DOCTEST_MESSAGE("Ket: ", *ket);
@@ -141,9 +140,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     SystemAtom<double> system(basis);
 
     DOCTEST_SUBCASE("calculate energy") {
-        auto m1 =
-            BasisAtomCreator<double>().append_ket(ket_s).create(database)->get_matrix_elements(
-                ket_s, OperatorType::ENERGY, 0);
+        auto m1 = BasisAtomCreator<double>().add_ket(ket_s).create(database)->get_matrix_elements(
+            ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m1.size() == 1);
         double energy1 = m1[0];
 
