@@ -24,6 +24,7 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
+#include <set>
 #include <spdlog/spdlog.h>
 #include <system_error>
 
@@ -488,7 +489,7 @@ template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>>
 Database::get_basis(const std::string &species, const AtomDescriptionByRanges &description,
                     std::vector<size_t> additional_ket_ids) {
-    // Describe the states
+    // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
     std::string separator;
     if (description.parity != Parity::UNKNOWN) {
@@ -505,12 +506,6 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         where += separator +
             fmt::format("f BETWEEN {} AND {}", description.range_quantum_number_f.min(),
                         description.range_quantum_number_f.max());
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_m.is_finite()) {
-        where += separator +
-            fmt::format("m BETWEEN {} AND {}", description.range_quantum_number_m.min(),
-                        description.range_quantum_number_m.max());
         separator = " AND ";
     }
     if (description.range_quantum_number_n.is_finite()) {
@@ -565,13 +560,20 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         separator = " AND ";
     }
     if (separator.empty()) {
-        where += "FALSE";
+        // If the description contains no restrictions at all, it describes no states
+        where += description.range_quantum_number_m.is_finite() ? "TRUE" : "FALSE";
     }
     where += ")";
-    if (!additional_ket_ids.empty()) {
-        where += fmt::format(" OR {} IN ({})", utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-                             fmt::join(additional_ket_ids, ","));
+
+    // Describe the restriction of the quantum number m
+    std::string where_m = "(";
+    if (description.range_quantum_number_m.is_finite()) {
+        where_m += fmt::format("m BETWEEN {} AND {}", description.range_quantum_number_m.min(),
+                               description.range_quantum_number_m.max());
+    } else {
+        where_m += "TRUE";
     }
+    where_m += ")";
 
     // Create a table containing the described states
     std::string id_of_kets;
@@ -589,13 +591,41 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             R"(CREATE TEMP TABLE '{}' AS SELECT *, {} AS ketid FROM (
                 SELECT *,
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
-                x -> x::double-f)) AS m FROM '{}'
+                x -> x::double-f)) AS m FROM (
+                    SELECT * FROM '{}' WHERE {}
+                )
             ) WHERE {})",
             id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-            manager->get_path(species, "states"), where));
+            manager->get_path(species, "states"), where, where_m));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error creating table: " + result->GetError());
+        }
+    }
+
+    // Add the additional kets to the table if they are not already contained in it
+    if (!additional_ket_ids.empty()) {
+        set_task_status("Selecting additional kets...");
+        std::set<size_t> ids_without_m;
+        for (size_t ketid : additional_ket_ids) {
+            ids_without_m.insert(utils::get_id_without_m(ketid));
+        }
+        auto result = con->Query(fmt::format(
+            R"(INSERT INTO '{0}' SELECT * FROM (
+                SELECT *, {1} AS ketid FROM (
+                    SELECT *,
+                    UNNEST(list_transform(generate_series(0,(2*f)::bigint),
+                    x -> x::double-f)) AS m FROM (
+                        SELECT * FROM '{2}' WHERE id IN ({3})
+                    )
+                )
+            ) WHERE ketid IN ({4}) AND ketid NOT IN (SELECT ketid FROM '{0}'))",
+            id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
+            manager->get_path(species, "states"), fmt::join(ids_without_m, ","),
+            fmt::join(additional_ket_ids, ",")));
+
+        if (result->HasError()) {
+            throw cpptrace::runtime_error("Error adding additional kets: " + result->GetError());
         }
     }
 
