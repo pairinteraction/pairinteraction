@@ -24,7 +24,6 @@
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
-#include <set>
 #include <spdlog/spdlog.h>
 #include <system_error>
 
@@ -385,9 +384,10 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                 auto result_quantum_number_f =
                     duckdb::FlatVector::GetData<double>(chunk->data[1])[i];
                 auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[i];
-                auto result_id = utils::get_linearized_id_in_database(
-                    duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[i],
-                    result_quantum_number_m);
+                auto result_id = utils::encode_as_ket_id(
+                    {.id = static_cast<size_t>(
+                         duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[i]),
+                     .m = result_quantum_number_m});
                 auto result_quantum_number_n =
                     duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[i];
                 auto result_quantum_number_nu =
@@ -448,8 +448,9 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[0];
     auto result_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1])[0];
     auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[0];
-    auto result_id = utils::get_linearized_id_in_database(
-        duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0], result_quantum_number_m);
+    auto result_id = utils::encode_as_ket_id(
+        {.id = static_cast<size_t>(duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0]),
+         .m = result_quantum_number_m});
     auto result_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[0];
     auto result_quantum_number_nu = duckdb::FlatVector::GetData<double>(chunk->data[5])[0];
     auto result_quantum_number_nui_exp = duckdb::FlatVector::GetData<double>(chunk->data[6])[0];
@@ -588,41 +589,43 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     {
         set_task_status("Selecting atomic basis states...");
         auto result = con->Query(fmt::format(
-            R"(CREATE TEMP TABLE '{}' AS SELECT *, {} AS ketid FROM (
+            R"(CREATE TEMP TABLE '{}' AS SELECT *, id*{}+(2*m+{})::bigint AS ketid FROM (
                 SELECT *,
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
                 x -> x::double-f)) AS m FROM (
                     SELECT * FROM '{}' WHERE {}
                 )
             ) WHERE {})",
-            id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-            manager->get_path(species, "states"), where, where_m));
+            id_of_kets, utils::KET_ID_STRIDE, utils::M_OFFSET, manager->get_path(species, "states"),
+            where, where_m));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error creating table: " + result->GetError());
+        }
+    }
+    {
+        auto result =
+            con->Query(fmt::format(R"(ALTER TABLE '{}' ADD PRIMARY KEY (ketid))", id_of_kets));
+
+        if (result->HasError()) {
+            throw cpptrace::runtime_error("Error adding primary key: " + result->GetError());
         }
     }
 
     // Add the additional kets to the table if they are not already contained in it
     if (!additional_ket_ids.empty()) {
         set_task_status("Selecting additional kets...");
-        std::set<size_t> ids_without_m;
-        for (size_t ketid : additional_ket_ids) {
-            ids_without_m.insert(utils::get_id_without_m(ketid));
+        std::vector<std::string> values;
+        values.reserve(additional_ket_ids.size());
+        for (size_t ket_id : additional_ket_ids) {
+            auto [id, m] = utils::decode_from_ket_id(ket_id);
+            values.push_back(fmt::format("({}, {}::double, {})", id, m, ket_id));
         }
         auto result = con->Query(fmt::format(
-            R"(INSERT INTO '{0}' SELECT * FROM (
-                SELECT *, {1} AS ketid FROM (
-                    SELECT *,
-                    UNNEST(list_transform(generate_series(0,(2*f)::bigint),
-                    x -> x::double-f)) AS m FROM (
-                        SELECT * FROM '{2}' WHERE id IN ({3})
-                    )
-                )
-            ) WHERE ketid IN ({4}) AND ketid NOT IN (SELECT ketid FROM '{0}'))",
-            id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-            manager->get_path(species, "states"), fmt::join(ids_without_m, ","),
-            fmt::join(additional_ket_ids, ",")));
+            R"(INSERT OR IGNORE INTO '{0}'
+            SELECT s.*, v.m, v.ketid FROM '{1}' AS s
+            JOIN (VALUES {2}) AS v(id, m, ketid) ON s.id = v.id)",
+            id_of_kets, manager->get_path(species, "states"), fmt::join(values, ",")));
 
         if (result->HasError()) {
             throw cpptrace::runtime_error("Error adding additional kets: " + result->GetError());
