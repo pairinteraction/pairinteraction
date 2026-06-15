@@ -101,6 +101,15 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
 }
 
 template <typename Scalar>
+std::shared_ptr<const BasisPair<Scalar>>
+build_pair_basis(std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                 std::shared_ptr<const BasisAtom<Scalar>> basis2) {
+    auto system1 = SystemAtom<Scalar>(std::move(basis1));
+    auto system2 = SystemAtom<Scalar>(std::move(basis2));
+    return BasisPairCreator<Scalar>().add(system1).add(system2).create();
+}
+
+template <typename Scalar>
 void check_same_pair_eigenenergies(const std::shared_ptr<const BasisPair<Scalar>> &basis1,
                                    const std::shared_ptr<const BasisPair<Scalar>> &basis2,
                                    const DiagonalizerEigen<Scalar> &diagonalizer) {
@@ -175,11 +184,14 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     }
 
     DOCTEST_SUBCASE("check overlap") {
-        auto overlaps = basis_pair_a
-                            ->get_matrix_elements(ket, ket, OperatorType::IDENTITY,
-                                                  OperatorType::IDENTITY, 0, 0)
-                            .cwiseAbs2()
-                            .eval();
+        auto basis_ket = BasisAtomCreator<double>().add_ket(ket).create(database);
+        auto basis_pair_ket = build_pair_basis<double>(basis_ket, basis_ket);
+        Eigen::RowVectorXd amplitudes =
+            basis_pair_a
+                ->get_matrix_elements(basis_pair_ket, OperatorType::IDENTITY,
+                                      OperatorType::IDENTITY, 0, 0)
+                .row(0);
+        auto overlaps = amplitudes.cwiseAbs2().eval();
 
         // The total overlap is less than 1 because of the restricted energy window
         DOCTEST_CHECK(overlaps.sum() == doctest::Approx(0.9107819201));
@@ -239,36 +251,44 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
         DOCTEST_CHECK(matrix_elements_all.cols() == basis_pair_unperturbed->get_number_of_states());
 
         // <ket_pair|d0d0|basis_pair_unperturbed>
-        auto ket_pair = basis_pair_unperturbed->get_kets()[0];
-        auto matrix_elements_ket_pair = basis_pair_unperturbed->get_matrix_elements(
-            ket_pair, OperatorType::ELECTRIC_DIPOLE, OperatorType::ELECTRIC_DIPOLE, 0, 0);
+        auto atomic_states = basis_pair_unperturbed->get_kets()[0]->get_atomic_states();
+        auto basis_pair_ket_pair = build_pair_basis<double>(atomic_states[0], atomic_states[1]);
+        Eigen::RowVectorXd matrix_elements_ket_pair =
+            basis_pair_unperturbed
+                ->get_matrix_elements(basis_pair_ket_pair, OperatorType::ELECTRIC_DIPOLE,
+                                      OperatorType::ELECTRIC_DIPOLE, 0, 0)
+                .row(0);
         DOCTEST_CHECK(matrix_elements_ket_pair.size() ==
                       basis_pair_unperturbed->get_number_of_states());
 
         {
-            Eigen::VectorX<double> ref = matrix_elements_all.row(0);
+            Eigen::RowVectorXd ref = matrix_elements_all.row(0);
             DOCTEST_CHECK(ref.isApprox(matrix_elements_ket_pair, 1e-11));
         }
 
         // <basis x basis|d0d0|basis_pair>
+        auto basis_pair_product = build_pair_basis<double>(basis, basis);
         auto matrix_elements_product = basis_pair->get_matrix_elements(
-            basis, basis, OperatorType::ELECTRIC_DIPOLE, OperatorType::ELECTRIC_DIPOLE, 0, 0);
+            basis_pair_product, OperatorType::ELECTRIC_DIPOLE, OperatorType::ELECTRIC_DIPOLE, 0, 0);
         DOCTEST_CHECK(matrix_elements_product.rows() ==
                       basis->get_number_of_states() * basis->get_number_of_states());
         DOCTEST_CHECK(matrix_elements_product.cols() == basis_pair->get_number_of_states());
 
         // <ket,ket|d0d0|basis_pair>
+        auto basis_ket = BasisAtomCreator<double>().add_ket(ket).create(database);
+        auto basis_pair_ket = build_pair_basis<double>(basis_ket, basis_ket);
         auto matrix_elements_ket = basis_pair->get_matrix_elements(
-            ket, ket, OperatorType::ELECTRIC_DIPOLE, OperatorType::ELECTRIC_DIPOLE, 0, 0);
-        DOCTEST_CHECK(matrix_elements_ket.size() == basis_pair->get_number_of_states());
+            basis_pair_ket, OperatorType::ELECTRIC_DIPOLE, OperatorType::ELECTRIC_DIPOLE, 0, 0);
+        DOCTEST_CHECK(matrix_elements_ket.rows() == 1);
+        DOCTEST_CHECK(matrix_elements_ket.cols() == basis_pair->get_number_of_states());
     }
 
     DOCTEST_SUBCASE("check matrix elements") {
         // energy
         auto hamiltonian = basis_pair->get_matrix_elements(basis_pair, OperatorType::ENERGY,
-                                                           OperatorType::IDENTITY);
+                                                           OperatorType::IDENTITY, 0, 0);
         hamiltonian += basis_pair->get_matrix_elements(basis_pair, OperatorType::IDENTITY,
-                                                       OperatorType::ENERGY);
+                                                       OperatorType::ENERGY, 0, 0);
 
         // interaction with electric field
         {
@@ -345,7 +365,7 @@ DOCTEST_TEST_CASE("get amplitudes (via matrix elements) between different pair b
                   small_unperturbed_basis->get_number_of_states());
 
     auto amplitudes = state_in_perturbed_basis->get_matrix_elements(
-        small_unperturbed_basis, OperatorType::IDENTITY, OperatorType::IDENTITY);
+        small_unperturbed_basis, OperatorType::IDENTITY, OperatorType::IDENTITY, 0, 0);
     DOCTEST_CHECK(amplitudes.rows() == small_unperturbed_basis->get_number_of_states());
     DOCTEST_CHECK(amplitudes.cols() == state_in_perturbed_basis->get_number_of_states());
 }

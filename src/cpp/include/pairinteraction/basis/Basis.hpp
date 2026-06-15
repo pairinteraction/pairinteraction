@@ -18,7 +18,6 @@
 namespace pairinteraction {
 enum class Parity : int;
 enum class TransformationType : unsigned char;
-enum class OperatorType;
 
 /**
  * @class Basis
@@ -71,10 +70,6 @@ public:
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
     void set_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values);
-    virtual Eigen::VectorX<scalar_t> get_matrix_elements(std::shared_ptr<const ket_t> ket,
-                                                         OperatorType type, int q = 0) const = 0;
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> virtual get_matrix_elements(
-        std::shared_ptr<const Derived> other, OperatorType type, int q = 0) const = 0;
 
     class Iterator {
     public:

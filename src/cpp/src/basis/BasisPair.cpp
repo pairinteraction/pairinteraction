@@ -4,18 +4,13 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisAtomCreator.hpp"
-#include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
-#include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/tensor.hpp"
 
 #include <cassert>
 #include <memory>
-#include <oneapi/tbb.h>
 #include <vector>
 
 namespace pairinteraction {
@@ -55,20 +50,6 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
 }
 
 template <typename Scalar>
-Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
-                                                              OperatorType /*type*/,
-                                                              int /*q*/) const {
-    throw std::invalid_argument("It is required to specify one operator for each atom.");
-}
-
-template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*final_state*/,
-                                       OperatorType /*type*/, int /*q*/) const {
-    throw std::invalid_argument("It is required to specify one operator for each atom.");
-}
-
-template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
                                        OperatorType type2, int q1, int q2) const {
@@ -91,47 +72,6 @@ BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final_state, 
     assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_kets());
 
     return final_state->get_coefficients().adjoint() * matrix_elements * this->get_coefficients();
-}
-
-template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> final1,
-                                       std::shared_ptr<const BasisAtom<Scalar>> final2,
-                                       OperatorType type1, OperatorType type2, int q1,
-                                       int q2) const {
-    // Construct a pair basis with the two single-atom bases
-    auto system1 = SystemAtom<Scalar>(final1);
-    auto system2 = SystemAtom<Scalar>(final2);
-    auto final_state = BasisPairCreator<Scalar>().add(system1).add(system2).create();
-    assert(final_state->get_number_of_states() ==
-           final1->get_number_of_states() * final2->get_number_of_states());
-    assert(final_state->get_number_of_kets() ==
-           final1->get_number_of_states() * final2->get_number_of_states());
-
-    return this->get_matrix_elements(final_state, type1, type2, q1, q2);
-}
-
-template <typename Scalar>
-Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
-    auto atomic_states = ket->get_atomic_states();
-    return this->get_matrix_elements(atomic_states[0], atomic_states[1], type1, type2, q1, q2)
-        .row(0);
-}
-
-template <typename Scalar>
-Eigen::VectorX<Scalar>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
-                                       std::shared_ptr<const KetAtom> ket2, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
-    auto initial1 = this->get_basis1();
-    auto initial2 = this->get_basis2();
-
-    auto final1 = BasisAtomCreator<Scalar>().add_ket(ket1).create(initial1->get_database());
-    auto final2 = BasisAtomCreator<Scalar>().add_ket(ket2).create(initial2->get_database());
-
-    return this->get_matrix_elements(final1, final2, type1, type2, q1, q2).row(0);
 }
 
 // Explicit instantiations

@@ -95,6 +95,11 @@ int main(int argc, char **argv) {
         kets.push_back(ss.str());
     }
 
+    auto basis_ket = pairinteraction::BasisAtomCreator<double>().add_ket(ket).create(database);
+    auto system_ket = pairinteraction::SystemAtom<double>(basis_ket);
+    auto basis_pair_ket =
+        pairinteraction::BasisPairCreator<double>().add(system_ket).add(system_ket).create();
+
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
         eigenenergies.row(i) = system_pairs[i].get_eigenenergies() * HARTREE_IN_GHZ;
 
@@ -102,12 +107,13 @@ int main(int argc, char **argv) {
             system_pairs[i].get_eigenbasis()->get_coefficients().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
 
-        overlaps.row(i) =
+        Eigen::RowVectorXd amplitudes =
             system_pairs[i]
                 .get_eigenbasis()
-                ->get_matrix_elements(ket, ket, pairinteraction::OperatorType::IDENTITY,
+                ->get_matrix_elements(basis_pair_ket, pairinteraction::OperatorType::IDENTITY,
                                       pairinteraction::OperatorType::IDENTITY, 0, 0)
-                .cwiseAbs2();
+                .row(0);
+        overlaps.row(i) = amplitudes.cwiseAbs2();
     }
 
     // Compare with reference data

@@ -10,13 +10,13 @@ from scipy.sparse import csr_matrix
 from typing_extensions import Self, deprecated
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis_atom import BasisAtom
+from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_ket
 from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.ket.ket_pair import get_ketpairlike_energy, get_ketpairlike_m, is_ket_pair_like
 from pairinteraction.state import StatePair, StatePairReal
-from pairinteraction.state.state_pair import is_state_atom_tuple
+from pairinteraction.state.state_pair import is_state_atom_tuple, is_state_pair_like
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -364,33 +364,37 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         unit: str | None = None,
     ) -> NDArray | PintArray | csr_matrix | PintSparse:
         operators_cpp = (get_cpp_operator_type(operators[0]), get_cpp_operator_type(operators[1]))
-        matrix_elements_au: NDArray
+        is_real = isinstance(self._cpp, _backend.BasisPairReal)
 
-        # KetPair like
-        if isinstance(other, KetPair):
-            matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs))
-            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
-        if is_ket_atom_tuple(other):
-            ket_cpp = (other[0]._cpp, other[1]._cpp)
-            matrix_elements_au = np.array(self._cpp.get_matrix_elements(*ket_cpp, *operators_cpp, *qs))
-            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
+        if is_ket_pair_like(other) or is_state_pair_like(other):
+            # KetPair like
+            if isinstance(other, KetPair):
+                other_cpp = get_cpp_basis_pair_from_atom_bases(other._cpp.get_atomic_states(), real=is_real)
+            elif is_ket_atom_tuple(other):
+                other_cpp = get_cpp_basis_pair_from_atom_bases(
+                    [get_cpp_basis_atom_from_ket(ket, real=is_real) for ket in other], real=is_real
+                )
+            # StatePair like
+            elif isinstance(other, StatePair):
+                other_cpp = other._cpp
+            elif is_state_atom_tuple(other):
+                other_cpp = get_cpp_basis_pair_from_atom_bases([state._cpp for state in other], real=is_real)
+            else:
+                raise TypeError(f"Unknown type: {type(other)=}")
 
-        # StatePair like
-        if isinstance(other, StatePair):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs).toarray().ravel()
-            return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
-        if is_state_atom_tuple(other):
-            state_cpp = (other[0]._cpp, other[1]._cpp)
-            matrix_elements_au = self._cpp.get_matrix_elements(*state_cpp, *operators_cpp, *qs).toarray().ravel()
+            matrix_elements_au = self._cpp.get_matrix_elements(other_cpp, *operators_cpp, *qs).toarray().ravel()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
 
         # BasisPair like
-        if isinstance(other, BasisPair):
-            matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, *operators_cpp, *qs)
-            return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operators, unit)
-        if is_basis_atom_tuple(other):
-            basis_cpp = (other[0]._cpp, other[1]._cpp)
-            matrix_elements_sparse_au = self._cpp.get_matrix_elements(*basis_cpp, *operators_cpp, *qs)
+        if is_basis_pair_like(other):
+            if isinstance(other, BasisPair):
+                other_cpp = other._cpp
+            elif is_basis_atom_tuple(other):
+                other_cpp = get_cpp_basis_pair_from_atom_bases([basis._cpp for basis in other], real=is_real)
+            else:
+                raise TypeError(f"Unknown type: {type(other)=}")
+
+            matrix_elements_sparse_au = self._cpp.get_matrix_elements(other_cpp, *operators_cpp, *qs)
             return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operators, unit)
 
         raise TypeError(f"Unknown type: {type(other)=}")
@@ -401,3 +405,24 @@ class BasisPairReal(BasisPair):
     _cpp_creator = _backend.BasisPairCreatorReal  # type: ignore [assignment]
     _ket_class = KetPairReal
     _state_class = StatePairReal
+
+
+def get_cpp_basis_pair_from_atom_bases(
+    basis_atoms_cpp: Sequence[_backend.BasisAtomComplex], *, real: bool
+) -> _backend.BasisPairComplex:
+    """Create a cpp BasisPair object from the product of two cpp BasisAtom objects.
+
+    Like for the _cpp attributes, the cpp objects are annotated as the complex variants,
+    although for BasisPairReal the real variants are used.
+    """
+    if not real:
+        cpp_system_atom_class = _backend.SystemAtomComplex
+        creator = _backend.BasisPairCreatorComplex()
+    else:
+        cpp_system_atom_class = _backend.SystemAtomReal  # type: ignore [assignment]
+        creator = _backend.BasisPairCreatorReal()  # type: ignore [assignment]
+
+    systems = [cpp_system_atom_class(basis_cpp) for basis_cpp in basis_atoms_cpp]
+    for system in systems:
+        creator.add(system)
+    return creator.create()

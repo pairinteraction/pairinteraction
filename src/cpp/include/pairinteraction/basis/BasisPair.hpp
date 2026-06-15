@@ -18,6 +18,8 @@
 #include <vector>
 
 namespace pairinteraction {
+enum class OperatorType;
+
 template <typename Scalar>
 class BasisPairCreator;
 
@@ -29,8 +31,6 @@ class BasisPair;
 
 template <typename Scalar>
 class BasisAtom;
-
-class KetAtom;
 
 template <typename Scalar>
 struct traits::CrtpTraits<BasisPair<Scalar>> {
@@ -68,24 +68,9 @@ public:
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
     int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
 
-    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
-                                               OperatorType /*type*/, int /*q*/) const override;
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> /*final_state*/, OperatorType /*type*/,
-                        int /*q*/) const override;
-    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
-                                               OperatorType type2, int q1 = 0, int q2 = 0) const;
-    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
-                                               std::shared_ptr<const KetAtom> ket2,
-                                               OperatorType type1, OperatorType type2, int q1 = 0,
-                                               int q2 = 0) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
-                        OperatorType type2, int q1 = 0, int q2 = 0) const;
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> final1,
-                        std::shared_ptr<const BasisAtom<Scalar>> final2, OperatorType type1,
-                        OperatorType type2, int q1 = 0, int q2 = 0) const;
+                        OperatorType type2, int q1, int q2) const;
 
 private:
     map_range_t map_range_of_state_index2;

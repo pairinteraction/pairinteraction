@@ -140,14 +140,17 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     SystemAtom<double> system(basis);
 
     DOCTEST_SUBCASE("calculate energy") {
-        auto m1 = BasisAtomCreator<double>().add_ket(ket_s).create(database)->get_matrix_elements(
-            ket_s, OperatorType::ENERGY, 0);
-        DOCTEST_CHECK(m1.size() == 1);
-        double energy1 = m1[0];
+        auto basis_ket_s = BasisAtomCreator<double>().add_ket(ket_s).create(database);
 
-        auto m2 = basis->get_matrix_elements(ket_s, OperatorType::ENERGY, 0);
-        DOCTEST_CHECK(m2.size() == basis->get_number_of_states());
-        double energy2 = m2[static_cast<int>(basis->get_corresponding_state_index(ket_s))];
+        auto m1 = basis_ket_s->get_matrix_elements(basis_ket_s, OperatorType::ENERGY, 0);
+        DOCTEST_CHECK(m1.rows() == 1);
+        DOCTEST_CHECK(m1.cols() == 1);
+        double energy1 = m1.coeff(0, 0);
+
+        auto m2 = basis->get_matrix_elements(basis_ket_s, OperatorType::ENERGY, 0);
+        DOCTEST_CHECK(m2.rows() == 1);
+        DOCTEST_CHECK(m2.cols() == basis->get_number_of_states());
+        double energy2 = m2.coeff(0, static_cast<int>(basis->get_corresponding_state_index(ket_s)));
 
         double reference = ket_s->get_energy();
         DOCTEST_CHECK(std::abs(energy1 - reference) < 1e-11);
@@ -155,9 +158,12 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     }
 
     DOCTEST_SUBCASE("calculate electric dipole matrix element") {
-        auto m = basis->get_matrix_elements(ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
-        DOCTEST_CHECK(m.size() == basis->get_number_of_states());
-        double dipole = m[static_cast<int>(basis->get_corresponding_state_index(ket_s))];
+        auto basis_ket_p = BasisAtomCreator<double>().add_ket(ket_p).create(database);
+
+        auto m = basis->get_matrix_elements(basis_ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
+        DOCTEST_CHECK(m.rows() == 1);
+        DOCTEST_CHECK(m.cols() == basis->get_number_of_states());
+        double dipole = m.coeff(0, static_cast<int>(basis->get_corresponding_state_index(ket_s)));
 
         DOCTEST_CHECK(std::abs(dipole - 1247.6043831131365) < 1e-6);
     }

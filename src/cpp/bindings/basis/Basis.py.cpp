@@ -51,12 +51,6 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
             "transformed",
             nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
         .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>, OperatorType, int>(
-                 &Basis<T>::get_matrix_elements, nb::const_))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const T>, OperatorType, int>(
-                 &Basis<T>::get_matrix_elements, nb::const_))
         .def("get_corresponding_state",
              nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state, nb::const_))
         .def("get_corresponding_state",
@@ -87,6 +81,7 @@ template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass.def("get_matrix_elements", &BasisAtom<T>::get_matrix_elements);
 }
 
 template <typename T>
@@ -117,22 +112,7 @@ template <typename T>
 static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPair" + type_name;
     nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
-    pyclass
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const BasisPair<T>>, OperatorType, OperatorType, int,
-                               int>(&BasisPair<T>::get_matrix_elements, nb::const_))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
-                               std::shared_ptr<const BasisAtom<T>>, OperatorType, OperatorType, int,
-                               int>(&BasisPair<T>::get_matrix_elements, nb::const_))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>, OperatorType,
-                               OperatorType, int, int>(&BasisPair<T>::get_matrix_elements,
-                                                       nb::const_))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>,
-                               OperatorType, OperatorType, int, int>(
-                 &BasisPair<T>::get_matrix_elements, nb::const_))
+    pyclass.def("get_matrix_elements", &BasisPair<T>::get_matrix_elements)
         .def("get_basis1", &BasisPair<T>::get_basis1)
         .def("get_basis2", &BasisPair<T>::get_basis2);
 }
@@ -141,8 +121,11 @@ template <typename T>
 static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPairCreator" + type_name;
     nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def("add", &BasisPairCreator<T>::add)
+    pyclass
+        .def(nb::init<>())
+        // keep_alive because add() stores only a reference to the system, which must outlive the
+        // creator (the system is dereferenced in create())
+        .def("add", &BasisPairCreator<T>::add, nb::keep_alive<1, 2>())
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
         .def("restrict_parity_under_inversion",

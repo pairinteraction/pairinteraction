@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
+from pairinteraction import _backend
 from pairinteraction.enums import get_cpp_operator_type
 from pairinteraction.ket import KetAtom
 from pairinteraction.state.state_base import StateBase
@@ -15,7 +16,6 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from pairinteraction import _backend
     from pairinteraction.basis import BasisAtom
     from pairinteraction.database import Database
     from pairinteraction.enums import OperatorType
@@ -220,7 +220,11 @@ class StateAtom(StateBase[KetAtom]):
         cpp_op = get_cpp_operator_type(operator)
 
         if isinstance(other, KetAtom):
-            matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))[0]
+            from pairinteraction.basis.basis_atom import get_cpp_basis_atom_from_ket
+
+            is_real = isinstance(self._cpp, _backend.BasisAtomReal)
+            other_cpp = get_cpp_basis_atom_from_ket(other, real=is_real)
+            matrix_elements_au = self._cpp.get_matrix_elements(other_cpp, cpp_op, q).toarray().ravel()[0]
             return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
             matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()[0]

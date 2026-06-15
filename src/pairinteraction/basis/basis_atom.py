@@ -363,7 +363,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
         matrix_elements_au: NDArray
         if isinstance(other, KetAtom):
-            matrix_elements_au = np.array(self._cpp.get_matrix_elements(other._cpp, cpp_op, q))
+            is_real = isinstance(self._cpp, _backend.BasisAtomReal)
+            other_cpp = get_cpp_basis_atom_from_ket(other, real=is_real)
+            matrix_elements_au = self._cpp.get_matrix_elements(other_cpp, cpp_op, q).toarray().ravel()
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, StateAtom):
             matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()
@@ -379,3 +381,14 @@ class BasisAtomReal(BasisAtom):
     _cpp_creator = _backend.BasisAtomCreatorReal  # type: ignore [assignment]
     _ket_class = KetAtom
     _state_class = StateAtomReal
+
+
+def get_cpp_basis_atom_from_ket(ket: KetAtom, *, real: bool) -> _backend.BasisAtomComplex:
+    """Create a cpp BasisAtom object containing only the given ket.
+
+    Like for the _cpp attributes, the return type is annotated as the complex variant,
+    although the real variant is returned if real=True.
+    """
+    creator = _backend.BasisAtomCreatorReal() if real else _backend.BasisAtomCreatorComplex()
+    creator.add_ket(ket._cpp)
+    return creator.create(ket.database._cpp)  # type: ignore [return-value]

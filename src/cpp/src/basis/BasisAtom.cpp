@@ -3,7 +3,6 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 
-#include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
@@ -41,22 +40,6 @@ int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
 template <typename Scalar>
 const std::string &BasisAtom<Scalar>::get_canonical_basis_id() const {
     return canonical_basis_id;
-}
-
-template <typename Scalar>
-Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket,
-                                                              OperatorType type, int q) const {
-    auto final_state = BasisAtomCreator<Scalar>().add_ket(ket).create(database);
-
-    auto matrix_elements = this->get_database().get_matrix_elements_in_canonical_basis(
-        this->shared_from_this(), final_state, type, q);
-    matrix_elements =
-        final_state->get_coefficients().adjoint() * matrix_elements * this->get_coefficients();
-
-    assert(static_cast<size_t>(matrix_elements.rows()) == 1);
-    assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_states());
-
-    return matrix_elements.row(0);
 }
 
 template <typename Scalar>
