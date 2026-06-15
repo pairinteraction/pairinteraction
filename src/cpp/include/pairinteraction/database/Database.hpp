@@ -53,9 +53,9 @@ public:
                                            const AtomDescriptionByParameters &description);
 
     template <typename Scalar>
-    std::shared_ptr<const BasisAtom<Scalar>> get_basis(const std::string &species,
-                                                       const AtomDescriptionByRanges &description,
-                                                       std::vector<size_t> additional_ket_ids);
+    std::shared_ptr<const BasisAtom<Scalar>>
+    get_basis(const std::string &species, const AtomDescriptionByRanges &description,
+              const std::vector<size_t> &additional_ket_ids);
 
     template <typename Scalar>
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
@@ -110,7 +110,7 @@ private:
 #define EXTERN_GETTERS(SCALAR)                                                                     \
     extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(          \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
-        std::vector<size_t> additional_ket_ids);                                                   \
+        const std::vector<size_t> &additional_ket_ids);                                            \
     extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \

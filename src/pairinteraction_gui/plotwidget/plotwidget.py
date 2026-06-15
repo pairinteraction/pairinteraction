@@ -232,7 +232,7 @@ class PlotEnergies(PlotWidget):
             self._annotations[selected] = ann
             self.canvas.draw_idle()
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
+        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
     def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, PLR0915, C901
@@ -459,7 +459,7 @@ class PlotLifetimes(PlotWidget):
             self._annotations[(label, n)] = ann
             self.canvas.draw_idle()
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)  # type: ignore [arg-type]
+        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
 

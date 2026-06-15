@@ -489,7 +489,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
 template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>>
 Database::get_basis(const std::string &species, const AtomDescriptionByRanges &description,
-                    std::vector<size_t> additional_ket_ids) {
+                    const std::vector<size_t> &additional_ket_ids) {
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
     std::string separator;
@@ -1264,7 +1264,7 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
 #define INSTANTIATE_GETTERS(SCALAR)                                                                \
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
         const std::string &species, const AtomDescriptionByRanges &description,                    \
-        std::vector<size_t> additional_ket_ids);                                                   \
+        const std::vector<size_t> &additional_ket_ids);                                            \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
