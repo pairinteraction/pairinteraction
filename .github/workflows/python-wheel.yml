@@ -75,7 +75,7 @@ jobs:
         cache-dependency-glob: |
           ./pyproject.toml
 
-    - uses: pypa/cibuildwheel@v4.0
+    - uses: pypa/cibuildwheel@v4.1
       env:
         CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{10,11}*' || '' }}
         CIBW_ENVIRONMENT_WINDOWS: CMAKE_ARGS='-DVCPKG_INSTALLED_DIR="${{ env.VCPKG_INSTALLED_DIR }}"'
