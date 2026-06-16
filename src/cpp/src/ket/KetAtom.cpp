@@ -10,6 +10,7 @@
 #include <cctype>
 #include <cmath>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <string_view>
 #include <vector>

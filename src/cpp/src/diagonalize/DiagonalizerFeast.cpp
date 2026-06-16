@@ -14,6 +14,7 @@
 
 #ifdef WITH_MKL
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <mkl.h>
 #endif // WITH_MKL
 

@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <fstream>
 #include <future>
 #include <httplib.h>

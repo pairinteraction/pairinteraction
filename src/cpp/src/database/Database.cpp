@@ -20,6 +20,7 @@
 #include <cpptrace/cpptrace.hpp>
 #include <duckdb.hpp>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fstream>
 #include <nlohmann/json.hpp>

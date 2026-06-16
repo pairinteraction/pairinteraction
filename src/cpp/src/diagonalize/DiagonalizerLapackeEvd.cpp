@@ -10,6 +10,7 @@
 #include <Eigen/Dense>
 #include <cmath>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
 #ifdef WITH_MKL
