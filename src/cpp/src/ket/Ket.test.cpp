@@ -19,7 +19,8 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         struct Private {};
 
     public:
-        KetDerived(Private /*unused*/, double f, double m, Parity p) : Ket(0, f, m, p) {}
+        KetDerived(Private /*unused*/, double f, double m, Parity p)
+            : Ket(0), quantum_number_f(f), quantum_number_m(m), parity(p) {}
         std::string get_label() const override { return "my_label"; }
         std::shared_ptr<KetDerived>
         get_ket_for_different_quantum_number_m(double new_quantum_number_m) const {
@@ -27,6 +28,11 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
             ket.quantum_number_m = new_quantum_number_m;
             return std::make_shared<KetDerived>(ket);
         }
+
+    private:
+        double quantum_number_f;
+        double quantum_number_m;
+        Parity parity;
     };
 
     class KetDerivedCreator {

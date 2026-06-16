@@ -35,6 +35,9 @@ public:
     std::string get_label() const override;
     std::shared_ptr<KetAtom>
     get_ket_for_different_quantum_number_m(double new_quantum_number_m) const;
+    double get_quantum_number_f() const;
+    double get_quantum_number_m() const;
+    Parity get_parity() const;
     const std::string &get_species() const;
     int get_quantum_number_n() const;
     double get_quantum_number_nu() const;
@@ -62,6 +65,9 @@ public:
     };
 
 private:
+    double quantum_number_f;
+    double quantum_number_m;
+    Parity parity;
     std::string species;
     int quantum_number_n;
     double quantum_number_nu;

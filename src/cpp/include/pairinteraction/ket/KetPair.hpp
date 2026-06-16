@@ -37,6 +37,8 @@ public:
     std::string get_label() const override;
     std::shared_ptr<KetPair<Scalar>>
     get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
+    bool has_quantum_number_m() const;
+    real_t get_quantum_number_m() const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
 
     bool operator==(const KetPair<Scalar> &other) const;
@@ -47,17 +49,12 @@ public:
     };
 
 private:
+    real_t quantum_number_m;
     std::vector<size_t> atomic_indices;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases;
     static real_t
-    calculate_quantum_number_f(const std::vector<size_t> &indices,
-                               const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
-    static real_t
     calculate_quantum_number_m(const std::vector<size_t> &indices,
                                const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
-    static Parity
-    calculate_parity(const std::vector<size_t> &indices,
-                     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
 };
 
 extern template class KetPair<double>;

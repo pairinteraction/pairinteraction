@@ -4,7 +4,6 @@
 #include "pairinteraction/ket/KetPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
@@ -16,14 +15,22 @@ template <typename Scalar>
 KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
     std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
-    : Ket(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
-          calculate_quantum_number_m(atomic_indices, atomic_bases),
-          calculate_parity(atomic_indices, atomic_bases)),
+    : Ket(energy), quantum_number_m(calculate_quantum_number_m(atomic_indices, atomic_bases)),
       atomic_indices(atomic_indices), atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_bases.size()) {
         throw std::invalid_argument(
             "The number of atomic indices, and atomic bases must be the same.");
     }
+}
+
+template <typename Scalar>
+bool KetPair<Scalar>::has_quantum_number_m() const {
+    return quantum_number_m != std::numeric_limits<real_t>::max();
+}
+
+template <typename Scalar>
+typename KetPair<Scalar>::real_t KetPair<Scalar>::get_quantum_number_m() const {
+    return quantum_number_m;
 }
 
 template <typename Scalar>
@@ -66,8 +73,8 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomi
 
 template <typename Scalar>
 bool KetPair<Scalar>::operator==(const KetPair<Scalar> &other) const {
-    return Ket::operator==(other) && atomic_indices == other.atomic_indices &&
-        atomic_bases == other.atomic_bases;
+    return Ket::operator==(other) && quantum_number_m == other.quantum_number_m &&
+        atomic_indices == other.atomic_indices && atomic_bases == other.atomic_bases;
 }
 
 template <typename Scalar>
@@ -78,6 +85,7 @@ bool KetPair<Scalar>::operator!=(const KetPair<Scalar> &other) const {
 template <typename Scalar>
 size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
     size_t seed = typename Ket::hash()(k);
+    utils::hash_combine(seed, k.quantum_number_m);
     for (const auto &index : k.atomic_indices) {
         utils::hash_combine(seed, index);
     }
@@ -85,14 +93,6 @@ size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
         utils::hash_combine(seed, reinterpret_cast<std::uintptr_t>(basis.get()));
     }
     return seed;
-}
-
-template <typename Scalar>
-typename KetPair<Scalar>::real_t KetPair<Scalar>::calculate_quantum_number_f(
-    const std::vector<size_t> & /*indices*/,
-    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
-    // Because this ket state is not symmetrized, the quantum_number_f is not well-defined.
-    return std::numeric_limits<real_t>::max();
 }
 
 template <typename Scalar>
@@ -109,14 +109,6 @@ typename KetPair<Scalar>::real_t KetPair<Scalar>::calculate_quantum_number_m(
         total_quantum_number_m += bases[i]->get_quantum_number_m(indices[i]);
     }
     return total_quantum_number_m;
-}
-
-template <typename Scalar>
-Parity KetPair<Scalar>::calculate_parity(
-    const std::vector<size_t> & /*indices*/,
-    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
-    // Because this ket state is not symmetrized, the parity is not well-defined.
-    return Parity::UNKNOWN;
 }
 
 // Explicit instantiations

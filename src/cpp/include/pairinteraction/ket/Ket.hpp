@@ -9,7 +9,6 @@
 #include <type_traits>
 
 namespace pairinteraction {
-enum class Parity : int;
 
 /**
  * @class Ket
@@ -27,14 +26,7 @@ public:
     Ket() = delete;
     virtual ~Ket() = default;
 
-    bool has_quantum_number_f() const;
-    bool has_quantum_number_m() const;
-    bool has_parity() const;
-
     double get_energy() const;
-    double get_quantum_number_f() const;
-    double get_quantum_number_m() const;
-    Parity get_parity() const;
 
     virtual std::string get_label() const = 0;
 
@@ -43,7 +35,7 @@ public:
     }
 
 protected:
-    Ket(double energy, double f, double m, Parity p);
+    explicit Ket(double energy);
 
     bool operator==(const Ket &other) const;
 
@@ -52,8 +44,5 @@ protected:
     };
 
     double energy;
-    double quantum_number_f;
-    double quantum_number_m;
-    Parity parity;
 };
 } // namespace pairinteraction

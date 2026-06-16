@@ -46,6 +46,11 @@ class KetPair(KetBase):
         """Creating a KetPair object directly is not possible."""  # noqa: D401
         raise NotImplementedError("KetPair objects cannot be created directly.")
 
+    @property
+    def m(self) -> float:
+        """The magnetic quantum number m (int or half-int)."""
+        return self._cpp.get_quantum_number_m()
+
     def get_label(
         self,
         fmt: Literal["raw", "ket", "bra", "detailed"] = "raw",

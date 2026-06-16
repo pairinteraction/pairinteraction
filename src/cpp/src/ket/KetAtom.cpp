@@ -26,10 +26,11 @@ KetAtom::KetAtom(Private /*unused*/, double energy, double f, double m, Parity p
                  bool is_j_total_momentum, bool is_calculated_with_mqdt,
                  double underspecified_channel_contribution, Database &database,
                  size_t id_in_database)
-    : Ket(energy, f, m, p), species(std::move(species)), quantum_number_n(n), quantum_number_nu(nu),
-      quantum_number_nui_exp(nui_exp), quantum_number_nui_std(nui_std), quantum_number_l_exp(l_exp),
-      quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
-      quantum_number_j_exp(j_exp), quantum_number_j_std(j_std), quantum_number_l_ryd_exp(l_ryd_exp),
+    : Ket(energy), quantum_number_f(f), quantum_number_m(m), parity(p), species(std::move(species)),
+      quantum_number_n(n), quantum_number_nu(nu), quantum_number_nui_exp(nui_exp),
+      quantum_number_nui_std(nui_std), quantum_number_l_exp(l_exp), quantum_number_l_std(l_std),
+      quantum_number_s_exp(s_exp), quantum_number_s_std(s_std), quantum_number_j_exp(j_exp),
+      quantum_number_j_std(j_std), quantum_number_l_ryd_exp(l_ryd_exp),
       quantum_number_l_ryd_std(l_ryd_std), quantum_number_j_ryd_exp(j_ryd_exp),
       quantum_number_j_ryd_std(j_ryd_std), is_j_total_momentum_(is_j_total_momentum),
       is_calculated_with_mqdt_(is_calculated_with_mqdt),
@@ -39,6 +40,12 @@ KetAtom::KetAtom(Private /*unused*/, double energy, double f, double m, Parity p
 Database &KetAtom::get_database() const { return database; }
 
 size_t KetAtom::get_id_in_database() const { return id_in_database; }
+
+double KetAtom::get_quantum_number_f() const { return quantum_number_f; }
+
+double KetAtom::get_quantum_number_m() const { return quantum_number_m; }
+
+Parity KetAtom::get_parity() const { return parity; }
 
 std::string KetAtom::get_label() const {
     size_t pos = species.find('_');
@@ -140,8 +147,9 @@ double KetAtom::get_underspecified_channel_contribution() const {
 }
 
 bool KetAtom::operator==(const KetAtom &other) const {
-    return Ket::operator==(other) && species == other.species &&
-        quantum_number_n == other.quantum_number_n &&
+    return Ket::operator==(other) && quantum_number_f == other.quantum_number_f &&
+        quantum_number_m == other.quantum_number_m && parity == other.parity &&
+        species == other.species && quantum_number_n == other.quantum_number_n &&
         quantum_number_nu == other.quantum_number_nu &&
         quantum_number_nui_exp == other.quantum_number_nui_exp &&
         quantum_number_nui_std == other.quantum_number_nui_std &&
@@ -157,6 +165,9 @@ bool KetAtom::operator!=(const KetAtom &other) const { return !(*this == other);
 
 size_t KetAtom::hash::operator()(const KetAtom &k) const {
     size_t seed = typename Ket::hash()(k);
+    utils::hash_combine(seed, k.quantum_number_f);
+    utils::hash_combine(seed, k.quantum_number_m);
+    utils::hash_combine(seed, static_cast<int>(k.parity));
     utils::hash_combine(seed, k.species);
     utils::hash_combine(seed, k.quantum_number_n);
     utils::hash_combine(seed, k.quantum_number_nu);

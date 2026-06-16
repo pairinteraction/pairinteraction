@@ -10,7 +10,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import OperatorType, Parity, get_cpp_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity, get_python_parity
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -146,6 +146,22 @@ class KetAtom(KetBase):
         """The database from which the KetAtom was loaded."""
         database_cpp = self._cpp.get_database()
         return Database._from_cpp_object(database_cpp)
+
+    @property
+    def m(self) -> float:
+        """The magnetic quantum number m (int or half-int)."""
+        return self._cpp.get_quantum_number_m()
+
+    @property
+    def f(self) -> float:
+        """The total momentum quantum number f (int or half-int)."""
+        return self._cpp.get_quantum_number_f()
+
+    @property
+    def parity(self) -> Parity:
+        """The parity of the ket."""
+        parity_cpp = self._cpp.get_parity()
+        return get_python_parity(parity_cpp)
 
     @property
     def species(self) -> str:

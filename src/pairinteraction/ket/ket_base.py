@@ -5,14 +5,12 @@ from __future__ import annotations
 from abc import ABC
 from typing import TYPE_CHECKING, Literal, TypeAlias, overload
 
-from pairinteraction.enums import get_python_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction import _backend
-    from pairinteraction.enums import Parity
     from pairinteraction.units import PintFloat
 
 UnionCPPKet: TypeAlias = "_backend.KetAtom | _backend.KetPairComplex"
@@ -56,22 +54,6 @@ class KetBase(ABC):
         if type(self._cpp) is not type(other._cpp):
             return False
         return self._cpp == other._cpp  # type: ignore [operator]
-
-    @property
-    def m(self) -> float:
-        """The magnetic quantum number m (int or half-int)."""
-        return self._cpp.get_quantum_number_m()
-
-    @property
-    def f(self) -> float:
-        """The total momentum quantum number f (int or half-int)."""
-        return self._cpp.get_quantum_number_f()
-
-    @property
-    def parity(self) -> Parity:
-        """The parity of the ket."""
-        parity_cpp = self._cpp.get_parity()
-        return get_python_parity(parity_cpp)
 
     def get_label(self, fmt: Literal["raw", "ket", "bra"] = "raw") -> str:
         """Label representing the ket.

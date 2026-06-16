@@ -26,9 +26,6 @@ static void declare_ket(nb::module_ &m) {
     std::string pyclass_name = "Ket";
     nb::class_<Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_energy", &Ket::get_energy)
-        .def("get_quantum_number_f", &Ket::get_quantum_number_f)
-        .def("get_quantum_number_m", &Ket::get_quantum_number_m)
-        .def("get_parity", &Ket::get_parity)
         .def("get_label", &Ket::get_label)
         .def("__str__", [](Ket const &self) {
             std::stringstream ss;
@@ -41,6 +38,9 @@ static void declare_ket_atom(nb::module_ &m) {
     std::string pyclass_name = "KetAtom";
     nb::class_<KetAtom, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_database", &KetAtom::get_database, nb::rv_policy::reference)
+        .def("get_quantum_number_f", &KetAtom::get_quantum_number_f)
+        .def("get_quantum_number_m", &KetAtom::get_quantum_number_m)
+        .def("get_parity", &KetAtom::get_parity)
         .def("get_species", &KetAtom::get_species)
         .def("get_quantum_number_n", &KetAtom::get_quantum_number_n)
         .def("get_quantum_number_nu", &KetAtom::get_quantum_number_nu)
@@ -90,6 +90,7 @@ static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
     nb::class_<KetPair<T>, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_atomic_states", &KetPair<T>::get_atomic_states)
+        .def("get_quantum_number_m", &KetPair<T>::get_quantum_number_m)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetPair<T> &self) { return typename KetPair<T>::hash{}(self); });
 }

@@ -71,17 +71,26 @@ Basis<Derived>::Basis(ketvec_t &&kets)
     ket_to_ket_index.reserve(this->kets.size());
     size_t index = 0;
     for (const auto &ket : this->kets) {
-        state_index_to_quantum_number_f.push_back(ket->get_quantum_number_f());
-        state_index_to_quantum_number_m.push_back(ket->get_quantum_number_m());
-        state_index_to_parity.push_back(ket->get_parity());
+        real_t f = std::numeric_limits<real_t>::max();
+        if constexpr (requires { ket->get_quantum_number_f(); }) {
+            f = ket->get_quantum_number_f();
+        }
+        Parity p = Parity::UNKNOWN;
+        if constexpr (requires { ket->get_parity(); }) {
+            p = ket->get_parity();
+        }
+        real_t m = ket->get_quantum_number_m();
+        state_index_to_quantum_number_f.push_back(f);
+        state_index_to_quantum_number_m.push_back(m);
+        state_index_to_parity.push_back(p);
         ket_to_ket_index[ket] = index++;
-        if (ket->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
+        if (f == std::numeric_limits<real_t>::max()) {
             _has_quantum_number_f = false;
         }
-        if (ket->get_quantum_number_m() == std::numeric_limits<real_t>::max()) {
+        if (m == std::numeric_limits<real_t>::max()) {
             _has_quantum_number_m = false;
         }
-        if (ket->get_parity() == Parity::UNKNOWN) {
+        if (p == Parity::UNKNOWN) {
             _has_parity = false;
         }
     }
@@ -349,7 +358,10 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
 
     set_task_status("Constructing basis rotation...");
     for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
-        real_t f = kets[idx_initial]->get_quantum_number_f();
+        real_t f = std::numeric_limits<real_t>::max();
+        if constexpr (requires { kets[idx_initial]->get_quantum_number_f(); }) {
+            f = kets[idx_initial]->get_quantum_number_f();
+        }
         real_t m_initial = kets[idx_initial]->get_quantum_number_m();
 
         assert(2 * f == std::floor(2 * f) && f >= 0);
@@ -564,16 +576,25 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
     result->_has_parity = true;
 
     for (size_t i = 0; i < n; ++i) {
-        result->state_index_to_quantum_number_f[i] = kets[i]->get_quantum_number_f();
-        result->state_index_to_quantum_number_m[i] = kets[i]->get_quantum_number_m();
-        result->state_index_to_parity[i] = kets[i]->get_parity();
-        if (kets[i]->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
+        real_t f = std::numeric_limits<real_t>::max();
+        if constexpr (requires { kets[i]->get_quantum_number_f(); }) {
+            f = kets[i]->get_quantum_number_f();
+        }
+        Parity p = Parity::UNKNOWN;
+        if constexpr (requires { kets[i]->get_parity(); }) {
+            p = kets[i]->get_parity();
+        }
+        real_t m = kets[i]->get_quantum_number_m();
+        result->state_index_to_quantum_number_f[i] = f;
+        result->state_index_to_quantum_number_m[i] = m;
+        result->state_index_to_parity[i] = p;
+        if (f == std::numeric_limits<real_t>::max()) {
             result->_has_quantum_number_f = false;
         }
-        if (kets[i]->get_quantum_number_m() == std::numeric_limits<real_t>::max()) {
+        if (m == std::numeric_limits<real_t>::max()) {
             result->_has_quantum_number_m = false;
         }
-        if (kets[i]->get_parity() == Parity::UNKNOWN) {
+        if (p == Parity::UNKNOWN) {
             result->_has_parity = false;
         }
     }
