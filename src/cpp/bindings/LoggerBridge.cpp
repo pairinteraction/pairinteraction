@@ -7,6 +7,7 @@
 
 #include <filesystem>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <memory>
 #include <mutex>
 #include <spdlog/sinks/base_sink.h>
