@@ -38,28 +38,9 @@ static void declare_ket_atom(nb::module_ &m) {
     std::string pyclass_name = "KetAtom";
     nb::class_<KetAtom, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_database", &KetAtom::get_database, nb::rv_policy::reference)
-        .def("get_quantum_number_f", &KetAtom::get_quantum_number_f)
-        .def("get_quantum_number_m", &KetAtom::get_quantum_number_m)
-        .def("get_parity", &KetAtom::get_parity)
         .def("get_species", &KetAtom::get_species)
-        .def("get_quantum_number_n", &KetAtom::get_quantum_number_n)
-        .def("get_quantum_number_nu", &KetAtom::get_quantum_number_nu)
-        .def("get_quantum_number_nui", &KetAtom::get_quantum_number_nui)
-        .def("get_quantum_number_l", &KetAtom::get_quantum_number_l)
-        .def("get_quantum_number_s", &KetAtom::get_quantum_number_s)
-        .def("get_quantum_number_j", &KetAtom::get_quantum_number_j)
-        .def("get_quantum_number_l_ryd", &KetAtom::get_quantum_number_l_ryd)
-        .def("get_quantum_number_j_ryd", &KetAtom::get_quantum_number_j_ryd)
-        .def("get_quantum_number_nui_std", &KetAtom::get_quantum_number_nui_std)
-        .def("get_quantum_number_l_std", &KetAtom::get_quantum_number_l_std)
-        .def("get_quantum_number_s_std", &KetAtom::get_quantum_number_s_std)
-        .def("get_quantum_number_j_std", &KetAtom::get_quantum_number_j_std)
-        .def("get_quantum_number_l_ryd_std", &KetAtom::get_quantum_number_l_ryd_std)
-        .def("get_quantum_number_j_ryd_std", &KetAtom::get_quantum_number_j_ryd_std)
-        .def("is_j_total_momentum", &KetAtom::is_j_total_momentum)
-        .def("is_calculated_with_mqdt", &KetAtom::is_calculated_with_mqdt)
-        .def("get_underspecified_channel_contribution",
-             &KetAtom::get_underspecified_channel_contribution)
+        .def("get_quantum_number", &KetAtom::get_quantum_number)
+        .def("get_quantum_number_std", &KetAtom::get_quantum_number_std)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetAtom &self) { return KetAtom::hash{}(self); });
 }

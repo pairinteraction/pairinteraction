@@ -10,7 +10,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import OperatorType, Parity, get_cpp_parity, get_python_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity, get_python_parity_from_int
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -150,18 +150,17 @@ class KetAtom(KetBase):
     @property
     def m(self) -> float:
         """The magnetic quantum number m (int or half-int)."""
-        return self._cpp.get_quantum_number_m()
+        return self._cpp.get_quantum_number("m")
 
     @property
     def f(self) -> float:
         """The total momentum quantum number f (int or half-int)."""
-        return self._cpp.get_quantum_number_f()
+        return self._cpp.get_quantum_number("f")
 
     @property
     def parity(self) -> Parity:
         """The parity of the ket."""
-        parity_cpp = self._cpp.get_parity()
-        return get_python_parity(parity_cpp)
+        return get_python_parity_from_int(int(self._cpp.get_quantum_number("parity")))
 
     @property
     def species(self) -> str:
@@ -171,87 +170,87 @@ class KetAtom(KetBase):
     @property
     def n(self) -> int:
         """The principal quantum number n."""
-        return self._cpp.get_quantum_number_n()
+        return int(self._cpp.get_quantum_number("n"))
 
     @property
     def nu(self) -> float:
         """The effective principal quantum number nu."""
-        return self._cpp.get_quantum_number_nu()
+        return self._cpp.get_quantum_number("nu")
 
     @property
     def nui(self) -> float:
         """The expectation value of the effective principal quantum numbers nu_i of the channels."""
-        return self._cpp.get_quantum_number_nui()
+        return self._cpp.get_quantum_number("nui")
 
     @property
     def l(self) -> float:  # noqa: E743
         """The expectation value of the orbital quantum number l of all valence electrons."""
-        return self._cpp.get_quantum_number_l()
+        return self._cpp.get_quantum_number("l")
 
     @property
     def s(self) -> float:
         """The expectation value of the total spin quantum number s of all valence electrons."""
-        return self._cpp.get_quantum_number_s()
+        return self._cpp.get_quantum_number("s")
 
     @property
     def j(self) -> float:
         """The expectation value of the total angular quantum number j of all valence electrons."""
-        return self._cpp.get_quantum_number_j()
+        return self._cpp.get_quantum_number("j")
 
     @property
     def l_ryd(self) -> float:
         """The expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_l_ryd()
+        return self._cpp.get_quantum_number("l_ryd")
 
     @property
     def j_ryd(self) -> float:
         """The expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_j_ryd()
+        return self._cpp.get_quantum_number("j_ryd")
 
     @property
     def nui_std(self) -> float:
         """The standard deviation of the effective principal quantum numbers nu_i of the channels."""
-        return self._cpp.get_quantum_number_nui_std()
+        return self._cpp.get_quantum_number_std("nui")
 
     @property
     def l_std(self) -> float:
         """The standard deviation of the orbital quantum number l of all valence electrons."""
-        return self._cpp.get_quantum_number_l_std()
+        return self._cpp.get_quantum_number_std("l")
 
     @property
     def s_std(self) -> float:
         """The standard deviation of the total spin quantum number s of all valence electrons."""
-        return self._cpp.get_quantum_number_s_std()
+        return self._cpp.get_quantum_number_std("s")
 
     @property
     def j_std(self) -> float:
         """The standard deviation of the total angular quantum number j of all valence electrons."""
-        return self._cpp.get_quantum_number_j_std()
+        return self._cpp.get_quantum_number_std("j")
 
     @property
     def l_ryd_std(self) -> float:
         """The standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_l_ryd_std()
+        return self._cpp.get_quantum_number_std("l_ryd")
 
     @property
     def j_ryd_std(self) -> float:
         """The standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_j_ryd_std()
+        return self._cpp.get_quantum_number_std("j_ryd")
 
     @property
     def is_j_total_momentum(self) -> bool:
         """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number."""
-        return self._cpp.is_j_total_momentum()
+        return bool(self._cpp.get_quantum_number("is_j_total_momentum"))
 
     @property
     def is_calculated_with_mqdt(self) -> bool:
         """Whether the state was calculated with multi-channel quantum defect theory."""
-        return self._cpp.is_calculated_with_mqdt()
+        return bool(self._cpp.get_quantum_number("is_calculated_with_mqdt"))
 
     @property
     def underspecified_channel_contribution(self) -> float:
         """The contribution of channels whose quantum numbers are not exactly known."""
-        return self._cpp.get_underspecified_channel_contribution()
+        return self._cpp.get_quantum_number("underspecified_channel_contribution")
 
     @overload
     def get_matrix_element(

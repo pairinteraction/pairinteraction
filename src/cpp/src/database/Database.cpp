@@ -26,7 +26,9 @@
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
 #include <spdlog/spdlog.h>
+#include <string>
 #include <system_error>
+#include <unordered_map>
 
 namespace pairinteraction {
 
@@ -38,6 +40,38 @@ std::string format_expectation_value_range(const std::string &value_column,
     return fmt::format("{} BETWEEN {}-{}*{} AND {}+{}*{}", value_column, range.min(),
                        standard_deviation_factor, std_column, range.max(),
                        standard_deviation_factor, std_column);
+}
+
+// Collect the quantum numbers and additional meta information of an atomic ket into a single
+// dictionary whose keys match the column names of the database.
+std::unordered_map<std::string, double>
+make_quantum_numbers(double f, double m, double parity, double n, double nu, double exp_nui,
+                     double std_nui, double exp_l, double std_l, double exp_s, double std_s,
+                     double exp_j, double std_j, double exp_l_ryd, double std_l_ryd,
+                     double exp_j_ryd, double std_j_ryd, bool is_j_total_momentum,
+                     bool is_calculated_with_mqdt, double underspecified_channel_contribution) {
+    return {
+        {"f", f},
+        {"m", m},
+        {"parity", parity},
+        {"n", n},
+        {"nu", nu},
+        {"exp_nui", exp_nui},
+        {"std_nui", std_nui},
+        {"exp_l", exp_l},
+        {"std_l", std_l},
+        {"exp_s", exp_s},
+        {"std_s", std_s},
+        {"exp_j", exp_j},
+        {"std_j", std_j},
+        {"exp_l_ryd", exp_l_ryd},
+        {"std_l_ryd", std_l_ryd},
+        {"exp_j_ryd", exp_j_ryd},
+        {"std_j_ryd", std_j_ryd},
+        {"is_j_total_momentum", is_j_total_momentum ? 1.0 : 0.0},
+        {"is_calculated_with_mqdt", is_calculated_with_mqdt ? 1.0 : 0.0},
+        {"underspecified_channel_contribution", underspecified_channel_contribution},
+    };
 }
 } // namespace
 
@@ -423,18 +457,21 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                     duckdb::FlatVector::GetData<bool>(chunk->data[19])[i];
                 auto result_underspecified_channel_contribution =
                     duckdb::FlatVector::GetData<double>(chunk->data[20])[i];
-                kets.emplace_back(typename KetAtom::Private(), result_energy,
-                                  result_quantum_number_f, result_quantum_number_m,
-                                  static_cast<Parity>(result_parity), species,
-                                  result_quantum_number_n, result_quantum_number_nu,
-                                  result_quantum_number_nui_exp, result_quantum_number_nui_std,
-                                  result_quantum_number_l_exp, result_quantum_number_l_std,
-                                  result_quantum_number_s_exp, result_quantum_number_s_std,
-                                  result_quantum_number_j_exp, result_quantum_number_j_std,
-                                  result_quantum_number_l_ryd_exp, result_quantum_number_l_ryd_std,
-                                  result_quantum_number_j_ryd_exp, result_quantum_number_j_ryd_std,
-                                  result_is_j_total_momentum, result_is_calculated_with_mqdt,
-                                  result_underspecified_channel_contribution, *this, result_id);
+                kets.emplace_back(
+                    typename KetAtom::Private(), result_energy, species,
+                    make_quantum_numbers(
+                        result_quantum_number_f, result_quantum_number_m,
+                        static_cast<double>(result_parity), result_quantum_number_n,
+                        result_quantum_number_nu, result_quantum_number_nui_exp,
+                        result_quantum_number_nui_std, result_quantum_number_l_exp,
+                        result_quantum_number_l_std, result_quantum_number_s_exp,
+                        result_quantum_number_s_std, result_quantum_number_j_exp,
+                        result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
+                        result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
+                        result_quantum_number_j_ryd_std, result_is_j_total_momentum,
+                        result_is_calculated_with_mqdt,
+                        result_underspecified_channel_contribution),
+                    *this, result_id);
             }
 
             // Throw an error with the possible kets
@@ -476,15 +513,17 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                       result_quantum_number_m, result_quantum_number_j_exp);
 
     return std::make_shared<const KetAtom>(
-        typename KetAtom::Private(), result_energy, result_quantum_number_f,
-        result_quantum_number_m, static_cast<Parity>(result_parity), species,
-        result_quantum_number_n, result_quantum_number_nu, result_quantum_number_nui_exp,
-        result_quantum_number_nui_std, result_quantum_number_l_exp, result_quantum_number_l_std,
-        result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
-        result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
-        result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
-        result_quantum_number_j_ryd_std, result_is_j_total_momentum, result_is_calculated_with_mqdt,
-        result_underspecified_channel_contribution, *this, result_id);
+        typename KetAtom::Private(), result_energy, species,
+        make_quantum_numbers(
+            result_quantum_number_f, result_quantum_number_m, static_cast<double>(result_parity),
+            result_quantum_number_n, result_quantum_number_nu, result_quantum_number_nui_exp,
+            result_quantum_number_nui_std, result_quantum_number_l_exp, result_quantum_number_l_std,
+            result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
+            result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
+            result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
+            result_quantum_number_j_ryd_std, result_is_j_total_momentum,
+            result_is_calculated_with_mqdt, result_underspecified_channel_contribution),
+        *this, result_id);
 }
 
 template <typename Scalar>
@@ -946,17 +985,19 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom>(
-                typename KetAtom::Private(), chunk_energy[i], chunk_quantum_number_f[i],
-                chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), species,
-                chunk_quantum_number_n[i], chunk_quantum_number_nu[i],
-                chunk_quantum_number_nui_exp[i], chunk_quantum_number_nui_std[i],
-                chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
-                chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
-                chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i],
-                chunk_quantum_number_l_ryd_exp[i], chunk_quantum_number_l_ryd_std[i],
-                chunk_quantum_number_j_ryd_exp[i], chunk_quantum_number_j_ryd_std[i],
-                chunk_is_j_total_momentum[i], chunk_is_calculated_with_mqdt[i],
-                chunk_underspecified_channel_contribution[i], *this, chunk_id[i]));
+                typename KetAtom::Private(), chunk_energy[i], species,
+                make_quantum_numbers(
+                    chunk_quantum_number_f[i], chunk_quantum_number_m[i],
+                    static_cast<double>(chunk_parity[i]), chunk_quantum_number_n[i],
+                    chunk_quantum_number_nu[i], chunk_quantum_number_nui_exp[i],
+                    chunk_quantum_number_nui_std[i], chunk_quantum_number_l_exp[i],
+                    chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
+                    chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
+                    chunk_quantum_number_j_std[i], chunk_quantum_number_l_ryd_exp[i],
+                    chunk_quantum_number_l_ryd_std[i], chunk_quantum_number_j_ryd_exp[i],
+                    chunk_quantum_number_j_ryd_std[i], chunk_is_j_total_momentum[i],
+                    chunk_is_calculated_with_mqdt[i], chunk_underspecified_channel_contribution[i]),
+                *this, chunk_id[i]));
         }
     }
 

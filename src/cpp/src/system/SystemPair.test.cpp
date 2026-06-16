@@ -122,10 +122,10 @@ DOCTEST_TEST_CASE("diagonalize with lapacke_evr") {
     // Construct and diagonalize the constituent systems
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(ket->get_quantum_number_n() - 3,
-                                                ket->get_quantum_number_n() + 3)
-                     .restrict_quantum_number_l(ket->get_quantum_number_l() - 1,
-                                                ket->get_quantum_number_l() + 1)
+                     .restrict_quantum_number_n(ket->get_quantum_number("n") - 3,
+                                                ket->get_quantum_number("n") + 3)
+                     .restrict_quantum_number_l(ket->get_quantum_number("l") - 1,
+                                                ket->get_quantum_number("l") + 1)
                      .create(database);
     SystemAtom<double> system(basis);
 

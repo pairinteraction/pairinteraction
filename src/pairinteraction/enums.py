@@ -68,3 +68,13 @@ def get_python_parity(parity: _backend.Parity) -> Parity:
     if parity not in _ParityDict.values():
         raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityDict.values())}")
     return next(k for k, v in _ParityDict.items() if v == parity)
+
+
+_ParityIntDict: dict[int, Parity] = {1: "even", -1: "odd", 2: "unknown"}
+
+
+def get_python_parity_from_int(parity: int) -> Parity:
+    """Convert an integer parity (+1, -1, or 2) to a python Parity string."""
+    if parity not in _ParityIntDict:
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityIntDict.keys())}")
+    return _ParityIntDict[parity]

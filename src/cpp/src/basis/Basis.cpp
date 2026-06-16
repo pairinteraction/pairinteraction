@@ -72,14 +72,17 @@ Basis<Derived>::Basis(ketvec_t &&kets)
     size_t index = 0;
     for (const auto &ket : this->kets) {
         real_t f = std::numeric_limits<real_t>::max();
-        if constexpr (requires { ket->get_quantum_number_f(); }) {
-            f = ket->get_quantum_number_f();
-        }
+        real_t m = std::numeric_limits<real_t>::max();
         Parity p = Parity::UNKNOWN;
-        if constexpr (requires { ket->get_parity(); }) {
-            p = ket->get_parity();
+        // TODO: this is a workaround, and should be fixed, once we restructure the quantum number
+        // handling of the Basis class
+        if constexpr (requires { ket->get_quantum_number(std::string{}); }) {
+            f = ket->get_quantum_number("f");
+            m = ket->get_quantum_number("m");
+            p = static_cast<Parity>(static_cast<int>(ket->get_quantum_number("parity")));
+        } else {
+            m = ket->get_quantum_number_m();
         }
-        real_t m = ket->get_quantum_number_m();
         state_index_to_quantum_number_f.push_back(f);
         state_index_to_quantum_number_m.push_back(m);
         state_index_to_parity.push_back(p);
@@ -359,10 +362,15 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     set_task_status("Constructing basis rotation...");
     for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
         real_t f = std::numeric_limits<real_t>::max();
-        if constexpr (requires { kets[idx_initial]->get_quantum_number_f(); }) {
-            f = kets[idx_initial]->get_quantum_number_f();
+        real_t m_initial = std::numeric_limits<real_t>::max();
+        // TODO: this is a workaround, and should be fixed, once we restructure the quantum number
+        // handling of the Basis class
+        if constexpr (requires { kets[idx_initial]->get_quantum_number(std::string{}); }) {
+            f = kets[idx_initial]->get_quantum_number("f");
+            m_initial = kets[idx_initial]->get_quantum_number("m");
+        } else {
+            m_initial = kets[idx_initial]->get_quantum_number_m();
         }
-        real_t m_initial = kets[idx_initial]->get_quantum_number_m();
 
         assert(2 * f == std::floor(2 * f) && f >= 0);
         assert(2 * m_initial == std::floor(2 * m_initial) && m_initial >= -f && m_initial <= f);
@@ -577,14 +585,17 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
 
     for (size_t i = 0; i < n; ++i) {
         real_t f = std::numeric_limits<real_t>::max();
-        if constexpr (requires { kets[i]->get_quantum_number_f(); }) {
-            f = kets[i]->get_quantum_number_f();
-        }
+        real_t m = std::numeric_limits<real_t>::max();
         Parity p = Parity::UNKNOWN;
-        if constexpr (requires { kets[i]->get_parity(); }) {
-            p = kets[i]->get_parity();
+        // TODO: this is a workaround, and should be fixed, once we restructure the quantum number
+        // handling of the Basis class
+        if constexpr (requires { kets[i]->get_quantum_number(std::string{}); }) {
+            f = kets[i]->get_quantum_number("f");
+            m = kets[i]->get_quantum_number("m");
+            p = static_cast<Parity>(static_cast<int>(kets[i]->get_quantum_number("parity")));
+        } else {
+            m = kets[i]->get_quantum_number_m();
         }
-        real_t m = kets[i]->get_quantum_number_m();
         result->state_index_to_quantum_number_f[i] = f;
         result->state_index_to_quantum_number_m[i] = m;
         result->state_index_to_parity[i] = p;
