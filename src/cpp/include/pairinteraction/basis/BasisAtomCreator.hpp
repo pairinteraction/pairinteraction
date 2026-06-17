@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
@@ -39,8 +38,8 @@ public:
     BasisAtomCreator() = default;
     BasisAtomCreator<Scalar> &set_species(const std::string &value);
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_parity(Parity value);
     // Set the quantum number range with the given logical name (e.g. "f", "m", "n", "l", ...).
+    // The parity is restricted via the name "parity" with a value of +1 (even) or -1 (odd).
     BasisAtomCreator<Scalar> &restrict_quantum_number(const std::string &name, real_t min,
                                                       real_t max);
     BasisAtomCreator<Scalar> &set_quantum_number_standard_deviation_factor(real_t value);
@@ -49,7 +48,6 @@ public:
 
 private:
     std::optional<std::string> species;
-    Parity parity{Parity::UNKNOWN};
     Range<real_t> range_energy;
     std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;
     real_t quantum_number_standard_deviation_factor{2};

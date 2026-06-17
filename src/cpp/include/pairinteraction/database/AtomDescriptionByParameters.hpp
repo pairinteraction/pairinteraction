@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <optional>
@@ -13,9 +12,8 @@
 
 namespace pairinteraction {
 struct AtomDescriptionByParameters {
-    Parity parity{Parity::UNKNOWN};
     std::optional<double> energy;
-    // Quantum numbers keyed by their logical name (e.g. "f", "m", "n", "nu", "l", ...).
+    // Quantum numbers keyed by their logical name (e.g. "f", "m", "n", "nu", "l", ..., "parity").
     std::unordered_map<std::string, double> quantum_numbers;
 };
 } // namespace pairinteraction

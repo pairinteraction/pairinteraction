@@ -5,7 +5,6 @@
 
 #include "pairinteraction/database/AtomDescriptionByRanges.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
 namespace pairinteraction {
@@ -22,18 +21,15 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, 
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_parity(Parity value) {
-    parity = value;
-    return *this;
-}
-
-template <typename Scalar>
 BasisAtomCreator<Scalar> &
 BasisAtomCreator<Scalar>::restrict_quantum_number(const std::string &name, real_t min, real_t max) {
     if ((name == "f" || name == "m") &&
         (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max))) {
         throw std::invalid_argument("Quantum number " + name +
                                     " must be an integer or half-integer.");
+    }
+    if (name == "parity" && ((min != 1 && min != -1) || (max != 1 && max != -1))) {
+        throw std::invalid_argument("The parity must be +1 or -1.");
     }
     quantum_number_ranges[name] = {min, max};
     return *this;
@@ -80,7 +76,7 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    AtomDescriptionByRanges description{parity, range_energy, quantum_number_ranges,
+    AtomDescriptionByRanges description{range_energy, quantum_number_ranges,
                                         quantum_number_standard_deviation_factor};
 
     return database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);

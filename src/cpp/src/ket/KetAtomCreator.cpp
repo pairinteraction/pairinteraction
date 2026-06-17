@@ -5,7 +5,6 @@
 
 #include "pairinteraction/database/AtomDescriptionByParameters.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 
 #include <cmath>
 
@@ -30,15 +29,13 @@ KetAtomCreator &KetAtomCreator::set_energy(double value) {
     return *this;
 }
 
-KetAtomCreator &KetAtomCreator::set_parity(Parity value) {
-    parity = value;
-    return *this;
-}
-
 KetAtomCreator &KetAtomCreator::set_quantum_number(const std::string &name, double value) {
     if ((name == "f" || name == "m") && 2 * value != std::rint(2 * value)) {
         throw std::invalid_argument("Quantum number " + name +
                                     " must be an integer or half-integer.");
+    }
+    if (name == "parity" && value != 1 && value != -1) {
+        throw std::invalid_argument("The parity must be +1 or -1.");
     }
     quantum_numbers[name] = value;
     return *this;
@@ -50,7 +47,7 @@ std::shared_ptr<const KetAtom> KetAtomCreator::create(Database &database) const 
         throw std::runtime_error("Species not set.");
     }
 
-    AtomDescriptionByParameters description{parity, energy, quantum_numbers};
+    AtomDescriptionByParameters description{energy, quantum_numbers};
 
     return database.get_ket(species.value(), description);
 }

@@ -91,7 +91,6 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
     pyclass.def(nb::init<>())
         .def("set_species", &BasisAtomCreator<T>::set_species)
         .def("restrict_energy", &BasisAtomCreator<T>::restrict_energy)
-        .def("restrict_parity", &BasisAtomCreator<T>::restrict_parity)
         .def("restrict_quantum_number", &BasisAtomCreator<T>::restrict_quantum_number)
         .def("set_quantum_number_standard_deviation_factor",
              &BasisAtomCreator<T>::set_quantum_number_standard_deviation_factor)

@@ -10,7 +10,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import OperatorType, Parity, get_cpp_parity, get_python_parity_from_int
+from pairinteraction.enums import OperatorType, Parity, get_cpp_parity_int, get_python_parity_from_int
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -111,8 +111,6 @@ class KetAtom(KetBase):
         if energy is not None:
             energy_au = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
             creator.set_energy(energy_au)
-        if parity is not None:
-            creator.set_parity(get_cpp_parity(parity))
         if n is not None and not (isinstance(n, int) or n.is_integer()):
             raise ValueError("Quantum number n must be an integer.")
         quantum_numbers = {
@@ -126,6 +124,7 @@ class KetAtom(KetBase):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
+            "parity": get_cpp_parity_int(parity) if parity is not None and parity != "unknown" else None,
         }
         for name, value in quantum_numbers.items():
             if value is not None:

@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "pairinteraction/enums/Parity.hpp"
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -27,14 +25,13 @@ public:
     KetAtomCreator(std::string species, int n, double l, double j, double m);
     KetAtomCreator &set_species(const std::string &value);
     KetAtomCreator &set_energy(double value);
-    KetAtomCreator &set_parity(Parity value);
     // Set the quantum number with the given logical name (e.g. "f", "m", "n", "nu", "l", ...).
+    // The parity is set via the name "parity" with a value of +1 (even) or -1 (odd).
     KetAtomCreator &set_quantum_number(const std::string &name, double value);
     std::shared_ptr<const KetAtom> create(Database &database) const;
 
 private:
     std::optional<std::string> species;
-    Parity parity{Parity::UNKNOWN};
     std::optional<double> energy;
     std::unordered_map<std::string, double> quantum_numbers;
 };

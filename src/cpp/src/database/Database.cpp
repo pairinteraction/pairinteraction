@@ -9,7 +9,6 @@
 #include "pairinteraction/database/GitHubDownloader.hpp"
 #include "pairinteraction/database/ParquetManager.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/hash.hpp"
@@ -270,10 +269,6 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         orderby += orderby_separator + fmt::format("(SQRT(-1/(2*energy)) - {})^2", n_from_energy);
         orderby_separator = " + ";
     }
-    if (description.parity != Parity::UNKNOWN) {
-        where += where_separator + fmt::format("parity = {}", fmt::streamed(description.parity));
-        where_separator = " AND ";
-    }
     for (const auto &[name, value] : description.quantum_numbers) {
         if (name == "m") {
             continue; // m is encoded into the id, not stored as a queryable column
@@ -371,10 +366,6 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
     std::string separator;
-    if (description.parity != Parity::UNKNOWN) {
-        where += separator + fmt::format("parity = {}", fmt::streamed(description.parity));
-        separator = " AND ";
-    }
     if (description.range_energy.is_finite()) {
         where += separator +
             fmt::format("energy BETWEEN {} AND {}", description.range_energy.min(),
@@ -488,8 +479,9 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             }
             std::string column =
                 expectation_value_quantum_numbers.count(name) != 0 ? "exp_" + name : name;
-            // f, m and n are exact quantum numbers; the others are only matched within +-1.
-            double tolerance = (name == "f" || name == "m" || name == "n") ? 0.0 : 1.0;
+            // f, m, n and parity are exact quantum numbers; the others are only matched within +-1.
+            double tolerance =
+                (name == "f" || name == "m" || name == "n" || name == "parity") ? 0.0 : 1.0;
             checks.push_back({name, column, tolerance, range});
         }
 

@@ -78,3 +78,11 @@ def get_python_parity_from_int(parity: int) -> Parity:
     if parity not in _ParityIntDict:
         raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityIntDict.keys())}")
     return _ParityIntDict[parity]
+
+
+def get_cpp_parity_int(parity: Parity) -> int:
+    """Convert a python Parity string to its integer value (+1 for even, -1 for odd)."""
+    int_to_parity = {v: k for k, v in _ParityIntDict.items()}
+    if parity not in int_to_parity:
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(int_to_parity.keys())}")
+    return int_to_parity[parity]

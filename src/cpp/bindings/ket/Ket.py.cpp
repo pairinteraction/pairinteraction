@@ -52,7 +52,6 @@ static void declare_ket_atom_creator(nb::module_ &m) {
         .def(nb::init<std::string, int, double, double, double>())
         .def("set_species", &KetAtomCreator::set_species)
         .def("set_energy", &KetAtomCreator::set_energy)
-        .def("set_parity", &KetAtomCreator::set_parity)
         .def("set_quantum_number", &KetAtomCreator::set_quantum_number)
         .def("create", &KetAtomCreator::create);
 }
