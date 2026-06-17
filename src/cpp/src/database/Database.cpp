@@ -35,10 +35,14 @@
 namespace pairinteraction {
 
 namespace {
-// Logical names of the quantum numbers whose values are stored in "exp_<name>"/"std_<name>"
-// columns (expectation value and standard deviation), as opposed to a plain "<name>" column.
-const std::unordered_set<std::string> expectation_value_quantum_numbers = {"nui", "l",     "s",
-                                                                           "j",   "l_ryd", "j_ryd"};
+std::unordered_set<std::string> query_column_names(duckdb::Connection &con,
+                                                   const std::string &table_path) {
+    auto result = con.Query(fmt::format(R"(SELECT * FROM '{}' LIMIT 0)", table_path));
+    if (result->HasError()) {
+        throw cpptrace::runtime_error("Error querying the database columns: " + result->GetError());
+    }
+    return {result->names.begin(), result->names.end()};
+}
 
 std::string format_expectation_value_range(const std::string &value_column,
                                            const std::string &std_column,
@@ -90,11 +94,7 @@ make_quantum_numbers(duckdb::DataChunk &chunk, const std::vector<duckdb::Logical
 }
 } // namespace
 
-void ensure_consistent_quantum_numbers(bool is_j_total_momentum, double quantum_number_f,
-                                       double quantum_number_m, double quantum_number_j_exp) {
-    if (is_j_total_momentum && quantum_number_f != quantum_number_j_exp) {
-        throw std::runtime_error("If j is the total momentum, f must be equal to j.");
-    }
+void ensure_consistent_quantum_numbers(double quantum_number_f, double quantum_number_m) {
     if (2 * quantum_number_m != std::rint(2 * quantum_number_m)) {
         throw std::runtime_error("The quantum number m must be an integer or half-integer.");
     }
@@ -242,14 +242,16 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         throw std::invalid_argument("The quantum number m must be specified.");
     }
     for (const auto &[name, value] : description.quantum_numbers) {
-        if ((name == "f" || name == "j" || name == "m") && 2 * value != std::rint(2 * value)) {
+        if ((name == "f" || name == "m") && 2 * value != std::rint(2 * value)) {
             throw std::invalid_argument("The quantum number " + name +
                                         " must be an integer or half-integer.");
         }
-        if ((name == "f" || name == "j") && value < 0) {
+        if (name == "f" && value < 0) {
             throw std::invalid_argument("The quantum number " + name + " must be positive.");
         }
     }
+
+    auto columns = query_column_names(*con, manager->get_path(species, "states"));
 
     // Describe the state. Every quantum number is matched with a fuzzy +-0.5 band and the result is
     // ordered by the distance to the requested values, so the nearest state is returned.
@@ -273,8 +275,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         if (name == "m") {
             continue; // m is encoded into the id, not stored as a queryable column
         }
-        std::string column =
-            expectation_value_quantum_numbers.count(name) != 0 ? "exp_" + name : name;
+        std::string column = columns.count("exp_" + name) != 0 ? "exp_" + name : name;
         where +=
             where_separator + fmt::format("{} BETWEEN {} AND {}", column, value - 0.5, value + 0.5);
         where_separator = " AND ";
@@ -291,9 +292,8 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     // Ask the database for the described state
     set_task_status("Loading atomic ket from database...");
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
-        exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
-        orderby, manager->get_path(species, "states"), where));
+        R"(SELECT *, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)", orderby,
+        manager->get_path(species, "states"), where));
 
     if (result->HasError()) {
         throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
@@ -346,9 +346,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     auto ket = make_ket(0);
 
     // Check database consistency
-    ensure_consistent_quantum_numbers(ket.get_quantum_number("is_j_total_momentum") != 0,
-                                      ket.get_quantum_number("f"), quantum_number_m,
-                                      ket.get_quantum_number("j"));
+    ensure_consistent_quantum_numbers(ket.get_quantum_number("f"), quantum_number_m);
 
     return std::make_shared<const KetAtom>(std::move(ket));
 }
@@ -363,6 +361,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         return it != description.quantum_number_ranges.end() ? it->second : Range<double>{};
     }();
 
+    auto columns = query_column_names(*con, manager->get_path(species, "states"));
+
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
     std::string separator;
@@ -376,10 +376,12 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         if (name == "m" || !range.is_finite()) {
             continue;
         }
-        if (expectation_value_quantum_numbers.count(name) != 0) {
+        std::string exp_column = "exp_" + name;
+        std::string std_column = "std_" + name;
+        if (columns.count(exp_column) != 0 && columns.count(std_column) != 0) {
             where += separator +
                 format_expectation_value_range(
-                         "exp_" + name, "std_" + name, range,
+                         exp_column, std_column, range,
                          description.quantum_number_standard_deviation_factor);
         } else {
             where +=
@@ -477,11 +479,11 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             if (!range.is_finite()) {
                 continue;
             }
-            std::string column =
-                expectation_value_quantum_numbers.count(name) != 0 ? "exp_" + name : name;
-            // f, m, n and parity are exact quantum numbers; the others are only matched within +-1.
-            double tolerance =
-                (name == "f" || name == "m" || name == "n" || name == "parity") ? 0.0 : 1.0;
+            bool is_expectation_value =
+                columns.count("exp_" + name) != 0 && columns.count("std_" + name) != 0;
+            std::string column = is_expectation_value ? "exp_" + name : name;
+            // Expectation values are matched within a +-1 band; exact quantum numbers within 0.
+            double tolerance = is_expectation_value ? 1.0 : 0.0;
             checks.push_back({name, column, tolerance, range});
         }
 
@@ -554,10 +556,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
     // Ask the table for the described states
     set_task_status("Loading atomic basis states...");
-    auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, m, parity, ketid, n, nu, exp_nui, std_nui, exp_l, std_l,
-        exp_s, std_s, exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, underspecified_channel_contribution FROM '{}' ORDER BY ketid ASC)",
-        canonical_basis_id));
+    auto result =
+        con->Query(fmt::format(R"(SELECT * FROM '{}' ORDER BY ketid ASC)", canonical_basis_id));
 
     if (result->HasError()) {
         throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
@@ -567,17 +567,18 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         throw std::invalid_argument("No state found.");
     }
 
-    // Construct the states. Every column except energy and ketid is treated as a quantum number.
+    // Construct the states. Every column except energy and the raw/encoded id is treated as a
+    // quantum number ("id" is the raw states-table id, "ketid" the m-encoded id of the basis
+    // state).
     const auto &types = result->types;
     const auto &names = result->names;
-    const std::unordered_set<std::string> excluded_columns = {"energy", "ketid"};
+    const std::unordered_set<std::string> excluded_columns = {"energy", "id", "ketid"};
     size_t energy_column = get_column_index(names, "energy");
     size_t ketid_column = get_column_index(names, "ketid");
 
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
-    bool is_calculated_with_mqdt = false;
     double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
@@ -591,16 +592,15 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 duckdb::FlatVector::GetData<int64_t>(chunk->data[ketid_column])[i]);
 
             // Check database consistency
-            ensure_consistent_quantum_numbers(quantum_numbers.at("is_j_total_momentum") != 0,
-                                              quantum_numbers.at("f"), quantum_numbers.at("m"),
-                                              quantum_numbers.at("exp_j"));
+            ensure_consistent_quantum_numbers(quantum_numbers.at("f"), quantum_numbers.at("m"));
             if (energy < last_energy) {
                 throw std::runtime_error("The states are not sorted by energy.");
             }
             last_energy = energy;
 
-            is_calculated_with_mqdt |= quantum_numbers.at("is_calculated_with_mqdt") != 0;
-            min_quantum_number_nu = std::min(min_quantum_number_nu, quantum_numbers.at("nu"));
+            if (auto it = quantum_numbers.find("nu"); it != quantum_numbers.end()) {
+                min_quantum_number_nu = std::min(min_quantum_number_nu, it->second);
+            }
 
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom>(typename KetAtom::Private(), energy,
@@ -611,7 +611,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
     // Show a warning for low-lying states
     if (min_quantum_number_nu < 25) {
-        if (is_calculated_with_mqdt) {
+        if (species.ends_with("_mqdt")) {
             SPDLOG_WARN("The multi-channel quantum defect theory might produce inaccurate results "
                         "for effective principal quantum numbers < 25. The models get increasingly "
                         "unreliable for small principal quantum numbers, leading to inaccurate "
