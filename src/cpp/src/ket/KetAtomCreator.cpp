@@ -13,9 +13,7 @@ KetAtomCreator::KetAtomCreator(std::string species, int n, double l, double j, d
     : species(std::move(species)) {
     set_quantum_number("n", n);
     set_quantum_number("l", l);
-    set_quantum_number("s", 0.5);
     set_quantum_number("j", j);
-    set_quantum_number("f", j);
     set_quantum_number("m", m);
 }
 
