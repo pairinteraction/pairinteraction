@@ -276,6 +276,11 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
             continue; // m is encoded into the id, not stored as a queryable column
         }
         std::string column = columns.count("exp_" + name) != 0 ? "exp_" + name : name;
+        if (columns.count(column) == 0) {
+            throw std::invalid_argument("The quantum number '" + name +
+                                        "' is not stored in the database table for species '" +
+                                        species + "'.");
+        }
         where +=
             where_separator + fmt::format("{} BETWEEN {} AND {}", column, value - 0.5, value + 0.5);
         where_separator = " AND ";
@@ -383,9 +388,13 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 format_expectation_value_range(
                          exp_column, std_column, range,
                          description.quantum_number_standard_deviation_factor);
-        } else {
+        } else if (columns.count(name) != 0) {
             where +=
                 separator + fmt::format("{} BETWEEN {} AND {}", name, range.min(), range.max());
+        } else {
+            throw std::invalid_argument("The quantum number '" + name +
+                                        "' is not stored in the database table for species '" +
+                                        species + "'.");
         }
         separator = " AND ";
     }
