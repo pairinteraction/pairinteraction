@@ -34,9 +34,9 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     // Construct and diagonalize the constituent systems
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 61)
-                     .restrict_quantum_number_l(0, 1)
-                     .restrict_quantum_number_m(-0.5, 0.5)
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
+                     .restrict_quantum_number("m", -0.5, 0.5)
                      .create(database);
 
     SystemAtom<double> system1(basis);
@@ -64,9 +64,9 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 61)
-                     .restrict_quantum_number_l(0, 1)
-                     .restrict_quantum_number_m(-0.5, 0.5)
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
+                     .restrict_quantum_number("m", -0.5, 0.5)
                      .create(database);
 
     auto diagonalizer = DiagonalizerEigen<double>();
@@ -113,19 +113,19 @@ DOCTEST_TEST_CASE("diagonalize with lapacke_evr") {
     // Construct the state of interest
     auto ket = KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_j(0.5)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
 
     // Construct and diagonalize the constituent systems
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(ket->get_quantum_number("n") - 3,
-                                                ket->get_quantum_number("n") + 3)
-                     .restrict_quantum_number_l(ket->get_quantum_number("l") - 1,
-                                                ket->get_quantum_number("l") + 1)
+                     .restrict_quantum_number("n", ket->get_quantum_number("n") - 3,
+                                              ket->get_quantum_number("n") + 3)
+                     .restrict_quantum_number("l", ket->get_quantum_number("l") - 1,
+                                              ket->get_quantum_number("l") + 1)
                      .create(database);
     SystemAtom<double> system(basis);
 

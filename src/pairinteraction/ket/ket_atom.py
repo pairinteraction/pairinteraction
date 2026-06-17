@@ -67,7 +67,7 @@ class KetAtom(KetBase):
 
     _cpp: _backend.KetAtom
 
-    def __init__(  # noqa: C901, PLR0912
+    def __init__(
         self,
         species: str,
         n: int | None = None,
@@ -111,30 +111,25 @@ class KetAtom(KetBase):
         if energy is not None:
             energy_au = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
             creator.set_energy(energy_au)
-        if f is not None:
-            creator.set_quantum_number_f(f)
-        if m is not None:
-            creator.set_quantum_number_m(m)
         if parity is not None:
             creator.set_parity(get_cpp_parity(parity))
-        if n is not None:
-            if not (isinstance(n, int) or n.is_integer()):
-                raise ValueError("Quantum number n must be an integer.")
-            creator.set_quantum_number_n(int(n))
-        if nu is not None:
-            creator.set_quantum_number_nu(nu)
-        if nui is not None:
-            creator.set_quantum_number_nui(nui)
-        if l is not None:
-            creator.set_quantum_number_l(l)
-        if s is not None:
-            creator.set_quantum_number_s(s)
-        if j is not None:
-            creator.set_quantum_number_j(j)
-        if l_ryd is not None:
-            creator.set_quantum_number_l_ryd(l_ryd)
-        if j_ryd is not None:
-            creator.set_quantum_number_j_ryd(j_ryd)
+        if n is not None and not (isinstance(n, int) or n.is_integer()):
+            raise ValueError("Quantum number n must be an integer.")
+        quantum_numbers = {
+            "f": f,
+            "m": m,
+            "n": n,
+            "nu": nu,
+            "nui": nui,
+            "l": l,
+            "s": s,
+            "j": j,
+            "l_ryd": l_ryd,
+            "j_ryd": j_ryd,
+        }
+        for name, value in quantum_numbers.items():
+            if value is not None:
+                creator.set_quantum_number(name, value)
         if database is None:
             if Database.get_global_database() is None:
                 Database.initialize_global_database()

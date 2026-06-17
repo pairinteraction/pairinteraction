@@ -134,8 +134,8 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 2)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 2)
                      .create(database);
     SystemAtom<double> system(basis);
     system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
@@ -146,9 +146,9 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     // Get energy window for a two-atom basis
     auto ket = KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
     double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
@@ -212,8 +212,8 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 2)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 2)
                      .create(database);
     SystemAtom<double> system(basis);
     system.set_electric_field({0, 0, 10 * VOLT_PER_CM_IN_ATOMIC_UNITS});
@@ -222,9 +222,9 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     // Get energy window for a two-atom basis
     auto ket = KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
     double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
@@ -323,16 +323,16 @@ DOCTEST_TEST_CASE("get amplitudes (via matrix elements) between different pair b
     Database &database = Database::get_global_instance();
     auto atomic_basis = BasisAtomCreator<double>()
                             .set_species("Rb")
-                            .restrict_quantum_number_n(58, 62)
-                            .restrict_quantum_number_l(0, 2)
-                            .restrict_quantum_number_m(0.5, 0.5)
+                            .restrict_quantum_number("n", 58, 62)
+                            .restrict_quantum_number("l", 0, 2)
+                            .restrict_quantum_number("m", 0.5, 0.5)
                             .create(database);
 
     auto ket = KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
 
     auto perturbed_system1 = SystemAtom<double>(atomic_basis);
@@ -376,9 +376,9 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 61)
-                     .restrict_quantum_number_l(0, 1)
-                     .restrict_quantum_number_m(-0.5, 0.5)
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
+                     .restrict_quantum_number("m", -0.5, 0.5)
                      .create(database);
 
     SystemAtom<double> system(basis);

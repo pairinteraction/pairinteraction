@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
@@ -38,17 +39,10 @@ public:
     BasisAtomCreator() = default;
     BasisAtomCreator<Scalar> &set_species(const std::string &value);
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_f(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_parity(Parity value);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_n(int min, int max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_nu(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_nui(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_s(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_l_ryd(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_j_ryd(real_t min, real_t max);
+    // Set the quantum number range with the given logical name (e.g. "f", "m", "n", "l", ...).
+    BasisAtomCreator<Scalar> &restrict_quantum_number(const std::string &name, real_t min,
+                                                      real_t max);
     BasisAtomCreator<Scalar> &set_quantum_number_standard_deviation_factor(real_t value);
     BasisAtomCreator<Scalar> &add_ket(const std::shared_ptr<const ket_t> &ket);
     std::shared_ptr<const BasisAtom<Scalar>> create(Database &database) const;
@@ -57,16 +51,7 @@ private:
     std::optional<std::string> species;
     Parity parity{Parity::UNKNOWN};
     Range<real_t> range_energy;
-    Range<real_t> range_quantum_number_f;
-    Range<real_t> range_quantum_number_m;
-    Range<int> range_quantum_number_n;
-    Range<real_t> range_quantum_number_nu;
-    Range<real_t> range_quantum_number_nui;
-    Range<real_t> range_quantum_number_l;
-    Range<real_t> range_quantum_number_s;
-    Range<real_t> range_quantum_number_j;
-    Range<real_t> range_quantum_number_l_ryd;
-    Range<real_t> range_quantum_number_j_ryd;
+    std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;
     real_t quantum_number_standard_deviation_factor{2};
     std::vector<size_t> additional_ket_ids;
     std::optional<std::string> additional_ket_species;

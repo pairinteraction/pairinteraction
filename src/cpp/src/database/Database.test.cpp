@@ -16,9 +16,7 @@ DOCTEST_TEST_CASE("get a KetAtom") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByParameters description;
-    description.quantum_number_n = 60;
-    description.quantum_number_l = 0;
-    description.quantum_number_m = 0.5;
+    description.quantum_numbers = {{"n", 60}, {"l", 0}, {"m", 0.5}};
 
     auto ket = database.get_ket("Rb", description);
 
@@ -29,9 +27,7 @@ DOCTEST_TEST_CASE("too large quantum number m") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByParameters description;
-    description.quantum_number_n = 60;
-    description.quantum_number_l = 0;
-    description.quantum_number_m = 1.5;
+    description.quantum_numbers = {{"n", 60}, {"l", 0}, {"m", 1.5}};
 
     DOCTEST_CHECK_THROWS(database.get_ket("Rb", description));
 }
@@ -40,9 +36,7 @@ DOCTEST_TEST_CASE("not uniquely specified ket") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByParameters description;
-    description.quantum_number_n = 60;
-    description.quantum_number_l = 0.9;
-    description.quantum_number_m = 0.5;
+    description.quantum_numbers = {{"n", 60}, {"l", 0.9}, {"m", 0.5}};
 
     DOCTEST_CHECK_THROWS(database.get_ket("Rb", description));
 }
@@ -51,10 +45,7 @@ DOCTEST_TEST_CASE("uniquely specified ket") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByParameters description;
-    description.quantum_number_n = 60;
-    description.quantum_number_l = 0.9;
-    description.quantum_number_j = 0.5;
-    description.quantum_number_m = 0.5;
+    description.quantum_numbers = {{"n", 60}, {"l", 0.9}, {"j", 0.5}, {"m", 0.5}};
 
     DOCTEST_CHECK_NOTHROW(database.get_ket("Rb", description));
 }
@@ -63,8 +54,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges description;
-    description.range_quantum_number_n = {60, 60};
-    description.range_quantum_number_l = {0, 1};
+    description.quantum_number_ranges = {{"n", {60, 60}}, {"l", {0, 1}}};
 
     auto basis = database.get_basis<double>("Rb", description, {});
 
@@ -77,8 +67,7 @@ DOCTEST_TEST_CASE("get atomic matrix elements") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges description;
-    description.range_quantum_number_n = {60, 60};
-    description.range_quantum_number_l = {0, 1};
+    description.quantum_number_ranges = {{"n", {60, 60}}, {"l", {0, 1}}};
 
     auto basis = database.get_basis<double>("Rb", description, {});
 
@@ -93,8 +82,7 @@ DOCTEST_TEST_CASE("atomic matrix elements reject bases from a different database
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges description;
-    description.range_quantum_number_n = {60, 60};
-    description.range_quantum_number_l = {0, 1};
+    description.quantum_number_ranges = {{"n", {60, 60}}, {"l", {0, 1}}};
 
     auto basis = database.get_basis<double>("Rb", description, {});
 

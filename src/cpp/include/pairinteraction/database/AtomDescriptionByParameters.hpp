@@ -7,21 +7,15 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <optional>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
 
 namespace pairinteraction {
 struct AtomDescriptionByParameters {
     Parity parity{Parity::UNKNOWN};
     std::optional<double> energy;
-    std::optional<double> quantum_number_f;
-    std::optional<double> quantum_number_m;
-    std::optional<int> quantum_number_n;
-    std::optional<double> quantum_number_nu;
-    std::optional<double> quantum_number_nui;
-    std::optional<double> quantum_number_l;
-    std::optional<double> quantum_number_s;
-    std::optional<double> quantum_number_j;
-    std::optional<double> quantum_number_l_ryd;
-    std::optional<double> quantum_number_j_ryd;
+    // Quantum numbers keyed by their logical name (e.g. "f", "m", "n", "nu", "l", ...).
+    std::unordered_map<std::string, double> quantum_numbers;
 };
 } // namespace pairinteraction

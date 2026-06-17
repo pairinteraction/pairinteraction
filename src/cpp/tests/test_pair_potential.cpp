@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
     // Create and diagonalize systems for two atoms
     auto basis = pairinteraction::BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 2)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 2)
                      .create(database);
     SPDLOG_INFO("Number of single-atom basis states: {}", basis->get_number_of_states());
 
@@ -47,9 +47,9 @@ int main(int argc, char **argv) {
     // Create two-atom systems for different interatomic distances
     auto ket = pairinteraction::KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
     double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;

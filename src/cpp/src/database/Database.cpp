@@ -17,22 +17,30 @@
 #include "pairinteraction/utils/paths.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 
+#include <algorithm>
 #include <cpptrace/cpptrace.hpp>
 #include <duckdb.hpp>
 #include <fmt/core.h>
 #include <fmt/format.h>
 #include <fmt/ranges.h>
 #include <fstream>
+#include <iterator>
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <system_error>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace pairinteraction {
 
 namespace {
+// Logical names of the quantum numbers whose values are stored in "exp_<name>"/"std_<name>"
+// columns (expectation value and standard deviation), as opposed to a plain "<name>" column.
+const std::unordered_set<std::string> expectation_value_quantum_numbers = {"nui", "l",     "s",
+                                                                           "j",   "l_ryd", "j_ryd"};
+
 std::string format_expectation_value_range(const std::string &value_column,
                                            const std::string &std_column,
                                            const Range<double> &range,
@@ -42,36 +50,44 @@ std::string format_expectation_value_range(const std::string &value_column,
                        standard_deviation_factor, std_column);
 }
 
-// Collect the quantum numbers and additional meta information of an atomic ket into a single
-// dictionary whose keys match the column names of the database.
+// Find the index of the result column with the given name.
+size_t get_column_index(const std::vector<std::string> &names, const std::string &name) {
+    auto it = std::find(names.begin(), names.end(), name);
+    if (it == names.end()) {
+        throw std::runtime_error("Missing database column '" + name + "'.");
+    }
+    return static_cast<size_t>(std::distance(names.begin(), it));
+}
+
+// Read a single value of a duckdb result column as a double, regardless of its logical type.
+double get_entry_as_double(duckdb::Vector &vector, const duckdb::LogicalType &type, size_t row) {
+    switch (type.id()) {
+    case duckdb::LogicalTypeId::DOUBLE:
+        return duckdb::FlatVector::GetData<double>(vector)[row];
+    case duckdb::LogicalTypeId::BIGINT:
+        return static_cast<double>(duckdb::FlatVector::GetData<int64_t>(vector)[row]);
+    case duckdb::LogicalTypeId::BOOLEAN:
+        return duckdb::FlatVector::GetData<bool>(vector)[row] ? 1.0 : 0.0;
+    default:
+        throw std::runtime_error("Cannot read database column of type " + type.ToString() +
+                                 " as a quantum number.");
+    }
+}
+
+// Build the quantum-number map of a KetAtom from a query result row, treating every column except
+// the given ones as a quantum number keyed by its database column name.
 std::unordered_map<std::string, double>
-make_quantum_numbers(double f, double m, double parity, double n, double nu, double exp_nui,
-                     double std_nui, double exp_l, double std_l, double exp_s, double std_s,
-                     double exp_j, double std_j, double exp_l_ryd, double std_l_ryd,
-                     double exp_j_ryd, double std_j_ryd, bool is_j_total_momentum,
-                     bool is_calculated_with_mqdt, double underspecified_channel_contribution) {
-    return {
-        {"f", f},
-        {"m", m},
-        {"parity", parity},
-        {"n", n},
-        {"nu", nu},
-        {"exp_nui", exp_nui},
-        {"std_nui", std_nui},
-        {"exp_l", exp_l},
-        {"std_l", std_l},
-        {"exp_s", exp_s},
-        {"std_s", std_s},
-        {"exp_j", exp_j},
-        {"std_j", std_j},
-        {"exp_l_ryd", exp_l_ryd},
-        {"std_l_ryd", std_l_ryd},
-        {"exp_j_ryd", exp_j_ryd},
-        {"std_j_ryd", std_j_ryd},
-        {"is_j_total_momentum", is_j_total_momentum ? 1.0 : 0.0},
-        {"is_calculated_with_mqdt", is_calculated_with_mqdt ? 1.0 : 0.0},
-        {"underspecified_channel_contribution", underspecified_channel_contribution},
-    };
+make_quantum_numbers(duckdb::DataChunk &chunk, const std::vector<duckdb::LogicalType> &types,
+                     const std::vector<std::string> &names,
+                     const std::unordered_set<std::string> &excluded_columns, size_t row) {
+    std::unordered_map<std::string, double> quantum_numbers;
+    for (size_t col = 0; col < names.size(); ++col) {
+        if (excluded_columns.count(names[col]) != 0) {
+            continue;
+        }
+        quantum_numbers[names[col]] = get_entry_as_double(chunk.data[col], types[col], row);
+    }
+    return quantum_numbers;
 }
 } // namespace
 
@@ -223,144 +239,57 @@ Database::~Database() = default;
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
     // Check that the specifications are valid
-    if (!description.quantum_number_m.has_value()) {
+    if (description.quantum_numbers.count("m") == 0) {
         throw std::invalid_argument("The quantum number m must be specified.");
     }
-    if (description.quantum_number_f.has_value() &&
-        2 * description.quantum_number_f.value() !=
-            std::rint(2 * description.quantum_number_f.value())) {
-        throw std::invalid_argument("The quantum number f must be an integer or half-integer.");
-    }
-    if (description.quantum_number_f.has_value() && description.quantum_number_f.value() < 0) {
-        throw std::invalid_argument("The quantum number f must be positive.");
-    }
-    if (description.quantum_number_j.has_value() &&
-        2 * description.quantum_number_j.value() !=
-            std::rint(2 * description.quantum_number_j.value())) {
-        throw std::invalid_argument("The quantum number j must be an integer or half-integer.");
-    }
-    if (description.quantum_number_j.has_value() && description.quantum_number_j.value() < 0) {
-        throw std::invalid_argument("The quantum number j must be positive.");
-    }
-    if (description.quantum_number_m.has_value() &&
-        2 * description.quantum_number_m.value() !=
-            std::rint(2 * description.quantum_number_m.value())) {
-        throw std::invalid_argument("The quantum number m must be an integer or half-integer.");
+    for (const auto &[name, value] : description.quantum_numbers) {
+        if ((name == "f" || name == "j" || name == "m") && 2 * value != std::rint(2 * value)) {
+            throw std::invalid_argument("The quantum number " + name +
+                                        " must be an integer or half-integer.");
+        }
+        if ((name == "f" || name == "j") && value < 0) {
+            throw std::invalid_argument("The quantum number " + name + " must be positive.");
+        }
     }
 
-    // Describe the state
+    // Describe the state. Every quantum number is matched with a fuzzy +-0.5 band and the result is
+    // ordered by the distance to the requested values, so the nearest state is returned.
     std::string where;
-    std::string separator;
+    std::string where_separator;
+    std::string orderby;
+    std::string orderby_separator;
     if (description.energy.has_value()) {
         // The following condition derives from demanding that quantum number n that corresponds to
         // the energy "E_n = -1/(2*n^2)" is not off by more than 1 from the actual quantum number n,
         // i.e., "sqrt(-1/(2*E_n)) - sqrt(-1/(2*E_{n-1})) = 1"
-        where += separator +
-            fmt::format("SQRT(-1/(2*energy)) BETWEEN {} AND {}",
-                        std::sqrt(-1 / (2 * description.energy.value())) - 0.5,
-                        std::sqrt(-1 / (2 * description.energy.value())) + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_f.has_value()) {
-        where += separator + fmt::format("f = {}", description.quantum_number_f.value());
-        separator = " AND ";
+        double n_from_energy = std::sqrt(-1 / (2 * description.energy.value()));
+        where += where_separator +
+            fmt::format("SQRT(-1/(2*energy)) BETWEEN {} AND {}", n_from_energy - 0.5,
+                        n_from_energy + 0.5);
+        where_separator = " AND ";
+        orderby += orderby_separator + fmt::format("(SQRT(-1/(2*energy)) - {})^2", n_from_energy);
+        orderby_separator = " + ";
     }
     if (description.parity != Parity::UNKNOWN) {
-        where += separator + fmt::format("parity = {}", fmt::streamed(description.parity));
-        separator = " AND ";
+        where += where_separator + fmt::format("parity = {}", fmt::streamed(description.parity));
+        where_separator = " AND ";
     }
-    if (description.quantum_number_n.has_value()) {
-        where += separator + fmt::format("n = {}", description.quantum_number_n.value());
-        separator = " AND ";
+    for (const auto &[name, value] : description.quantum_numbers) {
+        if (name == "m") {
+            continue; // m is encoded into the id, not stored as a queryable column
+        }
+        std::string column =
+            expectation_value_quantum_numbers.count(name) != 0 ? "exp_" + name : name;
+        where +=
+            where_separator + fmt::format("{} BETWEEN {} AND {}", column, value - 0.5, value + 0.5);
+        where_separator = " AND ";
+        orderby += orderby_separator + fmt::format("({} - {})^2", column, value);
+        orderby_separator = " + ";
     }
-    if (description.quantum_number_nu.has_value()) {
-        where += separator +
-            fmt::format("nu BETWEEN {} AND {}", description.quantum_number_nu.value() - 0.5,
-                        description.quantum_number_nu.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_nui.has_value()) {
-        where += separator +
-            fmt::format("exp_nui BETWEEN {} AND {}", description.quantum_number_nui.value() - 0.5,
-                        description.quantum_number_nui.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_l.has_value()) {
-        where += separator +
-            fmt::format("exp_l BETWEEN {} AND {}", description.quantum_number_l.value() - 0.5,
-                        description.quantum_number_l.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_s.has_value()) {
-        where += separator +
-            fmt::format("exp_s BETWEEN {} AND {}", description.quantum_number_s.value() - 0.5,
-                        description.quantum_number_s.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_j.has_value()) {
-        where += separator +
-            fmt::format("exp_j BETWEEN {} AND {}", description.quantum_number_j.value() - 0.5,
-                        description.quantum_number_j.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_l_ryd.has_value()) {
-        where += separator +
-            fmt::format("exp_l_ryd BETWEEN {} AND {}",
-                        description.quantum_number_l_ryd.value() - 0.5,
-                        description.quantum_number_l_ryd.value() + 0.5);
-        separator = " AND ";
-    }
-    if (description.quantum_number_j_ryd.has_value()) {
-        where += separator +
-            fmt::format("exp_j_ryd BETWEEN {} AND {}",
-                        description.quantum_number_j_ryd.value() - 0.5,
-                        description.quantum_number_j_ryd.value() + 0.5);
-        separator = " AND ";
-    }
-    if (separator.empty()) {
+    if (where_separator.empty()) {
         where += "FALSE";
     }
-
-    std::string orderby;
-    separator = "";
-    if (description.energy.has_value()) {
-        orderby += separator +
-            fmt::format("(SQRT(-1/(2*energy)) - {})^2",
-                        std::sqrt(-1 / (2 * description.energy.value())));
-        separator = " + ";
-    }
-    if (description.quantum_number_nu.has_value()) {
-        orderby += separator + fmt::format("(nu - {})^2", description.quantum_number_nu.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_nui.has_value()) {
-        orderby +=
-            separator + fmt::format("(exp_nui - {})^2", description.quantum_number_nui.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_l.has_value()) {
-        orderby += separator + fmt::format("(exp_l - {})^2", description.quantum_number_l.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_s.has_value()) {
-        orderby += separator + fmt::format("(exp_s - {})^2", description.quantum_number_s.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_j.has_value()) {
-        orderby += separator + fmt::format("(exp_j - {})^2", description.quantum_number_j.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_l_ryd.has_value()) {
-        orderby +=
-            separator + fmt::format("(exp_l_ryd - {})^2", description.quantum_number_l_ryd.value());
-        separator = " + ";
-    }
-    if (description.quantum_number_j_ryd.has_value()) {
-        orderby +=
-            separator + fmt::format("(exp_j_ryd - {})^2", description.quantum_number_j_ryd.value());
-        separator = " + ";
-    }
-    if (separator.empty()) {
+    if (orderby_separator.empty()) {
         orderby += "id";
     }
 
@@ -379,157 +308,66 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         throw std::invalid_argument("No state found.");
     }
 
-    // Check the types of the columns
-    const auto &types = result->types;
-    const auto &labels = result->names;
-    const std::vector<duckdb::LogicalType> ref_types = {
-        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::BIGINT,
-        duckdb::LogicalType::BIGINT,  duckdb::LogicalType::BIGINT,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE};
-
-    for (size_t i = 0; i < types.size(); i++) {
-        if (types[i] != ref_types[i]) {
-            throw std::runtime_error("Wrong type for '" + labels[i] + "'. Got " +
-                                     types[i].ToString() + " but expected " +
-                                     ref_types[i].ToString());
-        }
-    }
-
     // Get the first chunk of the results (the first chunk is sufficient as we need two rows at
-    // most)
+    // most). Every column except energy, id and the synthetic order_val is treated as a quantum
+    // number; m is not a database column and is injected from the description.
+    const auto &types = result->types;
+    const auto &names = result->names;
+    const std::unordered_set<std::string> excluded_columns = {"energy", "id", "order_val"};
     auto chunk = result->Fetch();
+
+    size_t energy_column = get_column_index(names, "energy");
+    size_t id_column = get_column_index(names, "id");
+    double quantum_number_m = description.quantum_numbers.at("m");
+
+    auto make_ket = [&](size_t row) {
+        auto quantum_numbers = make_quantum_numbers(*chunk, types, names, excluded_columns, row);
+        quantum_numbers["m"] = quantum_number_m;
+        double energy = get_entry_as_double(chunk->data[energy_column], types[energy_column], row);
+        auto id =
+            utils::encode_as_ket_id({.id = static_cast<size_t>(duckdb::FlatVector::GetData<int64_t>(
+                                         chunk->data[id_column])[row]),
+                                     .m = quantum_number_m});
+        return KetAtom(typename KetAtom::Private(), energy, species, std::move(quantum_numbers),
+                       *this, id);
+    };
 
     // Check that the ket is uniquely specified
     if (chunk->size() > 1) {
-        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[21])[0];
-        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[21])[1];
+        size_t order_val_column = get_column_index(names, "order_val");
+        auto order_val_0 =
+            get_entry_as_double(chunk->data[order_val_column], types[order_val_column], 0);
+        auto order_val_1 =
+            get_entry_as_double(chunk->data[order_val_column], types[order_val_column], 1);
 
         if (order_val_1 - order_val_0 <= order_val_0) {
-            // Get a list of possible kets
-            std::vector<KetAtom> kets;
-            kets.reserve(2);
-            for (size_t i = 0; i < 2; ++i) {
-                auto result_quantum_number_m = description.quantum_number_m.value();
-                auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[i];
-                auto result_quantum_number_f =
-                    duckdb::FlatVector::GetData<double>(chunk->data[1])[i];
-                auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[i];
-                auto result_id = utils::encode_as_ket_id(
-                    {.id = static_cast<size_t>(
-                         duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[i]),
-                     .m = result_quantum_number_m});
-                auto result_quantum_number_n =
-                    duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[i];
-                auto result_quantum_number_nu =
-                    duckdb::FlatVector::GetData<double>(chunk->data[5])[i];
-                auto result_quantum_number_nui_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[6])[i];
-                auto result_quantum_number_nui_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[7])[i];
-                auto result_quantum_number_l_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[8])[i];
-                auto result_quantum_number_l_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[9])[i];
-                auto result_quantum_number_s_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[10])[i];
-                auto result_quantum_number_s_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[11])[i];
-                auto result_quantum_number_j_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[12])[i];
-                auto result_quantum_number_j_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[13])[i];
-                auto result_quantum_number_l_ryd_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[14])[i];
-                auto result_quantum_number_l_ryd_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[15])[i];
-                auto result_quantum_number_j_ryd_exp =
-                    duckdb::FlatVector::GetData<double>(chunk->data[16])[i];
-                auto result_quantum_number_j_ryd_std =
-                    duckdb::FlatVector::GetData<double>(chunk->data[17])[i];
-                auto result_is_j_total_momentum =
-                    duckdb::FlatVector::GetData<bool>(chunk->data[18])[i];
-                auto result_is_calculated_with_mqdt =
-                    duckdb::FlatVector::GetData<bool>(chunk->data[19])[i];
-                auto result_underspecified_channel_contribution =
-                    duckdb::FlatVector::GetData<double>(chunk->data[20])[i];
-                kets.emplace_back(
-                    typename KetAtom::Private(), result_energy, species,
-                    make_quantum_numbers(
-                        result_quantum_number_f, result_quantum_number_m,
-                        static_cast<double>(result_parity), result_quantum_number_n,
-                        result_quantum_number_nu, result_quantum_number_nui_exp,
-                        result_quantum_number_nui_std, result_quantum_number_l_exp,
-                        result_quantum_number_l_std, result_quantum_number_s_exp,
-                        result_quantum_number_s_std, result_quantum_number_j_exp,
-                        result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
-                        result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
-                        result_quantum_number_j_ryd_std, result_is_j_total_momentum,
-                        result_is_calculated_with_mqdt,
-                        result_underspecified_channel_contribution),
-                    *this, result_id);
-            }
-
-            // Throw an error with the possible kets
             throw std::invalid_argument(
                 fmt::format("The ket is not uniquely specified. Possible kets are:\n{}\n{}",
-                            fmt::streamed(kets[0]), fmt::streamed(kets[1])));
+                            fmt::streamed(make_ket(0)), fmt::streamed(make_ket(1))));
         }
     }
 
     // Construct the state
-    auto result_quantum_number_m = description.quantum_number_m.value();
-    auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[0];
-    auto result_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1])[0];
-    auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[0];
-    auto result_id = utils::encode_as_ket_id(
-        {.id = static_cast<size_t>(duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0]),
-         .m = result_quantum_number_m});
-    auto result_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[0];
-    auto result_quantum_number_nu = duckdb::FlatVector::GetData<double>(chunk->data[5])[0];
-    auto result_quantum_number_nui_exp = duckdb::FlatVector::GetData<double>(chunk->data[6])[0];
-    auto result_quantum_number_nui_std = duckdb::FlatVector::GetData<double>(chunk->data[7])[0];
-    auto result_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8])[0];
-    auto result_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9])[0];
-    auto result_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
-    auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
-    auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
-    auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13])[0];
-    auto result_quantum_number_l_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[14])[0];
-    auto result_quantum_number_l_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[15])[0];
-    auto result_quantum_number_j_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[16])[0];
-    auto result_quantum_number_j_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[17])[0];
-    auto result_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[18])[0];
-    auto result_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[19])[0];
-    auto result_underspecified_channel_contribution =
-        duckdb::FlatVector::GetData<double>(chunk->data[20])[0];
+    auto ket = make_ket(0);
 
     // Check database consistency
-    ensure_consistent_quantum_numbers(result_is_j_total_momentum, result_quantum_number_f,
-                                      result_quantum_number_m, result_quantum_number_j_exp);
+    ensure_consistent_quantum_numbers(ket.get_quantum_number("is_j_total_momentum") != 0,
+                                      ket.get_quantum_number("f"), quantum_number_m,
+                                      ket.get_quantum_number("j"));
 
-    return std::make_shared<const KetAtom>(
-        typename KetAtom::Private(), result_energy, species,
-        make_quantum_numbers(
-            result_quantum_number_f, result_quantum_number_m, static_cast<double>(result_parity),
-            result_quantum_number_n, result_quantum_number_nu, result_quantum_number_nui_exp,
-            result_quantum_number_nui_std, result_quantum_number_l_exp, result_quantum_number_l_std,
-            result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
-            result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
-            result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
-            result_quantum_number_j_ryd_std, result_is_j_total_momentum,
-            result_is_calculated_with_mqdt, result_underspecified_channel_contribution),
-        *this, result_id);
+    return std::make_shared<const KetAtom>(std::move(ket));
 }
 
 template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>>
 Database::get_basis(const std::string &species, const AtomDescriptionByRanges &description,
                     const std::vector<size_t> &additional_ket_ids) {
+    // The quantum number m is restricted separately because it is generated by UNNEST below.
+    auto range_quantum_number_m = [&description]() {
+        auto it = description.quantum_number_ranges.find("m");
+        return it != description.quantum_number_ranges.end() ? it->second : Range<double>{};
+    }();
+
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
     std::string separator;
@@ -543,74 +381,32 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                         description.range_energy.max());
         separator = " AND ";
     }
-    if (description.range_quantum_number_f.is_finite()) {
-        where += separator +
-            fmt::format("f BETWEEN {} AND {}", description.range_quantum_number_f.min(),
-                        description.range_quantum_number_f.max());
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_n.is_finite()) {
-        where += separator +
-            fmt::format("n BETWEEN {} AND {}", description.range_quantum_number_n.min(),
-                        description.range_quantum_number_n.max());
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_nu.is_finite()) {
-        where += separator +
-            fmt::format("nu BETWEEN {} AND {}", description.range_quantum_number_nu.min(),
-                        description.range_quantum_number_nu.max());
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_nui.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_nui", "std_nui",
-                                           description.range_quantum_number_nui,
-                                           description.quantum_number_standard_deviation_factor);
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_l.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_l", "std_l", description.range_quantum_number_l,
-                                           description.quantum_number_standard_deviation_factor);
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_s.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_s", "std_s", description.range_quantum_number_s,
-                                           description.quantum_number_standard_deviation_factor);
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_j.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_j", "std_j", description.range_quantum_number_j,
-                                           description.quantum_number_standard_deviation_factor);
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_l_ryd.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_l_ryd", "std_l_ryd",
-                                           description.range_quantum_number_l_ryd,
-                                           description.quantum_number_standard_deviation_factor);
-        separator = " AND ";
-    }
-    if (description.range_quantum_number_j_ryd.is_finite()) {
-        where += separator +
-            format_expectation_value_range("exp_j_ryd", "std_j_ryd",
-                                           description.range_quantum_number_j_ryd,
-                                           description.quantum_number_standard_deviation_factor);
+    for (const auto &[name, range] : description.quantum_number_ranges) {
+        if (name == "m" || !range.is_finite()) {
+            continue;
+        }
+        if (expectation_value_quantum_numbers.count(name) != 0) {
+            where += separator +
+                format_expectation_value_range(
+                         "exp_" + name, "std_" + name, range,
+                         description.quantum_number_standard_deviation_factor);
+        } else {
+            where +=
+                separator + fmt::format("{} BETWEEN {} AND {}", name, range.min(), range.max());
+        }
         separator = " AND ";
     }
     if (separator.empty()) {
         // If the description contains no restrictions at all, it describes no states
-        where += description.range_quantum_number_m.is_finite() ? "TRUE" : "FALSE";
+        where += range_quantum_number_m.is_finite() ? "TRUE" : "FALSE";
     }
     where += ")";
 
     // Describe the restriction of the quantum number m
     std::string where_m = "(";
-    if (description.range_quantum_number_m.is_finite()) {
-        where_m += fmt::format("m BETWEEN {} AND {}", description.range_quantum_number_m.min(),
-                               description.range_quantum_number_m.max());
+    if (range_quantum_number_m.is_finite()) {
+        where_m += fmt::format("m BETWEEN {} AND {}", range_quantum_number_m.min(),
+                               range_quantum_number_m.max());
     } else {
         where_m += "TRUE";
     }
@@ -676,50 +472,36 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     // Ask the table for the extreme values of the quantum numbers
     {
         set_task_status("Validating atomic basis coverage...");
+
+        // Collect the finite quantum-number ranges to validate against the loaded basis. Energy is
+        // handled separately because it is compared via its corresponding effective quantum number.
+        struct CoverageCheck {
+            std::string name;
+            std::string column;
+            double tolerance; // allowed slack between the requested and the available range
+            Range<double> range;
+        };
+        std::vector<CoverageCheck> checks;
+        for (const auto &[name, range] : description.quantum_number_ranges) {
+            if (!range.is_finite()) {
+                continue;
+            }
+            std::string column =
+                expectation_value_quantum_numbers.count(name) != 0 ? "exp_" + name : name;
+            // f, m and n are exact quantum numbers; the others are only matched within +-1.
+            double tolerance = (name == "f" || name == "m" || name == "n") ? 0.0 : 1.0;
+            checks.push_back({name, column, tolerance, range});
+        }
+
         std::string select;
         std::string separator;
         if (description.range_energy.is_finite()) {
             select += separator + "MIN(energy) AS min_energy, MAX(energy) AS max_energy";
             separator = ", ";
         }
-        if (description.range_quantum_number_f.is_finite()) {
-            select += separator + "MIN(f) AS min_f, MAX(f) AS max_f";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_m.is_finite()) {
-            select += separator + "MIN(m) AS min_m, MAX(m) AS max_m";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_n.is_finite()) {
-            select += separator + "MIN(n) AS min_n, MAX(n) AS max_n";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_nu.is_finite()) {
-            select += separator + "MIN(nu) AS min_nu, MAX(nu) AS max_nu";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_nui.is_finite()) {
-            select += separator + "MIN(exp_nui) AS min_nui, MAX(exp_nui) AS max_nui";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_l.is_finite()) {
-            select += separator + "MIN(exp_l) AS min_l, MAX(exp_l) AS max_l";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_s.is_finite()) {
-            select += separator + "MIN(exp_s) AS min_s, MAX(exp_s) AS max_s";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_j.is_finite()) {
-            select += separator + "MIN(exp_j) AS min_j, MAX(exp_j) AS max_j";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_l_ryd.is_finite()) {
-            select += separator + "MIN(exp_l_ryd) AS min_l_ryd, MAX(exp_l_ryd) AS max_l_ryd";
-            separator = ", ";
-        }
-        if (description.range_quantum_number_j_ryd.is_finite()) {
-            select += separator + "MIN(exp_j_ryd) AS min_j_ryd, MAX(exp_j_ryd) AS max_j_ryd";
+        for (const auto &check : checks) {
+            select += separator +
+                fmt::format("MIN({0}) AS min_{1}, MAX({0}) AS max_{1}", check.column, check.name);
             separator = ", ";
         }
 
@@ -732,6 +514,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             }
 
             auto chunk = result->Fetch();
+            const auto &types = result->types;
 
             for (size_t i = 0; i < chunk->ColumnCount(); i++) {
                 if (duckdb::FlatVector::IsNull(chunk->data[i], 0)) {
@@ -741,14 +524,16 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
             size_t idx = 0;
             if (description.range_energy.is_finite()) {
-                auto min_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                auto min_energy = get_entry_as_double(chunk->data[idx], types[idx], 0);
+                idx++;
                 if (std::sqrt(-1 / (2 * min_energy)) - 1 >
                     std::sqrt(-1 / (2 * description.range_energy.min()))) {
                     SPDLOG_DEBUG("No state found with the requested minimum energy. Requested: {}, "
                                  "found: {}.",
                                  description.range_energy.min(), min_energy);
                 }
-                auto max_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                auto max_energy = get_entry_as_double(chunk->data[idx], types[idx], 0);
+                idx++;
                 if (std::sqrt(-1 / (2 * max_energy)) + 1 <
                     std::sqrt(-1 / (2 * description.range_energy.max()))) {
                     SPDLOG_DEBUG("No state found with the requested maximum energy. Requested: {}, "
@@ -756,144 +541,20 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                                  description.range_energy.max(), max_energy);
                 }
             }
-            if (description.range_quantum_number_f.is_finite()) {
-                auto min_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_f > description.range_quantum_number_f.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number f. "
+            for (const auto &check : checks) {
+                auto min_value = get_entry_as_double(chunk->data[idx], types[idx], 0);
+                idx++;
+                if (min_value - check.tolerance > check.range.min()) {
+                    SPDLOG_DEBUG("No state found with the requested minimum quantum number {}. "
                                  "Requested: {}, found: {}.",
-                                 description.range_quantum_number_f.min(), min_f);
+                                 check.name, check.range.min(), min_value);
                 }
-                auto max_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_f < description.range_quantum_number_f.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number f. "
+                auto max_value = get_entry_as_double(chunk->data[idx], types[idx], 0);
+                idx++;
+                if (max_value + check.tolerance < check.range.max()) {
+                    SPDLOG_DEBUG("No state found with the requested maximum quantum number {}. "
                                  "Requested: {}, found: {}.",
-                                 description.range_quantum_number_f.max(), max_f);
-                }
-            }
-            if (description.range_quantum_number_m.is_finite()) {
-                auto min_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_m > description.range_quantum_number_m.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number m. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_m.min(), min_m);
-                }
-                auto max_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_m < description.range_quantum_number_m.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number m. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_m.max(), max_m);
-                }
-            }
-            if (description.range_quantum_number_n.is_finite()) {
-                auto min_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
-                if (min_n > description.range_quantum_number_n.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number n. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_n.min(), min_n);
-                }
-                auto max_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
-                if (max_n < description.range_quantum_number_n.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number n. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_n.max(), max_n);
-                }
-            }
-            if (description.range_quantum_number_nu.is_finite()) {
-                auto min_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_nu - 1 > description.range_quantum_number_nu.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number nu. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_nu.min(), min_nu);
-                }
-                auto max_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_nu + 1 < description.range_quantum_number_nu.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number nu. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_nu.max(), max_nu);
-                }
-            }
-            if (description.range_quantum_number_nui.is_finite()) {
-                auto min_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_nui - 1 > description.range_quantum_number_nui.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number nui. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_nui.min(), min_nui);
-                }
-                auto max_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_nui + 1 < description.range_quantum_number_nui.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number nui. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_nui.max(), max_nui);
-                }
-            }
-            if (description.range_quantum_number_l.is_finite()) {
-                auto min_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_l - 1 > description.range_quantum_number_l.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number l. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_l.min(), min_l);
-                }
-                auto max_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_l + 1 < description.range_quantum_number_l.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number l. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_l.max(), max_l);
-                }
-            }
-            if (description.range_quantum_number_s.is_finite()) {
-                auto min_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_s - 1 > description.range_quantum_number_s.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number s. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_s.min(), min_s);
-                }
-                auto max_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_s + 1 < description.range_quantum_number_s.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number s. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_s.max(), max_s);
-                }
-            }
-            if (description.range_quantum_number_j.is_finite()) {
-                auto min_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_j - 1 > description.range_quantum_number_j.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number j. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_j.min(), min_j);
-                }
-                auto max_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_j + 1 < description.range_quantum_number_j.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number j. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_j.max(), max_j);
-                }
-            }
-            if (description.range_quantum_number_l_ryd.is_finite()) {
-                auto min_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_l_ryd - 1 > description.range_quantum_number_l_ryd.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number l_ryd. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_l_ryd.min(), min_l_ryd);
-                }
-                auto max_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_l_ryd + 1 < description.range_quantum_number_l_ryd.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number l_ryd. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_l_ryd.max(), max_l_ryd);
-                }
-            }
-            if (description.range_quantum_number_j_ryd.is_finite()) {
-                auto min_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_j_ryd - 1 > description.range_quantum_number_j_ryd.min()) {
-                    SPDLOG_DEBUG("No state found with the requested minimum quantum number j_ryd. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_j_ryd.min(), min_j_ryd);
-                }
-                auto max_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_j_ryd + 1 < description.range_quantum_number_j_ryd.max()) {
-                    SPDLOG_DEBUG("No state found with the requested maximum quantum number j_ryd. "
-                                 "Requested: {}, found: {}.",
-                                 description.range_quantum_number_j_ryd.max(), max_j_ryd);
+                                 check.name, check.range.max(), max_value);
                 }
             }
         }
@@ -914,28 +575,13 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         throw std::invalid_argument("No state found.");
     }
 
-    // Check the types of the columns
+    // Construct the states. Every column except energy and ketid is treated as a quantum number.
     const auto &types = result->types;
-    const auto &labels = result->names;
-    const std::vector<duckdb::LogicalType> ref_types = {
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,  duckdb::LogicalType::BIGINT,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::BOOLEAN,
-        duckdb::LogicalType::DOUBLE};
+    const auto &names = result->names;
+    const std::unordered_set<std::string> excluded_columns = {"energy", "ketid"};
+    size_t energy_column = get_column_index(names, "energy");
+    size_t ketid_column = get_column_index(names, "ketid");
 
-    for (size_t i = 0; i < types.size(); i++) {
-        if (types[i] != ref_types[i]) {
-            throw std::runtime_error("Wrong type for '" + labels[i] + "'. Got " +
-                                     types[i].ToString() + " but expected " +
-                                     ref_types[i].ToString());
-        }
-    }
-
-    // Construct the states
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
@@ -945,59 +591,29 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
         set_task_status("Constructing atomic basis...");
 
-        auto *chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
-        auto *chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
-        auto *chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk->data[2]);
-        auto *chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[3]);
-        auto *chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk->data[4]);
-        auto *chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[5]);
-        auto *chunk_quantum_number_nu = duckdb::FlatVector::GetData<double>(chunk->data[6]);
-        auto *chunk_quantum_number_nui_exp = duckdb::FlatVector::GetData<double>(chunk->data[7]);
-        auto *chunk_quantum_number_nui_std = duckdb::FlatVector::GetData<double>(chunk->data[8]);
-        auto *chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[9]);
-        auto *chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[10]);
-        auto *chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[11]);
-        auto *chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[12]);
-        auto *chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[13]);
-        auto *chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[14]);
-        auto *chunk_quantum_number_l_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[15]);
-        auto *chunk_quantum_number_l_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[16]);
-        auto *chunk_quantum_number_j_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[17]);
-        auto *chunk_quantum_number_j_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[18]);
-        auto *chunk_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[19]);
-        auto *chunk_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[20]);
-        auto *chunk_underspecified_channel_contribution =
-            duckdb::FlatVector::GetData<double>(chunk->data[21]);
-
         for (size_t i = 0; i < chunk->size(); i++) {
+            auto quantum_numbers = make_quantum_numbers(*chunk, types, names, excluded_columns, i);
+            double energy =
+                get_entry_as_double(chunk->data[energy_column], types[energy_column], i);
+            auto id = static_cast<size_t>(
+                duckdb::FlatVector::GetData<int64_t>(chunk->data[ketid_column])[i]);
 
             // Check database consistency
-            ensure_consistent_quantum_numbers(chunk_is_j_total_momentum[i],
-                                              chunk_quantum_number_f[i], chunk_quantum_number_m[i],
-                                              chunk_quantum_number_j_exp[i]);
-            if (chunk_energy[i] < last_energy) {
+            ensure_consistent_quantum_numbers(quantum_numbers.at("is_j_total_momentum") != 0,
+                                              quantum_numbers.at("f"), quantum_numbers.at("m"),
+                                              quantum_numbers.at("exp_j"));
+            if (energy < last_energy) {
                 throw std::runtime_error("The states are not sorted by energy.");
             }
-            last_energy = chunk_energy[i];
+            last_energy = energy;
 
-            is_calculated_with_mqdt |= chunk_is_calculated_with_mqdt[i];
-            min_quantum_number_nu = std::min(min_quantum_number_nu, chunk_quantum_number_nu[i]);
+            is_calculated_with_mqdt |= quantum_numbers.at("is_calculated_with_mqdt") != 0;
+            min_quantum_number_nu = std::min(min_quantum_number_nu, quantum_numbers.at("nu"));
 
             // Append a new state
-            kets.push_back(std::make_shared<const KetAtom>(
-                typename KetAtom::Private(), chunk_energy[i], species,
-                make_quantum_numbers(
-                    chunk_quantum_number_f[i], chunk_quantum_number_m[i],
-                    static_cast<double>(chunk_parity[i]), chunk_quantum_number_n[i],
-                    chunk_quantum_number_nu[i], chunk_quantum_number_nui_exp[i],
-                    chunk_quantum_number_nui_std[i], chunk_quantum_number_l_exp[i],
-                    chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
-                    chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
-                    chunk_quantum_number_j_std[i], chunk_quantum_number_l_ryd_exp[i],
-                    chunk_quantum_number_l_ryd_std[i], chunk_quantum_number_j_ryd_exp[i],
-                    chunk_quantum_number_j_ryd_std[i], chunk_is_j_total_momentum[i],
-                    chunk_is_calculated_with_mqdt[i], chunk_underspecified_channel_contribution[i]),
-                *this, chunk_id[i]));
+            kets.push_back(std::make_shared<const KetAtom>(typename KetAtom::Private(), energy,
+                                                           species, std::move(quantum_numbers),
+                                                           *this, id));
         }
     }
 

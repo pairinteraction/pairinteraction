@@ -37,15 +37,15 @@ int main(int argc, char **argv) {
     // Create a basis
     auto ket = pairinteraction::KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(0)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
 
     auto basis = pairinteraction::BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 2)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 2)
                      .create(database);
 
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());

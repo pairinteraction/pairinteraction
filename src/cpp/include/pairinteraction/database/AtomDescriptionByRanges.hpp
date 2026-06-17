@@ -8,22 +8,16 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <optional>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
 
 namespace pairinteraction {
 struct AtomDescriptionByRanges {
     Parity parity{Parity::UNKNOWN};
     Range<double> range_energy;
-    Range<double> range_quantum_number_f;
-    Range<double> range_quantum_number_m;
-    Range<int> range_quantum_number_n;
-    Range<double> range_quantum_number_nu;
-    Range<double> range_quantum_number_nui;
-    Range<double> range_quantum_number_l;
-    Range<double> range_quantum_number_s;
-    Range<double> range_quantum_number_j;
-    Range<double> range_quantum_number_l_ryd;
-    Range<double> range_quantum_number_j_ryd;
+    // Quantum numbers ranges keyed by their logical name (e.g. "f", "m", "n", "l", ...).
+    std::unordered_map<std::string, Range<double>> quantum_number_ranges;
     double quantum_number_standard_deviation_factor{2};
 };
 } // namespace pairinteraction

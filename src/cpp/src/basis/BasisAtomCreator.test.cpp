@@ -23,8 +23,8 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
                      .set_species("Sr88_singlet")
-                     .restrict_quantum_number_n(60, 60)
-                     .restrict_quantum_number_l(0, 2)
+                     .restrict_quantum_number("n", 60, 60)
+                     .restrict_quantum_number("l", 0, 2)
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
@@ -36,8 +36,8 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
                      .set_species("Sr87_mqdt")
-                     .restrict_quantum_number_nu(59, 61)
-                     .restrict_quantum_number_l(0, 0)
+                     .restrict_quantum_number("nu", 59, 61)
+                     .restrict_quantum_number("l", 0, 0)
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr87_mqdt");
@@ -62,9 +62,9 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     Database &database = Database::get_global_instance();
     auto basis_unsorted = BasisAtomCreator<double>()
                               .set_species("Rb")
-                              .restrict_quantum_number_n(60, 60)
-                              .restrict_quantum_number_l(0, 3)
-                              .restrict_quantum_number_m(-0.5, 0.5)
+                              .restrict_quantum_number("n", 60, 60)
+                              .restrict_quantum_number("l", 0, 3)
+                              .restrict_quantum_number("m", -0.5, 0.5)
                               .create(database);
 
     // Sort the basis by parity and the m quantum number
@@ -116,25 +116,25 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
 
     auto ket_s = KetAtomCreator()
                      .set_species("Rb")
-                     .set_quantum_number_n(60)
-                     .set_quantum_number_l(0)
-                     .set_quantum_number_j(0.5)
-                     .set_quantum_number_m(0.5)
+                     .set_quantum_number("n", 60)
+                     .set_quantum_number("l", 0)
+                     .set_quantum_number("j", 0.5)
+                     .set_quantum_number("m", 0.5)
                      .create(database);
 
     auto ket_p = KetAtomCreator()
                      .set_species("Rb")
-                     .set_quantum_number_n(60)
-                     .set_quantum_number_l(1)
-                     .set_quantum_number_j(0.5)
-                     .set_quantum_number_m(0.5)
+                     .set_quantum_number("n", 60)
+                     .set_quantum_number("l", 1)
+                     .set_quantum_number("j", 0.5)
+                     .set_quantum_number("m", 0.5)
                      .create(database);
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(59, 61)
-                     .restrict_quantum_number_l(0, 1)
-                     .restrict_quantum_number_m(0.5, 0.5)
+                     .restrict_quantum_number("n", 59, 61)
+                     .restrict_quantum_number("l", 0, 1)
+                     .restrict_quantum_number("m", 0.5, 0.5)
                      .create(database);
 
     SystemAtom<double> system(basis);

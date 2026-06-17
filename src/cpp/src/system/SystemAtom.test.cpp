@@ -32,17 +32,17 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
 
     auto ket1 = KetAtomCreator()
                     .set_species("Rb")
-                    .set_quantum_number_n(60)
-                    .set_quantum_number_l(0)
-                    .set_quantum_number_j(0.5)
-                    .set_quantum_number_m(0.5)
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 0)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
                     .create(database);
     auto ket2 = KetAtomCreator()
                     .set_species("Rb")
-                    .set_quantum_number_n(60)
-                    .set_quantum_number_l(1)
-                    .set_quantum_number_j(0.5)
-                    .set_quantum_number_m(0.5)
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 1)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
                     .create(database);
     auto basis = BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).create(database);
 
@@ -73,8 +73,8 @@ DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(59, 61)
-                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number("n", 59, 61)
+                     .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
     auto system1 = SystemAtom<std::complex<double>>(basis);
@@ -102,9 +102,9 @@ DOCTEST_TEST_CASE("construct an atomic Hamiltonian in a non-canonical atomic bas
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 61)
-                     .restrict_quantum_number_l(0, 1)
-                     .restrict_quantum_number_m(0.5, 0.5)
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
+                     .restrict_quantum_number("m", 0.5, 0.5)
                      .create(database);
     DOCTEST_REQUIRE(basis->get_number_of_states() >= 2);
 
@@ -147,8 +147,8 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel" 
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Sr87_mqdt")
-                     .restrict_quantum_number_nu(60, 61)
-                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number("nu", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
     std::vector<SystemAtom<std::complex<double>>> systems;
@@ -169,8 +169,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 61)
-                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
     // Diagonalize using the Eigen library
@@ -258,8 +258,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
     // Diagonalize using the Eigen library
@@ -338,8 +338,8 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenenergies are within energy re
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
     std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
@@ -366,10 +366,10 @@ DOCTEST_TEST_CASE("atom ion interaction") {
 
     auto ket = KetAtomCreator()
                    .set_species("Rb")
-                   .set_quantum_number_n(60)
-                   .set_quantum_number_l(1)
-                   .set_quantum_number_j(0.5)
-                   .set_quantum_number_m(0.5)
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 1)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
                    .create(database);
     double energy = ket->get_energy();
     double min_energy = energy - 50 / HARTREE_IN_GHZ;
@@ -377,9 +377,9 @@ DOCTEST_TEST_CASE("atom ion interaction") {
 
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(58, 62)
-                     .restrict_quantum_number_l(0, 3)
-                     .restrict_quantum_number_m(0.5, 0.5)
+                     .restrict_quantum_number("n", 58, 62)
+                     .restrict_quantum_number("l", 0, 3)
+                     .restrict_quantum_number("m", 0.5, 0.5)
                      .create(database);
 
     auto system3 = SystemAtom<double>(basis);

@@ -49,7 +49,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
     _parameters_creator: dict[str, Any] | None = None
 
-    def __init__(  # noqa: C901, PLR0912, PLR0915
+    def __init__(  # noqa: C901, PLR0912
         self,
         species: str,
         n: tuple[int, int] | None = None,
@@ -122,35 +122,22 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             if not all(isinstance(x, int) or x.is_integer() for x in n):
                 raise ValueError("Quantum numbers n must be integers.")
             n = (int(n[0]), int(n[1]))
-            creator.restrict_quantum_number_n(*n)
-            self._parameters_creator["qns"]["n"] = n
-        if nu is not None:
-            creator.restrict_quantum_number_nu(*nu)
-            self._parameters_creator["qns"]["nu"] = nu
-        if nui is not None:
-            creator.restrict_quantum_number_nui(*nui)
-            self._parameters_creator["qns"]["nui"] = nui
-        if s is not None:
-            creator.restrict_quantum_number_s(*s)
-            self._parameters_creator["qns"]["s"] = s
-        if l is not None:
-            creator.restrict_quantum_number_l(*l)
-            self._parameters_creator["qns"]["l"] = l
-        if j is not None:
-            self._parameters_creator["qns"]["j"] = j
-            creator.restrict_quantum_number_j(*j)
-        if l_ryd is not None:
-            creator.restrict_quantum_number_l_ryd(*l_ryd)
-            self._parameters_creator["qns"]["l_ryd"] = l_ryd
-        if j_ryd is not None:
-            self._parameters_creator["qns"]["j_ryd"] = j_ryd
-            creator.restrict_quantum_number_j_ryd(*j_ryd)
-        if f is not None:
-            creator.restrict_quantum_number_f(*f)
-            self._parameters_creator["qns"]["f"] = f
-        if m is not None:
-            creator.restrict_quantum_number_m(*m)
-            self._parameters_creator["qns"]["m"] = m
+        quantum_numbers = {
+            "n": n,
+            "nu": nu,
+            "nui": nui,
+            "s": s,
+            "l": l,
+            "j": j,
+            "l_ryd": l_ryd,
+            "j_ryd": j_ryd,
+            "f": f,
+            "m": m,
+        }
+        for name, value in quantum_numbers.items():
+            if value is not None:
+                creator.restrict_quantum_number(name, *value)
+                self._parameters_creator["qns"][name] = value
         if parity is not None:
             creator.restrict_parity(get_cpp_parity(parity))
         if energy is not None:

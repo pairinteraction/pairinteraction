@@ -30,18 +30,18 @@ int main(int argc, char **argv) {
     // Create a dipole operator coupling two specific states
     auto ket1 = pairinteraction::KetAtomCreator()
                     .set_species("Rb")
-                    .set_quantum_number_n(60)
-                    .set_quantum_number_l(0)
-                    .set_quantum_number_j(0.5)
-                    .set_quantum_number_m(0.5)
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 0)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
                     .create(database);
 
     auto ket2 = pairinteraction::KetAtomCreator()
                     .set_species("Rb")
-                    .set_quantum_number_n(60)
-                    .set_quantum_number_l(1)
-                    .set_quantum_number_j(0.5)
-                    .set_quantum_number_m(0.5)
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 1)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
                     .create(database);
 
     auto basis_ket1_ket2 =
@@ -80,8 +80,8 @@ int main(int argc, char **argv) {
     // Create dipole operators in a typical basis
     auto basis = pairinteraction::BasisAtomCreator<std::complex<double>>()
                      .set_species("Sr88_singlet")
-                     .restrict_quantum_number_n(60, 63)
-                     .restrict_quantum_number_l(0, 3)
+                     .restrict_quantum_number("n", 60, 63)
+                     .restrict_quantum_number("l", 0, 3)
                      .create(database);
 
     auto dipole_0 = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
