@@ -41,6 +41,32 @@ DOCTEST_TEST_CASE("not uniquely specified ket") {
     DOCTEST_CHECK_THROWS(database.get_ket("Rb", description));
 }
 
+DOCTEST_TEST_CASE("quantum number not stored in the database table for get_ket") {
+    Database &database = Database::get_global_instance();
+
+    AtomDescriptionByParameters description;
+    description.quantum_numbers = {{"n", 60}, {"m", 0.5}, {"not_a_quantum_number", 1}};
+
+    DOCTEST_CHECK_THROWS_WITH_AS(
+        database.get_ket("Rb", description),
+        "The quantum number 'not_a_quantum_number' is not stored in the database table for species "
+        "'Rb'.",
+        std::invalid_argument);
+}
+
+DOCTEST_TEST_CASE("quantum number not stored in the database table for get_basis") {
+    Database &database = Database::get_global_instance();
+
+    AtomDescriptionByRanges description;
+    description.quantum_number_ranges = {{"not_a_quantum_number", {1, 2}}};
+
+    DOCTEST_CHECK_THROWS_WITH_AS(
+        database.get_basis<double>("Yb171_mqdt", description, {}),
+        "The quantum number 'not_a_quantum_number' is not stored in the database table for species "
+        "'Yb171_mqdt'.",
+        std::invalid_argument);
+}
+
 DOCTEST_TEST_CASE("uniquely specified ket") {
     Database &database = Database::get_global_instance();
 
