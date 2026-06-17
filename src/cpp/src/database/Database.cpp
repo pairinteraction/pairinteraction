@@ -35,14 +35,6 @@
 namespace pairinteraction {
 
 namespace {
-std::unordered_set<std::string> query_column_names(duckdb::Connection &con,
-                                                   const std::string &table_path) {
-    auto result = con.Query(fmt::format(R"(SELECT * FROM '{}' LIMIT 0)", table_path));
-    if (result->HasError()) {
-        throw cpptrace::runtime_error("Error querying the database columns: " + result->GetError());
-    }
-    return {result->names.begin(), result->names.end()};
-}
 
 std::string format_expectation_value_range(const std::string &value_column,
                                            const std::string &std_column,
@@ -235,6 +227,20 @@ Database::Database(bool download_missing, bool use_cache, std::filesystem::path 
 
 Database::~Database() = default;
 
+const std::unordered_set<std::string> &Database::get_column_names(const std::string &table_path) {
+    if (auto it = column_names_cache.find(table_path); it != column_names_cache.end()) {
+        return it->second;
+    }
+    auto result = con->Query(fmt::format(R"(SELECT * FROM '{}' LIMIT 0)", table_path));
+    if (result->HasError()) {
+        throw cpptrace::runtime_error("Error querying the database columns: " + result->GetError());
+    }
+    std::unordered_set<std::string> names(result->names.begin(), result->names.end());
+    // If another thread inserted the same entry concurrently, insert keeps the existing value and
+    // returns an iterator to it, so the reference stays valid (elements are never erased).
+    return column_names_cache.insert({table_path, std::move(names)}).first->second;
+}
+
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
     // Check that the specifications are valid
@@ -251,7 +257,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         }
     }
 
-    auto columns = query_column_names(*con, manager->get_path(species, "states"));
+    const auto &columns = get_column_names(manager->get_path(species, "states"));
 
     // Describe the state. The quantum numbers n, f and parity are matched exactly, while all other
     // quantum numbers are matched within a +-0.5 window (they can deviate from the requested value,
@@ -370,7 +376,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         return it != description.quantum_number_ranges.end() ? it->second : Range<double>{};
     }();
 
-    auto columns = query_column_names(*con, manager->get_path(species, "states"));
+    const auto &columns = get_column_names(manager->get_path(species, "states"));
 
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";

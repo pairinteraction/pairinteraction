@@ -13,6 +13,7 @@
 #include <memory>
 #include <oneapi/tbb.h>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace duckdb {
@@ -103,6 +104,13 @@ private:
                                                         std::filesystem::path database_dir);
 
     void ensure_presence_of_table(const std::string &name);
+
+    // Return the column names of the table at the given path, caching the result per path so that
+    // the schema is queried from the database at most once.
+    const std::unordered_set<std::string> &get_column_names(const std::string &table_path);
+
+    oneapi::tbb::concurrent_unordered_map<std::string, std::unordered_set<std::string>>
+        column_names_cache;
 };
 
 // Extern template declarations
