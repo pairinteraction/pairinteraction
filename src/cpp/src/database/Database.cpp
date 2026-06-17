@@ -253,8 +253,10 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
 
     auto columns = query_column_names(*con, manager->get_path(species, "states"));
 
-    // Describe the state. Every quantum number is matched with a fuzzy +-0.5 band and the result is
-    // ordered by the distance to the requested values, so the nearest state is returned.
+    // Describe the state. The quantum numbers n, f and parity are matched exactly, while all other
+    // quantum numbers are matched within a +-0.5 window (they can deviate from the requested value,
+    // e.g. expectation values in MQDT). The result is ordered by the distance to the requested
+    // values, so the nearest state is returned.
     std::string where;
     std::string where_separator;
     std::string orderby;
@@ -281,8 +283,9 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                         "' is not stored in the database table for species '" +
                                         species + "'.");
         }
-        where +=
-            where_separator + fmt::format("{} BETWEEN {} AND {}", column, value - 0.5, value + 0.5);
+        double tolerance = (name == "n" || name == "f" || name == "parity") ? 0.0 : 0.5;
+        where += where_separator +
+            fmt::format("{} BETWEEN {} AND {}", column, value - tolerance, value + tolerance);
         where_separator = " AND ";
         orderby += orderby_separator + fmt::format("({} - {})^2", column, value);
         orderby_separator = " + ";
@@ -491,8 +494,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             bool is_expectation_value =
                 columns.count("exp_" + name) != 0 && columns.count("std_" + name) != 0;
             std::string column = is_expectation_value ? "exp_" + name : name;
-            // Expectation values are matched within a +-1 band; exact quantum numbers within 0.
-            double tolerance = is_expectation_value ? 1.0 : 0.0;
+            double tolerance =
+                (name == "n" || name == "f" || name == "m" || name == "parity") ? 0.0 : 1.0;
             checks.push_back({name, column, tolerance, range});
         }
 
