@@ -3,7 +3,6 @@
 
 #include "pairinteraction/ket/Ket.hpp"
 
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <doctest/doctest.h>
@@ -19,8 +18,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         struct Private {};
 
     public:
-        KetDerived(Private /*unused*/, double f, double m, Parity p)
-            : Ket(0), quantum_number_f(f), quantum_number_m(m), parity(p) {}
+        KetDerived(Private /*unused*/, double m) : Ket(0), quantum_number_m(m) {}
         std::string get_label() const override { return "my_label"; }
         std::shared_ptr<KetDerived>
         get_ket_for_different_quantum_number_m(double new_quantum_number_m) const {
@@ -30,25 +28,21 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         }
 
     private:
-        double quantum_number_f;
         double quantum_number_m;
-        Parity parity;
     };
 
     class KetDerivedCreator {
     public:
-        KetDerivedCreator(double f, double m, Parity p) : f(f), m(m), p(p) {}
+        KetDerivedCreator(double m) : m(m) {}
         std::shared_ptr<const KetDerived> create() const {
-            return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p);
+            return std::make_shared<const KetDerived>(KetDerived::Private(), m);
         }
 
     private:
-        double f;
         double m;
-        Parity p;
     };
 
-    auto ket = KetDerivedCreator(2.0F, 3.0F, Parity::EVEN).create();
+    auto ket = KetDerivedCreator(3.0).create();
 
     // Check that the label can be printed
     std::stringstream ss;

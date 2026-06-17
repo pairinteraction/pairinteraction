@@ -85,7 +85,7 @@ make_quantum_numbers(duckdb::DataChunk &chunk, const std::vector<duckdb::Logical
                      const std::unordered_set<std::string> &excluded_columns, size_t row) {
     std::unordered_map<std::string, double> quantum_numbers;
     for (size_t col = 0; col < names.size(); ++col) {
-        if (excluded_columns.count(names[col]) != 0) {
+        if (excluded_columns.contains(names[col])) {
             continue;
         }
         quantum_numbers[names[col]] = get_entry_as_double(chunk.data[col], types[col], row);
@@ -238,7 +238,7 @@ Database::~Database() = default;
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
     // Check that the specifications are valid
-    if (description.quantum_numbers.count("m") == 0) {
+    if (!description.quantum_numbers.contains("m")) {
         throw std::invalid_argument("The quantum number m must be specified.");
     }
     for (const auto &[name, value] : description.quantum_numbers) {
@@ -277,11 +277,12 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         if (name == "m") {
             continue; // m is encoded into the id, not stored as a queryable column
         }
-        std::string column = columns.count("exp_" + name) != 0 ? "exp_" + name : name;
-        if (columns.count(column) == 0) {
-            throw std::invalid_argument("The quantum number '" + name +
-                                        "' is not stored in the database table for species '" +
-                                        species + "'.");
+        std::string column = columns.contains("exp_" + name) ? "exp_" + name : name;
+        if (!columns.contains(column)) {
+            throw std::invalid_argument(
+                fmt::format("The quantum number '{}' is not stored in the database table for "
+                            "species '{}'.",
+                            name, species));
         }
         double tolerance = (name == "n" || name == "f" || name == "parity") ? 0.0 : 0.5;
         where += where_separator +
@@ -386,18 +387,19 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         }
         std::string exp_column = "exp_" + name;
         std::string std_column = "std_" + name;
-        if (columns.count(exp_column) != 0 && columns.count(std_column) != 0) {
+        if (columns.contains(exp_column) && columns.contains(std_column)) {
             where += separator +
                 format_expectation_value_range(
                          exp_column, std_column, range,
                          description.quantum_number_standard_deviation_factor);
-        } else if (columns.count(name) != 0) {
+        } else if (columns.contains(name)) {
             where +=
                 separator + fmt::format("{} BETWEEN {} AND {}", name, range.min(), range.max());
         } else {
-            throw std::invalid_argument("The quantum number '" + name +
-                                        "' is not stored in the database table for species '" +
-                                        species + "'.");
+            throw std::invalid_argument(
+                fmt::format("The quantum number '{}' is not stored in the database table for "
+                            "species '{}'.",
+                            name, species));
         }
         separator = " AND ";
     }
@@ -483,7 +485,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         struct CoverageCheck {
             std::string name;
             std::string column;
-            double tolerance; // allowed slack between the requested and the available range
+            double tolerance{}; // allowed slack between the requested and the available range
             Range<double> range;
         };
         std::vector<CoverageCheck> checks;
@@ -492,7 +494,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                 continue;
             }
             bool is_expectation_value =
-                columns.count("exp_" + name) != 0 && columns.count("std_" + name) != 0;
+                columns.contains("exp_" + name) && columns.contains("std_" + name);
             std::string column = is_expectation_value ? "exp_" + name : name;
             double tolerance =
                 (name == "n" || name == "f" || name == "m" || name == "parity") ? 0.0 : 1.0;
