@@ -10,7 +10,7 @@ from scipy.sparse import csr_matrix
 from pairinteraction import _backend
 from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.database import Database
-from pairinteraction.enums import get_cpp_operator_type, get_cpp_parity_int
+from pairinteraction.enums import get_cpp_operator_type, parity_to_int
 from pairinteraction.ket import KetAtom
 from pairinteraction.state import StateAtom, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
@@ -138,8 +138,8 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             if value is not None:
                 creator.restrict_quantum_number(name, *value)
                 self._parameters_creator["qns"][name] = value
-        if parity is not None and parity != "unknown":
-            parity_int = get_cpp_parity_int(parity)
+        if parity is not None:
+            parity_int = parity_to_int(parity)
             creator.restrict_quantum_number("parity", parity_int, parity_int)
         if energy is not None:
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")

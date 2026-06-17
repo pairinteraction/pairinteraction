@@ -10,7 +10,7 @@ from scipy.special import exprel
 
 from pairinteraction import _backend
 from pairinteraction.database import Database
-from pairinteraction.enums import OperatorType, Parity, get_cpp_parity_int, get_python_parity_from_int
+from pairinteraction.enums import OperatorType, Parity, int_to_parity, parity_to_int
 from pairinteraction.ket.ket_base import KetBase
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
@@ -124,7 +124,7 @@ class KetAtom(KetBase):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
-            "parity": get_cpp_parity_int(parity) if parity is not None and parity != "unknown" else None,
+            "parity": parity_to_int(parity) if parity is not None else None,
         }
         for name, value in quantum_numbers.items():
             if value is not None:
@@ -154,7 +154,7 @@ class KetAtom(KetBase):
     @property
     def parity(self) -> Parity:
         """The parity of the ket."""
-        return get_python_parity_from_int(int(self._cpp.get_quantum_number("parity")))
+        return int_to_parity(int(self._cpp.get_quantum_number("parity")))
 
     @property
     def species(self) -> str:

@@ -34,12 +34,9 @@ _OperatorTypeDict: dict[OperatorType, _backend.OperatorType] = {
     "arbitrary": _backend.OperatorType.ARBITRARY,
 }
 
-Parity = Literal["even", "odd", "unknown"]
-_ParityDict: dict[Parity, _backend.Parity] = {
-    "even": _backend.Parity.EVEN,
-    "odd": _backend.Parity.ODD,
-    "unknown": _backend.Parity.UNKNOWN,
-}
+Parity = Literal["even", "odd"]
+_ParityToCPP: dict[Parity, _backend.Parity] = {"even": _backend.Parity.EVEN, "odd": _backend.Parity.ODD}
+_ParityToInt: dict[Parity, int] = {"even": 1, "odd": -1}
 
 
 def get_cpp_float_type(float_type: FloatType) -> _backend.FloatType:
@@ -58,31 +55,27 @@ def get_cpp_operator_type(operator_type: OperatorType) -> _backend.OperatorType:
 
 def get_cpp_parity(parity: Parity) -> _backend.Parity:
     """Convert a python Parity string to a cpp Parity enum."""
-    if parity not in _ParityDict:
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityDict.keys())}")
-    return _ParityDict[parity]
+    if parity not in _ParityToCPP:
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToCPP.keys())}")
+    return _ParityToCPP[parity]
 
 
 def get_python_parity(parity: _backend.Parity) -> Parity:
     """Convert a cpp Parity enum to a python Parity string."""
-    if parity not in _ParityDict.values():
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityDict.values())}")
-    return next(k for k, v in _ParityDict.items() if v == parity)
+    if parity not in _ParityToCPP.values():
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToCPP.values())}")
+    return next(k for k, v in _ParityToCPP.items() if v == parity)
 
 
-_ParityIntDict: dict[int, Parity] = {1: "even", -1: "odd", 2: "unknown"}
-
-
-def get_python_parity_from_int(parity: int) -> Parity:
-    """Convert an integer parity (+1, -1, or 2) to a python Parity string."""
-    if parity not in _ParityIntDict:
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityIntDict.keys())}")
-    return _ParityIntDict[parity]
-
-
-def get_cpp_parity_int(parity: Parity) -> int:
+def parity_to_int(parity: Parity) -> int:
     """Convert a python Parity string to its integer value (+1 for even, -1 for odd)."""
-    int_to_parity = {v: k for k, v in _ParityIntDict.items()}
-    if parity not in int_to_parity:
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(int_to_parity.keys())}")
-    return int_to_parity[parity]
+    if parity not in _ParityToInt:
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToInt.keys())}")
+    return _ParityToInt[parity]
+
+
+def int_to_parity(parity: int) -> Parity:
+    """Convert an integer parity (+1, -1) to a python Parity string."""
+    if parity not in _ParityToInt.values():
+        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToInt.values())}")
+    return next(k for k, v in _ParityToInt.items() if v == parity)
