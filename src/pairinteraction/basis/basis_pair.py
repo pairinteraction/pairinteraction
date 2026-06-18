@@ -96,8 +96,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 Default None, i.e. no restriction.
             parity_under_inversion: Restrict to pair states with this parity under inversion.
                 Default None, i.e. do not apply inversion symmetrization.
+                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
+                only defined for two identical atoms.
             parity_under_permutation: Restrict to pair states with this parity under permutation.
                 Default None, i.e. do not apply permutation symmetrization.
+                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
+                only defined for two identical atoms.
             energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.
             energy_unit: In which unit the energy values are given, e.g. "GHz".
                 Default None, i.e. energy is provided as pint object.
@@ -165,8 +169,12 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 ``m = m1 + m2``. Default None means no m restriction.
             parity_under_inversion: Restrict to pair states with this parity under inversion.
                 Default None means no inversion symmetrization.
+                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
+                only defined for two identical atoms.
             parity_under_permutation: Restrict to pair states with this parity under permutation.
                 Default None means no permutation symmetrization.
+                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
+                only defined for two identical atoms.
             delta_energy: Half-width of the energy window. Mutually exclusive with
                 ``number_of_kets``. Default None means no energy restriction.
             delta_energy_unit: Unit for ``delta_energy`` and the pair energies

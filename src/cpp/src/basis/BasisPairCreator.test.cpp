@@ -521,6 +521,30 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
             }
         }
     }
+
+    DOCTEST_SUBCASE("parity restrictions require the same SystemAtom twice") {
+        // A second, independently constructed system represents a different atom. Even though it
+        // is built from the same basis, it is a distinct object, so symmetrization is rejected.
+        SystemAtom<double> system_other(basis);
+        system_other.diagonalize(diagonalizer);
+
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
+                                    .add(system)
+                                    .add(system_other)
+                                    .restrict_parity_under_permutation(Parity::ODD)
+                                    .create(),
+                                std::invalid_argument);
+
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
+                                    .add(system)
+                                    .add(system_other)
+                                    .restrict_parity_under_inversion(Parity::ODD)
+                                    .create(),
+                                std::invalid_argument);
+
+        // Without a parity restriction, two different systems remain allowed.
+        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>().add(system).add(system_other).create());
+    }
 }
 
 } // namespace pairinteraction
