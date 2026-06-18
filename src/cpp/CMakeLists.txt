@@ -77,7 +77,6 @@ add_library(
   ./src/interfaces/DiagonalizerInterface.cpp
   ./src/interfaces/TransformationBuilderInterface.cpp
   ./src/ket/Ket.cpp
-  ./src/ket/Ket.test.cpp
   ./src/ket/KetAtom.cpp
   ./src/ket/KetAtomCreator.cpp
   ./src/ket/KetAtomCreator.test.cpp
