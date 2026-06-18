@@ -236,6 +236,21 @@ const std::unordered_set<std::string> &Database::get_column_names(const std::str
         throw cpptrace::runtime_error("Error querying the database columns: " + result->GetError());
     }
     std::unordered_set<std::string> names(result->names.begin(), result->names.end());
+
+    // Every states table must provide the columns required for constructing kets and must not
+    // contain an 'm' column, since m added separately below.
+    for (const auto &required : {"id", "f", "energy"}) {
+        if (!names.contains(required)) {
+            throw std::runtime_error(
+                fmt::format("The database table '{}' is missing the required column '{}'.",
+                            table_path, required));
+        }
+    }
+    if (names.contains("m")) {
+        throw std::runtime_error(
+            fmt::format("The database table '{}' must not contain a column 'm'.", table_path));
+    }
+
     // If another thread inserted the same entry concurrently, insert keeps the existing value and
     // returns an iterator to it, so the reference stays valid (elements are never erased).
     return column_names_cache.insert({table_path, std::move(names)}).first->second;
