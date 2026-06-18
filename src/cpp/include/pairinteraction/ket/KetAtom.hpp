@@ -23,7 +23,8 @@ class KetAtom : public Ket {
 
 public:
     KetAtom(Private /*unused*/, double energy, std::string species,
-            std::unordered_map<std::string, double> quantum_numbers, Database &database,
+            std::unordered_map<std::string, double> quantum_numbers,
+            std::unordered_map<std::string, double> quantum_numbers_std, Database &database,
             size_t id_in_database);
 
     Database &get_database() const;
@@ -45,6 +46,7 @@ public:
 private:
     std::string species;
     std::unordered_map<std::string, double> quantum_numbers;
+    std::unordered_map<std::string, double> quantum_numbers_std;
     Database &database;
     size_t id_in_database;
 };

@@ -19,27 +19,24 @@ namespace pairinteraction {
 constexpr std::array<std::string_view, 6> quantum_number_l_labels = {"S", "P", "D", "F", "G", "H"};
 
 KetAtom::KetAtom(Private /*unused*/, double energy, std::string species,
-                 std::unordered_map<std::string, double> quantum_numbers, Database &database,
+                 std::unordered_map<std::string, double> quantum_numbers,
+                 std::unordered_map<std::string, double> quantum_numbers_std, Database &database,
                  size_t id_in_database)
     : Ket(energy), species(std::move(species)), quantum_numbers(std::move(quantum_numbers)),
-      database(database), id_in_database(id_in_database) {}
+      quantum_numbers_std(std::move(quantum_numbers_std)), database(database),
+      id_in_database(id_in_database) {}
 
 Database &KetAtom::get_database() const { return database; }
 
 size_t KetAtom::get_id_in_database() const { return id_in_database; }
 
 double KetAtom::get_quantum_number(const std::string &name) const {
-    if (auto it = quantum_numbers.find("exp_" + name); it != quantum_numbers.end()) {
-        return it->second;
-    }
     return quantum_numbers.at(name);
 }
 
 double KetAtom::get_quantum_number_std(const std::string &name) const {
-    if (auto it = quantum_numbers.find("std_" + name); it != quantum_numbers.end()) {
-        return it->second;
-    }
-    return 0;
+    auto it = quantum_numbers_std.find(name);
+    return it != quantum_numbers_std.end() ? it->second : 0;
 }
 
 std::string KetAtom::get_label() const {
@@ -111,7 +108,8 @@ const std::string &KetAtom::get_species() const { return species; }
 
 bool KetAtom::operator==(const KetAtom &other) const {
     return Ket::operator==(other) && species == other.species &&
-        quantum_numbers == other.quantum_numbers;
+        quantum_numbers == other.quantum_numbers &&
+        quantum_numbers_std == other.quantum_numbers_std;
 }
 
 bool KetAtom::operator!=(const KetAtom &other) const { return !(*this == other); }
@@ -123,6 +121,12 @@ size_t KetAtom::hash::operator()(const KetAtom &k) const {
     // order-independent way (via xor) to obtain a deterministic result.
     size_t quantum_numbers_hash = 0;
     for (const auto &[key, value] : k.quantum_numbers) {
+        size_t entry_seed = 0;
+        utils::hash_combine(entry_seed, key);
+        utils::hash_combine(entry_seed, value);
+        quantum_numbers_hash ^= entry_seed;
+    }
+    for (const auto &[key, value] : k.quantum_numbers_std) {
         size_t entry_seed = 0;
         utils::hash_combine(entry_seed, key);
         utils::hash_combine(entry_seed, value);

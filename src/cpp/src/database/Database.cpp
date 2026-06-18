@@ -69,18 +69,30 @@ double get_entry_as_double(duckdb::Vector &vector, const duckdb::LogicalType &ty
     }
 }
 
-// Build the quantum-number map of a KetAtom from a query result row, treating every column except
-// the given ones as a quantum number keyed by its database column name.
-std::unordered_map<std::string, double>
-make_quantum_numbers(duckdb::DataChunk &chunk, const std::vector<duckdb::LogicalType> &types,
-                     const std::vector<std::string> &names,
-                     const std::unordered_set<std::string> &excluded_columns, size_t row) {
-    std::unordered_map<std::string, double> quantum_numbers;
+struct QuantumNumbers {
+    std::unordered_map<std::string, double> values;
+    std::unordered_map<std::string, double> stds;
+};
+
+QuantumNumbers get_quantum_numbers_from_row(duckdb::DataChunk &chunk,
+                                            const std::vector<duckdb::LogicalType> &types,
+                                            const std::vector<std::string> &names,
+                                            const std::unordered_set<std::string> &excluded_columns,
+                                            size_t row) {
+    QuantumNumbers quantum_numbers;
     for (size_t col = 0; col < names.size(); ++col) {
-        if (excluded_columns.contains(names[col])) {
+        const std::string &name = names[col];
+        if (excluded_columns.contains(name)) {
             continue;
         }
-        quantum_numbers[names[col]] = get_entry_as_double(chunk.data[col], types[col], row);
+        double value = get_entry_as_double(chunk.data[col], types[col], row);
+        if (name.starts_with("std_")) {
+            quantum_numbers.stds[name.substr(4)] = value;
+        } else if (name.starts_with("exp_")) {
+            quantum_numbers.values[name.substr(4)] = value;
+        } else {
+            quantum_numbers.values[name] = value;
+        }
     }
     return quantum_numbers;
 }
@@ -346,15 +358,17 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
     double quantum_number_m = description.quantum_numbers.at("m");
 
     auto make_ket = [&](size_t row) {
-        auto quantum_numbers = make_quantum_numbers(*chunk, types, names, excluded_columns, row);
-        quantum_numbers["m"] = quantum_number_m;
+        auto quantum_numbers =
+            get_quantum_numbers_from_row(*chunk, types, names, excluded_columns, row);
+        quantum_numbers.values["m"] = quantum_number_m;
         double energy = get_entry_as_double(chunk->data[energy_column], types[energy_column], row);
         auto id =
             utils::encode_as_ket_id({.id = static_cast<size_t>(duckdb::FlatVector::GetData<int64_t>(
                                          chunk->data[id_column])[row]),
                                      .m = quantum_number_m});
-        return KetAtom(typename KetAtom::Private(), energy, species, std::move(quantum_numbers),
-                       *this, id);
+        return KetAtom(typename KetAtom::Private(), energy, species,
+                       std::move(quantum_numbers.values), std::move(quantum_numbers.stds), *this,
+                       id);
     };
 
     // Check that the ket is uniquely specified
@@ -620,27 +634,29 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         set_task_status("Constructing atomic basis...");
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            auto quantum_numbers = make_quantum_numbers(*chunk, types, names, excluded_columns, i);
+            auto quantum_numbers =
+                get_quantum_numbers_from_row(*chunk, types, names, excluded_columns, i);
             double energy =
                 get_entry_as_double(chunk->data[energy_column], types[energy_column], i);
             auto id = static_cast<size_t>(
                 duckdb::FlatVector::GetData<int64_t>(chunk->data[ketid_column])[i]);
 
             // Check database consistency
-            ensure_consistent_quantum_numbers(quantum_numbers.at("f"), quantum_numbers.at("m"));
+            ensure_consistent_quantum_numbers(quantum_numbers.values.at("f"),
+                                              quantum_numbers.values.at("m"));
             if (energy < last_energy) {
                 throw std::runtime_error("The states are not sorted by energy.");
             }
             last_energy = energy;
 
-            if (auto it = quantum_numbers.find("nu"); it != quantum_numbers.end()) {
+            if (auto it = quantum_numbers.values.find("nu"); it != quantum_numbers.values.end()) {
                 min_quantum_number_nu = std::min(min_quantum_number_nu, it->second);
             }
 
             // Append a new state
-            kets.push_back(std::make_shared<const KetAtom>(typename KetAtom::Private(), energy,
-                                                           species, std::move(quantum_numbers),
-                                                           *this, id));
+            kets.push_back(std::make_shared<const KetAtom>(
+                typename KetAtom::Private(), energy, species, std::move(quantum_numbers.values),
+                std::move(quantum_numbers.stds), *this, id));
         }
     }
 
