@@ -169,6 +169,39 @@ def test_error_handling(basis: BasisPair) -> None:
         basis.get_matrix_elements("not a ket", ("energy", "energy"), (0, 0))  # type: ignore [arg-type]
 
 
+@pytest.mark.parametrize("restriction", ["parity_under_inversion", "parity_under_permutation"])
+def test_symmetrization_is_complete(
+    pi_module: PairinteractionModule, system_atom: SystemAtom, restriction: str
+) -> None:
+    """The parity sectors partition the canonical basis.
+
+    Summing the number of states over the even and odd sector reproduces the number of states of
+    the unsymmetrized basis, i.e. symmetrization neither loses nor duplicates states.
+    """
+    canonical = pi_module.BasisPair([system_atom, system_atom])
+    sectors = [pi_module.BasisPair([system_atom, system_atom], **{restriction: parity}) for parity in ["even", "odd"]]  # type: ignore [arg-type]
+
+    assert sum(sector.number_of_states for sector in sectors) == canonical.number_of_states
+    assert all(0 < sector.number_of_states < canonical.number_of_states for sector in sectors)
+
+
+@pytest.mark.parametrize("restriction", ["parity_under_inversion", "parity_under_permutation"])
+def test_symmetrization_requires_same_system(
+    pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom, restriction: str
+) -> None:
+    """A parity restriction requires the identical SystemAtom object for both atoms.
+
+    Two distinct SystemAtom objects represent different atoms, so symmetrization is rejected
+    (mirrors the C++ guard in BasisPairCreator::create).
+    """
+    with pytest.raises(ValueError, match="same SystemAtom"):
+        pi_module.BasisPair([system_atom, system_atom2], **{restriction: "odd"})  # type: ignore [arg-type]
+
+    # Without a parity restriction, two different systems remain allowed.
+    basis = pi_module.BasisPair([system_atom, system_atom2])
+    assert basis.number_of_states > 0
+
+
 def test_from_kets(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:
     """Test BasisPair.from_kets."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)

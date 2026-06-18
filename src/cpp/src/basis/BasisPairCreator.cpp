@@ -7,7 +7,6 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
-#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -70,6 +69,13 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     const bool has_symmetry_restriction =
         parity_under_inversion != Parity::UNKNOWN || parity_under_permutation != Parity::UNKNOWN;
 
+    // This ensures that a one-atom state can be identified across both atoms by its state index
+    if (has_symmetry_restriction && &systems_atom[0].get() != &systems_atom[1].get()) {
+        throw std::invalid_argument(
+            "Parity restrictions require the same SystemAtom to be added twice, because "
+            "symmetrization is only defined for two identical atoms.");
+    }
+
     Parity inferred_product_of_parities = Parity::UNKNOWN;
     if (parity_under_inversion != Parity::UNKNOWN && parity_under_permutation != Parity::UNKNOWN) {
         inferred_product_of_parities = static_cast<Parity>(
@@ -101,14 +107,63 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     Eigen::Index state_index = 0;
     std::unordered_map<std::array<size_t, 2>, Eigen::Index, utils::hash<std::array<size_t, 2>>>
-        ket_ids2state_index;
+        ket_indices2state_index;
     std::vector<Eigen::Triplet<Scalar>> transformation_triplets;
-
     if (has_symmetry_restriction) {
         transformation_triplets.reserve(eigenenergies1.size() * eigenenergies2.size());
     }
+    const double inverse_sqrt_two = 1 / std::sqrt(2.0);
 
-    double inverse_sqrt_two = 1 / std::sqrt(2.0);
+    // Construct the symmetry transformation by recording the contribution of the pair state
+    // |idx1, idx2> to the symmetrized basis. Because the two atoms are identical (enforced above),
+    // a one-atom state is uniquely identified across both atoms by its state index alone.
+    auto construct_symmetry_transformation = [&](Eigen::Index row_index, size_t idx1, size_t idx2) {
+        // Following https://doi.org/10.1088/1361-6455/aa743a, pair states |a, a> cannot be of even
+        // parity.
+        if (idx1 == idx2 &&
+            (parity_under_inversion == Parity::EVEN || parity_under_permutation == Parity::EVEN)) {
+            return;
+        }
+
+        // Map the (unordered) pair of one-atom state indices to the column index of the symmetrized
+        // state it contributes to, creating a new column the first time the pair is encountered.
+        std::array<size_t, 2> ordered_indices{std::max(idx1, idx2), std::min(idx1, idx2)};
+        auto [iterator, inserted] =
+            ket_indices2state_index.try_emplace(ordered_indices, state_index);
+        if (inserted) {
+            ++state_index;
+        }
+        Eigen::Index column_index = iterator->second;
+
+        // A pair state |a, a> contributes with coefficient one.
+        if (idx1 == idx2) {
+            transformation_triplets.emplace_back(row_index, column_index, 1);
+            return;
+        }
+
+        // We let pair states with idx1 > idx2 contribute with coefficient 1/sqrt(2) and put the
+        // phase into the contribution of the partner state with idx1 < idx2.
+        if (idx1 > idx2) {
+            transformation_triplets.emplace_back(row_index, column_index, inverse_sqrt_two);
+            return;
+        }
+
+        // Determine the phase of the contribution of the partner state with idx1 < idx2.
+        int phase = 0;
+        if (parity_under_permutation != Parity::UNKNOWN) {
+            // If both inversion and permutation are restricted, the earlier filter on the product
+            // of parities already guarantees that the phases in the inversion- and
+            // permutation-symmetric states are the same.
+            phase = -static_cast<int>(parity_under_permutation);
+        } else {
+            // If only inversion is restricted, the phase is determined by the product of the
+            // parities of the one-atom states and the specified inversion parity.
+            phase = -static_cast<int>(parity_under_inversion) *
+                static_cast<int>(basis1->get_parity(idx1)) *
+                static_cast<int>(basis2->get_parity(idx2));
+        }
+        transformation_triplets.emplace_back(row_index, column_index, phase * inverse_sqrt_two);
+    };
 
     // Loop only over states with an allowed energy
     size_t ket_index = 0;
@@ -168,74 +223,11 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
             // Store the KetPair object as a ket
             kets.emplace_back(std::move(ket));
-
-            // Store the ket index after all symmetry contributions have been recorded
             state_indices_to_ket_index.emplace(std::vector<size_t>{idx1, idx2}, ket_index);
 
-            // Store a symmetrized coefficient matrix only if inversion or permutation symmetry is
-            // specified
             auto row_index = static_cast<Eigen::Index>(ket_index++);
-            if (!has_symmetry_restriction) {
-                continue;
-            }
-
-            // TODO: on the long run, the states should have IDs and not only the kets. This is in
-            // particular of importance if get_corresponding_ket is not working because fields lead
-            // to states with contributions from many kets.
-            size_t id1 = basis1->get_corresponding_ket(idx1)->get_id_in_database();
-            size_t id2 = basis2->get_corresponding_ket(idx2)->get_id_in_database();
-
-            // Following the conventions from https://doi.org/10.1088/1361-6455/aa743a,
-            // pair states |a,a> cannot be of even parity
-            if (id1 == id2 && parity_under_inversion != Parity::EVEN &&
-                parity_under_permutation != Parity::EVEN) {
-                // Obtain the column index of the symmetrized state
-                Eigen::Index column_index = state_index++;
-
-                // A pair state with identical one-atom states contributes with coefficient one
-                // if allowed by both symmetries.
-                transformation_triplets.emplace_back(row_index, column_index, 1);
-            } else if (id1 > id2) {
-                // Obtain the column index of the symmetrized state
-                std::array<size_t, 2> ordered_ids{std::max(id1, id2), std::min(id1, id2)};
-                auto [column_iterator, inserted] =
-                    ket_ids2state_index.try_emplace(ordered_ids, state_index);
-                if (inserted) {
-                    ++state_index;
-                }
-                Eigen::Index column_index = column_iterator->second;
-
-                // We choose pair states with id1 > id2 to contribute with the coefficient 1/sqrt(2)
-                // and put the phase in the contribution of the pair states with id1 < id2.
-                transformation_triplets.emplace_back(row_index, column_index, inverse_sqrt_two);
-            } else if (id1 < id2) {
-                // Obtain the column index of the symmetrized state
-                std::array<size_t, 2> ordered_ids{std::max(id1, id2), std::min(id1, id2)};
-                auto [column_iterator, inserted] =
-                    ket_ids2state_index.try_emplace(ordered_ids, state_index);
-                if (inserted) {
-                    ++state_index;
-                }
-                Eigen::Index column_index = column_iterator->second;
-
-                // Obtain the phase of the contribution to the symmetrized state
-                int phase{0};
-                if (parity_under_permutation != Parity::UNKNOWN) {
-                    // If both inversion and permutation are restricted, the earlier filter on the
-                    // product of parities already guarantees that the phases in the inversion and
-                    // permutation symmetric states are the same.
-                    phase = -static_cast<int>(parity_under_permutation);
-                } else {
-                    // If only inversion is restricted, the phase of the contribution to the
-                    // symmetrized state is determined by the product of the parities of the
-                    // one-atom states and the specified inversion parity.
-                    phase = -static_cast<int>(parity_under_inversion) *
-                        static_cast<int>(basis1->get_parity(idx1)) *
-                        static_cast<int>(basis2->get_parity(idx2));
-                }
-
-                transformation_triplets.emplace_back(row_index, column_index,
-                                                     phase * inverse_sqrt_two);
+            if (has_symmetry_restriction) {
+                construct_symmetry_transformation(row_index, idx1, idx2);
             }
         }
     }
