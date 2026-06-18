@@ -35,7 +35,7 @@ class SystemAtom(SystemBase[BasisAtom]):
         >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
         >>> system = pi.SystemAtom(basis)
         >>> system.set_magnetic_field([0, 0, 1], unit="gauss").set_electric_field([0.1, 0, 0.1], unit="V/cm")
-        SystemAtom(BasisAtom(n=(58, 63), l=(0, 3)), is_diagonal=False)
+        SystemAtom(BasisAtom('Rb', n=(58, 63), l=(0, 3)), is_diagonal=False)
         >>> system.diagonalize()
         SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=True)
         >>> eigenenergies = system.get_eigenenergies(unit="GHz")

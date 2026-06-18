@@ -38,7 +38,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
         >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
         >>> print(basis)
-        BasisAtom(n=(57, 63), l=(0, 3), energy=(1008911.9216, 1009111.9216), energy_unit=GHz)
+        BasisAtom('Rb', n=(57, 63), l=(0, 3), energy=(1008911.9216, 1009111.9216), energy_unit='GHz')
 
     """
 
@@ -47,7 +47,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     _ket_class = KetAtom
     _state_class = StateAtom
 
-    _parameters_creator: dict[str, Any] | None = None
+    _args: dict[str, Any] | None = None
 
     def __init__(  # noqa: C901, PLR0912
         self,
@@ -98,30 +98,14 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 Default ``"fuzzy"``.
 
         """
-        if mode == "fuzzy":
-            quantum_number_standard_deviation_factor = 2.0
-        elif mode == "exact":
-            quantum_number_standard_deviation_factor = 0.0
-        else:
-            msg = "mode must be 'exact', 'fuzzy', or a non-negative number."
-            try:
-                quantum_number_standard_deviation_factor = float(mode)
-            except (TypeError, ValueError) as err:
-                raise ValueError(msg) from err
-            if quantum_number_standard_deviation_factor < 0:
-                raise ValueError(msg)
+        self._args = {"species": species}
 
         creator = self._cpp_creator()
         creator.set_species(species)
-        creator.set_quantum_number_standard_deviation_factor(quantum_number_standard_deviation_factor)
 
-        self._parameters_creator = {"qns": {}}
-        if mode != "fuzzy":
-            self._parameters_creator["mode"] = mode
-        if n is not None:
-            if not all(isinstance(x, int) or x.is_integer() for x in n):
-                raise ValueError("Quantum numbers n must be integers.")
-            n = (int(n[0]), int(n[1]))
+        if n is not None and not all(isinstance(x, int) or x.is_integer() for x in n):
+            raise ValueError("Quantum numbers n must be integers.")
+
         quantum_numbers = {
             "n": n,
             "nu": nu,
@@ -136,27 +120,47 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         }
         for name, value in quantum_numbers.items():
             if value is not None:
+                self._args[name] = value
                 creator.restrict_quantum_number(name, *value)
-                self._parameters_creator["qns"][name] = value
+
         if parity is not None:
+            self._args["parity"] = parity
             parity_int = parity_to_int(parity)
             creator.restrict_quantum_number("parity", parity_int, parity_int)
+
         if energy is not None:
+            self._args.update({"energy": energy, "energy_unit": energy_unit})
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
-            self._parameters_creator["energy"] = energy
-            self._parameters_creator["energy_unit"] = energy_unit
+
         if database is None:
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
             database = Database.get_global_database()
+
         if additional_kets is not None:
+            self._args["additional_kets"] = additional_kets
             for ket in additional_kets:
                 creator.add_ket(ket._cpp)
-            self._parameters_creator["additional_kets"] = additional_kets
-        self._cpp = creator.create(database._cpp)
 
+        if mode == "fuzzy":
+            quantum_number_standard_deviation_factor = 2.0
+        elif mode == "exact":
+            self._args["mode"] = mode
+            quantum_number_standard_deviation_factor = 0.0
+        else:
+            self._args["mode"] = mode
+            msg = "mode must be 'exact', 'fuzzy', or a non-negative number."
+            try:
+                quantum_number_standard_deviation_factor = float(mode)
+            except (TypeError, ValueError) as err:
+                raise ValueError(msg) from err
+            if quantum_number_standard_deviation_factor < 0:
+                raise ValueError(msg)
+        creator.set_quantum_number_standard_deviation_factor(quantum_number_standard_deviation_factor)
+
+        self._cpp = creator.create(database._cpp)
         self._post_init()
 
     @classmethod
@@ -280,22 +284,18 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         )
 
     def __repr__(self) -> str:
-        if self._parameters_creator is None:
+        if self._args is None:
             return super().__repr__()
 
-        args: list[str] = []
-        if qns := self._parameters_creator.get("qns", None):
-            args.extend(f"{k}={v}" for k, v in qns.items())
-        if (energy := self._parameters_creator.get("energy", None)) and (
-            energy_unit := self._parameters_creator.get("energy_unit", None)
-        ):
-            args.append(f"energy=({energy[0]:.4f}, {energy[1]:.4f})")
-            args.append(f"energy_unit={energy_unit}")
-        if additional_kets := self._parameters_creator.get("additional_kets", None):
-            args.append(f"additional_kets={additional_kets}")
-        if (mode := self._parameters_creator.get("mode", None)) is not None:
-            args.append(f"mode={mode!r}")
-        return f"{type(self).__name__}({', '.join(args)})"
+        args_str: list[str] = []
+        for k, v in self._args.items():
+            if k == "species":
+                args_str.append(repr(v))
+            elif k == "energy":
+                args_str.append(f"{k}=({v[0]:.4f}, {v[1]:.4f})")
+            else:
+                args_str.append(f"{k}={v!r}")
+        return f"{type(self).__name__}({', '.join(args_str)})"
 
     @property
     def database(self) -> Database:
