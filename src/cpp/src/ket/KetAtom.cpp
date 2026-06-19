@@ -97,13 +97,6 @@ std::string KetAtom::get_label() const {
     return label;
 }
 
-std::shared_ptr<KetAtom>
-KetAtom::get_ket_for_different_quantum_number_m(double new_quantum_number_m) const {
-    auto ket = *this;
-    ket.quantum_numbers.at("m") = new_quantum_number_m;
-    return std::make_shared<KetAtom>(ket);
-}
-
 const std::string &KetAtom::get_species() const { return species; }
 
 bool KetAtom::operator==(const KetAtom &other) const {

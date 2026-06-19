@@ -44,11 +44,7 @@ static void declare_indices_of_blocks_creator(nb::module_ &m) {
 template <typename T>
 static void declare_transformation_builder_interface(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "TransformationBuilderInterface" + type_name;
-    using real_t = typename TransformationBuilderInterface<T>::real_t;
     nb::class_<TransformationBuilderInterface<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_rotator",
-                nb::overload_cast<const std::array<real_t, 3> &, const std::array<real_t, 3> &>(
-                    &TransformationBuilderInterface<T>::get_rotator, nb::const_));
 }
 
 void bind_transformation_builder_interface(nb::module_ &m) {

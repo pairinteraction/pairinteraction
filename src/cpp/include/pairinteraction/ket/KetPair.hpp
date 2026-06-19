@@ -35,8 +35,6 @@ public:
             real_t energy);
 
     std::string get_label() const override;
-    std::shared_ptr<KetPair<Scalar>>
-    get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
     bool has_quantum_number_m() const;
     real_t get_quantum_number_m() const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
