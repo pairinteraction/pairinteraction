@@ -52,16 +52,6 @@ std::string KetPair<Scalar>::get_label() const {
 }
 
 template <typename Scalar>
-std::shared_ptr<KetPair<Scalar>>
-KetPair<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum_number_m*/) const {
-    // If we use symmetrized states so that the quantum_number_f is the total
-    // angular quantum number, the quantum_number_m is the magnetic quantum number
-    // corresponding to the total angular quantum number and we can implement this
-    // method.
-    throw std::runtime_error("Not implemented.");
-}
-
-template <typename Scalar>
 std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomic_states() const {
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
     atomic_states.reserve(atomic_indices.size());

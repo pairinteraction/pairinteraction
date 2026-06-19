@@ -12,7 +12,6 @@
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
-#include "pairinteraction/utils/wigner.hpp"
 
 #include <cassert>
 #include <numeric>
@@ -348,47 +347,6 @@ template <typename Derived>
 const Transformation<typename Basis<Derived>::scalar_t> &
 Basis<Derived>::get_transformation() const {
     return coefficients;
-}
-
-template <typename Derived>
-Transformation<typename Basis<Derived>::scalar_t>
-Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
-    Transformation<scalar_t> transformation{{static_cast<Eigen::Index>(coefficients.matrix.rows()),
-                                             static_cast<Eigen::Index>(coefficients.matrix.rows())},
-                                            {TransformationType::ROTATE}};
-
-    std::vector<Eigen::Triplet<scalar_t>> entries;
-
-    set_task_status("Constructing basis rotation...");
-    for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
-        real_t f = std::numeric_limits<real_t>::max();
-        real_t m_initial = std::numeric_limits<real_t>::max();
-        // TODO: this is a workaround, and should be fixed, once we restructure the quantum number
-        // handling of the Basis class
-        if constexpr (requires { kets[idx_initial]->get_quantum_number(std::string{}); }) {
-            f = kets[idx_initial]->get_quantum_number("f");
-            m_initial = kets[idx_initial]->get_quantum_number("m");
-        } else {
-            m_initial = kets[idx_initial]->get_quantum_number_m();
-        }
-
-        assert(2 * f == std::floor(2 * f) && f >= 0);
-        assert(2 * m_initial == std::floor(2 * m_initial) && m_initial >= -f && m_initial <= f);
-
-        for (real_t m_final = -f; m_final <= f; // NOSONAR m_final is precisely representable
-             ++m_final) {
-            auto val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
-                                                                   beta, gamma);
-            size_t idx_final = get_ket_index_from_ket(
-                kets[idx_initial]->get_ket_for_different_quantum_number_m(m_final));
-            entries.emplace_back(idx_final, idx_initial, val);
-        }
-    }
-
-    transformation.matrix.setFromTriplets(entries.begin(), entries.end());
-    transformation.matrix.makeCompressed();
-
-    return transformation;
 }
 
 template <typename Derived>

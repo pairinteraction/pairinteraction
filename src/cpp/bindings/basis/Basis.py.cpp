@@ -41,7 +41,6 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_coefficients", nb::overload_cast<>(&Basis<T>::get_coefficients, nb::const_))
         .def("set_coefficients", &Basis<T>::set_coefficients)
         .def("get_transformation", &Basis<T>::get_transformation)
-        .def("get_rotator", &Basis<T>::get_rotator)
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
         .def("get_sorter_without_checks", &Basis<T>::get_sorter_without_checks)

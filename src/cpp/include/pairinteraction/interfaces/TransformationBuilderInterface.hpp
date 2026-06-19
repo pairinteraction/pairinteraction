@@ -7,7 +7,6 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
-#include <array>
 #include <complex>
 #include <initializer_list>
 #include <set>
@@ -62,13 +61,9 @@ public:
 
     virtual ~TransformationBuilderInterface() = default;
     virtual const Transformation<Scalar> &get_transformation() const = 0;
-    virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
     virtual Sorting get_sorter(const std::vector<TransformationType> &labels) const = 0;
     virtual std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::vector<TransformationType> &labels) const = 0;
-
-    Transformation<Scalar> get_rotator(const std::array<real_t, 3> &to_z_axis,
-                                       const std::array<real_t, 3> &to_y_axis) const;
 };
 
 extern template struct Transformation<double>;

@@ -4,7 +4,6 @@
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 
 #include "pairinteraction/enums/TransformationType.hpp"
-#include "pairinteraction/utils/euler.hpp"
 
 namespace pairinteraction {
 
@@ -53,14 +52,6 @@ Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix
 
 Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix)
     : matrix(std::move(matrix)), transformation_type({TransformationType::ARBITRARY}) {}
-
-template <typename Scalar>
-Transformation<Scalar>
-TransformationBuilderInterface<Scalar>::get_rotator(const std::array<real_t, 3> &to_z_axis,
-                                                    const std::array<real_t, 3> &to_y_axis) const {
-    auto euler_zyz_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
-    return this->get_rotator(euler_zyz_angles[0], euler_zyz_angles[1], euler_zyz_angles[2]);
-}
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)

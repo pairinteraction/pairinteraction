@@ -40,7 +40,6 @@ static void declare_system(nb::module_ &m, const std::string &type_name) {
         .def("get_eigenenergies", &S::get_eigenenergies, nb::call_guard<nb::gil_scoped_release>())
         .def("get_matrix", &S::get_matrix, nb::call_guard<nb::gil_scoped_release>())
         .def("get_transformation", &S::get_transformation, nb::call_guard<nb::gil_scoped_release>())
-        .def("get_rotator", &S::get_rotator, nb::call_guard<nb::gil_scoped_release>())
         .def("get_sorter", &S::get_sorter, nb::call_guard<nb::gil_scoped_release>())
         .def("get_indices_of_blocks", &S::get_indices_of_blocks,
              nb::call_guard<nb::gil_scoped_release>())

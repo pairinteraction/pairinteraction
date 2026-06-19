@@ -30,8 +30,6 @@ public:
     Database &get_database() const;
     size_t get_id_in_database() const;
     std::string get_label() const override;
-    std::shared_ptr<KetAtom>
-    get_ket_for_different_quantum_number_m(double new_quantum_number_m) const;
     const std::string &get_species() const;
     double get_quantum_number(const std::string &name) const;
     double get_quantum_number_std(const std::string &name) const;

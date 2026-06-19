@@ -84,16 +84,6 @@ System<Derived>::get_transformation() const {
 }
 
 template <typename Derived>
-Transformation<typename System<Derived>::scalar_t>
-System<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-    return basis->get_rotator(alpha, beta, gamma);
-}
-
-template <typename Derived>
 Sorting System<Derived>::get_sorter(const std::vector<TransformationType> &labels) const {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
