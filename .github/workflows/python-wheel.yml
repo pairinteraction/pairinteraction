@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Build sdist
       run: pipx run build --sdist
@@ -46,7 +46,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Restore Git LFS from cache
       uses: ./.github/actions/cache-lfs
@@ -93,7 +93,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Restore Git LFS from cache
       uses: ./.github/actions/cache-lfs
@@ -126,7 +126,7 @@ jobs:
       image: ${{ matrix.os == 'ubuntu-latest' && format('ghcr.io/pairinteraction/pairinteraction-ubuntu:docker') || null }}
     needs: [sdist]
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Restore Git LFS from cache
       uses: ./.github/actions/cache-lfs
