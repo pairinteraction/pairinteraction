@@ -18,6 +18,5 @@ void bind_transformation_type(nb::module_ &m) {
         .value("SORT_BY_QUANTUM_NUMBER_M", TransformationType::SORT_BY_QUANTUM_NUMBER_M)
         .value("SORT_BY_PARITY", TransformationType::SORT_BY_PARITY)
         .value("SORT_BY_ENERGY", TransformationType::SORT_BY_ENERGY)
-        .value("ROTATE", TransformationType::ROTATE)
         .value("ARBITRARY", TransformationType::ARBITRARY);
 }
