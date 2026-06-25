@@ -14,8 +14,7 @@ enum class TransformationType : unsigned char {
     SORT_BY_QUANTUM_NUMBER_M = 1 << 2,
     SORT_BY_PARITY = 1 << 3,
     SORT_BY_ENERGY = 1 << 4,
-    ROTATE = 1 << 5,
-    ARBITRARY = 1 << 6
+    ARBITRARY = 1 << 5
 };
 
 inline constexpr TransformationType operator&(TransformationType x, TransformationType y) {

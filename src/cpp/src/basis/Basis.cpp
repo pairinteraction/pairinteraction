@@ -616,29 +616,6 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     // std::numeric_limits<real_t>::epsilon()" too small for figuring out whether m is conserved?
     real_t numerical_precision = 0.001;
 
-    // If the transformation is a rotation, it should be a rotation and nothing else
-    bool is_rotation = false;
-    for (auto t : transformation.transformation_type) {
-        if (t == TransformationType::ROTATE) {
-            is_rotation = true;
-            break;
-        }
-    }
-    if (is_rotation && transformation.transformation_type.size() != 1) {
-        throw std::invalid_argument("A rotation can not be combined with other transformations.");
-    }
-
-    // To apply a rotation, the object must only be sorted but other transformations are not allowed
-    if (is_rotation) {
-        for (auto t : coefficients.transformation_type) {
-            if (!utils::is_sorting(t)) {
-                throw std::runtime_error(
-                    "If the object was transformed by a different transformation "
-                    "than sorting, it can not be rotated.");
-            }
-        }
-    }
-
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
 
