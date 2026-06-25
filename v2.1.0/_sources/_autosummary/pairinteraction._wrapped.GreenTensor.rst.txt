@@ -1,0 +1,19 @@
+﻿GreenTensor
+===========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~GreenTensor.__init__
+      ~GreenTensor.get_spherical
+      ~GreenTensor.set_from_cartesian
+
+
+
+
+
+.. autoclass:: pairinteraction._wrapped.GreenTensor

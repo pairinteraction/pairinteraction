@@ -1,0 +1,432 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Green Tensor of a Cavity &mdash; PairInteraction 2.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/gallery.css?v=4a1cd419" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=4d935f96"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../../_static/copybutton.js?v=ccdb6887"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="author" title="About these documents" href="../../../about.html" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Dispersion Coefficients Near Surfaces" href="c6_near_surfaces.html" />
+    <link rel="prev" title="StateAtom Objects" href="../state_atom_object.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            PairInteraction
+              <img src="../../../_static/logo48x48.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../about.html">About</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../tutorials.html">Tutorials</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../tutorials.html#tutorials-python-api">Tutorials - Python API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../quick_start.html">Quick Start</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../concepts.html">Concepts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../stark_map.html">Stark Maps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pair_potentials.html">Pair Potentials</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../lifetimes.html">Lifetimes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../c3_c6_coefficients.html"><span class="math notranslate nohighlight">\(C_3\)</span> and <span class="math notranslate nohighlight">\(C_6\)</span> Coefficients</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../state_atom_object.html">StateAtom Objects</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Green Tensor of a Cavity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="c6_near_surfaces.html">Dispersion Coefficients Near Surfaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../effective_hamiltonian.html">Effective Hamiltonian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../pair_potential_efield_sensitivity.html">Pair Potentials Under External Fields</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../atom_ion_interaction.html">Rydberg Atom Ion Interaction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mqdt.html">MQDT Calculations for Ytterbium</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../tutorials.html#tutorials-graphical-user-interface">Tutorials - Graphical User Interface</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_reference.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../publications/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faqs.html">FAQs</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributor Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/getting_started.html">Getting Started as a Contributor</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/architecture.html">Overview of PairInteraction’s Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/style_guide.html">Style Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/database.html">Database Format</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Utility Tools [External Links]</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/MQDT.jl">MQDT.jl</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/pairinteraction/rydstate">RydState</a></li>
+</ul>
+
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../../../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction" class="gitbutton">Explore<small>the GitHub repository</small></a>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">PairInteraction</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../tutorials.html">Tutorials</a></li>
+      <li class="breadcrumb-item active">Green Tensor of a Cavity</li>
+<li class="wy-breadcrumbs-aside">
+      <a href="https://github.com/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/green_tensor/green_tensor_example_cavity.ipynb" class="fa fa-github"> View on GitHub</a>
+</li>
+
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <style>
+  .nbinput .prompt,
+  .nboutput .prompt {
+    display: none;
+  }
+
+  .rst-content p {
+    margin-bottom: 15px;
+  }
+
+  .rst-content div.nbinput.nblast.docutils.container + p,
+  .rst-content div.nboutput.nblast.docutils.container + p {
+    margin-top: 15px;
+  }
+</style>
+
+<div class="admonition note">
+  Open as Jupyter notebook in
+  <a class="reference external" href="https://colab.research.google.com/github/pairinteraction/pairinteraction/blob/master/docs/tutorials/examples_python/green_tensor_example_cavity.ipynb">Google Colab</a>.
+</div><section id="Green-Tensor-of-a-Cavity">
+<h1>Green Tensor of a Cavity<a class="headerlink" href="#Green-Tensor-of-a-Cavity" title="Link to this heading"></a></h1>
+<p>We analyze the Green tensor of a cavity, which gives insight into how a cavity does change the interactions between two atoms.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %pip install -q pairinteraction # Uncomment for installation on Colab</span>
+<span class="c1"># Uncomment the next line if you have ipympl installed and want interactive plots</span>
+<span class="c1"># %matplotlib widget</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pairinteraction</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pi</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.green_tensor</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreenTensorCavity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pairinteraction.green_tensor.green_tensor_free_space</span><span class="w"> </span><span class="kn">import</span> <span class="n">GreenTensorFreeSpace</span>
+</pre></div>
+</div>
+</div>
+<p>We focus here on the transition between two circular Rydberg states. In the following the lifetime, C3 coefficient and the transition wavelength are calculated for reference.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">ket1</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Sr88_singlet&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">ket2</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">KetAtom</span><span class="p">(</span><span class="s2">&quot;Sr88_singlet&quot;</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">n</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ket1</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">ket2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">c3</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">C3</span><span class="p">(</span><span class="n">ket1</span><span class="p">,</span> <span class="n">ket2</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;planck_constant GHz mum^3&quot;</span><span class="p">)</span>
+<span class="n">lifetimes</span> <span class="o">=</span> <span class="p">{</span><span class="nb">str</span><span class="p">(</span><span class="n">ket</span><span class="p">):</span> <span class="n">ket</span><span class="o">.</span><span class="n">get_lifetime</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;ms&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">ket</span> <span class="ow">in</span> <span class="p">[</span><span class="n">ket1</span><span class="p">,</span> <span class="n">ket2</span><span class="p">]}</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  c3=</span><span class="si">{</span><span class="n">c3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  lifetimes=</span><span class="si">{</span><span class="n">lifetimes</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">transition_energy</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">ket1</span><span class="o">.</span><span class="n">get_energy</span><span class="p">()</span> <span class="o">-</span> <span class="n">ket2</span><span class="o">.</span><span class="n">get_energy</span><span class="p">())</span>
+<span class="n">wavelength</span> <span class="o">=</span> <span class="n">transition_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;micrometer&quot;</span><span class="p">,</span> <span class="s2">&quot;spectroscopy&quot;</span><span class="p">)</span>
+<span class="n">wavelength_mum</span> <span class="o">=</span> <span class="n">wavelength</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;micrometer&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">m</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  transition_energy=</span><span class="si">{</span><span class="n">transition_energy</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;planck_constant GHz&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  wavelength=</span><span class="si">{</span><span class="n">wavelength</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s1">&#39;micrometer&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+|Sr88_singlet:30,29_29,29⟩ - |Sr88_singlet:31,30_30,30⟩
+  c3=0.401194815439827 gigahertz * micrometer ** 3 * planck_constant
+  lifetimes={&#39;|Sr88_singlet:30,29_29,29⟩&#39;: &lt;Quantity(2.19360709, &#39;millisecond&#39;)&gt;, &#39;|Sr88_singlet:31,30_30,30⟩&#39;: &lt;Quantity(2.58725834, &#39;millisecond&#39;)&gt;}
+  transition_energy=232.02579196980213 gigahertz * planck_constant
+  wavelength=1292.0652288475658 micrometer
+</pre></div></div>
+</div>
+<p>Now we calculate the Green Tensor for a list of different cavity spacings z.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">static_z</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">z_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">static_z</span><span class="p">,</span>
+    <span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">),</span>
+    <span class="mf">0.05</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">,</span>
+    <span class="mf">0.4</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">,</span>
+    <span class="mf">0.5</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">,</span>
+    <span class="mf">0.8</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">,</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
+<span class="p">]</span>  <span class="c1"># mum</span>
+
+<span class="n">V_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">distance_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">z_list</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Calculating z </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">z_list</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">50</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+    <span class="n">static</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">z</span> <span class="o">==</span> <span class="n">static_z</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+        <span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">wavelength_mum</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">z</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="n">tensor_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Calculating distance </span><span class="si">{</span><span class="n">j</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">])</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2"> mum&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">GreenTensorFreeSpace</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mum&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gt</span> <span class="o">=</span> <span class="n">GreenTensorCavity</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">z1</span><span class="o">=</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">z2</span><span class="o">=-</span><span class="n">z</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;mum&quot;</span><span class="p">,</span> <span class="n">static_limit</span><span class="o">=</span><span class="n">static</span>
+            <span class="p">)</span>
+
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">gt</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">transition_energy</span><span class="p">)</span>
+        <span class="n">tensor_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+
+    <span class="n">V_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">m</span><span class="p">))</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensor_list</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Calculating z 1/7
+Calculating z 2/7
+Calculating z 3/7
+Calculating z 4/7
+Calculating z 5/7
+Calculating z 6/7
+Calculating z 7/7
+  Calculating distance 500/500: 12920.652288475656 mum
+</pre></div></div>
+</div>
+<p>Now we can plot the different cavity Green Tensor over the interatomic distance. In a log-log scale as shown here the expected free space, static limit, is a line, corresponding to the <span class="math notranslate nohighlight">\(r^{-3}\)</span> behavior. As one can see, for a cavity, the Green Tensor rapidly decreases for interatomic distances larger than the cavity spacing z (even for distances much smaller than the transition wavelength). In addition, if the the interatomic distance start to be on the order of the transition wavelength,
+dynamic effects of the Gren tensor (resulting in peaks) can be seen.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">wavelength_mum</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Wavelength&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">V_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;$z = </span><span class="si">{</span><span class="n">z</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">wavelength_mum</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> \lambda = </span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> \, \mathrm</span><span class="se">{{</span><span class="s2">\mu m</span><span class="se">}}</span><span class="s2">$&quot;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;Free space&quot;</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="o">==</span> <span class="n">static_z</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;static limit&quot;</span>
+
+    <span class="n">distance_list</span> <span class="o">=</span> <span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distance_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">V</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Green tensor $G_{x,x}(r, \omega)$&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Distance $r$ ($\mu$m)&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/tutorials_examples_python_green_tensor_green_tensor_example_cavity_8_0.png" src="../../../_images/tutorials_examples_python_green_tensor_green_tensor_example_cavity_8_0.png" />
+</div>
+</div>
+<p>We rescale the above plot, to see the similar behaviour for cavities way smaller than the transition wavelength. For cavities with distances similar to the transition wavelength the behaviour changes significantly.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">V</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">V_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+    <span class="n">color</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;$z = </span><span class="si">{</span><span class="n">z</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">wavelength_mum</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> \lambda = </span><span class="si">{</span><span class="n">z</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> \, \mathrm</span><span class="se">{{</span><span class="s2">\mu m</span><span class="se">}}</span><span class="s2">$&quot;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+        <span class="k">continue</span>
+    <span class="k">if</span> <span class="n">z</span> <span class="o">==</span> <span class="n">static_z</span><span class="p">:</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;static limit&quot;</span>
+
+    <span class="n">distance_list</span> <span class="o">=</span> <span class="n">distance_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">distance_list</span> <span class="o">/</span> <span class="n">z</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">V</span><span class="p">)</span> <span class="o">*</span> <span class="n">distance_list</span><span class="o">**</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=-</span><span class="n">i</span>
+    <span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s2">&quot;dashed&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$r^3 \cdot G_{x,x}(r, \omega)$&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Distance $r / z$&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span> <span class="mf">2e1</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mf">1e-8</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">(</span><span class="mf">1.05</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/tutorials_examples_python_green_tensor_green_tensor_example_cavity_10_0.png" src="../../../_images/tutorials_examples_python_green_tensor_green_tensor_example_cavity_10_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../state_atom_object.html" class="btn btn-neutral float-left" title="StateAtom Objects" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="c6_near_surfaces.html" class="btn btn-neutral float-right" title="Dispersion Coefficients Near Surfaces" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2017, PairInteraction Developers.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    Version: v2.4.0
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    
+    <dl>
+      <dt>Versions</dt>
+      
+        <dd><a href="../master/index.html">master (dev)</a></dd>
+      
+        <dd><a href="../stable/index.html">v2.5.0 (stable)</a></dd>
+      
+        <dd><a href="../v2.4.0/index.html">v2.4.0</a></dd>
+      
+        <dd><a href="../v2.3.1/index.html">v2.3.1</a></dd>
+      
+        <dd><a href="../v2.2.2/index.html">v2.2.2</a></dd>
+      
+        <dd><a href="../v2.1.0/index.html">v2.1.0</a></dd>
+      
+        <dd><a href="../v2.0.1/index.html">v2.0.1</a></dd>
+      
+        <dd><a href="../v0.9.10/index.html">v0.9.10 (legacy)</a></dd>
+      
+    </dl>
+    
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
