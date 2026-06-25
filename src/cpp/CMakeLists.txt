@@ -39,7 +39,6 @@ add_library(
   ./include/pairinteraction/utils/TaskControl.hpp
   ./include/pairinteraction/utils/eigen_assertion.hpp
   ./include/pairinteraction/utils/eigen_compat.hpp
-  ./include/pairinteraction/utils/euler.hpp
   ./include/pairinteraction/utils/operator.hpp
   ./include/pairinteraction/utils/hash.hpp
   ./include/pairinteraction/utils/ket_id.hpp
@@ -50,7 +49,6 @@ add_library(
   ./include/pairinteraction/utils/streamed.hpp
   ./include/pairinteraction/utils/tensor.hpp
   ./include/pairinteraction/utils/traits.hpp
-  ./include/pairinteraction/utils/wigner.hpp
   ./include/pairinteraction/pairinteraction.hpp
   ./include/pairinteraction/Info.hpp
   ./include/pairinteraction/version.hpp
@@ -90,11 +88,9 @@ add_library(
   ./src/tools/setup.cpp
   ./src/tools/run_unit_tests.cpp
   ./src/utils/TaskControl.cpp
-  ./src/utils/euler.test.cpp
   ./src/utils/spherical.cpp
   ./src/utils/spherical.test.cpp
-  ./src/utils/tensor.cpp
-  ./src/utils/wigner.test.cpp)
+  ./src/utils/tensor.cpp)
 
 target_link_libraries(
   pairinteraction
