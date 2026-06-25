@@ -14,7 +14,7 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <cassert>
-#include <numeric>
+#include <fmt/format.h>
 #include <set>
 #include <spdlog/spdlog.h>
 
@@ -29,6 +29,11 @@ void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType>
     for (const auto &label : labels) {
         if (!utils::is_sorting(label)) {
             throw std::invalid_argument("One of the labels is not a valid sorting label.");
+        }
+        // CANONICAL_ORDER is only a marker for the canonical ket order; it cannot be used to
+        // actively sort states.
+        if (label == TransformationType::CANONICAL_ORDER) {
+            throw std::invalid_argument("Sorting by the canonical ket order is not supported.");
         }
     }
 }
@@ -48,6 +53,13 @@ void Basis<Derived>::perform_blocks_checks(
         throw std::invalid_argument("The states are not sorted by the requested labels.");
     }
 
+    // CANONICAL_ORDER is only a marker for the canonical ket order; it cannot be used to obtain
+    // blocks.
+    if (unique_labels.contains(TransformationType::CANONICAL_ORDER)) {
+        throw std::invalid_argument(
+            "Obtaining blocks by the canonical ket order is not supported.");
+    }
+
     // Throw a meaningful error if getting the blocks by energy is requested as this might be a
     // common mistake
     if (unique_labels.contains(TransformationType::SORT_BY_ENERGY)) {
@@ -60,7 +72,7 @@ template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
                                            static_cast<Eigen::Index>(this->kets.size())},
-                                          {TransformationType::SORT_BY_KET}} {
+                                          {TransformationType::CANONICAL_ORDER}} {
     if (this->kets.empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
@@ -96,10 +108,6 @@ Basis<Derived>::Basis(ketvec_t &&kets)
             _has_parity = false;
         }
     }
-    state_index_to_ket_index.resize(this->kets.size());
-    std::iota(state_index_to_ket_index.begin(), state_index_to_ket_index.end(), 0);
-    ket_index_to_state_index.resize(this->kets.size());
-    std::iota(ket_index_to_state_index.begin(), ket_index_to_state_index.end(), 0);
     coefficients.matrix.setIdentity();
 }
 
@@ -152,10 +160,6 @@ void Basis<Derived>::set_coefficients(
 
     coefficients.matrix = values;
 
-    std::fill(ket_index_to_state_index.begin(), ket_index_to_state_index.end(),
-              std::numeric_limits<int>::max());
-    std::fill(state_index_to_ket_index.begin(), state_index_to_ket_index.end(),
-              std::numeric_limits<int>::max());
     std::fill(state_index_to_quantum_number_f.begin(), state_index_to_quantum_number_f.end(),
               std::numeric_limits<real_t>::max());
     std::fill(state_index_to_quantum_number_m.begin(), state_index_to_quantum_number_m.end(),
@@ -202,13 +206,85 @@ Parity Basis<Derived>::get_parity(size_t state_index) const {
 }
 
 template <typename Derived>
+template <typename Func>
+size_t Basis<Derived>::get_argmax_coefficient(Func &&for_each_overlap, std::string_view subject,
+                                              std::string_view target) const {
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t degeneracy_tolerance = 1e-6;
+
+    real_t largest_overlap = -1;
+    real_t second_largest_overlap = -1;
+    size_t argmax = 0;
+    bool found = false;
+
+    for_each_overlap([&](size_t index, real_t overlap) {
+        if (overlap > largest_overlap) {
+            second_largest_overlap = largest_overlap;
+            largest_overlap = overlap;
+            argmax = index;
+            found = true;
+        } else if (overlap > second_largest_overlap) {
+            second_largest_overlap = overlap;
+        }
+    });
+
+    if (!found) {
+        throw std::runtime_error(fmt::format(
+            "The {} does not correspond to any {} because all its coefficients are zero.", subject,
+            target));
+    }
+
+    if (largest_overlap <= 0.5 + numerical_precision) {
+        if (second_largest_overlap >= 0 &&
+            largest_overlap - second_largest_overlap < degeneracy_tolerance) {
+            SPDLOG_WARN("The {} has no uniquely corresponding {}: the two largest squared "
+                        "overlaps ({} and {}) are nearly degenerate.",
+                        subject, target, largest_overlap, second_largest_overlap);
+        } else {
+            SPDLOG_WARN("The {} has no uniquely corresponding {}: the largest squared overlap "
+                        "is {} <= 0.5.",
+                        subject, target, largest_overlap);
+        }
+    }
+
+    return argmax;
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_argmax_coefficient_in_col(size_t col_index) const {
+    return get_argmax_coefficient(
+        [&](auto &&accumulate) {
+            for (int row = 0; row < coefficients.matrix.outerSize(); ++row) {
+                for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                         coefficients.matrix, row);
+                     it; ++it) {
+                    if (static_cast<size_t>(it.col()) != col_index) {
+                        continue;
+                    }
+                    accumulate(static_cast<size_t>(it.row()), std::pow(std::abs(it.value()), 2));
+                }
+            }
+        },
+        "state", "ket");
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_argmax_coefficient_in_row(size_t row_index) const {
+    return get_argmax_coefficient(
+        [&](auto &&accumulate) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                     coefficients.matrix, static_cast<Eigen::Index>(row_index));
+                 it; ++it) {
+                accumulate(static_cast<size_t>(it.col()), std::pow(std::abs(it.value()), 2));
+            }
+        },
+        "ket", "state");
+}
+
+template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
 Basis<Derived>::get_corresponding_ket(size_t state_index) const {
-    size_t ket_index = state_index_to_ket_index.at(state_index);
-    if (ket_index == std::numeric_limits<int>::max()) {
-        throw std::invalid_argument("The state does not belong to a ket in a well-defined way.");
-    }
-    return kets[ket_index];
+    return kets[get_corresponding_ket_index(state_index)];
 }
 
 template <typename Derived>
@@ -222,17 +298,8 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     // Create a copy of the current object
     auto restricted = std::make_shared<Derived>(derived());
 
-    // Restrict the copy to the state with the largest overlap
+    // Restrict the copy to the requested state
     restricted->coefficients.matrix = restricted->coefficients.matrix.col(state_index);
-
-    std::fill(restricted->ket_index_to_state_index.begin(),
-              restricted->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
-
-    size_t ket_index = state_index_to_ket_index[state_index];
-    restricted->state_index_to_ket_index = {ket_index};
-    if (ket_index != std::numeric_limits<int>::max()) {
-        restricted->ket_index_to_state_index[ket_index] = 0;
-    }
 
     restricted->state_index_to_quantum_number_f = {state_index_to_quantum_number_f[state_index]};
     restricted->state_index_to_quantum_number_m = {state_index_to_quantum_number_m[state_index]};
@@ -255,11 +322,7 @@ Basis<Derived>::get_ket(size_t ket_index) const {
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ket_index) const {
-    size_t state_index = ket_index_to_state_index.at(ket_index);
-    if (state_index == std::numeric_limits<int>::max()) {
-        throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
-    }
-    return get_state(state_index);
+    return get_state(get_corresponding_state_index(ket_index));
 }
 
 template <typename Derived>
@@ -274,11 +337,7 @@ Basis<Derived>::get_corresponding_state(std::shared_ptr<const ket_t> ket) const 
 
 template <typename Derived>
 size_t Basis<Derived>::get_corresponding_state_index(size_t ket_index) const {
-    int state_index = ket_index_to_state_index.at(ket_index);
-    if (state_index == std::numeric_limits<int>::max()) {
-        throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
-    }
-    return state_index;
+    return get_argmax_coefficient_in_row(ket_index);
 }
 
 template <typename Derived>
@@ -292,11 +351,7 @@ size_t Basis<Derived>::get_corresponding_state_index(std::shared_ptr<const ket_t
 
 template <typename Derived>
 size_t Basis<Derived>::get_corresponding_ket_index(size_t state_index) const {
-    size_t ket_index = state_index_to_ket_index.at(state_index);
-    if (ket_index == std::numeric_limits<int>::max()) {
-        throw std::runtime_error("The state does not belong to a ket in a well-defined way.");
-    }
-    return ket_index;
+    return get_argmax_coefficient_in_col(state_index);
 }
 
 template <typename Derived>
@@ -422,11 +477,6 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
                     return state_index_to_quantum_number_f[a] < state_index_to_quantum_number_f[b];
                 }
                 break;
-            case TransformationType::SORT_BY_KET:
-                if (state_index_to_ket_index[a] != state_index_to_ket_index[b]) {
-                    return state_index_to_ket_index[a] < state_index_to_ket_index[b];
-                }
-                break;
             default:
                 std::abort(); // Can't happen because of previous checks
             }
@@ -460,13 +510,6 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
             transformation.transformation_type.push_back(
                 TransformationType::SORT_BY_QUANTUM_NUMBER_F);
             break;
-        case TransformationType::SORT_BY_KET:
-            if (state_index_to_ket_index[*perm_back] == std::numeric_limits<int>::max()) {
-                throw std::invalid_argument(
-                    "States cannot be labeled and thus not sorted by kets.");
-            }
-            transformation.transformation_type.push_back(TransformationType::SORT_BY_KET);
-            break;
         default:
             std::abort(); // Can't happen because of previous checks
         }
@@ -482,7 +525,6 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
     auto last_quantum_number_f = state_index_to_quantum_number_f[0];
     auto last_quantum_number_m = state_index_to_quantum_number_m[0];
     auto last_parity = state_index_to_parity[0];
-    auto last_ket = state_index_to_ket_index[0];
 
     set_task_status("Identifying basis blocks...");
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
@@ -504,17 +546,10 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
                 blocks_creator.add(i);
                 break;
             }
-            if (label == TransformationType::SORT_BY_KET &&
-                state_index_to_ket_index[i] != last_ket &&
-                last_ket != std::numeric_limits<int>::max()) {
-                blocks_creator.add(i);
-                break;
-            }
         }
         last_quantum_number_f = state_index_to_quantum_number_f[i];
         last_quantum_number_m = state_index_to_quantum_number_m[i];
         last_parity = state_index_to_parity[i];
-        last_ket = state_index_to_ket_index[i];
     }
 }
 
@@ -526,13 +561,7 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
 
     result->coefficients.matrix.resize(n, n);
     result->coefficients.matrix.setIdentity();
-    result->coefficients.transformation_type = {TransformationType::SORT_BY_KET};
-
-    result->state_index_to_ket_index.resize(n);
-    std::iota(result->state_index_to_ket_index.begin(), result->state_index_to_ket_index.end(), 0);
-
-    result->ket_index_to_state_index.resize(n);
-    std::iota(result->ket_index_to_state_index.begin(), result->ket_index_to_state_index.end(), 0);
+    result->coefficients.transformation_type = {TransformationType::CANONICAL_ORDER};
 
     result->state_index_to_quantum_number_f.resize(n);
     result->state_index_to_quantum_number_m.resize(n);
@@ -588,7 +617,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
     transformed->state_index_to_quantum_number_f.resize(transformation.matrix.size());
     transformed->state_index_to_quantum_number_m.resize(transformation.matrix.size());
     transformed->state_index_to_parity.resize(transformation.matrix.size());
-    transformed->state_index_to_ket_index.resize(transformation.matrix.size());
 
     set_task_status("Relabeling sorted basis states...");
     for (int i = 0; i < transformation.matrix.size(); ++i) {
@@ -598,12 +626,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
             state_index_to_quantum_number_m[transformation.matrix.indices()[i]];
         transformed->state_index_to_parity[i] =
             state_index_to_parity[transformation.matrix.indices()[i]];
-
-        size_t ket_index = state_index_to_ket_index[transformation.matrix.indices()[i]];
-        transformed->state_index_to_ket_index[i] = ket_index;
-        if (ket_index != std::numeric_limits<int>::max()) {
-            transformed->ket_index_to_state_index[ket_index] = i;
-        }
     }
 
     return transformed;
@@ -689,72 +711,6 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 transformed->state_index_to_parity[i] = Parity::UNKNOWN;
                 transformed->_has_parity = false;
             }
-        }
-    }
-
-    set_task_status("Obtaining transformed state mapping...");
-    {
-        // In the following, we obtain a bijective map between state index and ket index.
-
-        // Find the maximum value in each row and column
-        std::vector<real_t> max_in_row(transformed->coefficients.matrix.rows(), 0);
-        std::vector<real_t> max_in_col(transformed->coefficients.matrix.cols(), 0);
-        for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
-            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
-                     transformed->coefficients.matrix, row);
-                 it; ++it) {
-                real_t val = std::pow(std::abs(it.value()), 2);
-                max_in_row[row] = std::max(max_in_row[row], val);
-                max_in_col[it.col()] = std::max(max_in_col[it.col()], val);
-            }
-        }
-
-        // Use the maximum values to define a cost for a sub-optimal mapping
-        std::vector<real_t> costs;
-        std::vector<std::pair<int, int>> mappings;
-        costs.reserve(transformed->coefficients.matrix.nonZeros());
-        mappings.reserve(transformed->coefficients.matrix.nonZeros());
-        for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
-            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
-                     transformed->coefficients.matrix, row);
-                 it; ++it) {
-                real_t val = std::pow(std::abs(it.value()), 2);
-                real_t cost = max_in_row[row] + max_in_col[it.col()] - 2 * val;
-                costs.push_back(cost);
-                mappings.push_back({row, it.col()});
-            }
-        }
-
-        // Obtain from the costs in which order the mappings should be considered
-        std::vector<size_t> order(costs.size());
-        std::iota(order.begin(), order.end(), 0);
-        std::sort(order.begin(), order.end(),
-                  [&](size_t a, size_t b) { return costs[a] < costs[b]; });
-
-        // Fill ket_index_to_state_index with invalid values as there can be more kets than states
-        std::fill(transformed->ket_index_to_state_index.begin(),
-                  transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
-
-        // Generate the bijective map
-        std::vector<bool> row_used(transformed->coefficients.matrix.rows(), false);
-        std::vector<bool> col_used(transformed->coefficients.matrix.cols(), false);
-        int num_used = 0;
-        for (size_t idx : order) {
-            int row = mappings[idx].first;  // corresponds to the ket index
-            int col = mappings[idx].second; // corresponds to the state index
-            if (!row_used[row] && !col_used[col]) {
-                row_used[row] = true;
-                col_used[col] = true;
-                num_used++;
-                transformed->state_index_to_ket_index[col] = row;
-                transformed->ket_index_to_state_index[row] = col;
-            }
-            if (num_used == transformed->coefficients.matrix.cols()) {
-                break;
-            }
-        }
-        if (num_used != transformed->coefficients.matrix.cols()) {
-            SPDLOG_WARN("A bijective map between states and kets could not be found.");
         }
     }
 

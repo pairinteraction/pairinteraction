@@ -12,6 +12,7 @@
 #include <Eigen/SparseCore>
 #include <memory>
 #include <set>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -110,6 +111,12 @@ protected:
 private:
     const Derived &derived() const;
 
+    size_t get_argmax_coefficient_in_col(size_t col_index) const;
+    size_t get_argmax_coefficient_in_row(size_t row_index) const;
+    template <typename Func>
+    size_t get_argmax_coefficient(Func &&for_each_overlap, std::string_view subject,
+                                  std::string_view target) const;
+
     struct hash {
         std::size_t operator()(const std::shared_ptr<const ket_t> &k) const;
     };
@@ -122,12 +129,10 @@ private:
     Transformation<scalar_t> coefficients;
 
     std::unordered_map<std::shared_ptr<const ket_t>, size_t, hash, equal_to> ket_to_ket_index;
-    std::vector<size_t> ket_index_to_state_index;
 
     std::vector<real_t> state_index_to_quantum_number_f;
     std::vector<real_t> state_index_to_quantum_number_m;
     std::vector<Parity> state_index_to_parity;
-    std::vector<size_t> state_index_to_ket_index;
 
     bool _has_quantum_number_f{true};
     bool _has_quantum_number_m{true};

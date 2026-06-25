@@ -9,7 +9,7 @@
 namespace pairinteraction {
 enum class TransformationType : unsigned char {
     IDENTITY = 0,
-    SORT_BY_KET = 1 << 0,
+    CANONICAL_ORDER = 1 << 0,
     SORT_BY_QUANTUM_NUMBER_F = 1 << 1,
     SORT_BY_QUANTUM_NUMBER_M = 1 << 2,
     SORT_BY_PARITY = 1 << 3,
@@ -31,7 +31,7 @@ inline constexpr TransformationType operator~(TransformationType x) {
 
 namespace utils {
 inline bool is_sorting(TransformationType label) {
-    static constexpr TransformationType MASK_SORTING = TransformationType::SORT_BY_KET |
+    static constexpr TransformationType MASK_SORTING = TransformationType::CANONICAL_ORDER |
         TransformationType::SORT_BY_QUANTUM_NUMBER_F |
         TransformationType::SORT_BY_QUANTUM_NUMBER_M | TransformationType::SORT_BY_PARITY |
         TransformationType::SORT_BY_ENERGY;
