@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 
+import os
 import sys
 
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import QLoggingCategory, QTimer
 
 from pairinteraction_gui.app import Application, SplashScreen
 
@@ -18,6 +19,10 @@ def main(*, enable_theme_hot_reload: bool = False) -> int:
         int: Application exit code
 
     """
+    rules = os.environ.get("QT_LOGGING_RULES", "")
+    if "qt.gui.icc.warning=" not in rules:
+        QLoggingCategory.setFilterRules(f"{rules}\nqt.gui.icc.warning=false".strip())
+
     app = Application(sys.argv)
     app.setApplicationName("PairInteraction")
     app.allow_ctrl_c()
