@@ -34,7 +34,6 @@ public:
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
             real_t energy);
 
-    std::string get_label() const override;
     bool has_quantum_number_m() const;
     real_t get_quantum_number_m() const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;

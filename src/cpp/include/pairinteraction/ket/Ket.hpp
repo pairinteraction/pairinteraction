@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <iostream>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -27,12 +26,6 @@ public:
     virtual ~Ket() = default;
 
     double get_energy() const;
-
-    virtual std::string get_label() const = 0;
-
-    friend std::ostream &operator<<(std::ostream &os, const Ket &ket) {
-        return os << ket.get_label();
-    }
 
 protected:
     explicit Ket(double energy);

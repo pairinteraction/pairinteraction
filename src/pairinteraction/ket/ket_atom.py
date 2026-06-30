@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Literal, overload
 
@@ -12,6 +13,7 @@ from pairinteraction import _backend
 from pairinteraction.database import Database
 from pairinteraction.enums import OperatorType, Parity, int_to_parity, parity_to_int
 from pairinteraction.ket.ket_base import KetBase
+from pairinteraction.ket.utils import format_half_integer, get_l_label
 from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
@@ -19,6 +21,9 @@ if TYPE_CHECKING:
 
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.units import NDArray, PintArray, PintComplex, PintFloat
+
+
+logger = logging.getLogger(__name__)
 
 
 class KetAtom(KetBase):
@@ -134,6 +139,35 @@ class KetAtom(KetBase):
                 Database.initialize_global_database()
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)
+
+    def _get_raw_label(self) -> str:
+        s, l, f, m = self.s, self.l, self.f, self.m
+
+        label = self.species.split("_", 1)[0]
+        label = label[0].upper() + label[1:]
+
+        if not self.is_calculated_with_mqdt:
+            if s == 0:
+                label += "_singlet"
+            elif s == 1:
+                label += "_triplet"
+            elif s != 0.5:
+                logger.error("Unexpected spin quantum number s=%f for species %s.", s, self.species)
+
+        label += ":"
+
+        if self.is_calculated_with_mqdt:
+            label += f"S={s:.1f},nu={self.nu:.1f},L={l:.1f},"
+            label += "J=" if self.is_j_total_momentum else "F="
+        else:
+            label += f"{self.n:d},"
+            label += get_l_label(l)
+            label += "_"
+
+        label += format_half_integer(f)
+        label += "," + format_half_integer(m)
+
+        return label
 
     @cached_property
     def database(self) -> Database:

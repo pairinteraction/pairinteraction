@@ -34,24 +34,6 @@ typename KetPair<Scalar>::real_t KetPair<Scalar>::get_quantum_number_m() const {
 }
 
 template <typename Scalar>
-std::string KetPair<Scalar>::get_label() const {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    std::string label;
-    std::string separator;
-    for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
-        const auto &basis = atomic_bases[atom_index];
-        size_t idx = atomic_indices[atom_index];
-        Scalar coefficient =
-            basis->get_coefficients().coeff(basis->get_corresponding_ket_index(idx), idx);
-        std::string optional_tilde = (std::abs(coefficient - 1.0) > numerical_precision) ? "~" : "";
-        label += separator + optional_tilde + basis->get_corresponding_ket(idx)->get_label();
-        separator = "; ";
-    }
-    return label;
-}
-
-template <typename Scalar>
 std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomic_states() const {
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
     atomic_states.reserve(atomic_indices.size());

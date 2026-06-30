@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Literal, TypeAlias, overload
 
 from pairinteraction.units import QuantityScalar
@@ -65,7 +65,7 @@ class KetBase(ABC):
             The label of the ket in the given format.
 
         """
-        raw = self._cpp.get_label()
+        raw = self._get_raw_label()
         if fmt == "raw":
             return raw
         if fmt == "ket":
@@ -73,6 +73,10 @@ class KetBase(ABC):
         if fmt == "bra":
             return f"⟨{raw}|"
         raise ValueError(f"Unknown fmt {fmt}")
+
+    @abstractmethod
+    def _get_raw_label(self) -> str:
+        """Return the raw label of the ket."""
 
     @overload
     def get_energy(self, unit: None = None) -> PintFloat: ...

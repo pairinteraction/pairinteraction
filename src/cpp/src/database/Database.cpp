@@ -371,6 +371,18 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                        id);
     };
 
+    // Describe a candidate row by its species and quantum numbers (used for error messages)
+    auto describe_ket = [&](size_t row) {
+        auto quantum_numbers =
+            get_quantum_numbers_from_row(*chunk, types, names, excluded_columns, row);
+        std::string description = species;
+        for (const auto &[name, value] : quantum_numbers.values) {
+            description += fmt::format(" {}={}", name, value);
+        }
+        description += fmt::format(" m={}", quantum_number_m);
+        return description;
+    };
+
     // Check that the ket is uniquely specified
     if (chunk->size() > 1) {
         size_t order_val_column = get_column_index(names, "order_val");
@@ -382,7 +394,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         if (order_val_1 - order_val_0 <= order_val_0) {
             throw std::invalid_argument(
                 fmt::format("The ket is not uniquely specified. Possible kets are:\n{}\n{}",
-                            fmt::streamed(make_ket(0)), fmt::streamed(make_ket(1))));
+                            describe_ket(0), describe_ket(1)));
         }
     }
 

@@ -17,7 +17,6 @@
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
-#include <sstream>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
@@ -25,13 +24,7 @@ using namespace pairinteraction;
 static void declare_ket(nb::module_ &m) {
     std::string pyclass_name = "Ket";
     nb::class_<Ket> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_energy", &Ket::get_energy)
-        .def("get_label", &Ket::get_label)
-        .def("__str__", [](Ket const &self) {
-            std::stringstream ss;
-            ss << self;
-            return ss.str();
-        });
+    pyclass.def("get_energy", &Ket::get_energy);
 }
 
 static void declare_ket_atom(nb::module_ &m) {
