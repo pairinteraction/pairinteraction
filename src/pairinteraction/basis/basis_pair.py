@@ -286,6 +286,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         obj.system_atoms = system_atoms
         return obj
 
+    def _from_cpp_object_additional_args(self) -> tuple[Any, ...]:
+        return (self.system_atoms,)
+
     def get_corresponding_state(self, ket: KetPairLike) -> StatePair:  # type: ignore [override]
         # override the accepted ket type
         return super().get_corresponding_state(ket)  # type: ignore [arg-type]
