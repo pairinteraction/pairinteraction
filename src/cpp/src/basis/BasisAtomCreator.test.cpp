@@ -28,7 +28,6 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -41,7 +40,6 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr87_mqdt");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -54,7 +52,6 @@ DOCTEST_TEST_CASE("create a basis from kets") {
         BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -139,6 +136,17 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
 
     SystemAtom<double> system(basis);
 
+    auto get_corresponding_state_index = [&database](const auto &b,
+                                                     const std::shared_ptr<const KetAtom> &ket) {
+        auto basis_ket = BasisAtomCreator<double>().add_ket(ket).create(database);
+        Eigen::MatrixXd overlaps =
+            Eigen::MatrixXd(b->get_matrix_elements(basis_ket, OperatorType::IDENTITY, 0))
+                .cwiseAbs();
+        Eigen::Index idx = 0;
+        overlaps.row(0).maxCoeff(&idx);
+        return idx;
+    };
+
     DOCTEST_SUBCASE("calculate energy") {
         auto basis_ket_s = BasisAtomCreator<double>().add_ket(ket_s).create(database);
 
@@ -150,7 +158,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         auto m2 = basis->get_matrix_elements(basis_ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m2.rows() == 1);
         DOCTEST_CHECK(m2.cols() == basis->get_number_of_states());
-        double energy2 = m2.coeff(0, static_cast<int>(basis->get_corresponding_state_index(ket_s)));
+        double energy2 = m2.coeff(0, static_cast<int>(get_corresponding_state_index(basis, ket_s)));
 
         double reference = ket_s->get_energy();
         DOCTEST_CHECK(std::abs(energy1 - reference) < 1e-11);
@@ -163,14 +171,14 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         auto m = basis->get_matrix_elements(basis_ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
         DOCTEST_CHECK(m.rows() == 1);
         DOCTEST_CHECK(m.cols() == basis->get_number_of_states());
-        double dipole = m.coeff(0, static_cast<int>(basis->get_corresponding_state_index(ket_s)));
+        double dipole = m.coeff(0, static_cast<int>(get_corresponding_state_index(basis, ket_s)));
 
         DOCTEST_CHECK(std::abs(dipole - 1247.6043831131365) < 1e-6);
     }
 
     DOCTEST_SUBCASE("calculate electric dipole matrix element with and without an induced dipole") {
         {
-            auto state = basis->get_corresponding_state(ket_s);
+            auto state = basis->get_state(get_corresponding_state_index(basis, ket_s));
 
             auto m = state->get_matrix_elements(state, OperatorType::ELECTRIC_DIPOLE, 0);
             DOCTEST_CHECK(m.rows() == 1);
@@ -183,7 +191,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         {
             system.set_electric_field({0, 0, VOLT_PER_CM_IN_ATOMIC_UNITS});
             system.diagonalize(DiagonalizerEigen<double>());
-            auto state = system.get_eigenbasis()->get_corresponding_state(ket_s);
+            auto eigenbasis = system.get_eigenbasis();
+            auto state = eigenbasis->get_state(get_corresponding_state_index(eigenbasis, ket_s));
 
             auto m = state->get_matrix_elements(state, OperatorType::ELECTRIC_DIPOLE, 0);
             DOCTEST_CHECK(m.rows() == 1);

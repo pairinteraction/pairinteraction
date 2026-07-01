@@ -10,6 +10,7 @@
 #include "pairinteraction/database/ParquetManager.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetNotUniqueError.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/hash.hpp"
 #include "pairinteraction/utils/ket_id.hpp"
@@ -371,7 +372,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                        id);
     };
 
-    // Check that the ket is uniquely specified
+    // Check that the ket is uniquely specified. If not, throw a KetNotUniqueError.
     if (chunk->size() > 1) {
         size_t order_val_column = get_column_index(names, "order_val");
         auto order_val_0 =
@@ -380,9 +381,10 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
             get_entry_as_double(chunk->data[order_val_column], types[order_val_column], 1);
 
         if (order_val_1 - order_val_0 <= order_val_0) {
-            throw std::invalid_argument(
-                fmt::format("The ket is not uniquely specified. Possible kets are:\n{}\n{}",
-                            fmt::streamed(make_ket(0)), fmt::streamed(make_ket(1))));
+            std::vector<std::shared_ptr<const KetAtom>> candidates;
+            candidates.push_back(std::make_shared<const KetAtom>(make_ket(0)));
+            candidates.push_back(std::make_shared<const KetAtom>(make_ket(1)));
+            throw KetNotUniqueError(std::move(candidates));
         }
     }
 

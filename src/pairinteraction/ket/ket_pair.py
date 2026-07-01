@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeGuard, overload
 
+import numpy as np
+
 from pairinteraction.ket.ket_atom import KetAtom
 from pairinteraction.ket.ket_base import KetBase
 
@@ -76,6 +78,16 @@ class KetPair(KetBase):
             ]
             return f"({atom_labels[0]}) ⊗ ({atom_labels[1]})"
         return super().get_label(fmt)
+
+    def _get_raw_label(self) -> str:
+        precision = 100 * np.finfo(float).eps
+        labels = []
+        for state_atom in self.state_atoms:
+            ket_idx = state_atom.get_corresponding_ket_index()
+            coefficient = state_atom.get_coefficients()[ket_idx]
+            optional_tilde = "~" if abs(coefficient - 1.0) > precision else ""
+            labels.append(optional_tilde + state_atom.get_ket(ket_idx).get_label("raw"))
+        return "; ".join(labels)
 
     @property
     def state_atoms(self) -> tuple[StateAtom, StateAtom]:

@@ -5,18 +5,10 @@
 
 #include "pairinteraction/utils/hash.hpp"
 
-#include <array>
-#include <cctype>
-#include <cmath>
-#include <fmt/core.h>
-#include <fmt/format.h>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace pairinteraction {
-
-constexpr std::array<std::string_view, 6> quantum_number_l_labels = {"S", "P", "D", "F", "G", "H"};
 
 KetAtom::KetAtom(Private /*unused*/, double energy, std::string species,
                  std::unordered_map<std::string, double> quantum_numbers,
@@ -37,64 +29,6 @@ double KetAtom::get_quantum_number(const std::string &name) const {
 double KetAtom::get_quantum_number_std(const std::string &name) const {
     auto it = quantum_numbers_std.find(name);
     return it != quantum_numbers_std.end() ? it->second : 0;
-}
-
-std::string KetAtom::get_label() const {
-    double s = get_quantum_number("s");
-    double l = get_quantum_number("l");
-    double f = get_quantum_number("f");
-    double m = get_quantum_number("m");
-    bool is_calculated_with_mqdt = get_quantum_number("is_calculated_with_mqdt") != 0;
-
-    size_t pos = species.find('_');
-    std::string label = (pos != std::string::npos) ? species.substr(0, pos) : species;
-    label[0] = static_cast<char>(std::toupper(label[0]));
-
-    if (!is_calculated_with_mqdt) {
-        if (s == 0) {
-            label += "_singlet";
-        } else if (s == 1) {
-            label += "_triplet";
-        } else if (s != 0.5) {
-            throw std::runtime_error(
-                "Invalid value for quantum number s in the single-channel description.");
-        }
-    }
-
-    label += ":";
-
-    if (is_calculated_with_mqdt) {
-        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},", s, get_quantum_number("nu"), l);
-        label += get_quantum_number("is_j_total_momentum") != 0 ? "J=" : "F=";
-    } else {
-        label += fmt::format("{:.0f},", get_quantum_number("n"));
-        if (l == std::rint(l) && l < quantum_number_l_labels.size()) {
-            label += quantum_number_l_labels.at(static_cast<size_t>(l));
-        } else {
-            label += fmt::format("{:.0f}", l);
-        }
-        label += "_";
-    }
-
-    if (f == std::rint(f)) {
-        label += fmt::format("{:.0f}", f);
-    } else if (2 * f == std::rint(2 * f)) {
-        label += fmt::format("{:.0f}/2", 2 * f);
-    } else {
-        std::abort(); // can't happen because the total momentum is validated to be an integer
-                      // or half-integer
-    }
-
-    if (m == std::rint(m)) {
-        label += fmt::format(",{:.0f}", m);
-    } else if (2 * m == std::rint(2 * m)) {
-        label += fmt::format(",{:.0f}/2", 2 * m);
-    } else {
-        std::abort(); // can't happen because the quantum number m is validated to be an integer
-                      // or half-integer
-    }
-
-    return label;
 }
 
 const std::string &KetAtom::get_species() const { return species; }

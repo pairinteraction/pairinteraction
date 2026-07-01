@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
     from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
+
+logger = logging.getLogger(__name__)
 
 KetType = TypeVar("KetType", bound="KetBase")
 UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
@@ -117,16 +120,30 @@ class StateBase(ABC, Generic[KetType]):
         return self._cpp.get_coefficients().toarray().ravel()
 
     def get_corresponding_ket(self) -> KetType:
-        """Return the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
+        """Return the ket with the maximal overlap with self."""
         return self.get_ket(self.get_corresponding_ket_index())
 
     def get_corresponding_ket_index(self) -> int:
-        """Return the index of the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
-        coeffs = np.abs(self.get_coefficients())
-        ket_idx = np.argmax(coeffs)
-        if coeffs[ket_idx] ** 2 < 0.5 + 100 * np.finfo(float).eps:
-            raise ValueError("The maximal overlap is <= 0.5, i.e. the state has no uniquely corresponding ket.")
-        return int(ket_idx)
+        """Return the ket index with the maximal overlap with self."""
+        overlaps = np.abs(self.get_coefficients()) ** 2
+
+        if len(overlaps) == 1:
+            return 0
+
+        ids = np.argpartition(overlaps, -2)[-2:]
+        ids = ids[np.argsort(overlaps[ids])[::-1]]
+        largest_overlap = overlaps[ids[0]]
+        second_largest_overlap = overlaps[ids[1]]
+
+        if largest_overlap < 0.5 + 100 * np.finfo(float).eps:
+            logger.warning(
+                "The state %s has no uniquely corresponding ket in the basis. "
+                "Largest overlap=%.3f <= 0.5, the second largest overlap is %.3f. "
+                "Still returning the ket with the largest overlap.",
+                *(self, largest_overlap, second_largest_overlap),
+            )
+
+        return int(ids[0])
 
     @abstractmethod
     def get_amplitude(self, other: Any) -> Any: ...

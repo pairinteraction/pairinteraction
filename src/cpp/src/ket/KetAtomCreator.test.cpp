@@ -20,7 +20,6 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
     DOCTEST_CHECK(ket->get_quantum_number("m") == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number("s") == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number("parity") == -1); // odd parity
-    DOCTEST_MESSAGE("Ket: ", *ket);
 }
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
@@ -38,7 +37,6 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_quantum_number("f") == 1);
     DOCTEST_CHECK(ket->get_quantum_number("m") == 0);
     DOCTEST_CHECK(ket->get_quantum_number("parity") == -1); // odd parity
-    DOCTEST_MESSAGE("Ket: ", *ket);
 }
 
 DOCTEST_TEST_CASE("quantum number std fallback") {
