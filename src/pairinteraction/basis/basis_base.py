@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
+
+import numpy as np
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -12,6 +15,8 @@ if TYPE_CHECKING:
     from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.state import StateBase
+
+logger = logging.getLogger(__name__)
 
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
@@ -106,18 +111,22 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return self._cpp.get_coefficients()
 
     def get_corresponding_ket(self: Self, state: StateType) -> KetType:
-        ket_index = self.get_corresponding_ket_index(state)
-        return self.get_ket(ket_index)
+        """Return the ket of the basis with the maximal overlap with the given state."""
+        return self.get_ket(self.get_corresponding_ket_index(state))
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
-        raise NotImplementedError("Not implemented yet.")
+        """Return the index of the ket of the basis with the maximal overlap with the given state."""
+        canonical_basis = self.canonicalized()
+
+        return _get_corresponding_index(canonical_basis, state, subject="state", target="ket")
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
-        state_index = self.get_corresponding_state_index(ket)
-        return self.get_state(state_index)
+        """Return the state of the basis with the maximal overlap with the given ket."""
+        return self.get_state(self.get_corresponding_state_index(ket))
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
-        return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
+        """Return the index of the state of the basis with the maximal overlap with the given ket."""
+        return _get_corresponding_index(self, ket, subject="ket", target="state")
 
     def canonicalized(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
@@ -131,3 +140,33 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     @abstractmethod
     def get_matrix_elements(self, other: Any, *args: Any, **kwargs: Any) -> Any: ...
+
+
+def _get_corresponding_index(
+    basis: BasisBase[Any, Any], ket_or_state: KetBase | StateBase[Any], subject: str, target: str
+) -> int:
+    overlaps = basis.get_overlaps(ket_or_state)
+
+    if len(overlaps) == 0:
+        raise ValueError(f"The {subject} {ket_or_state} has no corresponding {target} in the basis, the basis is empty.")
+    if len(overlaps) == 1:
+        return 0
+
+    ids = np.argpartition(overlaps, -2)[-2:]
+    ids = ids[np.argsort(overlaps[ids])[::-1]]
+    largest_overlap = overlaps[ids[0]]
+    second_largest_overlap = overlaps[ids[1]]
+
+    if largest_overlap == 0:
+        raise ValueError(
+            f"The {subject} {ket_or_state} has no corresponding {target} in the basis, all overlaps are 0."
+        )
+    if largest_overlap < 0.5 + 100 * np.finfo(float).eps:
+        logger.warning(
+            "The %s %s has no uniquely corresponding %s in the basis. "
+            "Largest overlap=%.3f <= 0.5, the second largest overlap is %.3f. "
+            "Still returning the %s with the largest overlap.",
+            *(subject, ket_or_state, target, largest_overlap, second_largest_overlap, target),
+        )
+
+    return int(ids[0])
