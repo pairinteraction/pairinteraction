@@ -127,6 +127,20 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         """Return the canonical basis with identity coefficients."""
         return type(self)._from_cpp_object(self._cpp.canonicalized(), *self._from_cpp_object_additional_args())
 
+    def merge(self: Self, other: Self) -> Self:
+        """Return a canonical basis containing the kets from both bases.
+
+        The bases must be compatible, i.e. they must share the same species, database, ...
+        For BasisPair they also must share the same underlying atomic basis.
+        The returned basis is in canonical form, i.e. has identity coefficients.
+        Consequently, coefficients of transformed or symmetrized input bases are not retained.
+        """
+        if type(self) is not type(other):
+            raise TypeError(
+                f"Can only merge {type(self).__name__} with the same basis type, but got {type(other).__name__}."
+            )
+        return type(self)._from_cpp_object(self._cpp.merge(other._cpp), *self._from_cpp_object_additional_args())
+
     @abstractmethod
     def get_amplitudes(self, other: Any) -> Any: ...
 

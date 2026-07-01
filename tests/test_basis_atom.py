@@ -212,3 +212,21 @@ def test_from_kets(pi_module: PairinteractionModule) -> None:
     ket_sr = pi_module.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
     with pytest.raises(ValueError, match="species"):
         pi_module.BasisAtom.from_kets([ket_rb, ket_sr])
+
+
+def test_merge(pi_module: PairinteractionModule) -> None:
+    basis1 = pi_module.BasisAtom("Rb", n=(60, 60), l=(0, 1), m=(0.5, 0.5))
+    basis2 = pi_module.BasisAtom("Rb", n=(60, 60), l=(1, 2), m=(0.5, 0.5))
+
+    merged = basis1.merge(basis2)
+    expected_kets = set(basis1.kets) | set(basis2.kets)
+
+    assert set(merged.kets) == expected_kets
+    assert merged.number_of_kets == len(expected_kets)
+    assert merged.number_of_states == merged.number_of_kets
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), np.eye(merged.number_of_kets))
+    assert basis1.number_of_kets < merged.number_of_kets
+    assert basis2.number_of_kets < merged.number_of_kets
+
+    merged_with_self = basis1.merge(basis1)
+    assert merged_with_self.kets == basis1.kets
