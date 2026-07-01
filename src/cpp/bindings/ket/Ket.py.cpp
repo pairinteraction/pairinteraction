@@ -8,6 +8,7 @@
 #include "pairinteraction/ket/Ket.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
+#include "pairinteraction/ket/KetNotUniqueError.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
@@ -59,10 +60,27 @@ static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
         .def("__hash__", [](const KetPair<T> &self) { return typename KetPair<T>::hash{}(self); });
 }
 
+static void declare_ket_not_unique_error(nb::module_ &m) {
+    static nb::object exc_type = nb::exception<KetNotUniqueError>(m, "KetNotUniqueError");
+    nb::register_exception_translator(
+        [](const std::exception_ptr &p, void *payload) {
+            try {
+                std::rethrow_exception(p);
+            } catch (const KetNotUniqueError &e) {
+                auto *type = static_cast<PyObject *>(payload);
+                nb::object exc = nb::borrow(type)(e.what());
+                exc.attr("kets") = nb::cast(e.get_kets());
+                PyErr_SetObject(type, exc.ptr());
+            }
+        },
+        exc_type.ptr());
+}
+
 void bind_ket(nb::module_ &m) {
     declare_ket(m);
     declare_ket_atom(m);
     declare_ket_atom_creator(m);
     declare_ket_pair<double>(m, "Real");
     declare_ket_pair<std::complex<double>>(m, "Complex");
+    declare_ket_not_unique_error(m);
 }

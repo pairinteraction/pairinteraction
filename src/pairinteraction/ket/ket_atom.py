@@ -134,7 +134,12 @@ class KetAtom(KetBase):
             if Database.get_global_database() is None:
                 Database.initialize_global_database()
             database = Database.get_global_database()
-        self._cpp = creator.create(database._cpp)
+        try:
+            self._cpp = creator.create(database._cpp)
+        except _backend.KetNotUniqueError as err:
+            candidates = [KetAtom._from_cpp_object(ket) for ket in err.kets]  # type: ignore [attr-defined]
+            labels = "\n".join(ket.get_label("ket") for ket in candidates)
+            raise ValueError(f"The ket is not uniquely specified. Possible kets are:\n{labels}") from None
 
     def _get_raw_label(self) -> str:
         s, l, f, m = self.s, self.l, self.f, self.m
