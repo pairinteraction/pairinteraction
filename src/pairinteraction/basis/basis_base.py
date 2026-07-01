@@ -53,6 +53,10 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         obj._post_init()
         return obj
 
+    def _from_cpp_object_additional_args(self) -> tuple[Any, ...]:
+        """Extra positional args ``_from_cpp_object`` needs to rebuild an object of this type."""
+        return ()
+
     def __repr__(self) -> str:
         args = f"{self.get_ket(0)} ... {self.get_ket(self.number_of_kets - 1)}"
         return f"{type(self).__name__}({args})"
@@ -133,7 +137,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def canonicalized(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
-        return type(self)._from_cpp_object(self._cpp.canonicalized())
+        return type(self)._from_cpp_object(self._cpp.canonicalized(), *self._from_cpp_object_additional_args())
 
     @abstractmethod
     def get_amplitudes(self, other: Any) -> Any: ...
