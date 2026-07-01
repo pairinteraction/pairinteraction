@@ -98,6 +98,7 @@ public:
                                               IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<const Derived> canonicalized() const;
+    virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
     transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<const Derived> transformed(const Sorting &transformation) const;

@@ -71,6 +71,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket_index,
                                                          nb::const_))
         .def("canonicalized", &Basis<T>::canonicalized)
+        .def("merge", &Basis<T>::merge)
         .def("copy", [](const Basis<T> &self) {
             return std::make_shared<T>(static_cast<const T &>(self));
         });

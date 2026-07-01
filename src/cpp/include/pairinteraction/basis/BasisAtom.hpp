@@ -56,6 +56,7 @@ public:
     Database &get_database() const;
     const std::string &get_species() const;
     const std::string &get_canonical_basis_id() const;
+    std::shared_ptr<const Type> merge(std::shared_ptr<const Type> other) const override;
 
     int get_ket_index_from_id(size_t ket_id) const;
 
