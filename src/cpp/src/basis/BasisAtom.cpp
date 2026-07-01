@@ -3,10 +3,13 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
 #include <cassert>
+#include <stdexcept>
+#include <unordered_set>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -40,6 +43,29 @@ int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
 template <typename Scalar>
 const std::string &BasisAtom<Scalar>::get_canonical_basis_id() const {
     return canonical_basis_id;
+}
+
+template <typename Scalar>
+std::shared_ptr<const typename BasisAtom<Scalar>::Type>
+BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
+    if (&database != &other->database) {
+        throw std::invalid_argument("Cannot merge atomic bases from different Database instances.");
+    }
+    if (get_species() != other->get_species()) {
+        throw std::invalid_argument("Cannot merge atomic bases with different species.");
+    }
+
+    BasisAtomCreator<Scalar> creator;
+    std::unordered_set<size_t> ket_ids;
+    ket_ids.reserve(this->kets.size() + other->kets.size());
+    for (const auto &basis : {this, other.get()}) {
+        for (const auto &ket : basis->kets) {
+            if (ket_ids.insert(ket->get_id_in_database()).second) {
+                creator.add_ket(ket);
+            }
+        }
+    }
+    return creator.create(database);
 }
 
 template <typename Scalar>

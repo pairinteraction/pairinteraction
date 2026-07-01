@@ -215,6 +215,31 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     }
 }
 
+DOCTEST_TEST_CASE("merge rejects differently transformed atomic bases") {
+    auto &database = Database::get_global_instance();
+    auto atomic_basis = BasisAtomCreator<double>()
+                            .set_species("Rb")
+                            .restrict_quantum_number("n", 60, 60)
+                            .restrict_quantum_number("l", 0, 1)
+                            .restrict_quantum_number("m", 0.5, 0.5)
+                            .create(database);
+
+    auto system_a = SystemAtom<double>(atomic_basis);
+    system_a.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    system_a.diagonalize(DiagonalizerEigen<double>());
+
+    auto system_b = SystemAtom<double>(atomic_basis);
+    system_b.set_electric_field({0, 0, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+    system_b.diagonalize(DiagonalizerEigen<double>());
+
+    auto pair_basis_a = BasisPairCreator<double>().add(system_a).add(system_a).create();
+    auto pair_basis_b = BasisPairCreator<double>().add(system_b).add(system_b).create();
+
+    DOCTEST_CHECK_THROWS_WITH_AS(pair_basis_a->merge(pair_basis_b),
+                                 doctest::Contains("Cannot merge two pair bases"),
+                                 std::invalid_argument);
+}
+
 DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     DiagonalizerEigen<double> diagonalizer;
 
