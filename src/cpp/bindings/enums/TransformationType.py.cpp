@@ -13,7 +13,7 @@ using namespace pairinteraction;
 void bind_transformation_type(nb::module_ &m) {
     nb::enum_<TransformationType>(m, "TransformationType", nb::is_arithmetic())
         .value("IDENTITY", TransformationType::IDENTITY)
-        .value("SORT_BY_KET", TransformationType::SORT_BY_KET)
+        .value("CANONICAL_ORDER", TransformationType::CANONICAL_ORDER)
         .value("SORT_BY_QUANTUM_NUMBER_F", TransformationType::SORT_BY_QUANTUM_NUMBER_F)
         .value("SORT_BY_QUANTUM_NUMBER_M", TransformationType::SORT_BY_QUANTUM_NUMBER_M)
         .value("SORT_BY_PARITY", TransformationType::SORT_BY_PARITY)
