@@ -28,7 +28,6 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -41,7 +40,6 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr87_mqdt");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -54,7 +52,6 @@ DOCTEST_TEST_CASE("create a basis from kets") {
         BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 

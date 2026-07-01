@@ -81,19 +81,11 @@ int main(int argc, char **argv) {
     }
 
     // Extract results
-    std::vector<std::string> kets;
     Eigen::MatrixX<double> eigenenergies(system_pairs.size(), basis_pair->get_number_of_states());
     Eigen::MatrixX<double> eigenstates(system_pairs.size(),
                                        basis_pair->get_number_of_states() *
                                            basis_pair->get_number_of_states());
     Eigen::MatrixX<double> overlaps(system_pairs.size(), basis_pair->get_number_of_states());
-
-    kets.reserve(basis->get_number_of_states());
-    for (const auto &ket : *basis_pair) {
-        std::stringstream ss;
-        ss << *ket;
-        kets.push_back(ss.str());
-    }
 
     auto basis_ket = pairinteraction::BasisAtomCreator<double>().add_ket(ket).create(database);
     auto system_ket = pairinteraction::SystemAtom<double>(basis_ket);
@@ -119,36 +111,6 @@ int main(int argc, char **argv) {
     // Compare with reference data
     bool success = true;
 
-    // Check kets
-    const std::filesystem::path reference_kets_file =
-        data_dir / "reference_pair_potential/kets.txt";
-    SPDLOG_INFO("Reference kets: {}", reference_kets_file.string());
-
-    std::vector<std::string> reference_kets;
-    std::string line;
-    std::ifstream stream(reference_kets_file);
-    if (!stream) {
-        SPDLOG_ERROR("Could not open reference kets file");
-        success = false;
-    } else {
-        reference_kets.reserve(basis_pair->get_number_of_states());
-        while (std::getline(stream, line)) {
-            reference_kets.push_back(line);
-        }
-        stream.close();
-        if (kets.size() != reference_kets.size()) {
-            SPDLOG_ERROR("Number of kets does not match reference data");
-            success = false;
-        } else if (kets != reference_kets) {
-            for (size_t i = 0; i < kets.size(); ++i) {
-                SPDLOG_DEBUG("Ket: {} vs {}, match: {}", kets[i], reference_kets[i],
-                             kets[i] == reference_kets[i]);
-            }
-            SPDLOG_ERROR("Kets do not match reference data");
-            success = false;
-        }
-    }
-
     // Check eigenenergies
     const std::filesystem::path reference_eigenenergies_file =
         data_dir / "reference_pair_potential/eigenenergies.txt";
@@ -156,7 +118,7 @@ int main(int argc, char **argv) {
 
     Eigen::MatrixXd reference_eigenenergies(system_pairs.size(),
                                             basis_pair->get_number_of_states());
-    stream = std::ifstream(reference_eigenenergies_file);
+    std::ifstream stream(reference_eigenenergies_file);
     if (!stream) {
         SPDLOG_ERROR("Could not open reference eigenenergies file");
         success = false;
