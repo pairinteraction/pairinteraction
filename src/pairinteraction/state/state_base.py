@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
@@ -13,6 +14,8 @@ if TYPE_CHECKING:
     from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.units import NDArray
+
+logger = logging.getLogger(__name__)
 
 KetType = TypeVar("KetType", bound="KetBase")
 UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
@@ -117,16 +120,14 @@ class StateBase(ABC, Generic[KetType]):
         return self._cpp.get_coefficients().toarray().ravel()
 
     def get_corresponding_ket(self) -> KetType:
-        """Return the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
+        """Return the ket with the maximal overlap with self."""
         return self.get_ket(self.get_corresponding_ket_index())
 
     def get_corresponding_ket_index(self) -> int:
-        """Return the index of the ket corresponding to the state (i.e. the ket with the maximal overlap)."""
-        coeffs = np.abs(self.get_coefficients())
-        ket_idx = np.argmax(coeffs)
-        if coeffs[ket_idx] ** 2 < 0.5 + 100 * np.finfo(float).eps:
-            raise ValueError("The maximal overlap is <= 0.5, i.e. the state has no uniquely corresponding ket.")
-        return int(ket_idx)
+        """Return the ket index with the maximal overlap with self."""
+        overlaps = np.abs(self.get_coefficients()) ** 2
+        err_msg = "ket for the state"
+        return get_index_with_largest_overlap(overlaps, err_msg=err_msg)
 
     @abstractmethod
     def get_amplitude(self, other: Any) -> Any: ...
@@ -136,3 +137,32 @@ class StateBase(ABC, Generic[KetType]):
 
     @abstractmethod
     def get_matrix_element(self, other: Any, *args: Any, **kwargs: Any) -> Any: ...
+
+
+def get_index_with_largest_overlap(overlaps: NDArray, err_msg: str) -> int:
+    if len(overlaps) == 0:
+        raise ValueError(f"Cannot find the corresponding {err_msg}: No overlaps, this should not happen.")
+    if len(overlaps) == 1:
+        largest_id = 0
+        largest_overlap = overlaps[0]
+        second_largest_overlap = 0
+    else:
+        # Find the indices of the two largest overlaps
+        # this is more efficient than sorting the entire array
+        ids = np.argpartition(overlaps, -2)[-2:]
+        ids = ids[np.argsort(overlaps[ids])[::-1]]
+        largest_id = int(ids[0])
+        largest_overlap = overlaps[ids[0]]
+        second_largest_overlap = overlaps[ids[1]]
+
+    if largest_overlap == 0:
+        raise ValueError(f"Cannot find the corresponding {err_msg}: All overlaps are 0.")
+    if largest_overlap < 0.5 + 100 * np.finfo(float).eps:
+        logger.warning(
+            "Cannot find the uniquely corresponding %s: "
+            "Largest overlap=%.3f <= 0.5, the second largest overlap is %.3f. "
+            "Still returning the result with the largest overlap.",
+            *(err_msg, largest_overlap, second_largest_overlap),
+        )
+
+    return largest_id
