@@ -83,8 +83,7 @@ class KetPair(KetBase):
         precision = 100 * np.finfo(float).eps
         labels = []
         for state_atom in self.state_atoms:
-            coeffs = np.abs(state_atom.get_coefficients())
-            ket_idx = int(np.argmax(coeffs))
+            ket_idx = state_atom.get_corresponding_ket_index()
             coefficient = state_atom.get_coefficients()[ket_idx]
             optional_tilde = "~" if abs(coefficient - 1.0) > precision else ""
             labels.append(optional_tilde + state_atom.get_ket(ket_idx).get_label("raw"))
