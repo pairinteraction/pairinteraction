@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
 UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
+
+logger = logging.getLogger(__name__)
 
 
 class BasisBase(ABC, Generic[KetType, StateType]):
@@ -138,6 +141,11 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         if type(self) is not type(other):
             raise TypeError(
                 f"Can only merge {type(self).__name__} with the same basis type, but got {type(other).__name__}."
+            )
+        if not self._cpp.has_identity_coefficients() or not other._cpp.has_identity_coefficients():
+            logger.warning(
+                "Merging bases with non-identity coefficients discards the coefficients "
+                "and returns a merged canonical basis."
             )
         return type(self)._from_cpp_object(self._cpp.merge(other._cpp), *self._from_cpp_object_additional_args())
 

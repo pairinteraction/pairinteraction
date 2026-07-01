@@ -54,6 +54,7 @@ public:
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
+    bool has_identity_coefficients() const;
     real_t get_quantum_number_f(size_t state_index) const;
     real_t get_quantum_number_m(size_t state_index) const;
     Parity get_parity(size_t state_index) const;

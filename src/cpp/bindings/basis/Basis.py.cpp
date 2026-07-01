@@ -35,6 +35,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_state", &Basis<T>::get_state)
         .def("get_number_of_states", &Basis<T>::get_number_of_states)
         .def("get_number_of_kets", &Basis<T>::get_number_of_kets)
+        .def("has_identity_coefficients", &Basis<T>::has_identity_coefficients)
         .def("get_quantum_number_f", &Basis<T>::get_quantum_number_f)
         .def("get_quantum_number_m", &Basis<T>::get_quantum_number_m)
         .def("get_parity", &Basis<T>::get_parity)
