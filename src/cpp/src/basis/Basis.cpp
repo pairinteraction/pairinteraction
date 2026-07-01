@@ -25,6 +25,9 @@ template <typename Derived>
 void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType> &labels) const {
     // Check if the labels are valid sorting labels
     for (const auto &label : labels) {
+        if (label == TransformationType::CANONICAL_ORDER) {
+            throw std::invalid_argument("Sorting by canonical order is not supported.");
+        }
         if (!utils::is_sorting(label)) {
             throw std::invalid_argument("One of the labels is not a valid sorting label.");
         }
@@ -58,7 +61,7 @@ template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
                                            static_cast<Eigen::Index>(this->kets.size())},
-                                          {TransformationType::SORT_BY_KET}} {
+                                          {TransformationType::CANONICAL_ORDER}} {
     if (this->kets.empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
@@ -263,11 +266,6 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
                                     "the energy. Use an energy operator instead.");
     }
 
-    // Sorting by ket is not supported
-    if (std::find(labels.begin(), labels.end(), TransformationType::SORT_BY_KET) != labels.end()) {
-        throw std::invalid_argument("Sorting by ket is not supported.");
-    }
-
     // Initialize transformation
     Sorting transformation;
     transformation.matrix.resize(coefficients.matrix.cols());
@@ -414,7 +412,7 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
 
     result->coefficients.matrix.resize(n, n);
     result->coefficients.matrix.setIdentity();
-    result->coefficients.transformation_type = {TransformationType::SORT_BY_KET};
+    result->coefficients.transformation_type = {TransformationType::CANONICAL_ORDER};
 
     result->state_index_to_quantum_number_f.resize(n);
     result->state_index_to_quantum_number_m.resize(n);
