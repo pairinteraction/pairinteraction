@@ -168,13 +168,8 @@ class SystemAtom(SystemBase[BasisAtom]):
     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str) -> float: ...
 
     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str | None = None) -> float | PintFloat:
-        overlaps = self.get_eigenbasis().get_overlaps(ket)
-        idx = np.argmax(overlaps)
-        if overlaps[idx] <= 0.5:
-            logger.warning(
-                "The provided ket states does not correspond to an eigenstate of the system in a unique way."
-            )
-        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        state_idx = self.get_eigenbasis().get_corresponding_state_index(ket)
+        return self.get_eigenenergies(unit=unit)[state_idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemAtomReal(SystemAtom):

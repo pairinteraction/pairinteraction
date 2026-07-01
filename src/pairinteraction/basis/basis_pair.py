@@ -290,22 +290,20 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         return obj
 
     def get_corresponding_state(self, ket: KetPairLike) -> StatePair:  # type: ignore [override]
-        state_index = self.get_corresponding_state_index(ket)
-        return self.get_state(state_index)
+        # override the accepted ket type
+        return super().get_corresponding_state(ket)  # type: ignore [arg-type]
 
     def get_corresponding_state_index(self, ket: KetPairLike) -> int:  # type: ignore [override]
-        if isinstance(ket, KetPair):
-            return super().get_corresponding_state_index(ket)
-        if is_ket_atom_tuple(ket):
-            overlaps = self.get_overlaps(ket)
-            id_max = np.argmax(overlaps)
-            if overlaps[id_max] < 0.51:
-                raise ValueError(
-                    "The provided ket pair does not correspond well to any state in the basis "
-                    f"(max overlap={overlaps[id_max]:.3f})."
-                )
-            return int(id_max)
-        raise TypeError(f"Unknown type: {type(ket)=}")
+        # override the accepted ket type
+        return super().get_corresponding_state_index(ket)  # type: ignore [arg-type]
+
+    def get_corresponding_ket(self, state: StatePairLike) -> KetPair:
+        # override the accepted state type
+        return super().get_corresponding_ket(state)  # type: ignore [arg-type]
+
+    def get_corresponding_ket_index(self, state: StatePairLike) -> int:
+        # override the accepted state type
+        return super().get_corresponding_ket_index(state)  # type: ignore [arg-type]
 
     @overload
     def get_amplitudes(self, other: KetPairLike | StatePairLike) -> NDArray: ...

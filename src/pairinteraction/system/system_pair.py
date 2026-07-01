@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.green_tensor import GreenTensorBase
     from pairinteraction.ket import KetAtom, KetAtomTuple  # noqa: F401
+    from pairinteraction.ket.ket_pair import KetPairLike
     from pairinteraction.units import (
         ArrayLike,
         NDArray,
@@ -172,19 +173,14 @@ class SystemPair(SystemBase[BasisPair]):
         return self
 
     @overload
-    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: None = None) -> PintFloat: ...
+    def get_corresponding_energy(self: Self, ket: KetPairLike, unit: None = None) -> PintFloat: ...
 
     @overload
-    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: str) -> float: ...
+    def get_corresponding_energy(self: Self, ket: KetPairLike, unit: str) -> float: ...
 
-    def get_corresponding_energy(self: Self, ket_tuple: KetAtomTuple, unit: str | None = None) -> float | PintFloat:
-        overlaps = self.get_eigenbasis().get_overlaps(ket_tuple)
-        idx = np.argmax(overlaps)
-        if overlaps[idx] <= 0.5:
-            logger.warning(
-                "The provided ket states does not correspond to an eigenstate of the system in a unique way."
-            )
-        return self.get_eigenenergies(unit=unit)[idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+    def get_corresponding_energy(self: Self, ket: KetPairLike, unit: str | None = None) -> float | PintFloat:
+        state_idx = self.get_eigenbasis().get_corresponding_state_index(ket)
+        return self.get_eigenenergies(unit=unit)[state_idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
 
 
 class SystemPairReal(SystemPair):

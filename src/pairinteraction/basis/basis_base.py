@@ -2,8 +2,11 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
+
+from pairinteraction.state.state_base import get_index_with_largest_overlap
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -12,6 +15,8 @@ if TYPE_CHECKING:
     from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.state import StateBase
+
+logger = logging.getLogger(__name__)
 
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
@@ -106,18 +111,25 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return self._cpp.get_coefficients()
 
     def get_corresponding_ket(self: Self, state: StateType) -> KetType:
-        ket_index = self.get_corresponding_ket_index(state)
-        return self.get_ket(ket_index)
+        """Return the ket of the basis with the maximal overlap with the given state."""
+        return self.get_ket(self.get_corresponding_ket_index(state))
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
-        raise NotImplementedError("Not implemented yet.")
+        """Return the index of the ket of the basis with the maximal overlap with the given state."""
+        canonical_basis = self.canonicalized()
+        overlaps = canonical_basis.get_overlaps(state)
+        err_msg = "ket for the given state in the basis"
+        return get_index_with_largest_overlap(overlaps, err_msg=err_msg)
 
     def get_corresponding_state(self, ket: KetBase) -> StateType:
-        state_index = self.get_corresponding_state_index(ket)
-        return self.get_state(state_index)
+        """Return the state of the basis with the maximal overlap with the given ket."""
+        return self.get_state(self.get_corresponding_state_index(ket))
 
     def get_corresponding_state_index(self, ket: KetBase) -> int:
-        return self._cpp.get_corresponding_state_index(ket._cpp)  # type: ignore [arg-type]
+        """Return the index of the state of the basis with the maximal overlap with the given ket."""
+        overlaps = self.get_overlaps(ket)
+        err_msg = "state for the given ket in the basis"
+        return get_index_with_largest_overlap(overlaps, err_msg=err_msg)
 
     def canonicalized(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
