@@ -54,6 +54,7 @@ public:
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
+    bool has_identity_coefficients() const;
     real_t get_quantum_number_f(size_t state_index) const;
     real_t get_quantum_number_m(size_t state_index) const;
     Parity get_parity(size_t state_index) const;
@@ -98,6 +99,7 @@ public:
                                               IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<const Derived> canonicalized() const;
+    virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
     transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<const Derived> transformed(const Sorting &transformation) const;

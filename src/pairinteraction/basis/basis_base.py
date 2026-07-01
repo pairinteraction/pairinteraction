@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
@@ -16,6 +17,8 @@ if TYPE_CHECKING:
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
 UnionCPPBasis: TypeAlias = "_backend.BasisAtomComplex | _backend.BasisPairComplex"
+
+logger = logging.getLogger(__name__)
 
 
 class BasisBase(ABC, Generic[KetType, StateType]):
@@ -47,6 +50,10 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         obj._cpp = cpp_obj
         obj._post_init()
         return obj
+
+    def _from_cpp_object_additional_args(self) -> tuple[Any, ...]:
+        """Extra positional args ``_from_cpp_object`` needs to rebuild an object of this type."""
+        return ()
 
     def __repr__(self) -> str:
         args = f"{self.get_ket(0)} ... {self.get_ket(self.number_of_kets - 1)}"
@@ -121,7 +128,26 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def canonicalized(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
-        return type(self)._from_cpp_object(self._cpp.canonicalized())
+        return type(self)._from_cpp_object(self._cpp.canonicalized(), *self._from_cpp_object_additional_args())
+
+    def merge(self: Self, other: Self) -> Self:
+        """Return a canonical basis containing the kets from both bases.
+
+        The bases must be compatible, i.e. they must share the same species, database, ...
+        For BasisPair they also must share the same underlying atomic basis.
+        The returned basis is in canonical form, i.e. has identity coefficients.
+        Consequently, coefficients of transformed or symmetrized input bases are not retained.
+        """
+        if type(self) is not type(other):
+            raise TypeError(
+                f"Can only merge {type(self).__name__} with the same basis type, but got {type(other).__name__}."
+            )
+        if not self._cpp.has_identity_coefficients() or not other._cpp.has_identity_coefficients():
+            logger.warning(
+                "Merging bases with non-identity coefficients discards the coefficients "
+                "and returns a merged canonical basis."
+            )
+        return type(self)._from_cpp_object(self._cpp.merge(other._cpp), *self._from_cpp_object_additional_args())
 
     @abstractmethod
     def get_amplitudes(self, other: Any) -> Any: ...

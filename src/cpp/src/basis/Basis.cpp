@@ -344,6 +344,34 @@ size_t Basis<Derived>::get_number_of_kets() const {
 }
 
 template <typename Derived>
+bool Basis<Derived>::has_identity_coefficients() const {
+    if (coefficients.matrix.rows() != coefficients.matrix.cols()) {
+        return false;
+    }
+
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+    for (Eigen::Index row = 0; row < coefficients.matrix.rows(); ++row) {
+        bool has_diagonal_entry = false;
+        for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                 coefficients.matrix, row);
+             it; ++it) {
+            if (it.col() == row) {
+                if (std::abs(it.value() - scalar_t{1}) > numerical_precision) {
+                    return false;
+                }
+                has_diagonal_entry = true;
+            } else if (std::abs(it.value()) > numerical_precision) {
+                return false;
+            }
+        }
+        if (!has_diagonal_entry) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template <typename Derived>
 const Transformation<typename Basis<Derived>::scalar_t> &
 Basis<Derived>::get_transformation() const {
     return coefficients;

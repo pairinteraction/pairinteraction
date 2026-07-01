@@ -242,3 +242,21 @@ def test_from_kets(pi_module: PairinteractionModule, system_atom: SystemAtom) ->
             delta_energy_unit="GHz",
             number_of_kets=10,
         )
+
+
+def test_merge_pair_basis(pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom) -> None:
+    system_atoms = [system_atom, system_atom2]
+    ket_atoms1 = tuple(s.basis.get_ket(70) for s in system_atoms)
+    ket_atoms2 = tuple(s.basis.get_ket(30) for s in system_atoms)
+    with no_log_propagation("pairinteraction.basis.basis_pair"):  # suppress number_of_kets warning
+        basis1 = pi_module.BasisPair.from_kets(ket_atoms1, system_atoms, number_of_kets=20)
+        basis2 = pi_module.BasisPair.from_kets(ket_atoms2, system_atoms, number_of_kets=10)
+
+    merged = basis1.merge(basis2)
+
+    assert set(merged.kets) == set(basis1.kets) | set(basis2.kets)
+    assert merged.number_of_states > max(basis1.number_of_states, basis2.number_of_states)
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), np.eye(merged.number_of_kets))
+
+    merged_with_self = basis1.merge(basis1)
+    assert merged_with_self.kets == basis1.kets
