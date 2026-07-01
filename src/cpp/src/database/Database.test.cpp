@@ -19,8 +19,7 @@ DOCTEST_TEST_CASE("get a KetAtom") {
     description.quantum_numbers = {{"n", 60}, {"l", 0}, {"m", 0.5}};
 
     auto ket = database.get_ket("Rb", description);
-
-    DOCTEST_MESSAGE("KetAtom: ", *ket);
+    DOCTEST_REQUIRE(ket != nullptr);
 }
 
 DOCTEST_TEST_CASE("too large quantum number m") {
@@ -84,9 +83,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
 
     auto basis = database.get_basis<double>("Rb", description, {});
 
-    for (const auto &ket : *basis) {
-        DOCTEST_MESSAGE("KetAtom: ", *ket);
-    }
+    DOCTEST_CHECK(basis->get_number_of_states() > 0);
 }
 
 DOCTEST_TEST_CASE("get atomic matrix elements") {
