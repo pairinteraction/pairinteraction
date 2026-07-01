@@ -12,7 +12,6 @@
 #include <Eigen/SparseCore>
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
@@ -59,14 +58,6 @@ public:
     Parity get_parity(size_t state_index) const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
-    std::shared_ptr<const ket_t> get_corresponding_ket(size_t state_index) const;
-    std::shared_ptr<const ket_t> get_corresponding_ket(std::shared_ptr<const Derived> state) const;
-    size_t get_corresponding_ket_index(size_t state_index) const;
-    size_t get_corresponding_ket_index(std::shared_ptr<const Derived> state) const;
-    std::shared_ptr<const Derived> get_corresponding_state(size_t ket_index) const;
-    std::shared_ptr<const Derived> get_corresponding_state(std::shared_ptr<const ket_t> ket) const;
-    size_t get_corresponding_state_index(size_t ket_index) const;
-    size_t get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
     void set_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values);
@@ -104,30 +95,16 @@ public:
 
 protected:
     Basis(ketvec_t &&kets);
-    int get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const;
     ketvec_t kets;
 
 private:
     const Derived &derived() const;
 
-    struct hash {
-        std::size_t operator()(const std::shared_ptr<const ket_t> &k) const;
-    };
-
-    struct equal_to {
-        bool operator()(const std::shared_ptr<const ket_t> &lhs,
-                        const std::shared_ptr<const ket_t> &rhs) const;
-    };
-
     Transformation<scalar_t> coefficients;
-
-    std::unordered_map<std::shared_ptr<const ket_t>, size_t, hash, equal_to> ket_to_ket_index;
-    std::vector<size_t> ket_index_to_state_index;
 
     std::vector<real_t> state_index_to_quantum_number_f;
     std::vector<real_t> state_index_to_quantum_number_m;
     std::vector<Parity> state_index_to_parity;
-    std::vector<size_t> state_index_to_ket_index;
 
     bool _has_quantum_number_f{true};
     bool _has_quantum_number_m{true};

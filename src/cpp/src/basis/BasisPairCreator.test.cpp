@@ -35,6 +35,16 @@ constexpr double UM_IN_ATOMIC_UNITS = 1 / 5.29177210544e-5;
 
 namespace {
 template <typename Scalar>
+std::shared_ptr<const typename BasisAtom<Scalar>::ket_t>
+get_dominant_ket(const std::shared_ptr<const BasisAtom<Scalar>> &basis, size_t state_index) {
+    Eigen::MatrixX<Scalar> column(
+        basis->get_coefficients().col(static_cast<Eigen::Index>(state_index)));
+    Eigen::Index ket_index = 0;
+    column.cwiseAbs().col(0).maxCoeff(&ket_index);
+    return basis->get_ket(static_cast<size_t>(ket_index));
+}
+
+template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
                          Parity parity_under_inversion, Parity parity_under_permutation) {
@@ -57,8 +67,8 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
                 continue;
             }
 
-            size_t id1 = basis1->get_corresponding_ket(idx1)->get_id_in_database();
-            size_t id2 = basis2->get_corresponding_ket(idx2)->get_id_in_database();
+            size_t id1 = get_dominant_ket(basis1, idx1)->get_id_in_database();
+            size_t id2 = get_dominant_ket(basis2, idx2)->get_id_in_database();
 
             if (id1 == id2) {
                 if (parity_under_inversion == Parity::EVEN ||
@@ -435,8 +445,8 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         for (const auto &ket : *canonical_basis) {
             auto atomic_states = ket->get_atomic_states();
             DOCTEST_REQUIRE(atomic_states.size() == 2);
-            size_t id1 = atomic_states[0]->get_corresponding_ket(0)->get_id_in_database();
-            size_t id2 = atomic_states[1]->get_corresponding_ket(0)->get_id_in_database();
+            size_t id1 = get_dominant_ket(atomic_states[0], 0)->get_id_in_database();
+            size_t id2 = get_dominant_ket(atomic_states[1], 0)->get_id_in_database();
             if (id1 == id2) {
                 ++num_diagonal_kets;
             }

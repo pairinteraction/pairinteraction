@@ -50,26 +50,6 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
             "transformed",
             nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
         .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_))
-        .def("get_corresponding_state",
-             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state, nb::const_))
-        .def("get_corresponding_state",
-             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
-                 &Basis<T>::get_corresponding_state, nb::const_))
-        .def("get_corresponding_state_index",
-             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state_index, nb::const_))
-        .def("get_corresponding_state_index",
-             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
-                 &Basis<T>::get_corresponding_state_index, nb::const_))
-        .def("get_corresponding_ket",
-             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_ket, nb::const_))
-        .def("get_corresponding_ket",
-             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket,
-                                                         nb::const_))
-        .def("get_corresponding_ket_index",
-             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_ket_index, nb::const_))
-        .def("get_corresponding_ket_index",
-             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket_index,
-                                                         nb::const_))
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("copy", [](const Basis<T> &self) {
             return std::make_shared<T>(static_cast<const T &>(self));
