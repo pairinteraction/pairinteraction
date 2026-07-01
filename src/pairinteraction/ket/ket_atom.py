@@ -147,7 +147,7 @@ class KetAtom(KetBase):
         label = self.species.split("_", 1)[0]
         label = label[0].upper() + label[1:]
 
-        if not self.is_calculated_with_mqdt:
+        if not self.species.endswith("_mqdt"):
             if s == 0:
                 label += "_singlet"
             elif s == 1:
@@ -157,7 +157,7 @@ class KetAtom(KetBase):
 
         label += ":"
 
-        if self.is_calculated_with_mqdt:
+        if self.species.endswith("_mqdt"):
             label += f"S={s:.1f},nu={self.nu:.1f},L={l:.1f},"
             label += "J=" if self.is_j_total_momentum else "F="
         else:
