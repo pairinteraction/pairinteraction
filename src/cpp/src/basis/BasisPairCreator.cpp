@@ -183,7 +183,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                 std::distance(eigenenergies2_begin,
                               std::upper_bound(eigenenergies2_begin, eigenenergies2_end, max_val2));
         }
-        map_range_of_state_index2.emplace(idx1, typename basis_t::range_t(min, max));
+        map_range_of_state_index2.try_emplace(idx1, typename basis_t::range_t(min, max));
 
         // Loop over the energetically allowed range of the second index
         for (size_t idx2 = min; idx2 < max; ++idx2) {
@@ -223,7 +223,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
             // Store the KetPair object as a ket
             kets.emplace_back(std::move(ket));
-            state_indices_to_ket_index.emplace(std::vector<size_t>{idx1, idx2}, ket_index);
+            state_indices_to_ket_index.try_emplace(std::vector<size_t>{idx1, idx2}, ket_index);
 
             auto row_index = static_cast<Eigen::Index>(ket_index++);
             if (has_symmetry_restriction) {

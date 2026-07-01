@@ -5,12 +5,16 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/tensor.hpp"
 
+#include <algorithm>
 #include <cassert>
+#include <map>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 namespace pairinteraction {
@@ -47,6 +51,69 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
         return -1;
     }
     return state_indices_to_ket_index.at({state_index1, state_index2});
+}
+
+template <typename Scalar>
+std::shared_ptr<const typename BasisPair<Scalar>::Type>
+BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
+    const auto atomic_bases_are_compatible = [](const auto &basis_a, const auto &basis_b) {
+        return basis_a->get_canonical_basis_id() == basis_b->get_canonical_basis_id() &&
+            basis_a->get_number_of_kets() == basis_b->get_number_of_kets() &&
+            basis_a->get_number_of_states() == basis_b->get_number_of_states() &&
+            basis_a->get_coefficients().isApprox(basis_b->get_coefficients());
+    };
+    if (!atomic_bases_are_compatible(basis1, other->basis1) ||
+        !atomic_bases_are_compatible(basis2, other->basis2)) {
+        throw std::invalid_argument("Cannot merge two pair bases which were constructed from "
+                                    "different pairs of SystemAtom objects.");
+    }
+
+    std::map<std::vector<size_t>, std::shared_ptr<const ket_t>> ket_by_state_indices;
+    for (const auto &basis : {this, other.get()}) {
+        for (const auto &[state_indices, ket_index] : basis->state_indices_to_ket_index) {
+            if (!ket_by_state_indices.contains(state_indices)) {
+                ket_by_state_indices.emplace(state_indices, basis->kets.at(ket_index));
+            }
+        }
+    }
+
+    ketvec_t merged_kets;
+    merged_kets.reserve(ket_by_state_indices.size());
+    map_indices_t merged_state_indices;
+    merged_state_indices.reserve(ket_by_state_indices.size());
+    for (const auto &[state_indices, ket] : ket_by_state_indices) {
+        merged_state_indices.try_emplace(state_indices, merged_kets.size());
+        merged_kets.push_back(ket);
+    }
+
+    const size_t number_of_states1 = basis1->get_number_of_states();
+    const size_t number_of_states2 = basis2->get_number_of_states();
+    std::vector<size_t> minimum_indices2(number_of_states1, number_of_states2);
+    std::vector<size_t> maximum_indices2(number_of_states1, 0);
+    std::vector<bool> has_index(number_of_states1, false);
+    for (const auto &[state_indices, ket_index] : merged_state_indices) {
+        static_cast<void>(ket_index);
+        const size_t state_index1 = state_indices[0];
+        const size_t state_index2 = state_indices[1];
+        minimum_indices2[state_index1] = std::min(minimum_indices2[state_index1], state_index2);
+        maximum_indices2[state_index1] = std::max(maximum_indices2[state_index1], state_index2);
+        has_index[state_index1] = true;
+    }
+
+    map_range_t merged_ranges;
+    merged_ranges.reserve(number_of_states1);
+    for (size_t state_index1 = 0; state_index1 < number_of_states1; ++state_index1) {
+        if (has_index[state_index1]) {
+            merged_ranges.try_emplace(
+                state_index1,
+                range_t(minimum_indices2[state_index1], maximum_indices2[state_index1] + 1));
+        } else {
+            merged_ranges.try_emplace(state_index1, range_t(0, 0));
+        }
+    }
+
+    return std::make_shared<const Type>(Private(), std::move(merged_kets), std::move(merged_ranges),
+                                        std::move(merged_state_indices), basis1, basis2);
 }
 
 template <typename Scalar>
