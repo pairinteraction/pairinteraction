@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     P = ParamSpec("P")
     R = TypeVar("R")
 
-    def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+    def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...  # type: ignore [no-redef]
 
 
 __all__ = ["dynamic_green_tensor_homogeneous", "dynamic_green_tensor_scattered"]
