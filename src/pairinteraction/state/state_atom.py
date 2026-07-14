@@ -129,7 +129,7 @@ class StateAtom(StateBase[KetAtom]):
     def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
         coeffs = self._cpp.get_coefficients()
-        self._cpp.set_coefficients(coeffs / self.norm)  # type: ignore [arg-type]
+        self._cpp.set_coefficients(coeffs / self.norm)
         return self
 
     def is_normalized(self, tol: float = 1e-10) -> bool:
