@@ -3,22 +3,21 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard
+from collections.abc import Sequence
+from typing import Any, TypeGuard
 
 import numpy as np
+from typing_extensions import TypeAliasType
 
 from pairinteraction import _backend
 from pairinteraction.ket import KetPair, KetPairReal
 from pairinteraction.state.state_atom import StateAtom
 from pairinteraction.state.state_base import StateBase
 
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-
-
-StatePairLike: TypeAlias = "StatePair | tuple[StateAtom, StateAtom] | Sequence[StateAtom]"
-
 logger = logging.getLogger(__name__)
+
+
+StateAtomTuple = TypeAliasType("StateAtomTuple", tuple[StateAtom, StateAtom] | Sequence[StateAtom])
 
 
 def is_state_pair_like(obj: Any) -> TypeGuard[StatePairLike]:
@@ -159,3 +158,6 @@ class StatePair(StateBase[KetPair]):
 class StatePairReal(StatePair):
     _cpp: _backend.BasisPairReal  # type: ignore [assignment]
     _ket_class = KetPairReal
+
+
+StatePairLike = TypeAliasType("StatePairLike", StatePair | StateAtomTuple)

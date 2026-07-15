@@ -2,24 +2,23 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeGuard, overload
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, Literal, TypeGuard, overload
 
 import numpy as np
+from typing_extensions import TypeAliasType
 
 from pairinteraction.ket.ket_atom import KetAtom
 from pairinteraction.ket.ket_base import KetBase
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from pairinteraction import _backend
     from pairinteraction.state import StateAtom
     from pairinteraction.system.system_atom import SystemAtom
     from pairinteraction.units import PintFloat
 
 
-KetAtomTuple: TypeAlias = "tuple[KetAtom, KetAtom] | Sequence[KetAtom]"
-KetPairLike: TypeAlias = "KetPair | KetAtomTuple"
+KetAtomTuple = TypeAliasType("KetAtomTuple", tuple[KetAtom, KetAtom] | Sequence[KetAtom])
 
 
 def is_ket_pair_like(obj: Any) -> TypeGuard[KetPairLike]:
@@ -105,6 +104,9 @@ class KetPair(KetBase):
 
 class KetPairReal(KetPair):
     _cpp: _backend.KetPairReal  # type: ignore [assignment]
+
+
+KetPairLike = TypeAliasType("KetPairLike", KetPair | KetAtomTuple)
 
 
 def get_ketpairlike_m(ket: KetPair | KetAtomTuple) -> float:

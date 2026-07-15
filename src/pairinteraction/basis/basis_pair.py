@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeGuard, cast, overload
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, TypeGuard, cast, overload
 
 import numpy as np
 from scipy.sparse import csr_matrix
-from typing_extensions import Self, deprecated
+from typing_extensions import Self, TypeAliasType, deprecated
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_ket
@@ -20,16 +21,12 @@ from pairinteraction.state.state_pair import is_state_atom_tuple, is_state_pair_
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-
     from pairinteraction.basis.basis_base import UnionCPPBasis
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.ket import KetAtomTuple, KetPairLike
     from pairinteraction.state.state_pair import StatePairLike
     from pairinteraction.system import SystemAtom
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
-
-BasisPairLike: TypeAlias = "BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom]"
 
 logger = logging.getLogger(__name__)
 
@@ -411,6 +408,9 @@ class BasisPairReal(BasisPair):
     _cpp_creator = _backend.BasisPairCreatorReal  # type: ignore [assignment]
     _ket_class = KetPairReal
     _state_class = StatePairReal
+
+
+BasisPairLike = TypeAliasType("BasisPairLike", BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom])
 
 
 def get_cpp_basis_pair_from_atom_bases(
