@@ -71,6 +71,23 @@ def test_coefficients(basis: BasisAtom) -> None:
     assert pytest.approx(coeffs.sum()) == basis.number_of_kets  # NOSONAR
 
 
+def test_get_corresponding_ket_and_state(basis: BasisAtom) -> None:
+    """Test both objects and indices for a non-canonical state and a canonical ket."""
+    expected_ket_index = 1
+    other_ket_index = 2
+    expected_ket = basis.get_ket(expected_ket_index)
+    other_ket = basis.get_ket(other_ket_index)
+    mixed_state = (2 * basis.get_state(expected_ket_index) + basis.get_state(other_ket_index)).normalize()
+
+    assert mixed_state.get_corresponding_ket_index() == expected_ket_index
+    assert mixed_state.get_corresponding_ket() == expected_ket
+    assert basis.get_corresponding_ket_index(mixed_state) == expected_ket_index
+    assert basis.get_corresponding_ket(mixed_state) == expected_ket
+
+    assert basis.get_corresponding_state_index(other_ket) == other_ket_index
+    assert basis.get_corresponding_state(other_ket).get_corresponding_ket() == other_ket
+
+
 def _get_expected_shape(other: KetAtom | StateAtom | BasisAtom, target_basis: BasisAtom) -> tuple[int, ...]:
     if isinstance(other, (KetAtom, StateAtom)):
         return (target_basis.number_of_states,)

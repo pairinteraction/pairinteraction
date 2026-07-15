@@ -157,6 +157,25 @@ def test_get_overlaps_pair_explicitly(pi_module: PairinteractionModule, system_a
     assert pytest.approx(matrix_overlaps[idx2, idx0]) == 1.0  # NOSONAR
 
 
+def test_get_corresponding_ket_and_state(basis: BasisPair) -> None:
+    """Test pair objects, pair-like tuples, and canonicalization retaining the atom systems."""
+    expected_index = 1
+    expected_ket = basis.get_ket(expected_index)
+    expected_state = basis.get_state(expected_index)
+    ket_atoms = tuple(state.get_corresponding_ket() for state in expected_ket.state_atoms)
+    state_atoms = expected_ket.state_atoms
+
+    assert basis.get_corresponding_state_index(expected_ket) == expected_index
+    assert basis.get_corresponding_state(expected_ket).get_corresponding_ket() == expected_ket
+    assert basis.get_corresponding_state_index(ket_atoms) == expected_index
+    assert basis.get_corresponding_state(ket_atoms).get_corresponding_ket() == expected_ket
+
+    assert basis.get_corresponding_ket_index(expected_state) == expected_index
+    assert basis.get_corresponding_ket(expected_state) == expected_ket
+    assert basis.get_corresponding_ket_index(state_atoms) == expected_index
+    assert basis.get_corresponding_ket(state_atoms) == expected_ket
+
+
 def test_error_handling(basis: BasisPair) -> None:
     """Test error cases."""
     with pytest.raises(TypeError):
