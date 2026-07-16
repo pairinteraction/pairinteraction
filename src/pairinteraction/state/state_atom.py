@@ -37,7 +37,7 @@ class StateAtom(StateBase[KetAtom]):
         >>> print(state)
         StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
         >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
-        >>> state2 = pi.StateAtom(ket2, basis)
+        >>> state2 = pi.StateAtom(ket2)
         >>> print((2 * state2 - state).normalize())
         StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
 
@@ -47,15 +47,25 @@ class StateAtom(StateBase[KetAtom]):
     _cpp: _backend.BasisAtomComplex
     _ket_class = KetAtom
 
-    def __init__(self, ket: KetAtom, basis: BasisAtom) -> None:
-        """Initialize a state object representing a ket in a given basis.
+    def __init__(self, ket: KetAtom, basis: BasisAtom | None = None) -> None:
+        """Initialize a state object representing a ket.
 
         Args:
             ket: The ket to represent in the state.
-            basis: The basis to which the state belongs.
+            basis: The basis in which the state should be expressed.
+                If None (default), a minimal basis consisting only of the given ket is constructed.
+                Providing a basis is only relevant if you want the state to already live in a larger Hilbert space;
+                when adding states, their bases are merged automatically.
 
         """
         super().__init__()
+        if basis is None:
+            from pairinteraction.basis.basis_atom import get_cpp_basis_atom_from_ket
+
+            is_real = isinstance(self, StateAtomReal)
+            self._cpp = get_cpp_basis_atom_from_ket(ket, real=is_real)
+            return
+
         state = basis.get_corresponding_state(ket)
         ket_idx = state.kets.index(ket)
         coeffs = state._cpp.get_coefficients() * 0  # type: ignore [operator]
@@ -66,6 +76,9 @@ class StateAtom(StateBase[KetAtom]):
     def __add__(self, other: Self) -> Self:
         """Add two states together.
 
+        The bases are merged into a common basis containing the kets of both states,
+        and the coefficients are re-expressed in this merged basis before adding.
+
         Args:
             other: The other state to add.
 
@@ -75,11 +88,15 @@ class StateAtom(StateBase[KetAtom]):
         """
         if not isinstance(other, type(self)):
             raise TypeError(f"Cannot add {type(self)} and {type(other)}.")
-        if not all(ket_self == ket_other for ket_self, ket_other in zip(self.kets, other.kets, strict=True)):
-            raise ValueError("Cannot add states where the basis does not consist of exactly the same kets.")
 
-        coeffs = self._cpp.get_coefficients() + other._cpp.get_coefficients()
-        new_cpp = self._cpp.copy()
+        # merge the (canonical) bases and re-express the coefficients in the merged basis;
+        merged_cpp = self._cpp.canonicalized().merge(other._cpp.canonicalized())
+        cpp_op = get_cpp_operator_type("identity")
+        coeffs1 = self._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
+        coeffs2 = other._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
+        coeffs = coeffs1 + coeffs2
+        new_cpp = merged_cpp.get_state(0)  # single-state basis, i.e. shape (n_kets, 1)
+
         new_cpp.set_coefficients(coeffs)
         return type(self)._from_cpp_object(new_cpp)
 

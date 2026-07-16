@@ -66,6 +66,7 @@ class PairinteractionModule(Protocol):
     ureg: pint.UnitRegistry
     Database: type[pi.Database]
     KetAtom: type[pi.KetAtom]
+    StateAtom: type[pi.StateAtom]
     BasisAtom: type[pi.BasisAtom]
     SystemAtom: type[pi.SystemAtom]
     KetPair: type[pi.KetPair]
