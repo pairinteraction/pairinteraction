@@ -8,34 +8,25 @@
 
 namespace pairinteraction {
 enum class TransformationType : unsigned char {
-    IDENTITY = 0,
-    CANONICAL_ORDER = 1 << 0,
-    SORT_BY_QUANTUM_NUMBER_F = 1 << 1,
-    SORT_BY_QUANTUM_NUMBER_M = 1 << 2,
-    SORT_BY_PARITY = 1 << 3,
-    SORT_BY_ENERGY = 1 << 4,
-    ARBITRARY = 1 << 5
+    CANONICAL_ORDER,
+    SORT_BY_QUANTUM_NUMBER_F,
+    SORT_BY_QUANTUM_NUMBER_M,
+    SORT_BY_PARITY,
+    SORT_BY_ENERGY,
+    ARBITRARY
 };
-
-inline constexpr TransformationType operator&(TransformationType x, TransformationType y) {
-    return static_cast<TransformationType>(static_cast<unsigned char>(x) &
-                                           static_cast<unsigned char>(y));
-}
-inline constexpr TransformationType operator|(TransformationType x, TransformationType y) {
-    return static_cast<TransformationType>(static_cast<unsigned char>(x) |
-                                           static_cast<unsigned char>(y));
-}
-inline constexpr TransformationType operator~(TransformationType x) {
-    return static_cast<TransformationType>(~static_cast<unsigned char>(x));
-}
 
 namespace utils {
 inline bool is_sorting(TransformationType label) {
-    static constexpr TransformationType MASK_SORTING =
-        TransformationType::SORT_BY_QUANTUM_NUMBER_F |
-        TransformationType::SORT_BY_QUANTUM_NUMBER_M | TransformationType::SORT_BY_PARITY |
-        TransformationType::SORT_BY_ENERGY;
-    return (label & ~MASK_SORTING) == TransformationType::IDENTITY;
+    switch (label) {
+    case TransformationType::SORT_BY_QUANTUM_NUMBER_F:
+    case TransformationType::SORT_BY_QUANTUM_NUMBER_M:
+    case TransformationType::SORT_BY_PARITY:
+    case TransformationType::SORT_BY_ENERGY:
+        return true;
+    default:
+        return false;
+    }
 }
 
 } // namespace utils
