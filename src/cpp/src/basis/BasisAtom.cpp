@@ -54,6 +54,11 @@ BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
     if (get_species() != other->get_species()) {
         throw std::invalid_argument("Cannot merge atomic bases with different species.");
     }
+    if (!this->is_canonical() || !other->is_canonical()) {
+        throw std::invalid_argument(
+            "Cannot merge non-canonical bases (i.e., bases with non-identity coefficients). "
+            "Canonicalize the bases first.");
+    }
 
     BasisAtomCreator<Scalar> creator;
     std::unordered_set<size_t> ket_ids;

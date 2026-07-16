@@ -67,6 +67,11 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
         throw std::invalid_argument("Cannot merge two pair bases which were constructed from "
                                     "different pairs of SystemAtom objects.");
     }
+    if (!this->is_canonical() || !other->is_canonical()) {
+        throw std::invalid_argument(
+            "Cannot merge non-canonical bases (i.e., bases with non-identity coefficients). "
+            "Canonicalize the bases first.");
+    }
 
     std::map<std::vector<size_t>, std::shared_ptr<const ket_t>> ket_by_state_indices;
     for (const auto &basis : {this, other.get()}) {
