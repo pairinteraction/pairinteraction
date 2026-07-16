@@ -20,7 +20,7 @@ def main(*, enable_theme_hot_reload: bool = False) -> int:
 
     """
     rules = os.environ.get("QT_LOGGING_RULES", "")
-    if "qt.gui.icc.warning=false" not in rules.splitlines():
+    if "qt.gui.icc.warning=" not in rules:
         QLoggingCategory.setFilterRules(f"{rules}\nqt.gui.icc.warning=false".strip())
 
     app = Application(sys.argv)
