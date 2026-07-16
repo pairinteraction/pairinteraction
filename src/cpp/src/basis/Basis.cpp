@@ -452,6 +452,12 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
 }
 
 template <typename Derived>
+bool Basis<Derived>::is_canonical() const {
+    return get_transformation().transformation_type ==
+        std::vector<TransformationType>{TransformationType::CANONICAL_ORDER};
+}
+
+template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());

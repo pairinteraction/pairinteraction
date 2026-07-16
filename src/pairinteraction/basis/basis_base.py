@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
@@ -15,8 +14,6 @@ if TYPE_CHECKING:
     from pairinteraction import _backend
     from pairinteraction.ket import KetBase
     from pairinteraction.state import StateBase
-
-logger = logging.getLogger(__name__)
 
 KetType = TypeVar("KetType", bound="KetBase")
 StateType = TypeVar("StateType", bound="StateBase[Any]")
@@ -139,13 +136,17 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         """Return the canonical basis with identity coefficients."""
         return type(self)._from_cpp_object(self._cpp.canonicalized(), *self._from_cpp_object_additional_args())
 
+    @property
+    def is_canonical(self) -> bool:
+        """Return True if the basis is in canonical order with identity coefficients."""
+        return self._cpp.is_canonical()
+
     def merge(self: Self, other: Self) -> Self:
         """Return a canonical basis containing the kets from both bases.
 
         The bases must be compatible, i.e. they must share the same species, database, ...
         For BasisPair they also must share the same underlying atomic basis.
-        The returned basis is in canonical form, i.e. has identity coefficients.
-        Consequently, coefficients of transformed or symmetrized input bases are not retained.
+        Both bases must be canonical (i.e. have identity coefficients).
         """
         if type(self) is not type(other):
             raise TypeError(
