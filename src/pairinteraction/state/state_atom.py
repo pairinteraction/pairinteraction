@@ -85,8 +85,8 @@ class StateAtom(StateBase[KetAtom]):
             A new state object representing the sum of the two states.
 
         """
-        if not isinstance(other, type(self)):
-            raise TypeError(f"Cannot add {type(self)} and {type(other)}.")
+        if type(self) is not type(other):
+            raise TypeError(f"Cannot add/subtract {type(self)} and {type(other)}.")
 
         # merge the (canonical) bases and re-express the coefficients in the merged basis;
         merged_cpp = self._cpp.canonicalized().merge(other._cpp.canonicalized())
