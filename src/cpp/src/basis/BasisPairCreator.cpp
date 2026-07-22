@@ -6,7 +6,6 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/Parity.hpp"
-#include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -26,6 +25,14 @@ template <typename Scalar>
 BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
     if (!system_atom.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized before it can be added.");
+    }
+    // The eigenstates must be sorted by energy. This is ensured by System::diagonalize and
+    // required for the binary search of the energetically allowed range in create().
+    auto eigenenergies = system_atom.get_eigenenergies();
+    if (!std::is_sorted(eigenenergies.data(), eigenenergies.data() + eigenenergies.size())) {
+        throw std::invalid_argument(
+            "The eigenstates of the system must be sorted by energy. Consider calling "
+            "diagonalize() on the SystemAtom, which sorts the eigenstates automatically.");
     }
     systems_atom.push_back(system_atom);
     return *this;
@@ -82,11 +89,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             static_cast<int>(parity_under_inversion) * static_cast<int>(parity_under_permutation));
     }
 
-    // Sort the states, which are eigenstates, by their energy
-    auto system1 = systems_atom[0].get();
-    auto system2 = systems_atom[1].get();
-    system1.transform(system1.get_sorter({TransformationType::SORT_BY_ENERGY}));
-    system2.transform(system2.get_sorter({TransformationType::SORT_BY_ENERGY}));
+    const auto &system1 = systems_atom[0].get();
+    const auto &system2 = systems_atom[1].get();
 
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers

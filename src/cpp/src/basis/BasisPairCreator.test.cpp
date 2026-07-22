@@ -187,10 +187,8 @@ DOCTEST_TEST_CASE("create a BasisPair") {
         DOCTEST_CHECK(*ket2a == *ket2a);
         DOCTEST_CHECK(*ket1a != *ket2b);
         DOCTEST_CHECK(*ket2a != *ket1b);
-
-        // Currently, kets from different BasisPair are never equal
-        DOCTEST_CHECK(*ket1a != *ket1b);
-        DOCTEST_CHECK(*ket2a != *ket2b);
+        DOCTEST_CHECK(*ket1a == *ket1b);
+        DOCTEST_CHECK(*ket2a == *ket2b);
     }
 
     DOCTEST_SUBCASE("check overlap") {
