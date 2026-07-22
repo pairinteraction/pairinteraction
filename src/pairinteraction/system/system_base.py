@@ -6,7 +6,6 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, overload
 
 import numpy as np
-from typing_extensions import deprecated
 
 from pairinteraction.basis.basis_pair import BasisPair
 from pairinteraction.diagonalization import diagonalize
@@ -55,7 +54,6 @@ class SystemBase(ABC, Generic[BasisType]):
     def __str__(self) -> str:
         return self.__repr__()
 
-    @overload
     def diagonalize(
         self,
         diagonalizer: Diagonalizer = "eigen",
@@ -64,31 +62,6 @@ class SystemBase(ABC, Generic[BasisType]):
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         energy_range_unit: str | None = None,
         m0: int | None = None,
-    ) -> Self: ...
-
-    @overload
-    @deprecated("Use energy_range_unit=... instead of energy_unit=...")
-    def diagonalize(
-        self,
-        diagonalizer: Diagonalizer = "eigen",
-        float_type: FloatType = "float64",
-        rtol: float = 1e-6,
-        energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-        *,
-        energy_unit: str | None,
-        m0: int | None = None,
-    ) -> Self: ...
-
-    def diagonalize(
-        self,
-        diagonalizer: Diagonalizer = "eigen",
-        float_type: FloatType = "float64",
-        rtol: float = 1e-6,
-        energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-        energy_range_unit: str | None = None,
-        m0: int | None = None,
-        *,
-        energy_unit: str | None = None,
     ) -> Self:
         """Diagonalize the Hamiltonian and update the basis to the eigenbasis.
 
@@ -106,22 +79,12 @@ class SystemBase(ABC, Generic[BasisType]):
                 Defaults to (None, None), i.e. calculate all eigenenergies.
             energy_range_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
             m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
-            energy_unit: Deprecated, use energy_range_unit instead.
 
         Returns:
             Self: The updated instance of the system.
 
         """
-        diagonalize(
-            [self],
-            diagonalizer,
-            float_type,
-            rtol,
-            energy_range,
-            energy_range_unit,
-            m0,
-            energy_unit=energy_unit,
-        )  # type: ignore [misc,call-overload]
+        diagonalize([self], diagonalizer, float_type, rtol, energy_range, energy_range_unit, m0)
         return self
 
     @property

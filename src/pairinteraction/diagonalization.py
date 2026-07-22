@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-import warnings
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, overload
-
-from typing_extensions import deprecated
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar
 
 from pairinteraction import _backend
 from pairinteraction.enums import get_cpp_float_type
@@ -41,7 +38,6 @@ _DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
 }
 
 
-@overload
 def diagonalize(
     systems: Sequence[SystemBase[Any]],
     diagonalizer: Diagonalizer = "eigen",
@@ -50,33 +46,6 @@ def diagonalize(
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
-) -> None: ...
-
-
-@overload
-@deprecated("Use energy_range_unit=... instead of energy_unit=...")
-def diagonalize(
-    systems: Sequence[SystemBase[Any]],
-    diagonalizer: Diagonalizer = "eigen",
-    float_type: FloatType = "float64",
-    rtol: float = 1e-6,
-    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-    *,
-    energy_unit: str | None,
-    m0: int | None = None,
-) -> None: ...
-
-
-def diagonalize(
-    systems: Sequence[SystemBase[Any]],
-    diagonalizer: Diagonalizer = "eigen",
-    float_type: FloatType = "float64",
-    rtol: float = 1e-6,
-    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-    energy_range_unit: str | None = None,
-    m0: int | None = None,
-    *,
-    energy_unit: str | None = None,
 ) -> None:
     """Diagonalize a list of systems in parallel using the C++ backend.
 
@@ -106,19 +75,8 @@ def diagonalize(
             Defaults to (None, None), i.e. calculate all eigenenergies.
         energy_range_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
-        energy_unit: Deprecated, use energy_range_unit instead.
 
     """
-    if energy_unit is not None:
-        if energy_range_unit is not None:
-            raise ValueError("energy_unit=... was replaced by energy_range_unit=..., do not use both together.")
-        warnings.warn(
-            "The energy_unit=... argument is deprecated, use energy_range_unit=... instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        energy_range_unit = energy_unit
-
     cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
