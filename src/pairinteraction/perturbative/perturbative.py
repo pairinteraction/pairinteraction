@@ -345,7 +345,8 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
     electric_field = electric_field if electric_field is not None else ureg.Quantity([0, 0, 0], "V/cm")
     magnetic_field = magnetic_field if magnetic_field is not None else ureg.Quantity([0, 0, 0], "G")
 
-    pi = pi_real if electric_field[1] == 0 and magnetic_field[1] == 0 else pi_complex  # type: ignore [index]
+    is_real = isinstance(ket_tuple_list[0][0], pi_real.KetAtom)
+    pi = pi_real if is_real else pi_complex
     are_fields_along_z = all(x == 0 for x in [*magnetic_field[:2], *electric_field[:2]])  # type: ignore [index]
 
     system_atoms: list[pi_real.SystemAtom | pi_complex.SystemAtom] = []

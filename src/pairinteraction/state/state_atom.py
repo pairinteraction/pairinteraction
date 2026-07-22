@@ -9,7 +9,7 @@ import numpy as np
 
 from pairinteraction import _backend
 from pairinteraction.enums import get_cpp_operator_type
-from pairinteraction.ket import KetAtom
+from pairinteraction.ket import KetAtom, KetAtomReal
 from pairinteraction.state.state_base import StateBase
 from pairinteraction.units import QuantityScalar
 
@@ -249,4 +249,4 @@ class StateAtom(StateBase[KetAtom]):
 
 class StateAtomReal(StateAtom):
     _cpp: _backend.BasisAtomReal  # type: ignore [assignment]
-    _ket_class = KetAtom
+    _ket_class = KetAtomReal

@@ -15,7 +15,7 @@ from pairinteraction.custom_logging import configure_logging
 from pairinteraction.database import Database, print_database_info
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.ket import (
-    KetAtom,
+    KetAtomReal as KetAtom,
     KetPairReal as KetPair,
 )
 from pairinteraction.perturbative import (

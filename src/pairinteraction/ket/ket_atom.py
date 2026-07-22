@@ -141,7 +141,7 @@ class KetAtom(KetBase):
         try:
             self._cpp = creator.create(database._cpp)
         except _backend.KetNotUniqueError as err:
-            candidates = [KetAtom._from_cpp_object(ket) for ket in err.kets]  # type: ignore [attr-defined]
+            candidates = [type(self)._from_cpp_object(ket) for ket in err.kets]  # type: ignore [attr-defined]
             labels = "\n".join(ket.get_label("ket") for ket in candidates)
             raise ValueError(f"The ket is not uniquely specified. Possible kets are:\n{labels}") from None
 
@@ -482,3 +482,7 @@ class KetAtom(KetBase):
         relevant_kets = [ket for ket, is_relevant in zip(relevant_kets, mask, strict=True) if is_relevant]
         transition_rates_au = transition_rates_au[mask]
         return relevant_kets, transition_rates_au
+
+
+class KetAtomReal(KetAtom):
+    pass

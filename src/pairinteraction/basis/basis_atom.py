@@ -11,7 +11,7 @@ from pairinteraction import _backend
 from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.database import Database
 from pairinteraction.enums import get_cpp_operator_type, parity_to_int
-from pairinteraction.ket import KetAtom
+from pairinteraction.ket import KetAtom, KetAtomReal
 from pairinteraction.state import StateAtom, StateAtomReal
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
@@ -367,7 +367,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 class BasisAtomReal(BasisAtom):
     _cpp: _backend.BasisAtomReal  # type: ignore [assignment]
     _cpp_creator = _backend.BasisAtomCreatorReal  # type: ignore [assignment]
-    _ket_class = KetAtom
+    _ket_class = KetAtomReal
     _state_class = StateAtomReal
 
 
