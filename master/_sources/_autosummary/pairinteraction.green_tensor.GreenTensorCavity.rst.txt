@@ -1,0 +1,26 @@
+﻿GreenTensorCavity
+=================
+
+.. currentmodule:: pairinteraction.green_tensor
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~GreenTensorCavity.__init__
+      ~GreenTensorCavity.get
+      ~GreenTensorCavity.get_interpolator
+      ~GreenTensorCavity.set_relative_permittivities
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~GreenTensorCavity.epsilon
+
+
+
+.. autoclass:: pairinteraction.green_tensor.GreenTensorCavity

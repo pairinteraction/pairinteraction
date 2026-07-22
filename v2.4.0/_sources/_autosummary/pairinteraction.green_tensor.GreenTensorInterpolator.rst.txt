@@ -1,0 +1,20 @@
+﻿GreenTensorInterpolator
+=======================
+
+.. currentmodule:: pairinteraction.green_tensor
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~GreenTensorInterpolator.__init__
+      ~GreenTensorInterpolator.get
+      ~GreenTensorInterpolator.set_constant
+      ~GreenTensorInterpolator.set_list
+
+
+
+
+
+.. autoclass:: pairinteraction.green_tensor.GreenTensorInterpolator
