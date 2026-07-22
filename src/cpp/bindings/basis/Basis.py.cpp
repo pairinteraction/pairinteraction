@@ -52,10 +52,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_))
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("is_canonical", &Basis<T>::is_canonical)
-        .def("merge", &Basis<T>::merge)
-        .def("copy", [](const Basis<T> &self) {
-            return std::make_shared<T>(static_cast<const T &>(self));
-        });
+        .def("merge", &Basis<T>::merge);
 }
 
 template <typename T>
