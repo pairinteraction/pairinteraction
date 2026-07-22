@@ -555,11 +555,11 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         }
     }
 
-    DOCTEST_SUBCASE("parity restrictions require the same SystemAtom twice") {
-        // A second, independently constructed system represents a different atom. Even though it
-        // is built from the same basis, it is a distinct object, so symmetrization is rejected.
+    DOCTEST_SUBCASE("parity restrictions require the same atomic basis") {
         SystemAtom<double> system_other(basis);
+        system_other.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
         system_other.diagonalize(diagonalizer);
+        DOCTEST_REQUIRE(system.get_basis() != system_other.get_basis());
 
         DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
                                     .add(system)
