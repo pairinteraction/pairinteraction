@@ -23,7 +23,7 @@ def test_diamagnetism(pi_module: PairinteractionModule) -> None:
     system = pi_module.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
 
     # Diagonalize the system
-    system = system.diagonalize(diagonalizer="eigen", sort_by_energy=True)
+    system = system.diagonalize(diagonalizer="eigen")
 
     # Get eigenenergies and the overlap with |ket>
     overlaps = system.basis.get_overlaps(ket)
@@ -58,7 +58,7 @@ def test_diamagnetism_angle_dependence() -> None:
     system_z = pi_module.SystemAtom(basis).set_magnetic_field([0, 0, bfield], unit="G").set_diamagnetism_enabled(True)
 
     # Diagonalize the systems in parallel
-    pi_module.diagonalize([system_x, system_y, system_z], diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize([system_x, system_y, system_z], diagonalizer="eigen")
 
     # Ensure that all eigenenergies are the same
     np.testing.assert_allclose(system_x.get_eigenenergies(unit="GHz"), system_y.get_eigenenergies(unit="GHz"))

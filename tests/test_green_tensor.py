@@ -80,7 +80,7 @@ def test_static_green_tensor_pair_potential(
     gt.set_relative_permittivity(1.0)
     system_pair_free_space = pi_module.SystemPair(basis_pair).set_green_tensor(gt)
 
-    pi_module.diagonalize([system_pair_free_space, system_pair_vacuum], sort_by_energy=True)
+    pi_module.diagonalize([system_pair_free_space, system_pair_vacuum])
     np.testing.assert_allclose(
         system_pair_vacuum.get_eigenenergies("GHz") - pair_energy_ghz,
         system_pair_free_space.get_eigenenergies("GHz") - pair_energy_ghz,

@@ -61,7 +61,6 @@ class SystemBase(ABC, Generic[BasisType]):
         diagonalizer: Diagonalizer = "eigen",
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
-        sort_by_energy: bool = True,
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         energy_range_unit: str | None = None,
         m0: int | None = None,
@@ -74,7 +73,6 @@ class SystemBase(ABC, Generic[BasisType]):
         diagonalizer: Diagonalizer = "eigen",
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
-        sort_by_energy: bool = True,
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         *,
         energy_unit: str | None,
@@ -86,7 +84,6 @@ class SystemBase(ABC, Generic[BasisType]):
         diagonalizer: Diagonalizer = "eigen",
         float_type: FloatType = "float64",
         rtol: float = 1e-6,
-        sort_by_energy: bool = True,
         energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
         energy_range_unit: str | None = None,
         m0: int | None = None,
@@ -103,7 +100,6 @@ class SystemBase(ABC, Generic[BasisType]):
             float_type: The floating point precision to use for the diagonalization. Defaults to "float64".
             rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
                 by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
-            sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
             energy_range: A tuple specifying an energy range, in which the eigenenergies should be calculated.
                 Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
                 The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
@@ -121,7 +117,6 @@ class SystemBase(ABC, Generic[BasisType]):
             diagonalizer,
             float_type,
             rtol,
-            sort_by_energy,
             energy_range,
             energy_range_unit,
             m0,

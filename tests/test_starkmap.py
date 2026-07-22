@@ -26,7 +26,7 @@ def test_starkmap(pi_module: PairinteractionModule, generate_reference: bool) ->
     systems = [pi_module.SystemAtom(basis).set_electric_field([0, 0, e], unit="V/cm") for e in electric_fields]
 
     # Diagonalize the systems in parallel
-    pi_module.diagonalize(systems, diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize(systems, diagonalizer="eigen")
 
     # Get the overlap with |ket>
     overlaps = np.array([system.basis.get_overlaps(ket) for system in systems])

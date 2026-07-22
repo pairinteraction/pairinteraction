@@ -47,7 +47,6 @@ def diagonalize(
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
-    sort_by_energy: bool = True,
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
@@ -61,7 +60,6 @@ def diagonalize(
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
-    sort_by_energy: bool = True,
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     *,
     energy_unit: str | None,
@@ -74,7 +72,6 @@ def diagonalize(
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
-    sort_by_energy: bool = True,
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
@@ -103,7 +100,6 @@ def diagonalize(
         float_type: The floating point precision to use for the diagonalization. Defaults to "float64".
         rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
             by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
-        sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
         energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
             The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
@@ -135,9 +131,6 @@ def diagonalize(
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems, strict=True):
-        if sort_by_energy:
-            sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
-            cpp_system.transform(sorter)
         system._cpp = cpp_system
 
 

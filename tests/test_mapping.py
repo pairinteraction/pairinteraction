@@ -19,7 +19,7 @@ def test_mapping(pi_module: PairinteractionModule) -> None:
     # Get the eigenbasis of the Hamiltonian describing an atom in an electric field
     basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     system = pi_module.SystemAtom(basis).set_electric_field([0, 0, 2.5], unit="V/cm")
-    system.diagonalize(diagonalizer="eigen", sort_by_energy=True)
+    system.diagonalize(diagonalizer="eigen")
     eigenbasis = system.get_eigenbasis()
 
     assert eigenbasis.number_of_states == eigenbasis.number_of_kets

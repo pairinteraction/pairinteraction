@@ -49,11 +49,7 @@ def test_electric_dipole_matrix_element(pi_module: PairinteractionModule) -> Non
     # Stark effect induces a permanent dipole moment
     basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2))
 
-    system = (
-        pi_module.SystemAtom(basis)
-        .set_electric_field([1, 0, 1], unit="V/cm")
-        .diagonalize(diagonalizer="eigen", sort_by_energy=True)
-    )
+    system = pi_module.SystemAtom(basis).set_electric_field([1, 0, 1], unit="V/cm").diagonalize(diagonalizer="eigen")
 
     state = system.basis.get_corresponding_state(ket_initial)
 

@@ -28,7 +28,7 @@ def test_ion_z(pi_module: PairinteractionModule) -> None:
     )
 
     # Diagonalize the system
-    system_z = system_z.diagonalize(diagonalizer="eigen", sort_by_energy=True)
+    system_z = system_z.diagonalize(diagonalizer="eigen")
 
     # Ensure that values are correct for the system where the ion is closest to the atom
     eigenenergies = system_z.get_eigenenergies(unit="GHz")
@@ -54,7 +54,7 @@ def test_ion_x(pi_module: PairinteractionModule) -> None:
     )
 
     # Diagonalize the system
-    system_x = system_x.diagonalize(diagonalizer="eigen", sort_by_energy=True)
+    system_x = system_x.diagonalize(diagonalizer="eigen")
 
     # Ensure that values are correct for the system where the ion is closest to the atom
     eigenenergies = system_x.get_eigenenergies(unit="GHz")
@@ -100,7 +100,7 @@ def test_ion_angle_dependence() -> None:
     ]
 
     # Diagonalize the systems in parallel
-    pi_module.diagonalize(systems_x + systems_y + systems_z, diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize(systems_x + systems_y + systems_z, diagonalizer="eigen")
 
     # Ensure that all eigenenergies are the same
     for system_x, system_y, system_z in zip(systems_x, systems_y, systems_z, strict=True):
