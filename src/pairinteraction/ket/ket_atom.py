@@ -58,13 +58,16 @@ class KetAtom(KetBase):
 
     Examples:
         >>> import pairinteraction as pi
-        >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-        >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
+        >>> ket_s = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+        >>> (ket_s.species, ket_s.n, ket_s.l, ket_s.j, ket_s.m, ket_s.s)
         ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
-        >>> print(ket_sqdt)
+        >>> print(ket_s)
         |Rb:60,S_1/2,1/2⟩
-        >>> print(ket_sqdt.to_state())
+        >>> print(ket_s.to_state())
         StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
+        >>> ket_p = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
+        >>> print((2 * ket_p - ket_s).normalize())
+        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
         >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
         >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
         ('Yb174_mqdt', 60.049, 1.0, 1.0)
@@ -300,6 +303,58 @@ class KetAtom(KetBase):
         from pairinteraction.state import StateAtom
 
         return StateAtom(self)
+
+    def __add__(self, other: KetAtom | StateAtom) -> StateAtom:
+        """Add the ket to another ket or state.
+
+        The ket is first converted to a state via :meth:`to_state`, then the states are added.
+
+        Args:
+            other: The other ket or state to add.
+
+        Returns:
+            A new state object representing the sum.
+
+        """
+        return self.to_state() + other
+
+    def __sub__(self, other: KetAtom | StateAtom) -> StateAtom:
+        """Subtract another ket or state from the ket.
+
+        Args:
+            other: The other ket or state to subtract.
+
+        Returns:
+            A new state object representing the difference.
+
+        """
+        return self.to_state() - other
+
+    def __mul__(self, factor: complex) -> StateAtom:
+        """Multiply the ket with a scalar.
+
+        Args:
+            factor: The scalar to multiply with.
+
+        Returns:
+            A new state object representing the product.
+
+        """
+        return self.to_state() * factor
+
+    def __truediv__(self, factor: complex) -> StateAtom:
+        """Divide the ket by a scalar.
+
+        Args:
+            factor: The scalar to divide by.
+
+        Returns:
+            A new state object representing the quotient.
+
+        """
+        return self.to_state() / factor
+
+    __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * ket will use ket.__rmul__
 
     @overload
     def get_matrix_element(

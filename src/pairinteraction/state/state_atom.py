@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 
@@ -72,19 +72,22 @@ class StateAtom(StateBase[KetAtom]):
         coeffs[ket_idx, 0] = 1.0
         self._cpp = state._cpp.copy_with_coefficients(coeffs)
 
-    def __add__(self, other: Self) -> Self:
+    def __add__(self, other: Self | KetAtom) -> Self:
         """Add two states together.
 
         The bases are merged into a common basis containing the kets of both states,
         and the coefficients are re-expressed in this merged basis before adding.
 
         Args:
-            other: The other state to add.
+            other: The other state to add. A ket is converted to a state via `ket.to_state()`,
+                thus it must be of the same data type (real/complex) as self.
 
         Returns:
             A new state object representing the sum of the two states.
 
         """
+        if isinstance(other, KetAtom):
+            other = cast("Self", other.to_state())
         if type(self) is not type(other):
             raise TypeError(f"Cannot add/subtract {type(self)} and {type(other)}.")
 
@@ -99,16 +102,18 @@ class StateAtom(StateBase[KetAtom]):
         new_cpp = new_cpp.copy_with_coefficients(coeffs)
         return type(self)._from_cpp_object(new_cpp)
 
-    def __sub__(self, other: Self) -> Self:
+    def __sub__(self, other: Self | KetAtom) -> Self:
         """Subtract two states.
 
         Args:
-            other: The other state to subtract.
+            other: The other state to subtract. A ket is converted to a state via `ket.to_state()`.
 
         Returns:
             A new state object representing the difference of the two states.
 
         """
+        if isinstance(other, KetAtom):
+            other = cast("Self", other.to_state())
         return self.__add__(-1 * other)
 
     def __mul__(self, factor: complex) -> Self:
