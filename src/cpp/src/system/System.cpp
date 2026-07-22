@@ -220,6 +220,10 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     if (this->is_diagonal()) {
+        auto eigenenergies = get_eigenenergies();
+        if (!std::is_sorted(eigenenergies.data(), eigenenergies.data() + eigenenergies.size())) {
+            transform(get_sorter({TransformationType::SORT_BY_ENERGY}));
+        }
         return *this;
     }
 
@@ -348,6 +352,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     basis = basis->transformed(eigenvectors);
 
     hamiltonian_is_diagonal = true;
+    transform(get_sorter({TransformationType::SORT_BY_ENERGY}));
 
     return *this;
 }
