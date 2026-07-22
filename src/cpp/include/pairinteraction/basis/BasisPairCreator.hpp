@@ -5,10 +5,12 @@
 
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <Eigen/Dense>
 #include <complex>
-#include <functional>
 #include <memory>
 #include <vector>
 
@@ -17,6 +19,9 @@ enum class Parity : int;
 
 template <typename Scalar>
 class BasisPair;
+
+template <typename Scalar>
+class BasisAtom;
 
 template <typename Scalar>
 class SystemAtom;
@@ -43,7 +48,9 @@ public:
     std::shared_ptr<const BasisPair<Scalar>> create() const;
 
 private:
-    std::vector<std::reference_wrapper<const SystemAtom<Scalar>>> systems_atom;
+    std::vector<std::shared_ptr<const BasisAtom<Scalar>>> bases_atom;
+    std::vector<Eigen::VectorX<real_t>> eigenenergies_atom; // sorted by energy, ensured by add()
+
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_m;
     Parity parity_under_inversion{Parity::UNKNOWN};

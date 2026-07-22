@@ -93,7 +93,6 @@ def benchmark_pairinteraction(
             pair_systems,
             diagonalizer=diagonalizer,
             float_type=float_type,
-            sort_by_energy=False,
             energy_range=(pair_energy - energy_range, pair_energy + energy_range),
             energy_range_unit="GHz",
         )

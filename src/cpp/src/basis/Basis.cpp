@@ -129,14 +129,8 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
-Basis<Derived>::get_coefficients() {
-    return coefficients.matrix;
-}
-
-template <typename Derived>
-void Basis<Derived>::set_coefficients(
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) {
+std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) const {
     if (values.rows() != coefficients.matrix.rows()) {
         throw std::invalid_argument("Incompatible number of rows.");
     }
@@ -144,16 +138,23 @@ void Basis<Derived>::set_coefficients(
         throw std::invalid_argument("Incompatible number of columns.");
     }
 
-    coefficients.matrix = values;
+    // Create a copy of the current object and update the coefficients of the copy
+    auto result = std::make_shared<Derived>(derived());
 
-    std::fill(state_index_to_quantum_number_f.begin(), state_index_to_quantum_number_f.end(),
-              std::numeric_limits<real_t>::max());
-    std::fill(state_index_to_quantum_number_m.begin(), state_index_to_quantum_number_m.end(),
-              std::numeric_limits<real_t>::max());
-    std::fill(state_index_to_parity.begin(), state_index_to_parity.end(), Parity::UNKNOWN);
-    _has_quantum_number_f = false;
-    _has_quantum_number_m = false;
-    _has_parity = false;
+    result->coefficients.matrix = values;
+    result->coefficients.transformation_type = {TransformationType::ARBITRARY};
+
+    std::fill(result->state_index_to_quantum_number_f.begin(),
+              result->state_index_to_quantum_number_f.end(), std::numeric_limits<real_t>::max());
+    std::fill(result->state_index_to_quantum_number_m.begin(),
+              result->state_index_to_quantum_number_m.end(), std::numeric_limits<real_t>::max());
+    std::fill(result->state_index_to_parity.begin(), result->state_index_to_parity.end(),
+              Parity::UNKNOWN);
+    result->_has_quantum_number_f = false;
+    result->_has_quantum_number_m = false;
+    result->_has_parity = false;
+
+    return result;
 }
 
 template <typename Derived>

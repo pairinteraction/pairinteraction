@@ -38,8 +38,8 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_quantum_number_f", &Basis<T>::get_quantum_number_f)
         .def("get_quantum_number_m", &Basis<T>::get_quantum_number_m)
         .def("get_parity", &Basis<T>::get_parity)
-        .def("get_coefficients", nb::overload_cast<>(&Basis<T>::get_coefficients, nb::const_))
-        .def("set_coefficients", &Basis<T>::set_coefficients)
+        .def("get_coefficients", &Basis<T>::get_coefficients)
+        .def("copy_with_coefficients", &Basis<T>::copy_with_coefficients)
         .def("get_transformation", &Basis<T>::get_transformation)
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
@@ -52,10 +52,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_))
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("is_canonical", &Basis<T>::is_canonical)
-        .def("merge", &Basis<T>::merge)
-        .def("copy", [](const Basis<T> &self) {
-            return std::make_shared<T>(static_cast<const T &>(self));
-        });
+        .def("merge", &Basis<T>::merge);
 }
 
 template <typename T>
@@ -92,11 +89,8 @@ template <typename T>
 static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPairCreator" + type_name;
     nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass
-        .def(nb::init<>())
-        // keep_alive because add() stores only a reference to the system, which must outlive the
-        // creator (the system is dereferenced in create())
-        .def("add", &BasisPairCreator<T>::add, nb::keep_alive<1, 2>())
+    pyclass.def(nb::init<>())
+        .def("add", &BasisPairCreator<T>::add)
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
         .def("restrict_parity_under_inversion",

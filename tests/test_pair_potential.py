@@ -35,7 +35,7 @@ def test_pair_potential(pi_module: PairinteractionModule, generate_reference: bo
     system_pairs = [pi_module.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
-    pi_module.diagonalize(system_pairs, diagonalizer="eigen", sort_by_energy=True)
+    pi_module.diagonalize(system_pairs, diagonalizer="eigen")
 
     # Get the overlap with |ket, ket>
     overlaps = np.array([system.get_eigenbasis().get_overlaps([ket, ket]) for system in system_pairs])

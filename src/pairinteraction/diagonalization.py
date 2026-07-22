@@ -2,10 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
-import warnings
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, overload
-
-from typing_extensions import deprecated
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar
 
 from pairinteraction import _backend
 from pairinteraction.enums import get_cpp_float_type
@@ -41,45 +38,14 @@ _DiagonalizerDict: dict[str, dict[Diagonalizer, UnionCPPDiagonalizerType]] = {
 }
 
 
-@overload
 def diagonalize(
     systems: Sequence[SystemBase[Any]],
     diagonalizer: Diagonalizer = "eigen",
     float_type: FloatType = "float64",
     rtol: float = 1e-6,
-    sort_by_energy: bool = True,
     energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
     energy_range_unit: str | None = None,
     m0: int | None = None,
-) -> None: ...
-
-
-@overload
-@deprecated("Use energy_range_unit=... instead of energy_unit=...")
-def diagonalize(
-    systems: Sequence[SystemBase[Any]],
-    diagonalizer: Diagonalizer = "eigen",
-    float_type: FloatType = "float64",
-    rtol: float = 1e-6,
-    sort_by_energy: bool = True,
-    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-    *,
-    energy_unit: str | None,
-    m0: int | None = None,
-) -> None: ...
-
-
-def diagonalize(
-    systems: Sequence[SystemBase[Any]],
-    diagonalizer: Diagonalizer = "eigen",
-    float_type: FloatType = "float64",
-    rtol: float = 1e-6,
-    sort_by_energy: bool = True,
-    energy_range: tuple[Quantity | None, Quantity | None] = (None, None),
-    energy_range_unit: str | None = None,
-    m0: int | None = None,
-    *,
-    energy_unit: str | None = None,
 ) -> None:
     """Diagonalize a list of systems in parallel using the C++ backend.
 
@@ -103,26 +69,14 @@ def diagonalize(
         float_type: The floating point precision to use for the diagonalization. Defaults to "float64".
         rtol: The relative tolerance allowed for eigenenergies. The error in eigenenergies is bounded
             by rtol * ||H||, where ||H|| is the norm of the Hamiltonian matrix. Defaults to 1e-6.
-        sort_by_energy: Whether to sort the resulting basis by energy. Defaults to True.
         energy_range: A tuple specifying an energy range, in which eigenvlaues should be calculated.
             Specifying a range can speed up the diagonalization process (depending on the diagonalizer method).
             The accuracy of the eigenenergies is not affected by this, but not all eigenenergies will be calculated.
             Defaults to (None, None), i.e. calculate all eigenenergies.
         energy_range_unit: The unit in which the energy_range is given. Defaults to None assumes pint objects.
         m0: The search subspace size for the FEAST diagonalizer. Defaults to None.
-        energy_unit: Deprecated, use energy_range_unit instead.
 
     """
-    if energy_unit is not None:
-        if energy_range_unit is not None:
-            raise ValueError("energy_unit=... was replaced by energy_range_unit=..., do not use both together.")
-        warnings.warn(
-            "The energy_unit=... argument is deprecated, use energy_range_unit=... instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        energy_range_unit = energy_unit
-
     cpp_systems = [s._cpp for s in systems]
     cpp_diagonalize_fct = get_cpp_diagonalize_function(systems[0])
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, systems[0], float_type, m0=m0)
@@ -135,9 +89,6 @@ def diagonalize(
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, energy_range_au[0], energy_range_au[1], rtol)
 
     for system, cpp_system in zip(systems, cpp_systems, strict=True):
-        if sort_by_energy:
-            sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
-            cpp_system.transform(sorter)
         system._cpp = cpp_system
 
 

@@ -27,8 +27,7 @@ def system_pair_sample(pi_module: PairinteractionModule) -> SystemPair:
     system = pi_module.SystemAtom(basis=basis)
     system.set_diamagnetism_enabled(False)
     system.set_magnetic_field([0, 0, 1e-3], "gauss")
-    if not system.is_diagonal:
-        pi_module.diagonalize([system], diagonalizer="eigen", sort_by_energy=False)
+    pi_module.diagonalize([system], diagonalizer="eigen")
     basis_pair = pi_module.BasisPair([system, system])
     system_pair = pi_module.SystemPair(basis_pair)
     theta = 0

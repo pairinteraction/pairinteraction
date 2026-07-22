@@ -70,8 +70,7 @@ class StateAtom(StateBase[KetAtom]):
         ket_idx = state.kets.index(ket)
         coeffs = state._cpp.get_coefficients() * 0  # type: ignore [operator]
         coeffs[ket_idx, 0] = 1.0
-        state._cpp.set_coefficients(coeffs)
-        self._cpp = state._cpp
+        self._cpp = state._cpp.copy_with_coefficients(coeffs)
 
     def __add__(self, other: Self) -> Self:
         """Add two states together.
@@ -97,7 +96,7 @@ class StateAtom(StateBase[KetAtom]):
         coeffs = coeffs1 + coeffs2
         new_cpp = merged_cpp.get_state(0)  # single-state basis, i.e. shape (n_kets, 1)
 
-        new_cpp.set_coefficients(coeffs)
+        new_cpp = new_cpp.copy_with_coefficients(coeffs)
         return type(self)._from_cpp_object(new_cpp)
 
     def __sub__(self, other: Self) -> Self:
@@ -125,8 +124,7 @@ class StateAtom(StateBase[KetAtom]):
         if not isinstance(factor, (int, float, complex)):
             raise TypeError(f"Cannot multiply {type(self)} with {type(factor)}.")
         coeffs = factor * self._cpp.get_coefficients()  # type: ignore [operator]
-        new_cpp = self._cpp.copy()
-        new_cpp.set_coefficients(coeffs)
+        new_cpp = self._cpp.copy_with_coefficients(coeffs)
         return type(self)._from_cpp_object(new_cpp)
 
     def __truediv__(self, factor: complex) -> Self:
@@ -146,7 +144,7 @@ class StateAtom(StateBase[KetAtom]):
     def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
         coeffs = self._cpp.get_coefficients()
-        self._cpp.set_coefficients(coeffs / self.norm)
+        self._cpp = self._cpp.copy_with_coefficients(coeffs / self.norm)
         return self
 
     def is_normalized(self, tol: float = 1e-10) -> bool:

@@ -56,16 +56,11 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
 template <typename Scalar>
 std::shared_ptr<const typename BasisPair<Scalar>::Type>
 BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
-    const auto atomic_bases_are_compatible = [](const auto &basis_a, const auto &basis_b) {
-        return basis_a->get_canonical_basis_id() == basis_b->get_canonical_basis_id() &&
-            basis_a->get_number_of_kets() == basis_b->get_number_of_kets() &&
-            basis_a->get_number_of_states() == basis_b->get_number_of_states() &&
-            basis_a->get_coefficients().isApprox(basis_b->get_coefficients());
-    };
-    if (!atomic_bases_are_compatible(basis1, other->basis1) ||
-        !atomic_bases_are_compatible(basis2, other->basis2)) {
-        throw std::invalid_argument("Cannot merge two pair bases which were constructed from "
-                                    "different pairs of SystemAtom objects.");
+    if (basis1 != other->basis1 || basis2 != other->basis2) {
+        throw std::invalid_argument(
+            "Cannot merge two pair bases whose underlying atomic bases are not identical objects. "
+            "Both pair bases must be constructed from the same pair of SystemAtom instances, "
+            "and these instances must not have been changed in between.");
     }
     if (!this->is_canonical() || !other->is_canonical()) {
         throw std::invalid_argument(

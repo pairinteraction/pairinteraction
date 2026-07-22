@@ -6,7 +6,6 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/Parity.hpp"
-#include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -27,7 +26,16 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::add(const SystemAtom<Scalar>
     if (!system_atom.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized before it can be added.");
     }
-    systems_atom.push_back(system_atom);
+    // The eigenstates must be sorted by energy. This is ensured by System::diagonalize and
+    // required for the binary search of the energetically allowed range in create().
+    auto eigenenergies = system_atom.get_eigenenergies();
+    if (!std::is_sorted(eigenenergies.data(), eigenenergies.data() + eigenenergies.size())) {
+        throw std::invalid_argument(
+            "The eigenstates of the system must be sorted by energy. Consider calling "
+            "diagonalize() on the SystemAtom, which sorts the eigenstates automatically.");
+    }
+    bases_atom.push_back(system_atom.get_basis());
+    eigenenergies_atom.push_back(std::move(eigenenergies));
     return *this;
 }
 
@@ -61,7 +69,7 @@ template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     set_task_status("Constructing pair basis...");
 
-    if (systems_atom.size() != 2) {
+    if (bases_atom.size() != 2) {
         throw std::invalid_argument("Two SystemAtom must be added before creating the BasisPair.");
     }
 
@@ -69,11 +77,18 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     const bool has_symmetry_restriction =
         parity_under_inversion != Parity::UNKNOWN || parity_under_permutation != Parity::UNKNOWN;
 
-    // This ensures that a one-atom state can be identified across both atoms by its state index
-    if (has_symmetry_restriction && &systems_atom[0].get() != &systems_atom[1].get()) {
-        throw std::invalid_argument(
-            "Parity restrictions require the same SystemAtom to be added twice, because "
-            "symmetrization is only defined for two identical atoms.");
+    // Physically, symmetrization is only defined for two identical atoms, which is enforced by this
+    // check. This automatically also ensures that a one-atom state can be identified across both
+    // atoms by its state index.
+    if (has_symmetry_restriction) {
+        const bool have_same_eigenenergies =
+            eigenenergies_atom[0].size() == eigenenergies_atom[1].size() &&
+            (eigenenergies_atom[0] - eigenenergies_atom[1]).isZero(numerical_precision);
+        if (bases_atom[0] != bases_atom[1] || !have_same_eigenenergies) {
+            throw std::invalid_argument(
+                "Parity restrictions require the same SystemAtom, i.e. same basis and same "
+                "eigenenergies, because symmetrization is only defined for two identical atoms.");
+        }
     }
 
     Parity inferred_product_of_parities = Parity::UNKNOWN;
@@ -82,20 +97,14 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             static_cast<int>(parity_under_inversion) * static_cast<int>(parity_under_permutation));
     }
 
-    // Sort the states, which are eigenstates, by their energy
-    auto system1 = systems_atom[0].get();
-    auto system2 = systems_atom[1].get();
-    system1.transform(system1.get_sorter({TransformationType::SORT_BY_ENERGY}));
-    system2.transform(system2.get_sorter({TransformationType::SORT_BY_ENERGY}));
-
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers
-    auto basis1 = system1.get_basis();
-    auto basis2 = system2.get_basis();
-    auto eigenenergies1 = system1.get_eigenenergies();
-    auto eigenenergies2 = system2.get_eigenenergies();
-    real_t *eigenenergies2_begin = eigenenergies2.data();
-    real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
+    const auto &basis1 = bases_atom[0];
+    const auto &basis2 = bases_atom[1];
+    const auto &eigenenergies1 = eigenenergies_atom[0];
+    const auto &eigenenergies2 = eigenenergies_atom[1];
+    const real_t *eigenenergies2_begin = eigenenergies2.data();
+    const real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
 
     ketvec_t kets;
     kets.reserve(eigenenergies1.size() * eigenenergies2.size());
