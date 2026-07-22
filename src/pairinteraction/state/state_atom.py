@@ -3,19 +3,24 @@
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
+from scipy.sparse import csr_matrix
+from typing_extensions import deprecated
 
-from pairinteraction import _backend
 from pairinteraction.enums import get_cpp_operator_type
 from pairinteraction.ket import KetAtom, KetAtomReal
 from pairinteraction.state.state_base import StateBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     from typing_extensions import Self
 
+    from pairinteraction import _backend
     from pairinteraction.basis import BasisAtom
     from pairinteraction.database import Database
     from pairinteraction.enums import OperatorType
@@ -37,9 +42,11 @@ class StateAtom(StateBase[KetAtom]):
         >>> print(state)
         StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
         >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
-        >>> state2 = pi.StateAtom(ket2)
+        >>> state2 = ket2.to_state()
         >>> print((2 * state2 - state).normalize())
         StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
+        >>> print(pi.StateAtom([2, 1], [ket, ket2]).normalize())
+        StateAtom(0.89 |Rb:60,S_1/2,1/2⟩ + 0.45 |Rb:60,P_1/2,1/2⟩)
 
 
     """
@@ -47,30 +54,88 @@ class StateAtom(StateBase[KetAtom]):
     _cpp: _backend.BasisAtomComplex
     _ket_class = KetAtom
 
-    def __init__(self, ket: KetAtom, basis: BasisAtom | None = None) -> None:
-        """Initialize a state object representing a ket.
+    @overload
+    def __init__(
+        self, coefficients: Sequence[complex], kets: Sequence[KetAtom], *, basis: BasisAtom | None = None
+    ) -> None: ...
+
+    @overload
+    @deprecated("Use ket.to_state() instead of StateAtom(ket, basis).")
+    def __init__(self, ket: KetAtom, basis: BasisAtom) -> None: ...
+
+    def __init__(  # type: ignore [misc]
+        self,
+        coefficients: Sequence[complex] | KetAtom,
+        kets: Sequence[KetAtom] | BasisAtom | None = None,
+        *,
+        basis: BasisAtom | None = None,
+    ) -> None:
+        """Initialize a state object from a coefficient vector and the corresponding kets.
 
         Args:
-            ket: The ket to represent in the state.
+            coefficients: The coefficient of each of the given kets.
+            kets: The kets the state is composed of.
             basis: The basis in which the state should be expressed.
-                If None (default), a minimal basis consisting only of the given ket is constructed.
+                If None (default), a minimal basis consisting only of the given kets is constructed.
                 Providing a basis is only relevant if you want the state to already live in a larger Hilbert space;
                 when adding states, their bases are merged automatically.
+                All given kets must be part of this basis.
+                Since the coefficients are always defined with respect to the kets,
+                only the kets of the given basis are used and the coefficients of the basis are ignored,
+                i.e. the basis is canonicalized first.
 
         """
         super().__init__()
+
+        if isinstance(coefficients, KetAtom):  # deprecated interface StateAtom(ket, basis)
+            coefficients, kets, basis = self._unpack_deprecated_args(coefficients, kets, basis)
+        if kets is None:
+            raise TypeError("StateAtom.__init__() missing 1 required positional argument: 'kets'")
+        kets = cast("Sequence[KetAtom]", kets)
+
+        is_real = isinstance(self, StateAtomReal)
+        coeffs = np.array(coefficients, dtype=float if is_real else complex).ravel()
+        if len(coeffs) != len(kets):
+            raise ValueError(f"Got {len(coeffs)} coefficients for {len(kets)} kets, these must match.")
+        if len(kets) != len(set(kets)):
+            raise ValueError("The given kets must be unique.")
+
         if basis is None:
-            from pairinteraction.basis.basis_atom import get_cpp_basis_atom_from_ket
+            from pairinteraction.basis.basis_atom import get_cpp_basis_atom_from_kets
 
-            is_real = isinstance(self, StateAtomReal)
-            self._cpp = get_cpp_basis_atom_from_ket(ket, real=is_real)
-            return
+            cpp_basis = get_cpp_basis_atom_from_kets(kets, real=is_real)
+        else:
+            cpp_basis = basis._cpp.canonicalized()
 
-        state = basis.get_corresponding_state(ket)
-        ket_idx = state.kets.index(ket)
-        coeffs = state._cpp.get_coefficients() * 0  # type: ignore [operator]
-        coeffs[ket_idx, 0] = 1.0
-        self._cpp = state._cpp.copy_with_coefficients(coeffs)
+        cpp_ket_to_index = {cpp_ket: i for i, cpp_ket in enumerate(cpp_basis.get_kets())}
+        basis_coeffs = np.zeros((len(cpp_ket_to_index), 1), dtype=coeffs.dtype)
+        for coeff, ket in zip(coeffs, kets, strict=True):
+            if ket._cpp not in cpp_ket_to_index:
+                raise ValueError(f"The ket {ket} is not part of the given basis.")
+            basis_coeffs[cpp_ket_to_index[ket._cpp], 0] = coeff
+
+        state_cpp = cpp_basis.get_state(0)  # single-state basis, i.e. shape (n_kets, 1)
+        self._cpp = state_cpp.copy_with_coefficients(csr_matrix(basis_coeffs))
+
+    @staticmethod
+    def _unpack_deprecated_args(
+        ket: KetAtom, kets: Sequence[KetAtom] | BasisAtom | None, basis: BasisAtom | None
+    ) -> tuple[Sequence[complex], Sequence[KetAtom], BasisAtom]:
+        """Translate the arguments of the deprecated StateAtom(ket, basis) interface into the new interface."""
+        from pairinteraction.basis import BasisAtom  # imported here to avoid a circular import
+
+        warnings.warn(
+            "Calling StateAtom(ket, basis) is deprecated use ket.to_state() instead.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        if kets is not None:  # in the deprecated interface the second argument was the basis
+            if basis is not None:
+                raise TypeError("The basis must not be given both as positional and as keyword argument.")
+            basis = cast("BasisAtom", kets)
+        if not isinstance(basis, BasisAtom):
+            raise TypeError("The basis must be given as a BasisAtom object when creating a StateAtom from a ket.")
+        return [1], [ket], basis
 
     def __add__(self, other: Self | KetAtom) -> Self:
         """Add two states together.
@@ -79,8 +144,7 @@ class StateAtom(StateBase[KetAtom]):
         and the coefficients are re-expressed in this merged basis before adding.
 
         Args:
-            other: The other state to add. A ket is converted to a state via `ket.to_state()`,
-                thus it must be of the same data type (real/complex) as self.
+            other: The other state to add. A ket is converted to a state via `ket.to_state()`.
 
         Returns:
             A new state object representing the sum of the two states.

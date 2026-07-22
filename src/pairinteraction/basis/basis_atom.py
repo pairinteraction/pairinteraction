@@ -368,12 +368,15 @@ class BasisAtomReal(BasisAtom):
     _state_class = StateAtomReal
 
 
-def get_cpp_basis_atom_from_ket(ket: KetAtom, *, real: bool) -> _backend.BasisAtomComplex:
-    """Create a cpp BasisAtom object containing only the given ket.
+def get_cpp_basis_atom_from_kets(kets: Sequence[KetAtom], *, real: bool) -> _backend.BasisAtomComplex:
+    """Create a cpp BasisAtom object containing only the given kets.
 
     Like for the _cpp attributes, the return type is annotated as the complex variant,
     although the real variant is returned if real=True.
     """
+    if len(kets) == 0:
+        raise ValueError("Cannot create a basis with zero kets.")
     creator = _backend.BasisAtomCreatorReal() if real else _backend.BasisAtomCreatorComplex()
-    creator.add_ket(ket._cpp)
-    return creator.create(ket.database._cpp)  # type: ignore [return-value]
+    for ket in kets:
+        creator.add_ket(ket._cpp)
+    return creator.create(kets[0].database._cpp)  # type: ignore [return-value]

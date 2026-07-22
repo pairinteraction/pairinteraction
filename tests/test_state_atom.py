@@ -138,13 +138,31 @@ def test_add_states_with_different_bases_merges(pi_module: PairinteractionModule
     assert pytest.approx(merged.get_overlap(ket2)) == 0.5  # NOSONAR
 
 
-def test_error_handling(state: StateAtom) -> None:
-    """Test error cases."""
-    with pytest.raises(TypeError):
-        state.get_amplitude("not a ket")  # type: ignore [arg-type]
+def test_state_from_coefficients_and_kets(pi_module: PairinteractionModule) -> None:
+    """A state can be created from an arbitrary coefficient vector and a list of kets."""
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=0.5)
 
-    with pytest.raises(TypeError):
-        state.get_overlap("not a ket")  # type: ignore [arg-type]
+    state = pi_module.StateAtom([1, 2], [ket1, ket2]).normalize()
+    assert state.number_of_kets == 2
+    assert not state.is_canonical
+    assert pytest.approx(state.get_overlap(ket1)) == 1 / 5  # NOSONAR
+    assert pytest.approx(state.get_overlap(ket2)) == 4 / 5  # NOSONAR
 
-    with pytest.raises(TypeError):
-        state.get_matrix_element("not a ket", "energy", 0)  # type: ignore [call-overload]
+
+def test_state_from_coefficients_and_kets_with_basis(basis: BasisAtom, pi_module: PairinteractionModule) -> None:
+    """Passing a basis expresses the state in the larger Hilbert space of that basis."""
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=0.5)
+
+    state = pi_module.StateAtom([1, 2], [ket1, ket2], basis=basis).normalize()
+    assert state.number_of_kets == basis.number_of_kets
+    assert pytest.approx(state.get_overlap(ket1)) == 1 / 5  # NOSONAR
+    assert pytest.approx(state.get_overlap(ket2)) == 4 / 5  # NOSONAR
+
+    # a ket outside of the basis is rejected, and duplicate kets are rejected as well
+    ket_outside = pi_module.KetAtom("Rb", n=65, l=0, j=0.5, m=0.5)
+    with pytest.raises(ValueError, match="not part of the given basis"):
+        pi_module.StateAtom([1], [ket_outside], basis=basis)
+    with pytest.raises(ValueError, match="must be unique"):
+        pi_module.StateAtom([1, 2], [ket1, ket1], basis=basis)

@@ -11,7 +11,7 @@ from scipy.sparse import csr_matrix
 from typing_extensions import Self, TypeAliasType, deprecated
 
 from pairinteraction import _backend
-from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_ket
+from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_kets
 from pairinteraction.basis.basis_base import BasisBase
 from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
@@ -378,7 +378,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 other_cpp = get_cpp_basis_pair_from_atom_bases(other._cpp.get_atomic_states(), real=is_real)
             elif is_ket_atom_tuple(other):
                 other_cpp = get_cpp_basis_pair_from_atom_bases(
-                    [get_cpp_basis_atom_from_ket(ket, real=is_real) for ket in other], real=is_real
+                    [get_cpp_basis_atom_from_kets([ket], real=is_real) for ket in other], real=is_real
                 )
             # StatePair like
             elif isinstance(other, StatePair):

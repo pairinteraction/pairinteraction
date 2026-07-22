@@ -302,7 +302,7 @@ class KetAtom(KetBase):
         """
         from pairinteraction.state import StateAtom
 
-        return StateAtom(self)
+        return StateAtom([1], [self])
 
     def __add__(self, other: KetAtom | StateAtom) -> StateAtom:
         """Add the ket to another ket or state.
@@ -561,4 +561,4 @@ class KetAtomReal(KetAtom):
     def to_state(self) -> StateAtomReal:
         from pairinteraction.state import StateAtomReal
 
-        return StateAtomReal(self)
+        return StateAtomReal([1], [self])
