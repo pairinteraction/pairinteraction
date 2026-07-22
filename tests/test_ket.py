@@ -67,3 +67,22 @@ def test_ket_equal(pi_module: PairinteractionModule) -> None:
     ket1 = pi_module.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
     ket2 = pi_module.KetAtom("Sr88_triplet", n=60, l=1, j=1, m=0)
     assert ket1 != ket2
+
+
+def test_ket_to_state(pi_module: PairinteractionModule) -> None:
+    ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    state = ket.to_state()
+
+    # the state is trivial, i.e. a single ket with a coefficient of one
+    assert isinstance(state, pi_module.StateAtom)
+    assert state.number_of_kets == 1
+    assert state.is_canonical
+    assert state.is_normalized()
+    assert state.get_corresponding_ket() == ket
+    assert pytest.approx(state.get_coefficients()) == [1.0]  # NOSONAR
+    assert pytest.approx(state.get_overlap(ket)) == 1.0  # NOSONAR
+
+    # the state has the same data type (real/complex) as the ket, so both can be combined
+    combined = (state + pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=0.5).to_state()).normalize()
+    assert combined.number_of_kets == 2
+    assert pytest.approx(combined.get_overlap(ket)) == 0.5  # NOSONAR

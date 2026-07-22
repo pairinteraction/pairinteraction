@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.enums import OperatorType, Parity
+    from pairinteraction.state import StateAtom, StateAtomReal
     from pairinteraction.units import NDArray, PintArray, PintComplex, PintFloat
 
 
@@ -62,6 +63,8 @@ class KetAtom(KetBase):
         ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
         >>> print(ket_sqdt)
         |Rb:60,S_1/2,1/2⟩
+        >>> print(ket_sqdt.to_state())
+        StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
         >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
         >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
         ('Yb174_mqdt', 60.049, 1.0, 1.0)
@@ -285,16 +288,31 @@ class KetAtom(KetBase):
         """The contribution of channels whose quantum numbers are not exactly known."""
         return self._cpp.get_quantum_number("underspecified_channel_contribution")
 
+    def to_state(self) -> StateAtom:
+        """Create a canonical state representing the single ket.
+
+        The returned state has a minimal basis consisting only of this ket and a single coefficient equal to one.
+
+        Returns:
+            A state object representing the ket.
+
+        """
+        from pairinteraction.state import StateAtom
+
+        return StateAtom(self)
+
     @overload
     def get_matrix_element(
-        self, ket: Self, operator: OperatorType, q: int, unit: None = None
+        self, ket: Self | StateAtom, operator: OperatorType, q: int, unit: None = None
     ) -> PintFloat | PintComplex: ...
 
     @overload
-    def get_matrix_element(self, ket: Self, operator: OperatorType, q: int, unit: str) -> float | complex: ...
+    def get_matrix_element(
+        self, ket: Self | StateAtom, operator: OperatorType, q: int, unit: str
+    ) -> float | complex: ...
 
     def get_matrix_element(
-        self, ket: Self, operator: OperatorType, q: int, unit: str | None = None
+        self, ket: Self | StateAtom, operator: OperatorType, q: int, unit: str | None = None
     ) -> PintFloat | PintComplex | float | complex:
         """Get the matrix element between two atomic basis states from the database.
 
@@ -308,13 +326,7 @@ class KetAtom(KetBase):
             The matrix element between the two states in the given unit or as a `pint.Quantity`.
 
         """
-        from pairinteraction.basis import BasisAtomReal
-
-        basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
-        state_1 = basis.get_corresponding_state(self)
-        state_2 = basis.get_corresponding_state(ket)
-
-        return state_1.get_matrix_element(state_2, operator, q, unit=unit)
+        return self.to_state().get_matrix_element(ket, operator, q, unit=unit)
 
     @overload
     def get_spontaneous_transition_rates(self, unit: None = None) -> tuple[list[KetAtom], PintArray]: ...
@@ -485,4 +497,7 @@ class KetAtom(KetBase):
 
 
 class KetAtomReal(KetAtom):
-    pass
+    def to_state(self) -> StateAtomReal:
+        from pairinteraction.state import StateAtomReal
+
+        return StateAtomReal(self)

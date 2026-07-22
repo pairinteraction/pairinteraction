@@ -235,12 +235,7 @@ class StateAtom(StateBase[KetAtom]):
         cpp_op = get_cpp_operator_type(operator)
 
         if isinstance(other, KetAtom):
-            from pairinteraction.basis.basis_atom import get_cpp_basis_atom_from_ket
-
-            is_real = isinstance(self._cpp, _backend.BasisAtomReal)
-            other_cpp = get_cpp_basis_atom_from_ket(other, real=is_real)
-            matrix_elements_au = self._cpp.get_matrix_elements(other_cpp, cpp_op, q).toarray().ravel()[0]
-            return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
+            other = cast("Self", other.to_state())
         if isinstance(other, StateAtom):
             matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()[0]
             return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)

@@ -90,7 +90,7 @@ def test_get_matrix_element(pi_module: PairinteractionModule, basis: BasisAtom) 
 def test_state_without_basis(pi_module: PairinteractionModule) -> None:
     """A StateAtom created without an explicit basis uses a minimal single-ket basis."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    state = pi_module.StateAtom(ket)
+    state = ket.to_state()
     assert state.number_of_kets == 1
     assert state.is_canonical
     assert state.get_corresponding_ket() == ket
@@ -116,8 +116,8 @@ def test_add_states_with_different_bases_merges(pi_module: PairinteractionModule
     ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=0.5)
 
     # Both states start from a minimal single-ket basis, so their bases differ.
-    state1 = pi_module.StateAtom(ket1)
-    state2 = pi_module.StateAtom(ket2)
+    state1 = ket1.to_state()
+    state2 = ket2.to_state()
     assert state1.number_of_kets == 1
     assert state2.number_of_kets == 1
 
@@ -132,7 +132,7 @@ def test_add_states_with_different_bases_merges(pi_module: PairinteractionModule
     energy_max = ket1.get_energy(unit="GHz") + 100
     full_basis = pi_module.BasisAtom("Rb", n=(58, 62), l=(0, 2), energy=(energy_min, energy_max), energy_unit="GHz")
     state_full = full_basis.get_corresponding_state(ket1)
-    merged = (state_full + pi_module.StateAtom(ket2)).normalize()
+    merged = (state_full + ket2.to_state()).normalize()
     assert merged.number_of_kets == full_basis.number_of_kets
     assert pytest.approx(merged.get_overlap(ket1)) == 0.5  # NOSONAR
     assert pytest.approx(merged.get_overlap(ket2)) == 0.5  # NOSONAR
