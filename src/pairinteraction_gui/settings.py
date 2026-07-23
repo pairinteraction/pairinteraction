@@ -44,14 +44,44 @@ class SettingsManager(QObject):
         path = cache_dir / "gui_settings.ini"
         path.parent.mkdir(parents=True, exist_ok=True)
         self.settings = QSettings(str(path), QSettings.Format.IniFormat)
+        # Values already handed to QSettings, keyed by their full path. Used to skip redundant writes,
+        # since QSettings.setValue marks the store dirty even when the value did not change.
+        self._written: dict[str, object] = {}
+        self._dirty = False
 
     def value(self, key: str, default: object = None, value_type: type | None = None) -> object:
+        """Read a stored value."""
         if value_type is not None:
             return self.settings.value(key, defaultValue=default, type=value_type)
         return self.settings.value(key, defaultValue=default)
 
     def set_value(self, key: str, value: object) -> None:
+        """Store a value. Always use this instead of `self.settings.setValue`.
+
+        Writing a value that is already stored is skipped, since QSettings.setValue marks the store dirty even when
+        the value did not change, which would make the periodic autosave rewrite the whole ini file.
+        """
+        # Resolve `key` against the group that is currently open, as QSettings itself would.
+        group = self.settings.group()
+        full_key = f"{group}/{key}" if group else key
+
+        if full_key in self._written and self._written[full_key] == value:
+            return
         self.settings.setValue(key, value)
+        self._written[full_key] = value
+        self._dirty = True
+
+    def sync(self) -> bool:
+        """Flush pending changes to disk, if there are any.
+
+        Returns True if a write was necessary.
+        Skipping the flush when nothing changed keeps a periodic autosave from rewriting the whole ini file.
+        """
+        if not self._dirty:
+            return False
+        self.settings.sync()
+        self._dirty = False
+        return True
 
     def _get_mapper(self, widget: QWidget) -> tuple[str, str, type] | tuple[None, None, None]:
         return next((m for c, m in self.widget_mappers.items() if isinstance(widget, c)), (None, None, None))
@@ -67,7 +97,7 @@ class SettingsManager(QObject):
                 continue
 
             value = getattr(widget, getter)()
-            stored = self.settings.value(name, value, type=dtype)
+            stored = self.value(name, value, dtype)
             if stored is None:
                 continue
 
@@ -84,7 +114,7 @@ class SettingsManager(QObject):
             if getter:
                 value = getattr(widget, getter)()
                 if value is not None:
-                    self.settings.setValue(name, value)
+                    self.set_value(name, value)
 
     def save_widget_state(self, root: QWidget, group: str) -> None:
         """Write the current state of all named input widgets under `group`."""

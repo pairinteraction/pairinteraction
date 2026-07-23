@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, TypeVar
 
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -65,6 +65,7 @@ class MainWindow(QMainWindow):
 
         self.settings_manager = SettingsManager(cache_dir)
         self.restore_settings()
+        self.setup_autosave()
 
         self.init_keyboard_shortcuts()
         self.connect_signals()
@@ -179,14 +180,25 @@ class MainWindow(QMainWindow):
         close_shortcut.activated.connect(lambda: logger.info("Ctrl+W detected. Shutting down gracefully..."))
         close_shortcut.activated.connect(self.close)
 
-    def save_settings(self) -> None:
-        """Save all interactive widget state to disk."""
+    def setup_autosave(self, interval_ms: int = 5_000) -> None:
+        """Periodically persist settings so they survive a forced or unexpected shutdown."""
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setInterval(interval_ms)
+        self._autosave_timer.timeout.connect(self.save_settings)
+        self._autosave_timer.start()
+
+    def save_settings(self) -> bool:
+        """Save all interactive widget state to disk.
+
+        Returns True if anything was actually written, i.e. False if nothing changed since the last save.
+        """
         for page_name, page in self.stacked_pages.items():
             if not isinstance(page, SimulationPage):
                 continue
             attr_dict = {name: attr for name, attr in vars(page).items() if isinstance(attr, BaseConfig)}
             for name, widget in attr_dict.items():
                 self.settings_manager.save_widget_state(widget, f"{page_name}/{name}")
+        return self.settings_manager.sync()
 
     def restore_settings(self) -> None:
         """Restore all interactive widget state from disk."""
@@ -200,6 +212,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event: QCloseEvent) -> None:
         """Make sure to also call Application.quit() when closing the window."""
         logger.debug("Close event triggered.")
+        self._autosave_timer.stop()
         self.save_settings()
         Application.quit()
         event.accept()

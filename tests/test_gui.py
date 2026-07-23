@@ -197,6 +197,24 @@ def _test_calculate_page(
     compare_eigensystem_to_reference(REFERENCE_PATHS[reference_name], energies)
 
 
+def test_autosave_skips_unchanged_settings(base_window: MainWindow) -> None:
+    """The periodic autosave must not rewrite the ini file while the user is idle."""
+    one_atom_page: OneAtomPage = base_window.stacked_pages.getNamedWidget("OneAtomPage")  # type: ignore [assignment]
+    ket_qn = one_atom_page.ket_config.stacked_qn_list[0].currentWidget()
+
+    assert base_window.save_settings()  # the first save writes the initial state
+
+    for _ in range(3):  # further autosave ticks without user interaction must not touch the file
+        assert not base_window.save_settings()
+
+    ket_qn.items["n"].setValue(123)
+    assert base_window.save_settings()
+    assert base_window.settings_manager.value("OneAtomPage/ket_config/atom0_n", value_type=int) == 123
+
+    base_window.close()
+    plt.close("all")  # make sure to close all matplotlib figures
+
+
 def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     window = MainWindow(cache_dir=tmp_path)
     window.show()
