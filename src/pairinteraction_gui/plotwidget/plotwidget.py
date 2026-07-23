@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
+import math
 from typing import TYPE_CHECKING, Any
 
 import matplotlib as mpl
@@ -50,7 +51,7 @@ class PlotWidget(WidgetV):
         super().__init__(parent)
 
         self._annotations = {}
-        self._click_cid: int | None = None
+        self._click_cids: list[int] = []
 
     def setupWidget(self) -> None:
         self.canvas = MatplotlibCanvas(self)
@@ -78,9 +79,42 @@ class PlotWidget(WidgetV):
         self.canvas.draw_idle()
 
     def disconnect_click(self) -> None:
-        if self._click_cid is not None:
-            self.canvas.mpl_disconnect(self._click_cid)
-            self._click_cid = None
+        for cid in self._click_cids:
+            self.canvas.mpl_disconnect(cid)
+        self._click_cids = []
+
+    def connect_click(self, on_click: Callable[[mpl.backend_bases.MouseEvent], None]) -> None:
+        """Connect a click handler that fires on mouse release, but only for genuine clicks."""
+        # Maximum distance (in pixels) the mouse may travel between press and release
+        # for the event to still count as a click rather than a drag (e.g. a zoom rectangle or a pan).
+        click_move_threshold = 5
+
+        press_positions: dict[Any, tuple[float, float]] = {}
+
+        def on_press(event: mpl.backend_bases.MouseEvent) -> None:
+            if event.x is None or event.y is None:
+                return
+            press_positions[event.button] = (event.x, event.y)
+
+        def on_release(event: mpl.backend_bases.MouseEvent) -> None:
+            start = press_positions.pop(event.button, None)
+            if start is None or event.x is None or event.y is None:
+                return
+            if math.hypot(event.x - start[0], event.y - start[1]) > click_move_threshold:
+                return  # this was a drag (e.g. a zoom rectangle), not a click
+            on_click(event)
+
+        def on_figure_leave(_event: mpl.backend_bases.LocationEvent) -> None:
+            # Forget pending presses whose release we will not see, a stale entry would otherwise
+            # be used as the starting point of some later, unrelated release.
+            press_positions.clear()
+
+        self.disconnect_click()
+        self._click_cids = [
+            self.canvas.mpl_connect("button_press_event", on_press),
+            self.canvas.mpl_connect("button_release_event", on_release),
+            self.canvas.mpl_connect("figure_leave_event", on_figure_leave),
+        ]
 
 
 class PlotEnergies(PlotWidget):
@@ -183,12 +217,7 @@ class PlotEnergies(PlotWidget):
         pts_overlaps = np.array(all_overlaps)
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if (
-                event.inaxes is not self.canvas.ax
-                or event.button not in [1, 3]
-                or len(pts_data) == 0
-                or self.navigation_toolbar.mode
-            ):
+            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or len(pts_data) == 0:
                 return
             if event.button == 3:  # right click clears annotations
                 self.clear_annotations()
@@ -232,7 +261,7 @@ class PlotEnergies(PlotWidget):
             self._annotations[selected] = ann
             self.canvas.draw_idle()
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)
+        self.connect_click(on_click)
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
     def fit(self, fit_type: str = "c6") -> None:  # noqa: PLR0912, PLR0915, C901
@@ -410,7 +439,7 @@ class PlotLifetimes(PlotWidget):
                 self._bar_data.append((label, n, rect))
 
         def on_click(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or self.navigation_toolbar.mode:
+            if event.inaxes is not self.canvas.ax or event.button not in [1, 3]:
                 return
             if event.button == 3:  # right click clears annotations
                 self.clear_annotations()
@@ -459,7 +488,7 @@ class PlotLifetimes(PlotWidget):
             self._annotations[(label, n)] = ann
             self.canvas.draw_idle()
 
-        self._click_cid = self.canvas.mpl_connect("button_press_event", on_click)
+        self.connect_click(on_click)
         self.navigation_toolbar._home_callbacks = [self.clear_annotations]
 
 
