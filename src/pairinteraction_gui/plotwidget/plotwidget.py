@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.collections import LineCollection
 from matplotlib.colors import Normalize
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QHBoxLayout
@@ -163,18 +164,19 @@ class PlotEnergies(PlotWidget):
 
         x_values = parameters.get_x_values()
         energies = results.energies
+        x_repeated = np.repeat(x_values, [len(es) for es in energies])
 
         if len({len(es) for es in energies}) <= 1:  # check if homogeneous shape
-            ax.plot(x_values, np.array(energies), c="0.75", lw=0.25, zorder=-10)
-        else:
-            for x_value, es in zip(x_values, energies, strict=True):
-                ax.plot([x_value] * len(es), es, c="0.75", ls="None", marker=".", zorder=-10)
+            segments = [np.column_stack([x_values, es]) for es in np.transpose(energies)]
+            ax.add_collection(LineCollection(segments, colors="0.75", linewidths=0.25, zorder=-10))
+            ax.autoscale_view()  # add_collection does not rescale the axes on its own
+        else:  # inhomogeneous shape
+            ax.plot(x_repeated, np.hstack(energies), c="0.75", ls="None", marker=".", zorder=-10)
 
         show_status_tip(self, "Plotting overlaps...")
 
-        # Flatten the arrays for scatter plot and repeat x value for each energy
+        # Flatten the arrays for scatter plot
         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)
-        x_repeated = np.hstack([val * np.ones_like(es) for val, es in zip(x_values, energies, strict=True)])
         energies_flattened = np.hstack(energies)
         overlaps_flattened = np.hstack(results.ket_overlaps)
 
