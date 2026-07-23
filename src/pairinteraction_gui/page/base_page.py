@@ -202,9 +202,7 @@ class CalculationPage(SimulationPage):
 
         if filename:
             filename = filename.removesuffix(".png") + ".png"
-            self.plotwidget.canvas.fig.savefig(
-                filename, dpi=300, bbox_inches="tight", facecolor="white", edgecolor="none"
-            )
+            self.plotwidget.canvas.fig.savefig(filename, dpi=300, facecolor="white", edgecolor="none")
             logger.info("Plot saved as %s", filename)
 
     def _create_python_code(self) -> str:
