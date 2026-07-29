@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pairinteraction_gui.calculate.calculate_one_atom import ParametersOneAtom, calculate_one_atom
 from pairinteraction_gui.config import (
@@ -15,7 +15,6 @@ from pairinteraction_gui.config import (
 from pairinteraction_gui.page.base_page import CalculationPage
 
 if TYPE_CHECKING:
-    from pairinteraction.state import StateBase
     from pairinteraction_gui.calculate.calculate_one_atom import ResultsOneAtom
 
 logger = logging.getLogger(__name__)
@@ -43,34 +42,6 @@ class OneAtomPage(CalculationPage):
         parameters = ParametersOneAtom.from_page(self)
         results = calculate_one_atom(parameters)
         return parameters, results
-
-    def _plot_function(self, parameters: ParametersOneAtom, results: ResultsOneAtom) -> None:  # type: ignore[override]
-        self.add_short_labels(results)
-
-    def add_short_labels(
-        self,
-        results: ResultsOneAtom,
-    ) -> None:
-        if not results.systems:
-            return
-
-        ax = self.plotwidget.canvas.ax
-        x_lim = ax.get_xlim()
-        ax.set_xlim(x_lim[0] - (x_lim[1] - x_lim[0]) * 0.1, x_lim[1])
-
-        used = set()
-        states0: list[StateBase[Any]] = results.systems[0].get_eigenbasis().states
-        for state, energy in zip(states0, results.energies[0], strict=True):
-            ket_label = state.get_label()
-            short_label = ket_label[1:-1]
-            short_label = short_label.split(":", 1)[-1]
-            components = short_label.split(",")
-            short_label = ",".join(components[:-1])
-            short_label = short_label.split("_", 1)[0]
-            if short_label in used:
-                continue
-            used.add(short_label)
-            self.plotwidget.canvas.ax.text(x_lim[0], energy, short_label, va="center", ha="right")
 
     def _get_export_notebook_template_name(self) -> str:
         return "one_atom.ipynb"
