@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
-from typing import Any, TypeGuard
+from typing import TYPE_CHECKING, Any, TypeGuard
 
 import numpy as np
 from typing_extensions import TypeAliasType
@@ -13,6 +13,9 @@ from pairinteraction import _backend
 from pairinteraction.ket import KetPair, KetPairReal
 from pairinteraction.state.state_atom import StateAtom
 from pairinteraction.state.state_base import StateBase
+
+if TYPE_CHECKING:
+    from pairinteraction.ket.ket_atom import KetAtom
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +96,12 @@ class StatePair(StateBase[KetPair]):
 
         coeffs = np.abs(self.get_coefficients())
         ket_pair = self.get_ket(int(np.argmax(coeffs)))
-        ket_atom_tuple = tuple(state_atom.get_corresponding_ket() for state_atom in ket_pair.state_atoms)
+
+        # manually find the corresponding kets of the state atoms, to avoid warning messages
+        ket_atom_tuple: list[KetAtom] = []
+        for state_atom in ket_pair.state_atoms:
+            overlaps = np.abs(state_atom.get_coefficients()) ** 2
+            ket_atom_tuple.append(state_atom.get_ket(int(np.argmax(overlaps))))
 
         # heuristic to quickly find a basis, which includes the stop_after_num_kets most contributing kets
         is_converged = False
