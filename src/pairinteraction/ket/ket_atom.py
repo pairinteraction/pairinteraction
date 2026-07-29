@@ -442,11 +442,16 @@ class KetAtom(KetBase):
     def _get_transition_rates(
         self, which_transitions: Literal["spontaneous", "black_body"], temperature_au: float | None = None
     ) -> tuple[list[KetAtom], NDArray]:
-        from pairinteraction.basis import BasisAtomReal
-        from pairinteraction.system import SystemAtomReal
+        if not isinstance(self, KetAtomReal):
+            from pairinteraction.basis import BasisAtom
+
+            basis_atom_class = BasisAtom
+        else:
+            from pairinteraction.basis import BasisAtomReal
+
+            basis_atom_class = BasisAtomReal
 
         assert which_transitions in ["spontaneous", "black_body"]
-
         is_spontaneous = which_transitions == "spontaneous"
         n_max = self.n + 30
 
@@ -454,7 +459,7 @@ class KetAtom(KetBase):
         if is_spontaneous:
             energy_range = (-1, self.get_energy("hartree"))
 
-        basis = BasisAtomReal(
+        basis = basis_atom_class(
             self.species,
             n=(1, n_max),
             l=(self.l - 1, self.l + 1),
@@ -464,11 +469,12 @@ class KetAtom(KetBase):
             additional_kets=[self],  # needed to make get_matrix_elements(self, ...) work
             database=self.database,
         )
-        system = SystemAtomReal(basis)
 
         relevant_kets = basis.kets
-        energy_differences_au = np.abs(self.get_energy("hartree") - system.get_eigenenergies("hartree"))
-        electric_dipole_moments_au = np.zeros(len(basis.kets))
+        energy_differences_au = np.abs(
+            self.get_energy("hartree") - np.array([ket_cpp.get_energy() for ket_cpp in basis._cpp.get_kets()])
+        )
+        electric_dipole_moments_au = np.zeros(len(basis.kets), dtype=complex)
         for q in [-1, 0, 1]:
             # the different entries are only at most once nonzero -> we can just add the arrays
             el_di_m = basis.get_matrix_elements(self, "electric_dipole", q)
