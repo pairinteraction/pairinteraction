@@ -138,17 +138,10 @@ class StateAtom(StateBase[KetAtom]):
         return [1], [ket], basis
 
     def __add__(self, other: Self | KetAtom) -> Self:
-        """Add two states together.
+        """Build the superposition of this state and another state or ket.
 
-        The bases are merged into a common basis containing the kets of both states,
-        and the coefficients are re-expressed in this merged basis before adding.
-
-        Args:
-            other: The other state to add. A ket is converted to a state via `ket.to_state()`.
-
-        Returns:
-            A new state object representing the sum of the two states.
-
+        The bases are merged into a common basis, in which the coefficients are re-expressed before adding them.
+        The resulting superposition is in general not normalized, use :meth:`normalize` to normalize it.
         """
         if isinstance(other, KetAtom):
             other = cast("Self", other.to_state())
@@ -167,29 +160,16 @@ class StateAtom(StateBase[KetAtom]):
         return type(self)._from_cpp_object(new_cpp)
 
     def __sub__(self, other: Self | KetAtom) -> Self:
-        """Subtract two states.
+        """Build the superposition of this state and the negative of another state or ket.
 
-        Args:
-            other: The other state to subtract. A ket is converted to a state via `ket.to_state()`.
-
-        Returns:
-            A new state object representing the difference of the two states.
-
+        As for :meth:`__add__` the bases are merged first, the resulting superposition is in general not normalized.
         """
         if isinstance(other, KetAtom):
             other = cast("Self", other.to_state())
         return self.__add__(-1 * other)
 
     def __mul__(self, factor: complex) -> Self:
-        """Multiply the state with a scalar.
-
-        Args:
-            factor: The scalar to multiply with.
-
-        Returns:
-            A new state object representing the product of the state and the scalar.
-
-        """
+        """Scale the state by a complex amplitude, e.g. to build superpositions like ``2 * state_s - 1j * state_p``."""
         if not isinstance(factor, (int, float, complex)):
             raise TypeError(f"Cannot multiply {type(self)} with {type(factor)}.")
         coeffs = factor * self._cpp.get_coefficients()  # type: ignore [operator]
@@ -197,24 +177,11 @@ class StateAtom(StateBase[KetAtom]):
         return type(self)._from_cpp_object(new_cpp)
 
     def __truediv__(self, factor: complex) -> Self:
-        """Divide the state by a scalar.
-
-        Args:
-            factor: The scalar to divide by.
-
-        Returns:
-            A new state object representing the quotient of the state and the scalar.
-
-        """
+        """Scale the state by the inverse of a complex amplitude."""
         return self.__mul__(1 / factor)
 
     def __neg__(self) -> Self:
-        """Negate the state.
-
-        Returns:
-            A new state object with all coefficients multiplied by minus one.
-
-        """
+        """Flip the sign of all amplitudes of the state."""
         return self.__mul__(-1)
 
     __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * state will use state.__rmul__

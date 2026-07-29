@@ -305,62 +305,29 @@ class KetAtom(KetBase):
         return StateAtom([1], [self])
 
     def __add__(self, other: KetAtom | StateAtom) -> StateAtom:
-        """Add the ket to another ket or state.
+        """Build the superposition of this ket and another ket or state.
 
-        The ket is first converted to a state via :meth:`to_state`, then the states are added.
-
-        Args:
-            other: The other ket or state to add.
-
-        Returns:
-            A new state object representing the sum.
-
+        The ket is converted to a state via :meth:`to_state`, the resulting superposition is in general not normalized.
         """
         return self.to_state() + other
 
     def __sub__(self, other: KetAtom | StateAtom) -> StateAtom:
-        """Subtract another ket or state from the ket.
+        """Build the superposition of this ket and the negative of another ket or state.
 
-        Args:
-            other: The other ket or state to subtract.
-
-        Returns:
-            A new state object representing the difference.
-
+        The ket is converted to a state via :meth:`to_state`, the resulting superposition is in general not normalized.
         """
         return self.to_state() - other
 
     def __mul__(self, factor: complex) -> StateAtom:
-        """Multiply the ket with a scalar.
-
-        Args:
-            factor: The scalar to multiply with.
-
-        Returns:
-            A new state object representing the product.
-
-        """
+        """Scale the ket by a complex amplitude, e.g. to build superpositions like ``2 * ket_s - 1j * ket_p``."""
         return self.to_state() * factor
 
     def __truediv__(self, factor: complex) -> StateAtom:
-        """Divide the ket by a scalar.
-
-        Args:
-            factor: The scalar to divide by.
-
-        Returns:
-            A new state object representing the quotient.
-
-        """
+        """Scale the ket by the inverse of a complex amplitude."""
         return self.to_state() / factor
 
     def __neg__(self) -> StateAtom:
-        """Negate the ket.
-
-        Returns:
-            A new state object representing the ket with a coefficient of minus one.
-
-        """
+        """Flip the sign of the amplitude of the ket."""
         return -self.to_state()
 
     __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * ket will use ket.__rmul__
