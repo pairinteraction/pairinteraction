@@ -110,6 +110,18 @@ def test_add_states_with_same_basis(basis: BasisAtom, pi_module: Pairinteraction
     assert pytest.approx(combined.get_overlap(ket2)) == 0.5  # NOSONAR
 
 
+def test_negating_state(basis: BasisAtom, pi_module: PairinteractionModule) -> None:
+    """Negating a state negates its coefficients, and subtracting states is equivalent to adding the negated state."""
+    ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=0.5)
+    state1 = basis.get_corresponding_state(ket1)
+    state2 = basis.get_corresponding_state(ket2)
+    assert pytest.approx((-state1).get_coefficients()) == -state1.get_coefficients()  # NOSONAR
+    difference = (state1 - state2).normalize()
+    negated_sum = (state1 + (-state2)).normalize()
+    assert pytest.approx(negated_sum.get_coefficients()) == difference.get_coefficients()  # NOSONAR
+
+
 def test_add_states_with_different_bases_merges(pi_module: PairinteractionModule) -> None:
     """Adding states with different bases merges the bases and re-expresses the coefficients."""
     ket1 = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)

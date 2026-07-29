@@ -354,6 +354,15 @@ class KetAtom(KetBase):
         """
         return self.to_state() / factor
 
+    def __neg__(self) -> StateAtom:
+        """Negate the ket.
+
+        Returns:
+            A new state object representing the ket with a coefficient of minus one.
+
+        """
+        return -self.to_state()
+
     __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * ket will use ket.__rmul__
 
     @overload

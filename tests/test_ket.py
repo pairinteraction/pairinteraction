@@ -107,6 +107,11 @@ def test_ket_arithmetic(pi_module: PairinteractionModule) -> None:
     # dividing by a scalar is equivalent to multiplying with the inverse
     assert pytest.approx((ket_s / 2).get_coefficients()) == (ket_s * 0.5).get_coefficients()  # NOSONAR
 
+    # negating a ket is equivalent to multiplying it with minus one
+    assert pytest.approx((-ket_s).get_coefficients()) == (ket_s * -1).get_coefficients()  # NOSONAR
+    assert pytest.approx((-ket_s).get_amplitude(ket_s)) == -1.0  # NOSONAR
+    assert ((ket_s + ket_p) + (-ket_p)).number_of_kets == 2
+
     # subtracting gives the same overlaps, but with an opposite relative sign
     difference = (ket_s - ket_p).normalize()
     assert pytest.approx(difference.get_overlap(ket_s)) == 0.5  # NOSONAR

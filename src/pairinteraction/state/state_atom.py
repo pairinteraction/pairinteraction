@@ -208,6 +208,15 @@ class StateAtom(StateBase[KetAtom]):
         """
         return self.__mul__(1 / factor)
 
+    def __neg__(self) -> Self:
+        """Negate the state.
+
+        Returns:
+            A new state object with all coefficients multiplied by minus one.
+
+        """
+        return self.__mul__(-1)
+
     __rmul__ = __mul__  # for reverse multiplication, i.e. scalar * state will use state.__rmul__
 
     def normalize(self) -> Self:
