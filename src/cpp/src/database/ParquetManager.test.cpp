@@ -131,10 +131,8 @@ DOCTEST_TEST_CASE("ParquetManager functionality with GitHub downloader") {
 
     // Check that all species are present
     std::vector<std::string> should_contain = {
-        "Cs",        "K",          "Li",           "Na",
-        "Rb",        "Sr87_mqdt",  "Sr88_singlet", "Sr88_triplet",
-        "Sr88_mqdt", "Yb171_mqdt", "Yb173_mqdt",   "Yb174_mqdt",
-        "misc"};
+        "Cs",        "K",         "Li",         "Na",         "Rb",         "Sr87_mqdt",
+        "Sr88_sqdt", "Sr88_mqdt", "Yb171_mqdt", "Yb173_mqdt", "Yb174_mqdt", "misc"};
     for (const auto &substr : should_contain) {
         DOCTEST_CHECK(info.find(substr) != std::string::npos);
     }

@@ -42,15 +42,15 @@ class KetAtom(KetBase):
         s = 1/2, f = j (we neglect hyperfine interaction for SQDT),
         nu = n - delta, l_ryd = l, j_ryd = j.
 
-    SQDT (Single Channel Quantum Defect Theory) for two valence electrons (alkaline-earth atoms):
-        The quantum numbers n (int), l_ryd (int), j (int) and m (int)
+    SQDT (Single Channel Quantum Defect Theory) for two valence electrons (divalent atoms):
+        The quantum numbers n (int), l_ryd (int), s (0 or 1), j (int) and m (int)
         should be used to define the desired atomic basis state.
-        The spin quantum number s is taken from the species label,
-        which must end either with "_singlet" (s=0) or "_triplet" (s=1).
+        For divalent atoms the spin quantum number s selects the singlet (s=0) or the triplet (s=1) sector,
+        which are both contained in the same database (e.g. "Sr88_sqdt").
         Again we neglect hyperfine interaction, thus f = j. And nu = n - delta.
         All other quantum numbers are not necessarily eigenvalues anymore and are given as expectation values.
 
-    MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (alkaline-earth atoms):
+    MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (divalent atoms):
         The quantum numbers nu (float), f (int or half-int) and m (int or half-int) are still good quantum numbers.
         All other quantum numbers (like l, s, j, l_ryd, j_ryd) are not necessarily eigenvalues anymore.
         You can still provide them to specify the atomic basis state,

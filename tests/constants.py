@@ -1,21 +1,12 @@
 # SPDX-FileCopyrightText: 2025 PairInteraction Developers
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
-SUPPORTED_SPECIES = [
-    "Rb",
-    "Sr88_singlet",
-    "Sr88_triplet",
-    "Sr88_mqdt",
-    "Sr87_mqdt",
-    "Yb174_mqdt",
-    "Yb171_mqdt",
-    "Yb173_mqdt",
-]
 SPECIES_TO_NUCLEAR_SPIN = {
+    "Sr87_mqdt": 9 / 2,
+    "Sr88_sqdt": 0,
     "Yb171_mqdt": 1 / 2,
     "Yb173_mqdt": 5 / 2,
     "Yb174_mqdt": 0,
-    "Sr87_mqdt": 9 / 2,
     "Sr88_mqdt": 0,
 }
 

@@ -214,12 +214,8 @@ class RestrictionsBase(WidgetV):
     def from_species(cls, atom: int, species: str, parent: QWidget | None = None) -> RestrictionsBase:
         """Create a quantum number restriction configuration from the species name."""
         species_type = get_species_type(species)
-        if species_type == "sqdt_duplet":
-            return RestrictionsSQDT(atom, parent, s_type="halfint", s=0.5)
-        if species_type == "sqdt_singlet":
-            return RestrictionsSQDT(atom, parent, s_type="int", s=0)
-        if species_type == "sqdt_triplet":
-            return RestrictionsSQDT(atom, parent, s_type="int", s=1)
+        if species_type in ("sqdt_monovalent", "sqdt_divalent"):
+            return RestrictionsSQDT(atom, parent, species_type=species_type)
         if species_type == "mqdt_halfint":
             return RestrictionsMQDT(atom, parent, f_type="halfint", i=0.5)
         if species_type == "mqdt_int":
@@ -236,23 +232,23 @@ class RestrictionsSQDT(RestrictionsBase):
         atom: int,
         parent: QWidget | None = None,
         *,
-        s_type: Literal["int", "halfint"],
-        s: float,
+        species_type: Literal["sqdt_monovalent", "sqdt_divalent"],
     ) -> None:
-        assert s_type in ("int", "halfint"), "s_type must be int or halfint"
         self.atom = atom
-        self.s_type = s_type
-        self.s = s
+        self.species_type = species_type
         self.items = {}
         super().__init__(parent)
 
     def setupWidget(self) -> None:
         self.items["n"] = QnItemInt(self, "Δn", vdefault=3, tooltip="Restriction for the principal quantum number n")
         self.items["l"] = QnItemInt(self, "Δl", vdefault=2, tooltip="Restriction for the orbital angular momentum l")
-        if self.s != 0:
-            self.items["j"] = QnItemInt(
-                self, "Δj", tooltip="Restriction for the total angular momentum j", checked=False
+        if self.species_type == "sqdt_divalent":
+            self.items["s"] = QnItemInt(
+                self,
+                "Δs",
+                tooltip="Restriction for the spin s (Δs=0 restricts the basis to the singlet or triplet sector)",
             )
+        self.items["j"] = QnItemInt(self, "Δj", tooltip="Restriction for the total angular momentum j", checked=False)
         self.items["m"] = QnItemInt(self, "Δm", tooltip="Restriction for the magnetic quantum number m", checked=False)
 
 

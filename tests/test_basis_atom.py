@@ -226,7 +226,7 @@ def test_from_kets(pi_module: PairinteractionModule) -> None:
         pi_module.BasisAtom.from_kets([])
 
     ket_rb = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    ket_sr = pi_module.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
+    ket_sr = pi_module.KetAtom("Sr88_sqdt", n=60, l=1, s=0, j=1, m=0)
     with pytest.raises(ValueError, match="species"):
         pi_module.BasisAtom.from_kets([ket_rb, ket_sr])
 

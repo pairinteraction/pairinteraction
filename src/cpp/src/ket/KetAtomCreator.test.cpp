@@ -25,14 +25,14 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
 DOCTEST_TEST_CASE("create a ket for strontium") {
     Database &database = Database::get_global_instance();
     auto ket = KetAtomCreator()
-                   .set_species("Sr88_singlet")
+                   .set_species("Sr88_sqdt")
                    .set_quantum_number("n", 60)
                    .set_quantum_number("l", 1)
                    .set_quantum_number("f", 1)
                    .set_quantum_number("m", 0)
                    .set_quantum_number("s", 0)
                    .create(database);
-    DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
+    DOCTEST_CHECK(ket->get_species() == "Sr88_sqdt");
     DOCTEST_CHECK(ket->get_quantum_number("n") == 60);
     DOCTEST_CHECK(ket->get_quantum_number("f") == 1);
     DOCTEST_CHECK(ket->get_quantum_number("m") == 0);

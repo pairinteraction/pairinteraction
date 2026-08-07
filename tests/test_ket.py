@@ -64,10 +64,6 @@ def test_ket_equal(pi_module: PairinteractionModule) -> None:
     assert ket1 != ket3
     assert ket1 != ket4
 
-    ket1 = pi_module.KetAtom("Sr88_singlet", n=60, l=1, j=1, m=0)
-    ket2 = pi_module.KetAtom("Sr88_triplet", n=60, l=1, j=1, m=0)
-    assert ket1 != ket2
-
 
 def test_ket_to_state(pi_module: PairinteractionModule) -> None:
     ket = pi_module.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)

@@ -250,12 +250,8 @@ class QnBase(WidgetV):
     def from_species(cls, atom: int, species: str, parent: QWidget | None = None) -> QnBase:
         """Create a quantum number configuration from the species name."""
         species_type = get_species_type(species)
-        if species_type == "sqdt_duplet":
-            return QnSQDT(atom, parent, s_type="halfint", s=0.5)
-        if species_type == "sqdt_singlet":
-            return QnSQDT(atom, parent, s_type="int", s=0)
-        if species_type == "sqdt_triplet":
-            return QnSQDT(atom, parent, s_type="int", s=1)
+        if species_type in ("sqdt_monovalent", "sqdt_divalent"):
+            return QnSQDT(atom, parent, species_type=species_type)
 
         element = species.split("_", maxsplit=1)[0]
         if species_type == "mqdt_halfint":
@@ -276,13 +272,10 @@ class QnSQDT(QnBase):
         atom: int,
         parent: QWidget | None = None,
         *,
-        s_type: Literal["int", "halfint"],
-        s: float,
+        species_type: Literal["sqdt_monovalent", "sqdt_divalent"],
     ) -> None:
-        assert s_type in ("int", "halfint"), "s_type must be int or halfint"
         self.atom = atom
-        self.s_type = s_type
-        self.s = s
+        self.species_type = species_type
         self.items = {}
         super().__init__(parent)
 
@@ -290,20 +283,19 @@ class QnSQDT(QnBase):
         self.items["n"] = QnItemInt(self, "n", vmin=1, vdefault=60, tooltip="Principal quantum number n")
         self.items["l"] = QnItemInt(self, "l", vmin=0, tooltip="Orbital angular momentum l")
 
-        s = self.s
-        if self.s_type == "int":
-            if s != 0:
-                self.items["j"] = QnItemInt(self, "j", vmin=int(s), vdefault=int(s), tooltip="Total angular momentum j")
+        if self.species_type == "sqdt_divalent":
+            self.items["s"] = QnItemInt(self, "s", vmin=0, vmax=1, tooltip="Spin s (0: singlet, 1: triplet)")
+            self.items["j"] = QnItemInt(self, "j", vmin=0, tooltip="Total angular momentum j")
             self.items["m"] = QnItemInt(self, "m", vmin=-999, vmax=999, vdefault=0, tooltip="Magnetic quantum number m")
         else:
-            self.items["j"] = QnItemHalfInt(self, "j", vmin=s, vdefault=s, tooltip="Total angular momentum j")
+            self.items["j"] = QnItemHalfInt(self, "j", vmin=0.5, vdefault=0.5, tooltip="Total angular momentum j")
             self.items["m"] = QnItemHalfInt(
                 self, "m", vmin=-999.5, vmax=999.5, vdefault=0.5, tooltip="Magnetic quantum number m"
             )
 
 
 class QnMQDT(QnBase):
-    """Configuration for alkaline-earth atoms using MQDT."""
+    """Configuration for divalent atoms using MQDT."""
 
     def __init__(
         self,

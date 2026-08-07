@@ -29,6 +29,6 @@ To update the local database in "data/database", ensure that you have the most r
 
 ```bash
 uv run pairinteraction database remove
-uv run pairinteraction database download Rb Sr87_mqdt Sr88_mqdt Sr88_singlet Sr88_triplet Yb171_mqdt Yb173_mqdt Yb174_mqdt
+uv run pairinteraction database download Rb Sr87_mqdt Sr88_mqdt Sr88_sqdt Yb171_mqdt Yb173_mqdt Yb174_mqdt
 uv run --no-project dbmanager_shrink --out data/database
 ```

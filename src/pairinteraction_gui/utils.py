@@ -10,15 +10,14 @@ AVAILABLE_SPECIES = [
     "Na",
     "K",
     "Cs",
-    "Sr88_singlet",
-    "Sr88_triplet",
+    "Sr88_sqdt",
     "Sr87_mqdt",
     "Sr88_mqdt",
     "Yb171_mqdt",
     "Yb173_mqdt",
     "Yb174_mqdt",
 ]
-SpeciesTypes = Literal["sqdt_duplet", "sqdt_singlet", "sqdt_triplet", "mqdt_halfint", "mqdt_int"]
+SpeciesTypes = Literal["sqdt_monovalent", "sqdt_divalent", "mqdt_halfint", "mqdt_int"]
 
 
 class DatabaseMissingError(Exception):
@@ -49,11 +48,9 @@ def get_species_type(species: str) -> SpeciesTypes:
                 return "mqdt_int"
             return "mqdt_halfint"
         raise ValueError(f"Invalid species name: {species}")
-    if "singlet" in species:
-        return "sqdt_singlet"
-    if "triplet" in species:
-        return "sqdt_triplet"
-    return "sqdt_duplet"
+    if species.endswith("_sqdt"):  # two valence electrons, i.e. integer spin s (singlet or triplet)
+        return "sqdt_divalent"
+    return "sqdt_monovalent"
 
 
 def label_to_object_name(label: str) -> str:

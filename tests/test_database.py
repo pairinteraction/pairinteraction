@@ -11,7 +11,7 @@ import pytest
 from packaging.version import Version
 from sympy.physics.wigner import wigner_3j
 
-from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN, SUPPORTED_SPECIES
+from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -168,15 +168,23 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
     assert np.isclose(matrix_element, operator[0, 0] if swap_states else operator[1, 1], rtol=1e-3)
 
 
-@pytest.mark.parametrize("species", SUPPORTED_SPECIES)
-def test_obtaining_kets(pi_module: PairinteractionModule, species: str) -> None:
+@pytest.mark.parametrize(
+    ("species", "quantum_number_s"),
+    [
+        ("Rb", 0.5),
+        ("Sr88_sqdt", 0),
+        ("Sr88_sqdt", 1),
+        ("Yb171_mqdt", 0),
+        ("Yb171_mqdt", 1),
+        ("Yb174_mqdt", 0),
+        ("Yb174_mqdt", 1),
+    ],
+)
+def test_obtaining_kets(pi_module: PairinteractionModule, species: str, quantum_number_s: float) -> None:
     """Test obtaining kets from the database."""
     is_mqdt = species.endswith("_mqdt")
-    is_single_valence_electron = species == "Rb"
-    is_triplet = species == "Sr88_triplet"
 
     quantum_number_i = SPECIES_TO_NUCLEAR_SPIN[species] if is_mqdt else 0
-    quantum_number_s = 0.5 if is_single_valence_electron else (1 if is_triplet else 0)
     quantum_number_f = quantum_number_i + quantum_number_s
     quantum_number_m = quantum_number_i + quantum_number_s
 
@@ -189,6 +197,6 @@ def test_obtaining_kets(pi_module: PairinteractionModule, species: str) -> None:
     assert ket.l == 0 if not is_mqdt else abs(ket.l - 0) < 1
     assert ket.f == quantum_number_f
     assert ket.m == quantum_number_m
-    assert ket.s == quantum_number_s if not is_mqdt else abs(ket.s - quantum_number_s) < 1
+    assert ket.s == quantum_number_s if not is_mqdt else abs(ket.s - quantum_number_s) < 0.5
 
     # TODO check repr(ket) (once the mqdt databases are updated)

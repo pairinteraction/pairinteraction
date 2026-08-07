@@ -79,9 +79,10 @@ int main(int argc, char **argv) {
 
     // Create dipole operators in a typical basis
     auto basis = pairinteraction::BasisAtomCreator<std::complex<double>>()
-                     .set_species("Sr88_singlet")
+                     .set_species("Sr88_sqdt")
                      .restrict_quantum_number("n", 60, 63)
                      .restrict_quantum_number("l", 0, 3)
+                     .restrict_quantum_number("s", 0, 0)
                      .create(database);
 
     auto dipole_0 = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
