@@ -46,6 +46,15 @@ def test_ket(pi_module: PairinteractionModule) -> None:
     assert ket.get_matrix_element(ket_odd, "electric_dipole", q=+1) == 0
 
 
+def test_get_label_sqdt(pi_module: PairinteractionModule) -> None:
+    ket1 = pi_module.KetAtom("Rb", n=60, l=1, j=1.5, m=-0.5)
+    assert ket1.get_label("raw") == "Rb:60,P_3/2,-1/2"
+    ket2 = pi_module.KetAtom("Sr88_sqdt", n=60, l=0, s=0, j=0, m=0)
+    assert ket2.get_label("raw") == "Sr88:S=0,60,S_0,0"
+    ket3 = pi_module.KetAtom("Sr88_sqdt", n=60, l=1, s=1, j=2, m=1)
+    assert ket3.get_label("raw") == "Sr88:S=1,60,P_2,1"
+
+
 def test_get_label_mqdt(pi_module: PairinteractionModule) -> None:
     ket1 = pi_module.KetAtom("Yb171_mqdt", nu=55.5, l=0, f=1.5, m=1.5)
     assert ket1.get_label("raw") == "Yb171:S=1.0,nu=55.6,L=0.0,F=3/2,3/2"

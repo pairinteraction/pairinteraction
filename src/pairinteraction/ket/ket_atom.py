@@ -156,21 +156,18 @@ class KetAtom(KetBase):
 
         label = self.species.split("_", 1)[0]
         label = label[0].upper() + label[1:]
-
-        if not self.species.endswith("_mqdt"):
-            if s == 0:
-                label += "_singlet"
-            elif s == 1:
-                label += "_triplet"
-            elif s != 0.5:
-                logger.error("Unexpected spin quantum number s=%f for species %s.", s, self.species)
-
         label += ":"
 
         if self.species.endswith("_mqdt"):
             label += f"S={s:.1f},nu={self.nu:.1f},L={l:.1f},"
             label += "J=" if self.is_j_total_momentum else "F="
         else:
+            if s != 0.5:
+                if s in (0, 1):
+                    label += f"S={s:.0f},"
+                else:
+                    logger.error("Unexpected spin quantum number s=%f for species %s.", s, self.species)
+                    label += f"S={s:.1f},"
             label += f"{self.n:d},"
             label += get_l_label(l)
             label += "_"
