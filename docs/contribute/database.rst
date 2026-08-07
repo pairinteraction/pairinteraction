@@ -9,18 +9,14 @@ enables the inclusion of new atomic species and even molecules into the software
 code of the software itself.
 
 The currently available databases are hosted on GitHub and are downloaded by PairInteraction when needed. We manage two
-database repositories:
+database repositories, both created with our tool RydState_:
 
-- database-sqdt_: States and matrix elements calculated by single-channel quantum defect theory, utilizing our tool
-  RydState_.
-- database-mqdt_: States and matrix elements calculated by multi-channel quantum defect theory, utilizing our tool
-  MQDT.jl_.
+- database-sqdt_: States and matrix elements calculated by single-channel quantum defect theory.
+- database-mqdt_: States and matrix elements calculated by multi-channel quantum defect theory.
 
 .. _database-mqdt: https://github.com/pairinteraction/database-mqdt/releases
 
 .. _database-sqdt: https://github.com/pairinteraction/database-sqdt/releases
-
-.. _mqdt.jl: https://github.com/pairinteraction/MQDT.jl
 
 .. _rydstate: https://github.com/pairinteraction/rydstate
 

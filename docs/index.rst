@@ -33,5 +33,4 @@
     :caption: Utility Tools [External Links]
     :hidden:
 
-    MQDT.jl <https://github.com/pairinteraction/MQDT.jl>
     RydState <https://github.com/pairinteraction/rydstate>

@@ -154,9 +154,7 @@ these tutorials enable you to leverage PairInteraction for your projects.
 
 **Utility Tools [External Links]**
 
-- [MQDT.jl] - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
-
-- [RydState] - Learn how to calculate Rydberg states and matrix elements using single quantum defect theory with our tool written in Python.
+- [RydState] - Learn how to calculate Rydberg states and matrix elements using single-channel and multi-channel quantum defect theory with our tool written in Python.
 
 [Installation]: https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html
 [Tutorials]: https://www.pairinteraction.org/pairinteraction/stable/tutorials/tutorials.html
@@ -167,7 +165,6 @@ these tutorials enable you to leverage PairInteraction for your projects.
 [Overview of PairInteraction's Architecture]: https://www.pairinteraction.org/pairinteraction/stable/contribute/architecture.html
 [Style Guide]: https://www.pairinteraction.org/pairinteraction/stable/contribute/style_guide.html
 [Database Format]: https://www.pairinteraction.org/pairinteraction/stable/contribute/database.html
-[MQDT.jl]: https://github.com/pairinteraction/MQDT.jl
 [RydState]: https://github.com/pairinteraction/rydstate
 
 ## Contributors
@@ -183,7 +180,7 @@ In addition, the following people contributed significantly to the current and/o
 * [Patrick Mischke] - GUI button for fitting c3/c6 coefficients, [archlinux package]
 * [Nicolas Zuber] - Tutorial on Rydberg-ion interaction
 * [Simon Hollerith] - Documentation of the graphical user interface *(not yet in new version)*
-* [Frederic Hummel] - Julia package for multi-channel quantum defect theory, matrix elements
+* [Frederic Hummel] - Multi-channel quantum defect theory, matrix elements
 * [Eduard J. Braun] - Perturbative calculations, installation instructions for Windows
 * [Alicia Keil] - Enhanced and redesigned calculation of Rydberg pair potentials near surfaces
 
