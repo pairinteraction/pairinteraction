@@ -57,7 +57,7 @@ for t in sorted([t.name for t in _all_tags], reverse=True):
     WANTED_TAGS.append(t)
 WANTED_TAGS = sorted(WANTED_TAGS)
 
-GIT_OBJ = Git(branch_regex="master", tag_regex="|".join([*WANTED_TAGS, LEGACY_VERSION]), buffer_size=1 * 10**9)
+GIT_OBJ = Git(branch_regex="master", tag_regex="|".join([*WANTED_TAGS, LEGACY_VERSION]))
 ALL_TARGETS: list[GitRef] = asyncio.run(GIT_OBJ.retrieve(ROOT_DIR))
 LATEST = max(t for t in WANTED_TAGS)
 logger.info("Found %d target revisions: %s", len(ALL_TARGETS), [t.name for t in ALL_TARGETS])
