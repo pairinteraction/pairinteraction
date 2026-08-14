@@ -354,9 +354,11 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             other = other.to_state()
         if isinstance(other, StateAtom):
             matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()
+            matrix_elements_au = np.real_if_close(matrix_elements_au)
             return QuantityArray.convert_au_to_user(matrix_elements_au, operator, unit)
         if isinstance(other, BasisAtom):
             matrix_elements_sparse_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q)
+            matrix_elements_sparse_au.data = np.real_if_close(matrix_elements_sparse_au.data)
             return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 

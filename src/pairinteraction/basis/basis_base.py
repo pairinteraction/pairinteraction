@@ -5,6 +5,8 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
+import numpy as np
+
 from pairinteraction.state.state_base import get_index_with_largest_overlap
 
 if TYPE_CHECKING:
@@ -109,7 +111,9 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         in each row is equal to 1.
 
         """
-        return self._cpp.get_coefficients()
+        coefficients = self._cpp.get_coefficients()
+        coefficients.data = np.real_if_close(coefficients.data)
+        return coefficients
 
     def get_corresponding_ket(self: Self, state: StateType) -> KetType:
         """Return the ket of the basis with the maximal overlap with the given state."""

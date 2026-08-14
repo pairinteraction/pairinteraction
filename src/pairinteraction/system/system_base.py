@@ -132,4 +132,5 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_hamiltonian(self, unit: str | None = None) -> csr_matrix | PintSparse:
         hamiltonian_au = self._cpp.get_matrix()
+        hamiltonian_au.data = np.real_if_close(hamiltonian_au.data)
         return QuantitySparse.convert_au_to_user(hamiltonian_au, "energy", unit)

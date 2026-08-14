@@ -389,6 +389,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 raise TypeError(f"Unknown type: {type(other)=}")
 
             matrix_elements_au = self._cpp.get_matrix_elements(other_cpp, *operators_cpp, *qs).toarray().ravel()
+            matrix_elements_au = np.real_if_close(matrix_elements_au)
             return QuantityArray.convert_au_to_user(matrix_elements_au, operators, unit)
 
         # BasisPair like
@@ -401,6 +402,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 raise TypeError(f"Unknown type: {type(other)=}")
 
             matrix_elements_sparse_au = self._cpp.get_matrix_elements(other_cpp, *operators_cpp, *qs)
+            matrix_elements_sparse_au.data = np.real_if_close(matrix_elements_sparse_au.data)
             return QuantitySparse.convert_au_to_user(matrix_elements_sparse_au, operators, unit)
 
         raise TypeError(f"Unknown type: {type(other)=}")

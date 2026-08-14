@@ -282,8 +282,9 @@ class StateAtom(StateBase[KetAtom]):
         if isinstance(other, KetAtom):
             other = cast("Self", other.to_state())
         if isinstance(other, StateAtom):
-            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()[0]
-            return QuantityScalar.convert_au_to_user(matrix_elements_au, operator, unit)
+            matrix_elements_au = self._cpp.get_matrix_elements(other._cpp, cpp_op, q).toarray().ravel()
+            matrix_element_au = np.real_if_close(matrix_elements_au)[0]
+            return QuantityScalar.convert_au_to_user(matrix_element_au, operator, unit)
         raise TypeError(f"Unknown type: {type(other)=}")
 
 
