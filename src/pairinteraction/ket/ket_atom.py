@@ -64,10 +64,10 @@ class KetAtom(KetBase):
         >>> print(ket_s)
         |Rb:60,S_1/2,1/2⟩
         >>> print(ket_s.to_state())
-        StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
+        1.00 |Rb:60,S_1/2,1/2⟩
         >>> ket_p = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
         >>> print((2 * ket_p - ket_s).normalize())
-        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
+        0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩
         >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
         >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
         ('Yb174_mqdt', 60.049, 1.0, 1.0)

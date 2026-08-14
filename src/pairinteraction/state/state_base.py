@@ -55,7 +55,7 @@ class StateBase(ABC, Generic[KetType]):
         return f"{type(self).__name__}({self.get_label()})"
 
     def __str__(self) -> str:
-        return self.__repr__()
+        return self.get_label()
 
     def get_label(self, stop_after_num_kets: int = 3, stop_after_accumulated_overlap: float = 0.95) -> str:
         """Label representing the state.

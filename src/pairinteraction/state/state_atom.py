@@ -37,17 +37,17 @@ class StateAtom(StateBase[KetAtom]):
     Examples:
         >>> import pairinteraction as pi
         >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
-        >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3))
-        >>> state = basis.get_corresponding_state(ket)
+        >>> state = ket.to_state()
         >>> print(state)
-        StateAtom(1.00 |Rb:60,S_1/2,1/2⟩)
+        1.00 |Rb:60,S_1/2,1/2⟩
         >>> ket2 = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
-        >>> state2 = ket2.to_state()
+        >>> state2 = pi.StateAtom([1], [ket2])
+        >>> print(state2)
+        1.00 |Rb:60,P_1/2,1/2⟩
         >>> print((2 * state2 - state).normalize())
-        StateAtom(0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩)
+        0.89 |Rb:60,P_1/2,1/2⟩ - 0.45 |Rb:60,S_1/2,1/2⟩
         >>> print(pi.StateAtom([2, 1], [ket, ket2]).normalize())
-        StateAtom(0.89 |Rb:60,S_1/2,1/2⟩ + 0.45 |Rb:60,P_1/2,1/2⟩)
-
+        0.89 |Rb:60,S_1/2,1/2⟩ + 0.45 |Rb:60,P_1/2,1/2⟩
 
     """
 

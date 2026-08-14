@@ -35,7 +35,7 @@ def test_state_creation(state: StateAtom) -> None:
     assert state.species == "Rb"
     assert state.number_of_kets == 80
     assert len(state.kets) == state.number_of_kets
-    assert all(x in str(state) for x in ["StateAtom", "60", "S", "3/2", "-1/2"])
+    assert str(state) == "1.00 |Rb:60,P_3/2,-1/2⟩"
     assert state.is_canonical
 
 
