@@ -7,9 +7,8 @@ import logging
 import math
 from typing import TYPE_CHECKING, Any
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.cm import ScalarMappable
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Normalize
 from PySide6.QtGui import QPalette
@@ -28,6 +27,7 @@ if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
     from typing import Concatenate
 
+    import matplotlib as mpl
     from numpy.typing import NDArray
 
     from pairinteraction.state import StateBase
@@ -47,7 +47,6 @@ class PlotWidget(WidgetV):
 
     def __init__(self, parent: SimulationPage) -> None:
         """Initialize the base section."""
-        mpl.use("Qt5Agg")
         self.page = parent
         super().__init__(parent)
 
@@ -146,7 +145,7 @@ class PlotEnergies(PlotWidget):
             wspace=0.0,
             hspace=0.0,
         )
-        mappable = plt.cm.ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
+        mappable = ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))
         cbar = self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label="Overlap with state of interest", aspect=60)
         cbar.ax.set_zorder(0)
         self.canvas.ax.set_zorder(1)

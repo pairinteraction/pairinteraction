@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from pairinteraction_gui.main_window import MainWindow
@@ -212,7 +211,6 @@ def test_autosave_skips_unchanged_settings(base_window: MainWindow) -> None:
     assert base_window.settings_manager.value("OneAtomPage/ket_config/atom0_n", value_type=int) == 123
 
     base_window.close()
-    plt.close("all")  # make sure to close all matplotlib figures
 
 
 def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
@@ -224,7 +222,6 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     ket_qn.items["n"].setValue(222)
     ket_qn.items["l"].setValue(999)
     window.close()
-    plt.close("all")  # make sure to close all matplotlib figures
 
     window = MainWindow(cache_dir=tmp_path)
     window.show()
@@ -236,4 +233,3 @@ def test_save_and_restore_settings(qtbot: QtBot, tmp_path: Path) -> None:
     assert ket_qn.items["l"].value() == 999
 
     window.close()
-    plt.close("all")  # make sure to close all matplotlib figures

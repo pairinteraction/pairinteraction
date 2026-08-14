@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 from PySide6.QtCore import Qt, QTimer
 
 if TYPE_CHECKING:
@@ -19,7 +19,10 @@ class MatplotlibCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         """Initialize the canvas with a figure."""
-        self.fig, self.ax = plt.subplots()
+        # Create the figure directly instead of via pyplot, so it is not registered in pyplot's global
+        # figure manager, which would keep this canvas (and thus the whole widget) alive forever.
+        self.fig = Figure()
+        self.ax = self.fig.add_subplot()
         super().__init__(self.fig)
 
         self.setup_zoom()
