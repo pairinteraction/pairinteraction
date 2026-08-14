@@ -43,7 +43,7 @@ class SettingsManager(QObject):
             cache_dir = _backend.get_cache_directory()
         path = cache_dir / "gui_settings.ini"
         path.parent.mkdir(parents=True, exist_ok=True)
-        self.settings = QSettings(str(path), QSettings.Format.IniFormat)
+        self._settings = QSettings(str(path), QSettings.Format.IniFormat)
         # Values already handed to QSettings, keyed by their full path. Used to skip redundant writes,
         # since QSettings.setValue marks the store dirty even when the value did not change.
         self._written: dict[str, object] = {}
@@ -52,34 +52,34 @@ class SettingsManager(QObject):
     def value(self, key: str, default: object = None, value_type: type | None = None) -> object:
         """Read a stored value."""
         if value_type is not None:
-            return self.settings.value(key, defaultValue=default, type=value_type)
-        return self.settings.value(key, defaultValue=default)
+            return self._settings.value(key, defaultValue=default, type=value_type)
+        return self._settings.value(key, defaultValue=default)
 
     def set_value(self, key: str, value: object) -> None:
-        """Store a value. Always use this instead of `self.settings.setValue`.
+        """Store a value.
 
         Writing a value that is already stored is skipped, since QSettings.setValue marks the store dirty even when
         the value did not change, which would make the periodic autosave rewrite the whole ini file.
         """
         # Resolve `key` against the group that is currently open, as QSettings itself would.
-        group = self.settings.group()
+        group = self._settings.group()
         full_key = f"{group}/{key}" if group else key
 
         if full_key in self._written and self._written[full_key] == value:
             return
-        self.settings.setValue(key, value)
+        self._settings.setValue(key, value)
         self._written[full_key] = value
         self._dirty = True
 
     def sync(self) -> bool:
         """Flush pending changes to disk, if there are any.
 
-        Returns True if a write was necessary.
+        Returns True if there were unflushed changes (note that Qt may have flushed them already on its own).
         Skipping the flush when nothing changed keeps a periodic autosave from rewriting the whole ini file.
         """
         if not self._dirty:
             return False
-        self.settings.sync()
+        self._settings.sync()
         self._dirty = False
         return True
 
@@ -121,20 +121,20 @@ class SettingsManager(QObject):
         if not isinstance(root, BaseConfig):
             return
         widget_map = self.collect_widgets(root)
-        self.settings.beginGroup(group)
+        self._settings.beginGroup(group)
         self.update_settings_from_widgets(widget_map)
-        self.settings.endGroup()
+        self._settings.endGroup()
 
     def restore_widget_state(self, root: QWidget, group: str) -> None:
         """Restore widget state (two-pass: combos first, then others)."""
         if not isinstance(root, BaseConfig):
             return
         widget_map = self.collect_widgets(root)
-        self.settings.beginGroup(group)
+        self._settings.beginGroup(group)
         self.update_widgets_from_settings(widget_map, combos_only=True)
         widget_map = self.collect_widgets(root)
         self.update_widgets_from_settings(widget_map, combos_only=False)
-        self.settings.endGroup()
+        self._settings.endGroup()
 
     def collect_widgets(self, root: QWidget, widget_map: dict[str, QWidget] | None = None) -> dict[str, QWidget]:
         if widget_map is None:
