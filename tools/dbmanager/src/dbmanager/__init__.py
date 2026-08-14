@@ -172,7 +172,7 @@ def optimize() -> None:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        "--out", type=Path, default=get_source_directory(), help="output directory for the shrunk parquet files"
+        "--out", type=Path, default=get_source_directory(), help="output directory for the optimized parquet files"
     )
     parser.add_argument(
         "--compression",
@@ -241,15 +241,20 @@ def shrink() -> None:
         "--min_nu", type=int, default=50, help="minimum value for the effective principal quantum number"
     )
     parser.add_argument(
-        "--max_nu", type=int, default=70, help="maximum value for the effective principal quantum number"
+        "--max_nu", type=int, default=65, help="maximum value for the effective principal quantum number"
     )
     parser.add_argument(
         "--low_nu",
         type=int,
-        default=20,
+        default=10,
         help="value for the effective principal quantum number up to which low-lying states are included",
     )
-    parser.add_argument("--max_f", type=int, default=5, help="maximum value for the quantum number f")
+    parser.add_argument(
+        "--max_l_ryd",
+        type=int,
+        default=5,
+        help="maximum value for the quantum number l_ryd of the Rydberg electron",
+    )
     args = parser.parse_args()
 
     path_target = args.out
@@ -257,10 +262,25 @@ def shrink() -> None:
     min_nu = args.min_nu
     max_nu = args.max_nu
     low_nu = args.low_nu
-    max_f = args.max_f
+    max_l_ryd = args.max_l_ryd
 
     path_source = get_source_directory()
     parquet_files = load_parquet_and_csv_files(path_source)
+
+    # Remove parquet files from the list of parquet files if they do not belong to a species used for unit tests
+    used_species = [
+        "misc",
+        "Rb",
+        "Sr87_mqdt",
+        "Sr88_mqdt",
+        "Sr88_sqdt",
+        "Yb171_mqdt",
+        "Yb173_mqdt",
+        "Yb174_mqdt",
+    ]
+    keys_to_remove = [key for key, value in parquet_files.items() if value.species not in used_species]
+    for key in keys_to_remove:
+        parquet_files.pop(key)
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
@@ -271,31 +291,41 @@ def shrink() -> None:
 
         # Read and filter parquet files
         for parquet_file in parquet_files.values():
-            if parquet_file.table == "wigner":
-                connection.execute(
-                    f"CREATE TEMP TABLE {parquet_file.species}_{parquet_file.table} AS "
-                    f"SELECT * FROM '{parquet_file.path}' "
-                    "WHERE f_initial BETWEEN 0 AND ? AND f_final BETWEEN 0 AND ?",
-                    [max_f, max_f],
-                )
-                logger.debug("Filtered '%s_%s' table with max_f=%s", parquet_file.species, parquet_file.table, max_f)
-
-        for parquet_file in parquet_files.values():
             if parquet_file.table == "states":
+                # In addition to the states within the range of the effective principal quantum number, a few
+                # low-lying states are kept so that lifetimes and transition rates can be calculated.
                 connection.execute(
                     f"CREATE TEMP TABLE {parquet_file.species}_{parquet_file.table} AS "
                     f"SELECT * FROM '{parquet_file.path}' "
-                    "WHERE (nu BETWEEN ? AND ? OR nu < ?) AND f BETWEEN 0 AND ?",
-                    [min_nu, max_nu, low_nu, max_f],
+                    "WHERE (nu BETWEEN ? AND ? OR nu < ?) AND exp_l_ryd BETWEEN 0 AND ?",
+                    [min_nu, max_nu, low_nu, max_l_ryd],
                 )
                 logger.debug(
-                    "Filtered '%s_%s' with nu between %s and %s or smaller %s and f <= %s",
+                    "Filtered '%s_%s' with nu between %s and %s or smaller %s and l_ryd <= %s",
                     parquet_file.species,
                     parquet_file.table,
                     min_nu,
                     max_nu,
                     low_nu,
-                    max_f,
+                    max_l_ryd,
+                )
+
+        # The wigner table is shared by all species, thus it must contain the quantum numbers f of all kept states
+        kept_f = " UNION ".join(
+            f"SELECT f FROM {pf.species}_states" for pf in parquet_files.values() if pf.table == "states"
+        )
+        for parquet_file in parquet_files.values():
+            if parquet_file.table == "wigner":
+                connection.execute(
+                    f"CREATE TEMP TABLE {parquet_file.species}_{parquet_file.table} AS "
+                    f"WITH kept_f AS ({kept_f}) "
+                    f"SELECT * FROM '{parquet_file.path}' "
+                    "WHERE f_initial IN (SELECT f FROM kept_f) AND f_final IN (SELECT f FROM kept_f)"
+                )
+                logger.debug(
+                    "Filtered '%s_%s' table based on the quantum numbers f of the kept states",
+                    parquet_file.species,
+                    parquet_file.table,
                 )
 
         for parquet_file in parquet_files.values():
@@ -311,21 +341,6 @@ def shrink() -> None:
                 logger.debug(
                     "Shrunk table '%s_%s' based on '%s'", parquet_file.species, parquet_file.table, state_db_name
                 )
-
-        # Remove parquet files from the list of parquet files if they do not belong to a species used for unit tests
-        used_species = [
-            "misc",
-            "Rb",
-            "Sr87_mqdt",
-            "Sr88_mqdt",
-            "Sr88_sqdt",
-            "Yb171_mqdt",
-            "Yb173_mqdt",
-            "Yb174_mqdt",
-        ]
-        keys_to_remove = [key for key, value in parquet_files.items() if value.species not in used_species]
-        for key in keys_to_remove:
-            parquet_files.pop(key)
 
         # Remove parquet files from the list of parquet files if a recent version exists in the target directory
         for path in list(path_target.rglob("*.parquet")) + list(path_target.rglob("*.csv")):
