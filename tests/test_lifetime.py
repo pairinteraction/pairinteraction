@@ -15,25 +15,16 @@ if TYPE_CHECKING:
 
     from .utils import PairinteractionModule
 
-from .utils import no_log_propagation
+from .utils import no_log_propagation, skip_value_check_if_shrunk_database
+
+# The shrunk database that comes with the repository only contains a few low-lying states,
+# so that the decay of a Rydberg state is only captured partially and the calculated lifetimes are far off.
+# The tests are run nevertheless so that all code is executed, but the checks of the resulting values are skipped
 
 
-@pytest.mark.skip("The Yb174_mqdt database currently does not have low lying states.")
 def test_lifetime(pi_module: PairinteractionModule) -> None:
-    """Test calculating the lifetime of a state.
-
-    Note that obtaining a reasonable value for the lifetime requires the full database and is not possible with the
-    reduced database that is included in the repository!
-    """
+    """Test calculating the lifetime of a state."""
     ket = pi_module.KetAtom("Yb174_mqdt", n=64, l=0, j=0, m=0)
-
-    # We use n=64 here, because this corresponds to nu~60 and we include
-    # states with 50<nu<70 in the limited database that comes with the repository. In
-    # addition, states with nu<20 are included so that the decay to the ground state
-    # is also captured. Note that the relative error of the calculated
-    # lifetime versus the actual lifetime is still quite large because of the limited
-    # number of states. The full database is used and accurate results can be obtained
-    # if the test is run with `pytest --database-dir "" --download-missing`.
 
     lifetime1 = ket.get_lifetime(temperature=300, temperature_unit="K", unit="us")
     lifetime2 = ket.get_lifetime(temperature=300 * ureg.K, unit="us")
@@ -41,8 +32,10 @@ def test_lifetime(pi_module: PairinteractionModule) -> None:
     lifetime4 = ket.get_lifetime(unit="us")
 
     assert lifetime1 == lifetime2 == lifetime3.to(ureg.us).magnitude < lifetime4
-    assert pytest.approx(lifetime1, rel=0.15) == 142.04845576112646  # NOSONAR
-    assert pytest.approx(lifetime4, rel=0.15) == 494.1653414977515  # NOSONAR
+
+    skip_value_check_if_shrunk_database()
+    assert pytest.approx(lifetime1, rel=0.05) == 113  # NOSONAR
+    assert pytest.approx(lifetime4, rel=0.05) == 266  # NOSONAR
 
 
 def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
@@ -51,7 +44,7 @@ def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
     def fit_function(x: NDArray, a: float, b: float) -> NDArray:
         return a * x + b
 
-    n_list = list(range(60, 70, 1))
+    n_list = list(range(58, 68, 1))
 
     # S states
     kets = [pi_module.KetAtom("Rb", n=n, l=0, j=0.5, m=0.5) for n in n_list]
@@ -59,31 +52,23 @@ def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
     with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
         lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
     popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
+
+    skip_value_check_if_shrunk_database()
     assert np.isclose(popt[0], 3, atol=0.02)
 
     # Circular states
-    try:
-        kets = [pi_module.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
-    except ValueError as err:
-        # If the limited database which comes with the repository is used, creating the
-        # kets will fail because the circular states are not included in the database.
-        # This is expected.
-        if "No state found" not in str(err):
-            raise
-    else:
-        nu = [ket.nu for ket in kets]
-        with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
-            lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
-        popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
-        assert np.isclose(popt[0], 5, atol=0.02)
+    # In contrast to the states above, they cannot be obtained from the shrunk database at all
+    # because the shrunk database only contains states with a small quantum number l_ryd.
+    kets = [pi_module.KetAtom("Rb", n=n, l=n - 1, j=n - 0.5, m=n - 0.5) for n in n_list]
+    nu = [ket.nu for ket in kets]
+    with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation
+        lifetimes = [ket.get_lifetime(unit="us") for ket in kets]
+    popt, _ = curve_fit(fit_function, np.log(nu), np.log(lifetimes))
+    assert np.isclose(popt[0], 5, atol=0.02)
 
 
 def test_transition_rates(pi_module: PairinteractionModule) -> None:
-    """Test calculating transition rates to other states.
-
-    Note that obtaining a reasonable value for the transition rates requires the full database and is not possible
-    with the reduced database that is included in the repository!
-    """
+    """Test calculating transition rates to other states."""
     ket = pi_module.KetAtom("Yb174_mqdt", n=60, l=0, j=0, m=0)
 
     with no_log_propagation("cpp"):  # surpress low n state warnings from lifetime calculation

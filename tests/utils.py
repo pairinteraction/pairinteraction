@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
 
 import numpy as np
+import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterator
@@ -22,6 +23,33 @@ REFERENCE_PATHS = {
     "stark_map": Path(__file__).parent.parent / "data" / "reference_stark_map",
     "pair_potential": Path(__file__).parent.parent / "data" / "reference_pair_potential",
 }
+
+SHRUNK_DATABASE_PATH = (Path(__file__).parent.parent / "data" / "database").resolve()
+
+
+def is_shrunk_database_used() -> bool:
+    """Check whether the shrunk database that comes with the repository is used.
+
+    The shrunk database only contains states within a narrow range of the effective principal quantum number, a
+    few low-lying states, and only small values of the quantum number l_ryd. Thus, results that depend on the
+    completeness of the database, like lifetimes, are far off and must not be checked against reference values.
+    To check these values as well, run the tests with `pytest --database-dir "" --download-missing`.
+    """
+    from pairinteraction import Database
+
+    return Path(Database.get_global_database().database_dir).resolve() == SHRUNK_DATABASE_PATH
+
+
+def skip_value_check_if_shrunk_database() -> None:
+    """Skip the rest of the current test if the results cannot be checked against reference values.
+
+    Call this directly before the checks of the resulting values, see :func:`is_shrunk_database_used`. The code
+    before the call is still executed, only the checks are skipped and the test is reported as skipped.
+    """
+    if is_shrunk_database_used():
+        pytest.skip(
+            "the shrunk database is used, run with `pytest --database-dir '' --download-missing` to include all checks"
+        )
 
 
 def compare_eigensystem_to_reference(

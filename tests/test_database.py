@@ -66,7 +66,7 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
     bfield_in_gauss = 1500
 
     # Define initial and final quantum states
-    n_initial, n_final = 54, 54
+    n_initial, n_final = 60, 60
     l_initial, l_final = 1, 1
     f_initial, f_final = 1, 0
     m_initial, m_final = 0, 0
@@ -91,7 +91,7 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
         .get_hamiltonian(unit="GHz")
     ).toarray()
     operator -= np.diag(np.sort([ket_initial.get_energy(unit="GHz"), ket_final.get_energy(unit="GHz")]))
-    expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])
+    expected_operator = np.array([[6.55571757, -1.67158451], [-1.67158451, 5.62403695]])
     assert np.allclose(operator, expected_operator, rtol=1e-3)
 
     # Get the latest parquet files from the database directory
@@ -114,7 +114,7 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
     # Obtain the ids of the initial and final states
     id_initial = fetch_id(n_initial, l_initial, f_initial, s_initial, connection, parquet_files["Yb174_mqdt_states"])
     id_final = fetch_id(n_final, l_final, f_final, s_final, connection, parquet_files["Yb174_mqdt_states"])
-    assert id_initial == id_final + (-1 if swap_states else +1), f"Got {id_initial=} {id_final=}"
+    assert id_initial == id_final + (+1 if swap_states else -1), f"Got {id_initial=} {id_final=}"
 
     # Obtain a matrix element of the magnetic dipole operator (for the chosen kets, it is non-zero iff initial != final)
     kappa, q = 1, 0
@@ -165,7 +165,7 @@ def test_database(pi_module: PairinteractionModule, connection: duckdb.DuckDBPyC
 
     me_q = fetch_reduced_matrix_element(id_initial, id_final, connection, parquet_files["Yb174_mqdt_matrix_elements_q"])
     matrix_element -= 1 / 12 * wigner_element * me_q * (bfield_in_gauss * GAUSS_IN_ATOMIC_UNITS) ** 2 * HARTREE_IN_GHZ
-    assert np.isclose(matrix_element, operator[0, 0] if swap_states else operator[1, 1], rtol=1e-3)
+    assert np.isclose(matrix_element, operator[1, 1] if swap_states else operator[0, 0], rtol=1e-3)
 
 
 @pytest.mark.parametrize(

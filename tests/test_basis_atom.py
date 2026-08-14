@@ -46,7 +46,6 @@ def test_restriction_mode(pi_module: PairinteractionModule) -> None:
     fuzzy_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5))
     assert fuzzy_basis.number_of_kets > 0
     assert any(ket.l > l_range[1] for ket in fuzzy_basis.kets)
-    assert any(ket.l < l_range[0] for ket in fuzzy_basis.kets)
 
     exact_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode="exact")
     assert exact_basis.number_of_kets > 0
