@@ -153,7 +153,7 @@ jobs:
         path: public/coverage/python-pytest
 
     - name: Deploy pages
-      uses: JamesIves/github-pages-deploy-action@v4.8.0
+      uses: JamesIves/github-pages-deploy-action@v4.9.0
       with:
         branch: gh-pages
         folder: public
