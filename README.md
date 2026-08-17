@@ -11,7 +11,7 @@
 
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?style=flat
 [pypi-link]: https://pypi.org/project/pairinteraction/
-[arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
+[arXiv-svg]: https://img.shields.io/badge/arXiv-2605.14993-b31b1b.svg?style=flat
 [license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
 [license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [gh-workflow-svg]: https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg
