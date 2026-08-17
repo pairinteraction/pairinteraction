@@ -38,7 +38,15 @@ repos:
     rev: 'v2.0.0'
     hooks:
       - id: doc8
-        args: ["--max-line-length=120", "--ignore-path=docs/_templates", "--ignore-path=docs/index.rst"]
+        # docs/index.rst and docs/publications/publications.rst include markdown via ":parser: myst_parser.sphinx_",
+        # which doc8 cannot resolve because myst_parser is not installed in its environment
+        args:
+          [
+            "--max-line-length=120",
+            "--ignore-path=docs/_templates",
+            "--ignore-path=docs/index.rst",
+            "--ignore-path=docs/publications/publications.rst",
+          ]
 
   - repo: https://github.com/LilSpazJoekp/docstrfmt
     rev: 'v2.0.2'
