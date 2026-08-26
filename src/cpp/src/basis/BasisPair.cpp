@@ -20,19 +20,19 @@
 namespace pairinteraction {
 template <typename Scalar>
 BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
-                             map_range_t &&map_range_of_state_index2,
+                             map_range_t &&state_index1_to_state_index_range2,
                              map_indices_t &&state_indices_to_ket_index,
                              std::shared_ptr<const BasisAtom<Scalar>> basis1,
                              std::shared_ptr<const BasisAtom<Scalar>> basis2)
     : Basis<BasisPair<Scalar>>(std::move(kets)),
-      map_range_of_state_index2(std::move(map_range_of_state_index2)),
+      state_index1_to_state_index_range2(std::move(state_index1_to_state_index_range2)),
       state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
       basis2(std::move(basis2)) {}
 
 template <typename Scalar>
 const typename BasisPair<Scalar>::range_t &
 BasisPair<Scalar>::get_index_range(size_t state_index1) const {
-    return map_range_of_state_index2.at(state_index1);
+    return state_index1_to_state_index_range2.at(state_index1);
 }
 
 template <typename Scalar>

@@ -59,7 +59,7 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&map_range_of_state_index2,
+    BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&state_index1_to_state_index_range2,
               map_indices_t &&state_indices_to_ket_index,
               std::shared_ptr<const BasisAtom<Scalar>> basis1,
               std::shared_ptr<const BasisAtom<Scalar>> basis2);
@@ -74,7 +74,9 @@ public:
                         OperatorType type2, int q1, int q2) const;
 
 private:
-    map_range_t map_range_of_state_index2;
+    // state index 1 -> (min state index 2, max state index 2)
+    map_range_t state_index1_to_state_index_range2;
+    // (state atom index 1, state atom index 2) -> ket pair index
     map_indices_t state_indices_to_ket_index;
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;

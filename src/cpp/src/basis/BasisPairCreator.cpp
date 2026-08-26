@@ -110,8 +110,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     ketvec_t kets;
     kets.reserve(eigenenergies1.size() * eigenenergies2.size());
 
-    typename basis_t::map_range_t map_range_of_state_index2;
-    map_range_of_state_index2.reserve(eigenenergies1.size());
+    typename basis_t::map_range_t state_index1_to_state_index_range2;
+    state_index1_to_state_index_range2.reserve(eigenenergies1.size());
 
     typename basis_t::map_indices_t state_indices_to_ket_index;
 
@@ -193,7 +193,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                 std::distance(eigenenergies2_begin,
                               std::upper_bound(eigenenergies2_begin, eigenenergies2_end, max_val2));
         }
-        map_range_of_state_index2.try_emplace(idx1, typename basis_t::range_t(min, max));
+        state_index1_to_state_index_range2.try_emplace(idx1, typename basis_t::range_t(min, max));
 
         // Loop over the energetically allowed range of the second index
         for (size_t idx2 = min; idx2 < max; ++idx2) {
@@ -245,7 +245,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     kets.shrink_to_fit();
 
     std::shared_ptr<const basis_t> basis = std::make_shared<basis_t>(
-        typename basis_t::Private(), std::move(kets), std::move(map_range_of_state_index2),
+        typename basis_t::Private(), std::move(kets), std::move(state_index1_to_state_index_range2),
         std::move(state_indices_to_ket_index), basis1, basis2);
 
     if (!has_symmetry_restriction) {
