@@ -34,6 +34,7 @@ static void declare_ket_atom(nb::module_ &m) {
     nb::class_<KetAtom, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_database", &KetAtom::get_database, nb::rv_policy::reference)
         .def("get_species", &KetAtom::get_species)
+        .def("has_quantum_number", &KetAtom::has_quantum_number)
         .def("get_quantum_number", &KetAtom::get_quantum_number)
         .def("get_quantum_number_std", &KetAtom::get_quantum_number_std)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
