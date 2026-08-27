@@ -7,16 +7,16 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
-#include <limits>
 #include <string>
 
 namespace pairinteraction {
 template <typename Scalar>
 KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
-    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
-    : Ket(energy), quantum_number_m(calculate_quantum_number_m(atomic_indices, atomic_bases)),
-      atomic_indices(atomic_indices), atomic_bases(atomic_bases) {
+    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy,
+    std::unordered_map<std::string, double> quantum_numbers)
+    : Ket(energy), quantum_numbers(std::move(quantum_numbers)), atomic_indices(atomic_indices),
+      atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_bases.size()) {
         throw std::invalid_argument(
             "The number of atomic indices, and atomic bases must be the same.");
@@ -24,13 +24,13 @@ KetPair<Scalar>::KetPair(
 }
 
 template <typename Scalar>
-bool KetPair<Scalar>::has_quantum_number_m() const {
-    return quantum_number_m != std::numeric_limits<real_t>::max();
+bool KetPair<Scalar>::has_quantum_number(const std::string &name) const {
+    return quantum_numbers.contains(name);
 }
 
 template <typename Scalar>
-typename KetPair<Scalar>::real_t KetPair<Scalar>::get_quantum_number_m() const {
-    return quantum_number_m;
+double KetPair<Scalar>::get_quantum_number(const std::string &name) const {
+    return quantum_numbers.at(name);
 }
 
 template <typename Scalar>
@@ -45,7 +45,7 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomi
 
 template <typename Scalar>
 bool KetPair<Scalar>::operator==(const KetPair<Scalar> &other) const {
-    return Ket::operator==(other) && quantum_number_m == other.quantum_number_m &&
+    return Ket::operator==(other) && quantum_numbers == other.quantum_numbers &&
         atomic_indices == other.atomic_indices && atomic_bases == other.atomic_bases;
 }
 
@@ -57,7 +57,16 @@ bool KetPair<Scalar>::operator!=(const KetPair<Scalar> &other) const {
 template <typename Scalar>
 size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
     size_t seed = typename Ket::hash()(k);
-    utils::hash_combine(seed, k.quantum_number_m);
+    // The quantum numbers are stored in an unordered map, so we combine the per-entry hashes in an
+    // order-independent way (via xor) to obtain a deterministic result.
+    size_t quantum_numbers_hash = 0;
+    for (const auto &[key, value] : k.quantum_numbers) {
+        size_t entry_seed = 0;
+        utils::hash_combine(entry_seed, key);
+        utils::hash_combine(entry_seed, value);
+        quantum_numbers_hash ^= entry_seed;
+    }
+    utils::hash_combine(seed, quantum_numbers_hash);
     for (const auto &index : k.atomic_indices) {
         utils::hash_combine(seed, index);
     }
@@ -65,22 +74,6 @@ size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
         utils::hash_combine(seed, reinterpret_cast<std::uintptr_t>(basis.get()));
     }
     return seed;
-}
-
-template <typename Scalar>
-typename KetPair<Scalar>::real_t KetPair<Scalar>::calculate_quantum_number_m(
-    const std::vector<size_t> &indices,
-    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases) {
-    for (const auto &basis : bases) {
-        if (!basis->has_quantum_number_m()) {
-            return std::numeric_limits<real_t>::max();
-        }
-    }
-    real_t total_quantum_number_m = 0;
-    for (size_t i = 0; i < indices.size(); ++i) {
-        total_quantum_number_m += bases[i]->get_quantum_number_m(indices[i]);
-    }
-    return total_quantum_number_m;
 }
 
 // Explicit instantiations
