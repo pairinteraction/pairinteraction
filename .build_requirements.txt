@@ -1,5 +1,5 @@
 # keep this in sync with pyproject.toml build-system.requires
-scikit-build-core>=0.9.0
+scikit-build-core>=0.10.0
 nanobind>=1.9.0
 typing_extensions>=4.7
 numpy>=2.0.2
