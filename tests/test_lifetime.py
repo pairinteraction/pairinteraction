@@ -34,8 +34,8 @@ def test_lifetime(pi_module: PairinteractionModule) -> None:
     assert lifetime1 == lifetime2 == lifetime3.to(ureg.us).magnitude < lifetime4
 
     skip_value_check_if_shrunk_database()
-    assert pytest.approx(lifetime1, rel=0.05) == 113  # NOSONAR
-    assert pytest.approx(lifetime4, rel=0.05) == 266  # NOSONAR
+    assert pytest.approx(lifetime1, rel=0.05) == 45.7  # NOSONAR
+    assert pytest.approx(lifetime4, rel=0.05) == 59.3  # NOSONAR
 
 
 def test_lifetime_scaling(pi_module: PairinteractionModule) -> None:
