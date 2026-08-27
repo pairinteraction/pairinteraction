@@ -107,9 +107,5 @@ private:
     std::vector<real_t> state_index_to_quantum_number_f;
     std::vector<real_t> state_index_to_quantum_number_m;
     std::vector<Parity> state_index_to_parity;
-
-    bool _has_quantum_number_f{true};
-    bool _has_quantum_number_m{true};
-    bool _has_parity{true};
 };
 } // namespace pairinteraction
