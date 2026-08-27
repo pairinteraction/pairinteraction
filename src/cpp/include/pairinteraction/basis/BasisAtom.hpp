@@ -66,7 +66,6 @@ public:
 private:
     std::string canonical_basis_id;
     Database &database;
-    std::string species;
     std::unordered_map<size_t, size_t> ket_id_to_ket_index;
 };
 
