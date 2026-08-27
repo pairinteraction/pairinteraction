@@ -39,15 +39,15 @@ void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_la
     const bool by_m = unique_labels.contains(SorterType::QUANTUM_NUMBER_M);
     const bool by_parity = unique_labels.contains(SorterType::PARITY);
 
-    if (by_f && !_has_quantum_number_f) {
+    if (by_f && !has_quantum_number_f()) {
         throw std::invalid_argument(
             "States cannot be labeled and thus not sorted by the quantum number f.");
     }
-    if (by_m && !_has_quantum_number_m) {
+    if (by_m && !has_quantum_number_m()) {
         throw std::invalid_argument(
             "States cannot be labeled and thus not sorted by the quantum number m.");
     }
-    if (by_parity && !_has_parity) {
+    if (by_parity && !has_parity()) {
         throw std::invalid_argument("States cannot be labeled and thus not sorted by the parity.");
     }
 
@@ -105,32 +105,28 @@ Basis<Derived>::Basis(ketvec_t &&kets)
         state_index_to_quantum_number_f.push_back(f);
         state_index_to_quantum_number_m.push_back(m);
         state_index_to_parity.push_back(p);
-        if (f == std::numeric_limits<real_t>::max()) {
-            _has_quantum_number_f = false;
-        }
-        if (m == std::numeric_limits<real_t>::max()) {
-            _has_quantum_number_m = false;
-        }
-        if (p == Parity::UNKNOWN) {
-            _has_parity = false;
-        }
     }
     coefficients.setIdentity();
 }
 
 template <typename Derived>
 bool Basis<Derived>::has_quantum_number_f() const {
-    return _has_quantum_number_f;
+    return std::none_of(state_index_to_quantum_number_f.begin(),
+                        state_index_to_quantum_number_f.end(),
+                        [](real_t f) { return f == std::numeric_limits<real_t>::max(); });
 }
 
 template <typename Derived>
 bool Basis<Derived>::has_quantum_number_m() const {
-    return _has_quantum_number_m;
+    return std::none_of(state_index_to_quantum_number_m.begin(),
+                        state_index_to_quantum_number_m.end(),
+                        [](real_t m) { return m == std::numeric_limits<real_t>::max(); });
 }
 
 template <typename Derived>
 bool Basis<Derived>::has_parity() const {
-    return _has_parity;
+    return std::none_of(state_index_to_parity.begin(), state_index_to_parity.end(),
+                        [](Parity p) { return p == Parity::UNKNOWN; });
 }
 
 template <typename Derived>
@@ -170,9 +166,6 @@ std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
               result->state_index_to_quantum_number_m.end(), std::numeric_limits<real_t>::max());
     std::fill(result->state_index_to_parity.begin(), result->state_index_to_parity.end(),
               Parity::UNKNOWN);
-    result->_has_quantum_number_f = false;
-    result->_has_quantum_number_m = false;
-    result->_has_parity = false;
 
     return result;
 }
@@ -215,12 +208,6 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     restricted->state_index_to_quantum_number_f = {state_index_to_quantum_number_f[state_index]};
     restricted->state_index_to_quantum_number_m = {state_index_to_quantum_number_m[state_index]};
     restricted->state_index_to_parity = {state_index_to_parity[state_index]};
-
-    restricted->_has_quantum_number_f =
-        restricted->state_index_to_quantum_number_f[0] != std::numeric_limits<real_t>::max();
-    restricted->_has_quantum_number_m =
-        restricted->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
-    restricted->_has_parity = restricted->state_index_to_parity[0] != Parity::UNKNOWN;
 
     return restricted;
 }
@@ -427,9 +414,6 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
     result->state_index_to_quantum_number_f.resize(n);
     result->state_index_to_quantum_number_m.resize(n);
     result->state_index_to_parity.resize(n);
-    result->_has_quantum_number_f = true;
-    result->_has_quantum_number_m = true;
-    result->_has_parity = true;
 
     for (size_t i = 0; i < n; ++i) {
         real_t f = std::numeric_limits<real_t>::max();
@@ -447,15 +431,6 @@ std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
         result->state_index_to_quantum_number_f[i] = f;
         result->state_index_to_quantum_number_m[i] = m;
         result->state_index_to_parity[i] = p;
-        if (f == std::numeric_limits<real_t>::max()) {
-            result->_has_quantum_number_f = false;
-        }
-        if (m == std::numeric_limits<real_t>::max()) {
-            result->_has_quantum_number_m = false;
-        }
-        if (p == Parity::UNKNOWN) {
-            result->_has_parity = false;
-        }
     }
 
     return result;
@@ -554,7 +529,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
             } else {
                 transformed->state_index_to_quantum_number_f[i] =
                     std::numeric_limits<real_t>::max();
-                transformed->_has_quantum_number_f = false;
             }
         }
     }
@@ -575,7 +549,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
             } else {
                 transformed->state_index_to_quantum_number_m[i] =
                     std::numeric_limits<real_t>::max();
-                transformed->_has_quantum_number_m = false;
             }
         }
     }
@@ -598,7 +571,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
                 transformed->state_index_to_parity[i] = static_cast<Parity>(std::lround(mean));
             } else {
                 transformed->state_index_to_parity[i] = Parity::UNKNOWN;
-                transformed->_has_parity = false;
             }
         }
     }
