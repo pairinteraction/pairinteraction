@@ -18,6 +18,7 @@
 #include <limits>
 #include <memory>
 #include <stdexcept>
+#include <string>
 #include <unordered_map>
 
 namespace pairinteraction {
@@ -106,6 +107,15 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     auto eigenenergies2 = system2.get_eigenenergies();
     real_t *eigenenergies2_begin = eigenenergies2.data();
     real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
+
+    // The quantum number m of a pair state is only well-defined if it is well-defined for both
+    // atoms
+    const bool has_quantum_number_m =
+        basis1->has_quantum_number_m() && basis2->has_quantum_number_m();
+    if (!has_quantum_number_m && range_quantum_number_m.is_finite()) {
+        throw std::invalid_argument(
+            "The quantum number m must not be restricted because it is not well-defined.");
+    }
 
     ketvec_t kets;
     kets.reserve(eigenenergies1.size() * eigenenergies2.size());
@@ -211,25 +221,24 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                 }
             }
 
+            // Get the quantum numbers and check the quantum number m
+            std::unordered_map<std::string, double> quantum_numbers;
+            if (has_quantum_number_m) {
+                const real_t m =
+                    basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
+                if (range_quantum_number_m.is_finite() &&
+                    (m < range_quantum_number_m.min() - numerical_precision ||
+                     m > range_quantum_number_m.max() + numerical_precision)) {
+                    continue;
+                }
+                quantum_numbers["m"] = m;
+            }
+
             // Create a KetPair object
             auto ket = std::make_shared<ket_t>(
                 typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
-                energy);
-
-            // Check the quantum number m
-            if (ket->has_quantum_number_m()) {
-                if (range_quantum_number_m.is_finite() &&
-                    (ket->get_quantum_number_m() <
-                         range_quantum_number_m.min() - numerical_precision ||
-                     ket->get_quantum_number_m() >
-                         range_quantum_number_m.max() + numerical_precision)) {
-                    continue;
-                }
-            } else if (range_quantum_number_m.is_finite()) {
-                throw std::invalid_argument(
-                    "The quantum number m must not be restricted because it is not well-defined.");
-            }
+                energy, std::move(quantum_numbers));
 
             // Store the KetPair object as a ket
             kets.emplace_back(std::move(ket));

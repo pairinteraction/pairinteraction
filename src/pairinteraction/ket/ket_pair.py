@@ -48,9 +48,11 @@ class KetPair(KetBase):
         raise NotImplementedError("KetPair objects cannot be created directly.")
 
     @property
-    def m(self) -> float:
+    def m(self) -> float | None:
         """The magnetic quantum number m (int or half-int)."""
-        return self._cpp.get_quantum_number_m()
+        if self._cpp.has_quantum_number("m"):
+            return self._cpp.get_quantum_number("m")
+        return None
 
     def get_label(
         self,
@@ -115,6 +117,8 @@ def get_ketpairlike_m(ket: KetPair | KetAtomTuple) -> float:
         m2 = ket[1].m
         return m1 + m2
     if isinstance(ket, KetPair):
+        if ket.m is None:
+            raise ValueError("The quantum number m is not well-defined for the given KetPair.")
         return ket.m
     raise TypeError(f"Unknown type: {type(ket)=}")
 

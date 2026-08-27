@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
@@ -20,6 +21,14 @@ class BasisPairCreator;
 template <typename Scalar>
 class BasisAtom;
 
+/**
+ * @class KetPair
+ *
+ * @brief Class for representing pair kets.
+ *
+ * Only quantum numbers that are well-defined for the pair state are contained in the map of
+ * quantum numbers. The standard deviation of the contained quantum numbers is assumed to be zero.
+ */
 template <typename Scalar>
 class KetPair : public Ket {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
@@ -32,10 +41,10 @@ class KetPair : public Ket {
 public:
     KetPair(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
-            real_t energy);
+            real_t energy, std::unordered_map<std::string, double> quantum_numbers);
 
-    bool has_quantum_number_m() const;
-    real_t get_quantum_number_m() const;
+    bool has_quantum_number(const std::string &name) const;
+    double get_quantum_number(const std::string &name) const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
 
     bool operator==(const KetPair<Scalar> &other) const;
@@ -46,12 +55,9 @@ public:
     };
 
 private:
-    real_t quantum_number_m;
+    std::unordered_map<std::string, double> quantum_numbers;
     std::vector<size_t> atomic_indices;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases;
-    static real_t
-    calculate_quantum_number_m(const std::vector<size_t> &indices,
-                               const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
 };
 
 extern template class KetPair<double>;
