@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 
+import re
 from typing import TYPE_CHECKING
 
 import duckdb
 import numpy as np
 import pytest
 from packaging.version import Version
+from pairinteraction.ket.utils import format_half_integer
 from sympy.physics.wigner import wigner_3j
 
 from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ, SPECIES_TO_NUCLEAR_SPIN
@@ -186,7 +188,7 @@ def test_obtaining_kets(pi_module: PairinteractionModule, species: str, quantum_
 
     quantum_number_i = SPECIES_TO_NUCLEAR_SPIN[species] if is_mqdt else 0
     quantum_number_f = quantum_number_i + quantum_number_s
-    quantum_number_m = quantum_number_i + quantum_number_s
+    quantum_number_m = -quantum_number_f  # different from f, so that the two cannot be confused
 
     # Obtain a ket from the database
     ket = pi_module.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)
@@ -200,4 +202,26 @@ def test_obtaining_kets(pi_module: PairinteractionModule, species: str, quantum_
     assert ket.s == quantum_number_s if not is_mqdt else abs(ket.s - quantum_number_s) < 0.5
     assert ket.i_core == quantum_number_i
 
-    # TODO check repr(ket) (once the mqdt databases are updated)
+    # Check the label of the ket
+    element = species.split("_", 1)[0]
+    label_f = format_half_integer(quantum_number_f)
+    label_m = format_half_integer(quantum_number_m)
+    if is_mqdt:
+        label_total_momentum = "J" if quantum_number_i == 0 else "F"
+        expected_label = (
+            rf"{element}:S=\d+\.\d,nu=\d+\.\d,L=\d+\.\d,"
+            rf"{label_total_momentum}={re.escape(label_f)},{re.escape(label_m)}"
+        )
+        assert re.fullmatch(expected_label, ket.get_label("raw")), ket.get_label("raw")
+    else:
+        # For SQDT, all quantum numbers occurring in the label are exact and thus fully known here.
+        label_s = "" if quantum_number_s == 0.5 else f"S={quantum_number_s:.0f},"
+        expected_label = f"{element}:{label_s}60,S_{label_f},{label_m}"
+        assert ket.get_label("raw") == expected_label
+
+    # Check the representations of the ket
+    label = ket.get_label("raw")
+    assert repr(ket) == f"{pi_module.KetAtom.__name__}({label})"
+    assert str(ket) == f"|{label}\u27e9"
+    assert ket.get_label("ket") == f"|{label}\u27e9"
+    assert ket.get_label("bra") == f"\u27e8{label}|"
