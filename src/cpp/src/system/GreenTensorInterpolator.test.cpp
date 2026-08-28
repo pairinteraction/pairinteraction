@@ -48,8 +48,8 @@ get_constant_entries_as_matrix(const GreenTensorInterpolator<Scalar> &interpolat
 }
 
 // Combinations of multipole orders for which the green tensors are implemented
-constexpr std::array<std::pair<int, int>, 9> IMPLEMENTED_KAPPAS{
-    {{0, 0}, {0, 1}, {1, 0}, {0, 2}, {2, 0}, {1, 1}, {1, 2}, {2, 1}, {2, 2}}};
+constexpr std::array<std::pair<int, int>, 11> IMPLEMENTED_KAPPAS{
+    {{0, 0}, {0, 1}, {1, 0}, {0, 2}, {2, 0}, {1, 1}, {1, 2}, {2, 1}, {2, 2}, {1, 3}, {3, 1}}};
 
 // Polynomial in the cartesian components x, y, z, stored as a map from exponents to coefficients
 using Polynomial = std::map<std::array<int, 3>, double>;
@@ -204,6 +204,22 @@ DOCTEST_TEST_CASE("spherical entries of the multipole green tensors for a z-orie
         DOCTEST_CHECK(map.at({2, 2}) == doctest::Approx(6));
         DOCTEST_CHECK(map.at({3, 3}) == doctest::Approx(-4));
         DOCTEST_CHECK(map.at({4, 4}) == doctest::Approx(1));
+    }
+
+    DOCTEST_SUBCASE("dipole-octupole") {
+        auto map = get_constant_entries_as_map(interpolator, 1, 3);
+        DOCTEST_REQUIRE(map.size() == 3);
+        DOCTEST_CHECK(map.at({0, 2}) == doctest::Approx(std::sqrt(6)));
+        DOCTEST_CHECK(map.at({1, 3}) == doctest::Approx(-4));
+        DOCTEST_CHECK(map.at({2, 4}) == doctest::Approx(std::sqrt(6)));
+    }
+
+    DOCTEST_SUBCASE("octupole-dipole") {
+        auto map = get_constant_entries_as_map(interpolator, 3, 1);
+        DOCTEST_REQUIRE(map.size() == 3);
+        DOCTEST_CHECK(map.at({2, 0}) == doctest::Approx(std::sqrt(6)));
+        DOCTEST_CHECK(map.at({3, 1}) == doctest::Approx(-4));
+        DOCTEST_CHECK(map.at({4, 2}) == doctest::Approx(std::sqrt(6)));
     }
 }
 
