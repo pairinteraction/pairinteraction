@@ -172,31 +172,213 @@ GreenTensorInterpolator<Scalar>::get_spherical_entries(int kappa1, int kappa2) c
     return empty_entries;
 }
 
+namespace {
+// The cartesian entries of the green tensors constructed below are the interaction tensors of
+// the multipole expansion of the Coulomb interaction in free space,
+// (-1)^kappa1 * R^(kappa1+kappa2+1) * grad^(kappa1+kappa2) (1/R), where the sign accounts for
+// the electron coordinate of the first atom entering the interatomic distance with a negative
+// sign. Their normalization is fixed such that, together with the cartesian-to-spherical
+// transformators of utils/spherical.cpp, the known spherical multipole expansion is
+// reproduced (checked in GreenTensorInterpolator.test.cpp). References:
+// - S. Weber et al., J. Phys. B 50, 133001 (2017), https://doi.org/10.1088/1361-6455/aa743a
+//   [multipole expansion of the Rydberg-Rydberg interaction in spherical harmonics,
+//   Eqs. (6)-(8)]
+// - A. J. Stone, The Theory of Intermolecular Forces, 2nd ed. (Oxford University Press,
+//   2013), https://doi.org/10.1093/acprof:oso/9780199672394.001.0001
+//   [explicit cartesian interaction tensors up to rank four, i.e., up to
+//   quadrupole-quadrupole and dipole-octupole interaction]
+// - J. Block and S. Scheel, Phys. Rev. A 96, 062509 (2017),
+//   https://doi.org/10.1103/PhysRevA.96.062509
+//   [green tensor formulation of the dipole-dipole interaction]
+// - J. A. Crosse et al., Phys. Rev. A 82, 010901(R) (2010),
+//   https://doi.org/10.1103/PhysRevA.82.010901
+//   [green tensor formulation involving quadrupole transitions]
+// Note that the factor 1/(kappa1! * kappa2!) of the Taylor expansion of 1/|R + r2 - r1| is not
+// included because it is absorbed in the normalization of the cartesian-to-spherical
+// transformation, see spherical.hpp.
+
+// Green function of monopole-monopole interaction
+template <typename Real>
+Eigen::Matrix<Real, 1, 1> monopole_monopole_tensor() {
+    return Eigen::Matrix<Real, 1, 1>::Constant(1);
+}
+
+// Green function of monopole-dipole interaction
+template <typename Real>
+Eigen::Matrix<Real, 1, 3> monopole_dipole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    return -unitvec.transpose();
+}
+
+// Green function of dipole-monopole interaction
+template <typename Real>
+Eigen::Matrix<Real, 3, 1> dipole_monopole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    return unitvec;
+}
+
+// Green function of monopole-quadrupole interaction
+template <typename Real>
+Eigen::Matrix<Real, 1, 9> monopole_quadrupole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 1, 9> entries = Eigen::Matrix<Real, 1, 9>::Zero();
+    for (Eigen::Index j = 0; j < 3; ++j) {
+        for (Eigen::Index i = 0; i < 3; ++i) {
+            Eigen::Index col = 3 * j + i;
+            Real v = 3 * unitvec[j] * unitvec[i];
+            if (i == j) v += -1;
+            entries(0, col) += v;
+        }
+    }
+    return entries;
+}
+
+// Green function of quadrupole-monopole interaction
+template <typename Real>
+Eigen::Matrix<Real, 9, 1> quadrupole_monopole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 9, 1> entries = Eigen::Matrix<Real, 9, 1>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            Eigen::Index row = 3 * q + j;
+            Real v = 3 * unitvec[q] * unitvec[j];
+            if (q == j) v += -1;
+            entries(row, 0) += v;
+        }
+    }
+    return entries;
+}
+
+// Dyadic green function of dipole-dipole interaction
+template <typename Real>
+Eigen::Matrix3<Real> dipole_dipole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    return Eigen::Matrix3<Real>::Identity() - 3 * unitvec * unitvec.transpose();
+}
+
+// Dyadic green function of dipole-quadrupole interaction
+template <typename Real>
+Eigen::Matrix<Real, 3, 9> dipole_quadrupole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 3, 9> entries = Eigen::Matrix<Real, 3, 9>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        Eigen::Index row = q;
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                Eigen::Index col = 3 * j + i;
+                Real v = 15 * unitvec[q] * unitvec[j] * unitvec[i];
+                if (i == j) v += -3 * unitvec[q];
+                if (i == q) v += -3 * unitvec[j];
+                if (j == q) v += -3 * unitvec[i];
+                entries(row, col) += v;
+            }
+        }
+    }
+    return entries;
+}
+
+// Dyadic green function of quadrupole-dipole interaction
+template <typename Real>
+Eigen::Matrix<Real, 9, 3> quadrupole_dipole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 9, 3> entries = Eigen::Matrix<Real, 9, 3>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            Eigen::Index row = 3 * q + j;
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                Eigen::Index col = i;
+                Real v = -15 * unitvec[q] * unitvec[j] * unitvec[i];
+                if (i == j) v += 3 * unitvec[q];
+                if (i == q) v += 3 * unitvec[j];
+                if (j == q) v += 3 * unitvec[i];
+                entries(row, col) += v;
+            }
+        }
+    }
+    return entries;
+}
+
+// Dyadic green function of quadrupole-quadrupole interaction
+template <typename Real>
+Eigen::Matrix<Real, 9, 9> quadrupole_quadrupole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 9, 9> entries = Eigen::Matrix<Real, 9, 9>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            Eigen::Index row = 3 * q + j;
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                for (Eigen::Index k = 0; k < 3; ++k) {
+                    Eigen::Index col = 3 * i + k;
+                    Real v = 105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
+                    if (i == j) v += -15 * unitvec[q] * unitvec[k];
+                    if (i == q) v += -15 * unitvec[j] * unitvec[k];
+                    if (j == q) v += -15 * unitvec[i] * unitvec[k];
+                    if (k == q) v += -15 * unitvec[j] * unitvec[i];
+                    if (k == j) v += -15 * unitvec[q] * unitvec[i];
+                    if (k == i) v += -15 * unitvec[q] * unitvec[j];
+                    if (q == k && i == j) v += 3;
+                    if (i == k && j == q) v += 3;
+                    if (j == k && i == q) v += 3;
+                    entries(row, col) += v;
+                }
+            }
+        }
+    }
+    return entries;
+}
+
+// Common coefficient of the rank-four interaction tensors of the dipole-octupole and
+// octupole-dipole interaction. The expression is symmetric under exchanging the roles of the
+// indices, so both tensors share it.
+template <typename Real>
+Real dipole_octupole_coefficient(const Eigen::Vector3<Real> &unitvec, Eigen::Index q,
+                                 Eigen::Index j, Eigen::Index i, Eigen::Index k) {
+    Real v = -105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
+    if (i == j) v += 15 * unitvec[q] * unitvec[k];
+    if (i == q) v += 15 * unitvec[j] * unitvec[k];
+    if (j == q) v += 15 * unitvec[i] * unitvec[k];
+    if (k == q) v += 15 * unitvec[j] * unitvec[i];
+    if (k == j) v += 15 * unitvec[q] * unitvec[i];
+    if (k == i) v += 15 * unitvec[q] * unitvec[j];
+    if (q == k && i == j) v += -3;
+    if (i == k && j == q) v += -3;
+    if (j == k && i == q) v += -3;
+    return v;
+}
+
+// Dyadic green function of dipole-octupole interaction
+template <typename Real>
+Eigen::Matrix<Real, 3, 27> dipole_octupole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 3, 27> entries = Eigen::Matrix<Real, 3, 27>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        Eigen::Index row = q;
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                for (Eigen::Index k = 0; k < 3; ++k) {
+                    Eigen::Index col = 9 * j + 3 * i + k;
+                    entries(row, col) += dipole_octupole_coefficient(unitvec, q, j, i, k);
+                }
+            }
+        }
+    }
+    return entries;
+}
+
+// Dyadic green function of octupole-dipole interaction
+template <typename Real>
+Eigen::Matrix<Real, 27, 3> octupole_dipole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 27, 3> entries = Eigen::Matrix<Real, 27, 3>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                Eigen::Index row = 9 * q + 3 * j + i;
+                for (Eigen::Index k = 0; k < 3; ++k) {
+                    Eigen::Index col = k;
+                    entries(row, col) += dipole_octupole_coefficient(unitvec, q, j, i, k);
+                }
+            }
+        }
+    }
+    return entries;
+}
+} // namespace
+
 template <typename Scalar>
 GreenTensorInterpolator<Scalar> GreenTensorInterpolator<Scalar>::from_multipole_expansion(
     const std::array<real_t, 3> &distance_vector, int interaction_order, int minimal_kappa1,
     int minimal_kappa2) {
-    // The cartesian entries of the green tensors constructed below are the interaction tensors of
-    // the multipole expansion of the Coulomb interaction in free space,
-    // (-1)^kappa1 * R^(kappa1+kappa2+1) * grad^(kappa1+kappa2) (1/R), where the sign accounts for
-    // the electron coordinate of the first atom entering the interatomic distance with a negative
-    // sign. Their normalization is fixed such that, together with the cartesian-to-spherical
-    // transformators of utils/spherical.cpp, the known spherical multipole expansion is
-    // reproduced (checked in GreenTensorInterpolator.test.cpp). References:
-    // - S. Weber et al., J. Phys. B 50, 133001 (2017), https://doi.org/10.1088/1361-6455/aa743a
-    //   [multipole expansion of the Rydberg-Rydberg interaction in spherical harmonics,
-    //   Eqs. (6)-(8)]
-    // - A. J. Stone, The Theory of Intermolecular Forces, 2nd ed. (Oxford University Press,
-    //   2013), https://doi.org/10.1093/acprof:oso/9780199672394.001.0001
-    //   [explicit cartesian interaction tensors up to rank four, i.e., up to
-    //   quadrupole-quadrupole and dipole-octupole interaction]
-    // - J. Block and S. Scheel, Phys. Rev. A 96, 062509 (2017),
-    //   https://doi.org/10.1103/PhysRevA.96.062509
-    //   [green tensor formulation of the dipole-dipole interaction]
-    // - J. A. Crosse et al., Phys. Rev. A 82, 010901(R) (2010),
-    //   https://doi.org/10.1103/PhysRevA.82.010901
-    //   [green tensor formulation involving quadrupole transitions]
-
     GreenTensorInterpolator<Scalar> green_tensor_interpolator;
 
     // Normalize the distance vector, return zero green tensor if the distance is infinity
@@ -214,205 +396,63 @@ GreenTensorInterpolator<Scalar> GreenTensorInterpolator<Scalar>::from_multipole_
             kappa2 >= minimal_kappa2;
     };
 
-    // The cartesian tensors follow from the Taylor expansion of the Coulomb interaction
-    // 1/|R + r2 - r1| in the coordinates r1 and r2 of the two charge distributions. The tensor
-    // for the orders (kappa1, kappa2) is (-1)^kappa1 * d^(kappa1+kappa2)/dR^(kappa1+kappa2) (1/R).
-    // Note that the factor 1/(kappa1! * kappa2!) of the Taylor expansion is not included because
-    // it is absorbed in the normalization of the cartesian-to-spherical transformation, see
-    // spherical.hpp.
-
-    // Green function of monopole-monopole interaction
     if (is_required(0, 0)) {
-        Eigen::Matrix<real_t, 1, 1> entries = Eigen::Matrix<real_t, 1, 1>::Constant(1);
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            0, 0, (entries / distance).template cast<Scalar>());
+            0, 0, (monopole_monopole_tensor<real_t>() / distance).template cast<Scalar>());
     }
 
-    // Green function of monopole-dipole interaction
     if (is_required(0, 1)) {
-        Eigen::Matrix<real_t, 1, 3> entries = -unitvec.transpose();
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            0, 1, (entries / std::pow(distance, 2)).template cast<Scalar>());
+            0, 1,
+            (monopole_dipole_tensor(unitvec) / std::pow(distance, 2)).template cast<Scalar>());
     }
-
-    // Green function of dipole-monopole interaction
     if (is_required(1, 0)) {
-        const Eigen::Matrix<real_t, 3, 1> &entries = unitvec;
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            1, 0, (entries / std::pow(distance, 2)).template cast<Scalar>());
+            1, 0,
+            (dipole_monopole_tensor(unitvec) / std::pow(distance, 2)).template cast<Scalar>());
     }
 
-    // Green function of monopole-quadrupole interaction
     if (is_required(0, 2)) {
-        Eigen::Matrix<real_t, 1, 9> entries = Eigen::Matrix<real_t, 1, 9>::Zero();
-        for (Eigen::Index j = 0; j < 3; ++j) {
-            for (Eigen::Index i = 0; i < 3; ++i) {
-                Eigen::Index col = 3 * j + i;
-                real_t v = 3 * unitvec[j] * unitvec[i];
-                if (i == j) v += -1;
-                entries(0, col) += v;
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            0, 2, (entries / std::pow(distance, 3)).template cast<Scalar>());
+            0, 2,
+            (monopole_quadrupole_tensor(unitvec) / std::pow(distance, 3)).template cast<Scalar>());
     }
-
-    // Green function of quadrupole-monopole interaction
     if (is_required(2, 0)) {
-        Eigen::Matrix<real_t, 9, 1> entries = Eigen::Matrix<real_t, 9, 1>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                Eigen::Index row = 3 * q + j;
-                real_t v = 3 * unitvec[q] * unitvec[j];
-                if (q == j) v += -1;
-                entries(row, 0) += v;
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            2, 0, (entries / std::pow(distance, 3)).template cast<Scalar>());
+            2, 0,
+            (quadrupole_monopole_tensor(unitvec) / std::pow(distance, 3)).template cast<Scalar>());
     }
-
-    // Dyadic green function of dipole-dipole interaction
     if (is_required(1, 1)) {
-        Eigen::Matrix3<Scalar> entries =
-            Eigen::Matrix3<real_t>::Identity() - 3 * unitvec * unitvec.transpose();
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            1, 1, (entries / std::pow(distance, 3)).template cast<Scalar>());
+            1, 1, (dipole_dipole_tensor(unitvec) / std::pow(distance, 3)).template cast<Scalar>());
     }
 
-    // Dyadic green function of dipole-quadrupole interaction
     if (is_required(1, 2)) {
-        Eigen::Matrix<real_t, 3, 9> entries = Eigen::Matrix<real_t, 3, 9>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            Eigen::Index row = q;
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                for (Eigen::Index i = 0; i < 3; ++i) {
-                    Eigen::Index col = 3 * j + i;
-                    real_t v = 15 * unitvec[q] * unitvec[j] * unitvec[i];
-                    if (i == j) v += -3 * unitvec[q];
-                    if (i == q) v += -3 * unitvec[j];
-                    if (j == q) v += -3 * unitvec[i];
-                    entries(row, col) += v;
-                }
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            1, 2, (entries / std::pow(distance, 4)).template cast<Scalar>());
+            1, 2,
+            (dipole_quadrupole_tensor(unitvec) / std::pow(distance, 4)).template cast<Scalar>());
     }
-
-    // Dyadic green function of quadrupole-dipole interaction
     if (is_required(2, 1)) {
-        Eigen::Matrix<real_t, 9, 3> entries = Eigen::Matrix<real_t, 9, 3>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                Eigen::Index row = 3 * q + j;
-                for (Eigen::Index i = 0; i < 3; ++i) {
-                    Eigen::Index col = i;
-                    real_t v = -15 * unitvec[q] * unitvec[j] * unitvec[i];
-                    if (i == j) v += 3 * unitvec[q];
-                    if (i == q) v += 3 * unitvec[j];
-                    if (j == q) v += 3 * unitvec[i];
-                    entries(row, col) += v;
-                }
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            2, 1, (entries / std::pow(distance, 4)).template cast<Scalar>());
+            2, 1,
+            (quadrupole_dipole_tensor(unitvec) / std::pow(distance, 4)).template cast<Scalar>());
     }
 
-    // Dyadic green function of quadrupole-quadrupole interaction
-    if (interaction_order >= 5) {
-        Eigen::Matrix<real_t, 9, 9> entries = Eigen::Matrix<real_t, 9, 9>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                Eigen::Index row = 3 * q + j;
-                for (Eigen::Index i = 0; i < 3; ++i) {
-                    for (Eigen::Index k = 0; k < 3; ++k) {
-                        Eigen::Index col = 3 * i + k;
-                        real_t v = 105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
-                        if (i == j) v += -15 * unitvec[q] * unitvec[k];
-                        if (i == q) v += -15 * unitvec[j] * unitvec[k];
-                        if (j == q) v += -15 * unitvec[i] * unitvec[k];
-                        if (k == q) v += -15 * unitvec[j] * unitvec[i];
-                        if (k == j) v += -15 * unitvec[q] * unitvec[i];
-                        if (k == i) v += -15 * unitvec[q] * unitvec[j];
-                        if (q == k && i == j) v += 3;
-                        if (i == k && j == q) v += 3;
-                        if (j == k && i == q) v += 3;
-                        entries(row, col) += v;
-                    }
-                }
-            }
-        }
-
+    if (is_required(2, 2)) {
         green_tensor_interpolator.create_entries_from_cartesian(
-            2, 2, (entries / std::pow(distance, 5)).template cast<Scalar>());
+            2, 2,
+            (quadrupole_quadrupole_tensor(unitvec) / std::pow(distance, 5))
+                .template cast<Scalar>());
     }
-
-    // Dyadic green function of dipole-octupole interaction
     if (is_required(1, 3)) {
-        Eigen::Matrix<real_t, 3, 27> entries = Eigen::Matrix<real_t, 3, 27>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            Eigen::Index row = q;
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                for (Eigen::Index i = 0; i < 3; ++i) {
-                    for (Eigen::Index k = 0; k < 3; ++k) {
-                        Eigen::Index col = 9 * j + 3 * i + k;
-                        real_t v = -105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
-                        if (i == j) v += 15 * unitvec[q] * unitvec[k];
-                        if (i == q) v += 15 * unitvec[j] * unitvec[k];
-                        if (j == q) v += 15 * unitvec[i] * unitvec[k];
-                        if (k == q) v += 15 * unitvec[j] * unitvec[i];
-                        if (k == j) v += 15 * unitvec[q] * unitvec[i];
-                        if (k == i) v += 15 * unitvec[q] * unitvec[j];
-                        if (q == k && i == j) v += -3;
-                        if (i == k && j == q) v += -3;
-                        if (j == k && i == q) v += -3;
-                        entries(row, col) += v;
-                    }
-                }
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            1, 3, (entries / std::pow(distance, 5)).template cast<Scalar>());
+            1, 3,
+            (dipole_octupole_tensor(unitvec) / std::pow(distance, 5)).template cast<Scalar>());
     }
-
-    // Dyadic green function of octupole-dipole interaction
     if (is_required(3, 1)) {
-        Eigen::Matrix<real_t, 27, 3> entries = Eigen::Matrix<real_t, 27, 3>::Zero();
-        for (Eigen::Index q = 0; q < 3; ++q) {
-            for (Eigen::Index j = 0; j < 3; ++j) {
-                for (Eigen::Index i = 0; i < 3; ++i) {
-                    Eigen::Index row = 9 * q + 3 * j + i;
-                    for (Eigen::Index k = 0; k < 3; ++k) {
-                        Eigen::Index col = k;
-                        real_t v = -105 * unitvec[q] * unitvec[j] * unitvec[i] * unitvec[k];
-                        if (i == j) v += 15 * unitvec[q] * unitvec[k];
-                        if (i == q) v += 15 * unitvec[j] * unitvec[k];
-                        if (j == q) v += 15 * unitvec[i] * unitvec[k];
-                        if (k == q) v += 15 * unitvec[j] * unitvec[i];
-                        if (k == j) v += 15 * unitvec[q] * unitvec[i];
-                        if (k == i) v += 15 * unitvec[q] * unitvec[j];
-                        if (q == k && i == j) v += -3;
-                        if (i == k && j == q) v += -3;
-                        if (j == k && i == q) v += -3;
-                        entries(row, col) += v;
-                    }
-                }
-            }
-        }
-
         green_tensor_interpolator.create_entries_from_cartesian(
-            3, 1, (entries / std::pow(distance, 5)).template cast<Scalar>());
+            3, 1,
+            (octupole_dipole_tensor(unitvec) / std::pow(distance, 5)).template cast<Scalar>());
     }
 
     return green_tensor_interpolator;
