@@ -39,6 +39,8 @@ struct OperatorMatrices {
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d2;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q1;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q2;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> o1;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> o2;
 };
 
 template <typename Scalar>
@@ -77,10 +79,10 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
     if (has(0, 0) || has(1, 0) || has(2, 0)) {
         op.m2 = get_matrices(basis2, OperatorType::ELECTRIC_MONOPOLE, {0}, false);
     }
-    if (has(1, 0) || has(1, 1) || has(1, 2)) {
+    if (has(1, 0) || has(1, 1) || has(1, 2) || has(1, 3)) {
         op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-    if (has(0, 1) || has(1, 1) || has(2, 1)) {
+    if (has(0, 1) || has(1, 1) || has(2, 1) || has(3, 1)) {
         op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
     if (has(2, 0) || has(2, 1) || has(2, 2)) {
@@ -91,6 +93,16 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
         op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
             get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
+    }
+    // In contrast to the quadrupole operators, no trace operator must be appended because the
+    // cartesian-to-spherical transformator for kappa == 3 does not contain trace rows.
+    if (has(3, 1)) {
+        op.o1 = get_matrices(basis1, OperatorType::ELECTRIC_OCTUPOLE, {-3, -2, -1, 0, +1, +2, +3},
+                             true);
+    }
+    if (has(1, 3)) {
+        op.o2 = get_matrices(basis2, OperatorType::ELECTRIC_OCTUPOLE, {-3, -2, -1, 0, +1, +2, +3},
+                             false);
     }
 
     return op;
@@ -251,6 +263,12 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Quadrupole-quadrupole interaction
     add_interaction(op.q1, op.q2, 2, 2);
+
+    // Dipole-octupole interaction
+    add_interaction(op.d1, op.o2, 1, 3);
+
+    // Octupole-dipole interaction
+    add_interaction(op.o1, op.d2, 3, 1);
 
     // Transform from the canonical basis into the actual basis
     this->matrix =

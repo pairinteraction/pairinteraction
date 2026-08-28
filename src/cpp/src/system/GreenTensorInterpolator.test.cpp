@@ -72,5 +72,21 @@ DOCTEST_TEST_CASE("spherical entries of the multipole green tensors for a z-orie
         DOCTEST_CHECK(map.at({3, 3}) == doctest::Approx(-4));
         DOCTEST_CHECK(map.at({4, 4}) == doctest::Approx(1));
     }
+
+    DOCTEST_SUBCASE("dipole-octupole") {
+        auto map = get_constant_entries_as_map(interpolator, 1, 3);
+        DOCTEST_REQUIRE(map.size() == 3);
+        DOCTEST_CHECK(map.at({0, 2}) == doctest::Approx(std::sqrt(6)));
+        DOCTEST_CHECK(map.at({1, 3}) == doctest::Approx(-4));
+        DOCTEST_CHECK(map.at({2, 4}) == doctest::Approx(std::sqrt(6)));
+    }
+
+    DOCTEST_SUBCASE("octupole-dipole") {
+        auto map = get_constant_entries_as_map(interpolator, 3, 1);
+        DOCTEST_REQUIRE(map.size() == 3);
+        DOCTEST_CHECK(map.at({2, 0}) == doctest::Approx(std::sqrt(6)));
+        DOCTEST_CHECK(map.at({3, 1}) == doctest::Approx(-4));
+        DOCTEST_CHECK(map.at({4, 2}) == doctest::Approx(std::sqrt(6)));
+    }
 }
 } // namespace pairinteraction
