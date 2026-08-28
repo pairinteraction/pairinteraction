@@ -132,6 +132,11 @@ DOCTEST_TEST_CASE("compare the hardcoded transformation matrices to calculated o
         DOCTEST_CHECK(calculate_transformator(2).isApprox(
             Eigen::MatrixXcd(spherical::CARTESIAN_TO_SPHERICAL_KAPPA2), 1e-9));
     }
+
+    DOCTEST_SUBCASE("kappa == 3") {
+        DOCTEST_CHECK(calculate_transformator(3).isApprox(
+            Eigen::MatrixXcd(spherical::CARTESIAN_TO_SPHERICAL_KAPPA3), 1e-9));
+    }
 }
 
 DOCTEST_TEST_CASE("convert cartesian to spherical basis") {
@@ -160,6 +165,15 @@ DOCTEST_TEST_CASE("convert cartesian to spherical basis") {
             spherical::CARTESIAN_TO_SPHERICAL_KAPPA2.adjoint();
 
         DOCTEST_CHECK(diagonal.isDiagonal(1e-9));
+    }
+
+    DOCTEST_SUBCASE("kappa == 3") {
+        auto gram = spherical::CARTESIAN_TO_SPHERICAL_KAPPA3 *
+            spherical::CARTESIAN_TO_SPHERICAL_KAPPA3.adjoint();
+
+        Eigen::Matrix<std::complex<double>, 7, 7> expected =
+            Eigen::Matrix<std::complex<double>, 7, 7>::Identity() / 90.;
+        DOCTEST_CHECK(gram.isApprox(expected, 1e-9));
     }
 }
 } // namespace pairinteraction
