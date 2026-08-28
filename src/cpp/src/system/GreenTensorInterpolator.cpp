@@ -389,6 +389,9 @@ GreenTensorInterpolator<Scalar> GreenTensorInterpolator<Scalar>::from_multipole_
     if (!std::isfinite(distance)) {
         return green_tensor_interpolator;
     }
+    if (distance == 0) {
+        throw std::invalid_argument("The distance between the atoms must not be zero.");
+    }
     Eigen::Vector3<real_t> unitvec = vector_map / distance;
 
     auto is_required = [interaction_order, minimal_kappa1, minimal_kappa2](int kappa1, int kappa2) {
