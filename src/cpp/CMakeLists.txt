@@ -80,6 +80,7 @@ add_library(
   ./src/ket/KetAtomCreator.test.cpp
   ./src/ket/KetPair.cpp
   ./src/system/GreenTensorInterpolator.cpp
+  ./src/system/GreenTensorInterpolator.test.cpp
   ./src/system/System.cpp
   ./src/system/SystemAtom.cpp
   ./src/system/SystemAtom.test.cpp
