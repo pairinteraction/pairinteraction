@@ -416,8 +416,8 @@ def download_databases(species_list: list[str], version: str | None = None) -> i
     database_dir = get_cache_directory() / "database"
     tables_dir = database_dir / "tables"
     tables_dir.mkdir(parents=True, exist_ok=True)
-    database = pi.Database(download_missing=True, use_cache=False, database_dir=database_dir)
 
+    database: pi.Database | None = None  # created lazily so that URLs can be used without internet access
     is_wigner_downloaded = False
     exit_code = 0
 
@@ -430,6 +430,9 @@ def download_databases(species_list: list[str], version: str | None = None) -> i
 
         try:
             print(f"Check for tables for {species}...")
+
+            if database is None:
+                database = pi.Database(download_missing=True, use_cache=False, database_dir=database_dir)
 
             # We make use of the fact that all tables of a species get downloaded
             # automatically when we create a BasisAtom object.
