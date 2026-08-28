@@ -56,6 +56,16 @@ class KetAtom(KetBase):
         You can still provide them to specify the atomic basis state,
         whose expectation value is closest to the provided value.
 
+    All the quantum numbers of the three coupling schemes are available as attributes:
+        General angular quantum numbers: l_ryd, s_ryd, l_core, s_core and i_core.
+        LS coupling of all valence electrons: l, s, j.
+        JJ coupling of the electrons: j_ryd, j_core.
+        FJ coupling of the hyperfine structure of the ionic core: f_core.
+        Each of these has a companion attribute with a "_std" suffix holding its standard deviation,
+        which is zero for quantum numbers that are exact.
+        Quantum numbers that are not listed here can be accessed via :meth:`get_quantum_number`,
+        since the available ones ultimately follow from the database of the species.
+
     Examples:
         >>> import pairinteraction as pi
         >>> ket_s = pi.KetAtom("Rb", n=60, l=0, m=0.5)
@@ -89,6 +99,9 @@ class KetAtom(KetBase):
         j: float | None = None,
         l_ryd: float | None = None,
         j_ryd: float | None = None,
+        l_core: float | None = None,
+        j_core: float | None = None,
+        f_core: float | None = None,
         f: float | None = None,
         m: float | None = None,
         energy: float | PintFloat | None = None,
@@ -108,6 +121,9 @@ class KetAtom(KetBase):
             j: See attribute. Default None, i.e. load from the database.
             l_ryd: See attribute. Default None, i.e. load from the database.
             j_ryd: See attribute. Default None, i.e. load from the database.
+            l_core: See attribute. Default None, i.e. load from the database.
+            j_core: See attribute. Default None, i.e. load from the database.
+            f_core: See attribute. Default None, i.e. load from the database.
             f: See attribute. Default None, i.e. load from the database.
             m: See attribute. This should always be provided.
             energy: See attribute. Default None, i.e. load from the database.
@@ -135,6 +151,9 @@ class KetAtom(KetBase):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
+            "l_core": l_core,
+            "j_core": j_core,
+            "f_core": f_core,
             "parity": parity_to_int(parity) if parity is not None else None,
         }
         for name, value in quantum_numbers.items():
@@ -183,20 +202,65 @@ class KetAtom(KetBase):
         database_cpp = self._cpp.get_database()
         return Database._from_cpp_object(database_cpp)
 
+    def get_quantum_number(self, name: str) -> float:
+        """Return the quantum number with the given name.
+
+        The available names depend on the database of the species, since they follow the columns of its
+        table of states (with the ``exp_`` prefix of expectation values stripped).
+        The properties below are typed shortcuts for the names that all our databases provide.
+
+        Args:
+            name: The name of the quantum number, e.g. "n", "l", "j_core".
+
+        Returns:
+            The value of the quantum number.
+
+        """
+        try:
+            return self._cpp.get_quantum_number(name)
+        except (IndexError, KeyError):
+            msg = (
+                f"The quantum number '{name}' is not available for the species '{self.species}', "
+                "because the table of states of the species does not provide it."
+            )
+            raise ValueError(msg) from None
+
+    def get_quantum_number_std(self, name: str) -> float:
+        """Return the standard deviation of the quantum number with the given name.
+
+        Quantum numbers that are exact (i.e. that the database does not store a standard deviation for)
+        have a standard deviation of zero.
+
+        Args:
+            name: The name of the quantum number, e.g. "l", "j_core".
+
+        Returns:
+            The standard deviation of the quantum number.
+
+        """
+        try:
+            return self._cpp.get_quantum_number_std(name)
+        except (IndexError, KeyError):
+            msg = (
+                f"The quantum number '{name}' std is not available for the species '{self.species}', "
+                "because the table of states of the species does not provide it."
+            )
+            raise ValueError(msg) from None
+
     @property
     def m(self) -> float:
         """The magnetic quantum number m (int or half-int)."""
-        return self._cpp.get_quantum_number("m")
+        return self.get_quantum_number("m")
 
     @property
     def f(self) -> float:
         """The total momentum quantum number f (int or half-int)."""
-        return self._cpp.get_quantum_number("f")
+        return self.get_quantum_number("f")
 
     @property
     def parity(self) -> Parity:
         """The parity of the ket."""
-        return int_to_parity(int(self._cpp.get_quantum_number("parity")))
+        return int_to_parity(int(self.get_quantum_number("parity")))
 
     @property
     def species(self) -> str:
@@ -206,87 +270,141 @@ class KetAtom(KetBase):
     @property
     def n(self) -> int:
         """The principal quantum number n."""
-        return int(self._cpp.get_quantum_number("n"))
+        return int(self.get_quantum_number("n"))
 
     @property
     def nu(self) -> float:
         """The effective principal quantum number nu."""
-        return self._cpp.get_quantum_number("nu")
+        return self.get_quantum_number("nu")
 
     @property
     def nui(self) -> float:
         """The expectation value of the effective principal quantum numbers nu_i of the channels."""
-        return self._cpp.get_quantum_number("nui")
+        return self.get_quantum_number("nui")
 
     @property
     def l(self) -> float:  # noqa: E743
         """The expectation value of the orbital quantum number l of all valence electrons."""
-        return self._cpp.get_quantum_number("l")
+        return self.get_quantum_number("l")
 
     @property
     def s(self) -> float:
         """The expectation value of the total spin quantum number s of all valence electrons."""
-        return self._cpp.get_quantum_number("s")
+        return self.get_quantum_number("s")
 
     @property
     def j(self) -> float:
         """The expectation value of the total angular quantum number j of all valence electrons."""
-        return self._cpp.get_quantum_number("j")
+        return self.get_quantum_number("j")
 
     @property
     def l_ryd(self) -> float:
         """The expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number("l_ryd")
+        return self.get_quantum_number("l_ryd")
+
+    @property
+    def s_ryd(self) -> float:
+        """The expectation value of the spin quantum number s_{Ryd} of the Rydberg electron."""
+        return self.get_quantum_number("s_ryd")
 
     @property
     def j_ryd(self) -> float:
         """The expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number("j_ryd")
+        return self.get_quantum_number("j_ryd")
+
+    @property
+    def l_core(self) -> float:
+        """The expectation value of the orbital quantum number l_{core} of the ionic core."""
+        return self.get_quantum_number("l_core")
+
+    @property
+    def s_core(self) -> float:
+        """The expectation value of the spin quantum number s_{core} of the ionic core."""
+        return self.get_quantum_number("s_core")
+
+    @property
+    def j_core(self) -> float:
+        """The expectation value of the total angular quantum number j_{core} of the ionic core."""
+        return self.get_quantum_number("j_core")
+
+    @property
+    def i_core(self) -> float:
+        """The expectation value of the nuclear spin quantum number i_{core} of the ionic core."""
+        return self.get_quantum_number("i_core")
+
+    @property
+    def f_core(self) -> float:
+        """The expectation value of the total momentum quantum number f_{core} of the ionic core."""
+        return self.get_quantum_number("f_core")
 
     @property
     def nui_std(self) -> float:
         """The standard deviation of the effective principal quantum numbers nu_i of the channels."""
-        return self._cpp.get_quantum_number_std("nui")
+        return self.get_quantum_number_std("nui")
 
     @property
     def l_std(self) -> float:
         """The standard deviation of the orbital quantum number l of all valence electrons."""
-        return self._cpp.get_quantum_number_std("l")
+        return self.get_quantum_number_std("l")
 
     @property
     def s_std(self) -> float:
         """The standard deviation of the total spin quantum number s of all valence electrons."""
-        return self._cpp.get_quantum_number_std("s")
+        return self.get_quantum_number_std("s")
 
     @property
     def j_std(self) -> float:
         """The standard deviation of the total angular quantum number j of all valence electrons."""
-        return self._cpp.get_quantum_number_std("j")
+        return self.get_quantum_number_std("j")
 
     @property
     def l_ryd_std(self) -> float:
         """The standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_std("l_ryd")
+        return self.get_quantum_number_std("l_ryd")
+
+    @property
+    def s_ryd_std(self) -> float:
+        """The standard deviation of the spin quantum number s_{Ryd} of the Rydberg electron."""
+        return self.get_quantum_number_std("s_ryd")
 
     @property
     def j_ryd_std(self) -> float:
         """The standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron."""
-        return self._cpp.get_quantum_number_std("j_ryd")
+        return self.get_quantum_number_std("j_ryd")
+
+    @property
+    def l_core_std(self) -> float:
+        """The standard deviation of the orbital quantum number l_{core} of the ionic core."""
+        return self.get_quantum_number_std("l_core")
+
+    @property
+    def s_core_std(self) -> float:
+        """The standard deviation of the spin quantum number s_{core} of the ionic core."""
+        return self.get_quantum_number_std("s_core")
+
+    @property
+    def j_core_std(self) -> float:
+        """The standard deviation of the total angular quantum number j_{core} of the ionic core."""
+        return self.get_quantum_number_std("j_core")
+
+    @property
+    def i_core_std(self) -> float:
+        """The standard deviation of the nuclear spin quantum number i_{core} of the ionic core."""
+        return self.get_quantum_number_std("i_core")
+
+    @property
+    def f_core_std(self) -> float:
+        """The standard deviation of the total momentum quantum number f_{core} of the ionic core."""
+        return self.get_quantum_number_std("f_core")
 
     @property
     def is_j_total_momentum(self) -> bool:
-        """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number."""
-        return bool(self._cpp.get_quantum_number("is_j_total_momentum"))
+        """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number.
 
-    @property
-    def is_calculated_with_mqdt(self) -> bool:
-        """Whether the state was calculated with multi-channel quantum defect theory."""
-        return bool(self._cpp.get_quantum_number("is_calculated_with_mqdt"))
-
-    @property
-    def underspecified_channel_contribution(self) -> float:
-        """The contribution of channels whose quantum numbers are not exactly known."""
-        return self._cpp.get_quantum_number("underspecified_channel_contribution")
+        Without a nuclear spin there is no hyperfine coupling, thus f = j and j is the total momentum
+        quantum number.
+        """
+        return self.i_core == 0
 
     def to_state(self) -> StateAtom:
         """Create a canonical state representing the single ket.

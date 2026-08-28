@@ -62,6 +62,34 @@ DOCTEST_TEST_CASE("quantum number std fallback") {
     DOCTEST_CHECK(ket_mqdt->get_quantum_number_std("n") == 0);
 }
 
+DOCTEST_TEST_CASE("quantum numbers of the coupling schemes") {
+    Database &database = Database::get_global_instance();
+
+    // The backend does not know any of these names; they are whatever the states table provides.
+    auto ket = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);
+    for (const auto &name : {"l", "s", "j", "l_ryd", "s_ryd", "j_ryd", "l_core", "s_core", "j_core",
+                             "i_core", "f_core"}) {
+        DOCTEST_CHECK_NOTHROW(ket->get_quantum_number(name));
+        DOCTEST_CHECK_NOTHROW(ket->get_quantum_number_std(name));
+    }
+
+    // The Rydberg electron is a single electron and the core of rubidium is a closed shell.
+    DOCTEST_CHECK(ket->get_quantum_number("s_ryd") == 0.5);
+    DOCTEST_CHECK(ket->get_quantum_number("j_core") == 0);
+    DOCTEST_CHECK(ket->get_quantum_number("s_core") == 0);
+
+    // Selecting a state by any of these quantum numbers must work
+    auto ket_selected = KetAtomCreator()
+                            .set_species("Rb")
+                            .set_quantum_number("n", 60)
+                            .set_quantum_number("l", 1)
+                            .set_quantum_number("j", 0.5)
+                            .set_quantum_number("m", 0.5)
+                            .set_quantum_number("s_ryd", 0.5)
+                            .create(database);
+    DOCTEST_CHECK(*ket_selected == *ket);
+}
+
 DOCTEST_TEST_CASE("test for equality") {
     Database &database = Database::get_global_instance();
     auto ket1 = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);

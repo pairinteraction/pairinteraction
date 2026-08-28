@@ -55,19 +55,63 @@ size_t get_column_index(const std::vector<std::string> &names, const std::string
     return static_cast<size_t>(std::distance(names.begin(), it));
 }
 
-// Read a single value of a duckdb result column as a double, regardless of its logical type.
-double get_entry_as_double(duckdb::Vector &vector, const duckdb::LogicalType &type, size_t row) {
+// Whether a column stores integer-like values.
+bool is_integer_like(duckdb::LogicalTypeId id) {
+    switch (id) {
+    case duckdb::LogicalTypeId::BOOLEAN:
+    case duckdb::LogicalTypeId::TINYINT:
+    case duckdb::LogicalTypeId::SMALLINT:
+    case duckdb::LogicalTypeId::INTEGER:
+    case duckdb::LogicalTypeId::BIGINT:
+    case duckdb::LogicalTypeId::UTINYINT:
+    case duckdb::LogicalTypeId::USMALLINT:
+    case duckdb::LogicalTypeId::UINTEGER:
+    case duckdb::LogicalTypeId::UBIGINT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Read a single value of a duckdb result column as the requested arithmetic type, regardless of
+// the logical type the database uses to store the column.
+template <typename T>
+T get_entry_as(duckdb::Vector &vector, const duckdb::LogicalType &type, size_t row) {
     switch (type.id()) {
     case duckdb::LogicalTypeId::DOUBLE:
-        return duckdb::FlatVector::GetData<double>(vector)[row];
-    case duckdb::LogicalTypeId::BIGINT:
-        return static_cast<double>(duckdb::FlatVector::GetData<int64_t>(vector)[row]);
+        return static_cast<T>(duckdb::FlatVector::GetData<double>(vector)[row]);
+    case duckdb::LogicalTypeId::FLOAT:
+        return static_cast<T>(duckdb::FlatVector::GetData<float>(vector)[row]);
     case duckdb::LogicalTypeId::BOOLEAN:
-        return duckdb::FlatVector::GetData<bool>(vector)[row] ? 1.0 : 0.0;
+        return static_cast<T>(duckdb::FlatVector::GetData<bool>(vector)[row] ? 1 : 0);
+    case duckdb::LogicalTypeId::TINYINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<int8_t>(vector)[row]);
+    case duckdb::LogicalTypeId::SMALLINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<int16_t>(vector)[row]);
+    case duckdb::LogicalTypeId::INTEGER:
+        return static_cast<T>(duckdb::FlatVector::GetData<int32_t>(vector)[row]);
+    case duckdb::LogicalTypeId::BIGINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<int64_t>(vector)[row]);
+    case duckdb::LogicalTypeId::UTINYINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<uint8_t>(vector)[row]);
+    case duckdb::LogicalTypeId::USMALLINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<uint16_t>(vector)[row]);
+    case duckdb::LogicalTypeId::UINTEGER:
+        return static_cast<T>(duckdb::FlatVector::GetData<uint32_t>(vector)[row]);
+    case duckdb::LogicalTypeId::UBIGINT:
+        return static_cast<T>(duckdb::FlatVector::GetData<uint64_t>(vector)[row]);
     default:
         throw std::runtime_error("Cannot read database column of type " + type.ToString() +
                                  " as a quantum number.");
     }
+}
+
+double get_entry_as_double(duckdb::Vector &vector, const duckdb::LogicalType &type, size_t row) {
+    return get_entry_as<double>(vector, type, row);
+}
+
+int64_t get_entry_as_int64(duckdb::Vector &vector, const duckdb::LogicalType &type, size_t row) {
+    return get_entry_as<int64_t>(vector, type, row);
 }
 
 struct QuantumNumbers {
@@ -96,6 +140,16 @@ QuantumNumbers get_quantum_numbers_from_row(duckdb::DataChunk &chunk,
         }
     }
     return quantum_numbers;
+}
+
+// Whether a requested quantum number must be reproduced exactly by the state that is returned
+bool is_matched_exactly(const std::unordered_map<std::string, duckdb::LogicalTypeId> &columns,
+                        const std::string &column) {
+    if (column == "f" || column == "m" || column == "parity") {
+        return true;
+    }
+    auto it = columns.find(column);
+    return it != columns.end() && is_integer_like(it->second);
 }
 } // namespace
 
@@ -240,33 +294,43 @@ Database::Database(bool download_missing, bool use_cache, std::filesystem::path 
 
 Database::~Database() = default;
 
-const std::unordered_set<std::string> &Database::get_column_names(const std::string &table_path) {
-    if (auto it = column_names_cache.find(table_path); it != column_names_cache.end()) {
+const Database::column_info_t &Database::get_states_column_info(const std::string &species) {
+    std::string table_path = manager->get_path(species, "states");
+    if (auto it = column_info_cache.find(table_path); it != column_info_cache.end()) {
         return it->second;
     }
     auto result = con->Query(fmt::format(R"(SELECT * FROM '{}' LIMIT 0)", table_path));
     if (result->HasError()) {
         throw cpptrace::runtime_error("Error querying the database columns: " + result->GetError());
     }
-    std::unordered_set<std::string> names(result->names.begin(), result->names.end());
+    column_info_t columns;
+    columns.reserve(result->names.size());
+    for (size_t col = 0; col < result->names.size(); ++col) {
+        columns.emplace(result->names[col], result->types[col].id());
+    }
 
-    // Every states table must provide the columns required for constructing kets and must not
-    // contain an 'm' column, since m added separately below.
-    for (const auto &required : {"id", "f", "energy"}) {
-        if (!names.contains(required)) {
+    // Every states table must provide the columns required for constructing kets. All other
+    // columns are treated generically as quantum numbers, whatever they are named.
+    for (const auto &required : {"id", "energy", "f", "parity"}) {
+        if (!columns.contains(required)) {
             throw std::runtime_error(
-                fmt::format("The database table '{}' is missing the required column '{}'.",
-                            table_path, required));
+                fmt::format("The table of states of species '{}' is missing the required column "
+                            "'{}'.",
+                            species, required));
         }
     }
-    if (names.contains("m")) {
-        throw std::runtime_error(
-            fmt::format("The database table '{}' must not contain a column 'm'.", table_path));
+    for (const auto &forbidden : {"m", "exp_m", "std_m"}) {
+        if (columns.contains(forbidden)) {
+            throw std::runtime_error(
+                fmt::format("The table of states of species '{}' must not contain a column '{}', "
+                            "since the quantum number m is generated by the software itself.",
+                            species, forbidden));
+        }
     }
 
     // If another thread inserted the same entry concurrently, insert keeps the existing value and
     // returns an iterator to it, so the reference stays valid (elements are never erased).
-    return column_names_cache.insert({table_path, std::move(names)}).first->second;
+    return column_info_cache.insert({table_path, std::move(columns)}).first->second;
 }
 
 std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
@@ -285,12 +349,12 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
         }
     }
 
-    const auto &columns = get_column_names(manager->get_path(species, "states"));
+    const auto &columns = get_states_column_info(species);
 
-    // Describe the state. The quantum numbers n, f and parity are matched exactly, while all other
-    // quantum numbers are matched within a +-0.5 window (they can deviate from the requested value,
-    // e.g. expectation values in MQDT). The result is ordered by the distance to the requested
-    // values, so the nearest state is returned.
+    // Describe the state. Integer-valued quantum numbers and (f, m, parity) are matched exactly,
+    // while all other quantum numbers are matched within a +-0.5 window (they can deviate from the
+    // requested value, e.g. expectation values in MQDT). The result is ordered by the distance to
+    // the requested values, so the nearest state is returned.
     std::string where;
     std::string where_separator;
     std::string orderby;
@@ -318,7 +382,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                             "species '{}'.",
                             name, species));
         }
-        double tolerance = (name == "n" || name == "f" || name == "parity") ? 0.0 : 0.5;
+        double tolerance = is_matched_exactly(columns, column) ? 0.0 : 0.5;
         where += where_separator +
             fmt::format("{} BETWEEN {} AND {}", column, value - tolerance, value + tolerance);
         where_separator = " AND ";
@@ -363,10 +427,9 @@ std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
             get_quantum_numbers_from_row(*chunk, types, names, excluded_columns, row);
         quantum_numbers.values["m"] = quantum_number_m;
         double energy = get_entry_as_double(chunk->data[energy_column], types[energy_column], row);
-        auto id =
-            utils::encode_as_ket_id({.id = static_cast<size_t>(duckdb::FlatVector::GetData<int64_t>(
-                                         chunk->data[id_column])[row]),
-                                     .m = quantum_number_m});
+        auto id = utils::encode_as_ket_id({.id = static_cast<size_t>(get_entry_as_int64(
+                                               chunk->data[id_column], types[id_column], row)),
+                                           .m = quantum_number_m});
         return KetAtom(typename KetAtom::Private(), energy, species,
                        std::move(quantum_numbers.values), std::move(quantum_numbers.stds), *this,
                        id);
@@ -407,7 +470,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
         return it != description.quantum_number_ranges.end() ? it->second : Range<double>{};
     }();
 
-    const auto &columns = get_column_names(manager->get_path(species, "states"));
+    const auto &columns = get_states_column_info(species);
 
     // Describe the states by all restrictions that do not involve the quantum number m
     std::string where = "(";
@@ -533,8 +596,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             bool is_expectation_value =
                 columns.contains("exp_" + name) && columns.contains("std_" + name);
             std::string column = is_expectation_value ? "exp_" + name : name;
-            double tolerance =
-                (name == "n" || name == "f" || name == "m" || name == "parity") ? 0.0 : 1.0;
+            double tolerance = is_matched_exactly(columns, column) ? 0.0 : 1.0;
             checks.push_back({name, column, tolerance, range});
         }
 
@@ -630,7 +692,6 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
-    double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
         set_task_status("Constructing atomic basis...");
@@ -641,7 +702,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             double energy =
                 get_entry_as_double(chunk->data[energy_column], types[energy_column], i);
             auto id = static_cast<size_t>(
-                duckdb::FlatVector::GetData<int64_t>(chunk->data[ketid_column])[i]);
+                get_entry_as_int64(chunk->data[ketid_column], types[ketid_column], i));
 
             // Check database consistency
             ensure_consistent_quantum_numbers(quantum_numbers.values.at("f"),
@@ -651,29 +712,10 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             }
             last_energy = energy;
 
-            if (auto it = quantum_numbers.values.find("nu"); it != quantum_numbers.values.end()) {
-                min_quantum_number_nu = std::min(min_quantum_number_nu, it->second);
-            }
-
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom>(
                 typename KetAtom::Private(), energy, species, std::move(quantum_numbers.values),
                 std::move(quantum_numbers.stds), *this, id));
-        }
-    }
-
-    // Show a warning for low-lying states
-    if (min_quantum_number_nu < 25) {
-        if (species.ends_with("_mqdt")) {
-            SPDLOG_WARN("The multi-channel quantum defect theory might produce inaccurate results "
-                        "for effective principal quantum numbers < 25. The models get increasingly "
-                        "unreliable for small principal quantum numbers, leading to inaccurate "
-                        "matrix elements and energies. Due to missing data, even some states might "
-                        "not be present.");
-        } else {
-            SPDLOG_WARN(
-                "The single-channel quantum defect theory can be inaccurate for effective "
-                "principal quantum numbers < 25. This can lead to inaccurate matrix elements.");
         }
     }
 

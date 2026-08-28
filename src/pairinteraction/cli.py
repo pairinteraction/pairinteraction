@@ -30,7 +30,7 @@ def main() -> int:
             "  pairinteraction --log-level INFO test\n"
             "  pairinteraction database list\n"
             "  pairinteraction database download Rb Cs\n"
-            "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip\n"
+            "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v2.0/Rb_v2.0.zip\n"
             "  pairinteraction database remove\n"
             "  pairinteraction config reset-gui\n"
             "  pairinteraction config paths\n"
@@ -210,6 +210,8 @@ def _download_database_from_url(url: str, tables_dir: Path) -> int:
 
     from packaging.version import Version
 
+    from pairinteraction._backend import COMPATIBLE_DATABASE_VERSION_MAJOR
+
     try:
         with tempfile.TemporaryDirectory() as td:
             tmp = Path(td) / "tables.zip"
@@ -234,7 +236,14 @@ def _download_database_from_url(url: str, tables_dir: Path) -> int:
                 if not root or f"{root}/" not in z.namelist():
                     raise ValueError("The ZIP archive must contain exactly one top-level folder.")  # noqa: TRY301
                 species, version_str = root.rsplit("_v", 1)
-                Version(version_str)  # validate version
+                version = Version(version_str)  # validate version
+                compatible_major = COMPATIBLE_DATABASE_VERSION_MAJOR
+                if version.major != compatible_major:
+                    raise ValueError(  # noqa: TRY301
+                        f"The tables in '{root}' use the database format v{version.major}, but this version of "
+                        f"PairInteraction requires v{compatible_major}. They would be ignored after downloading, "
+                        "so please download tables of a matching version instead."
+                    )
 
                 to_delete = list(tables_dir.glob(f"{species}*"))
                 confirmation = input(

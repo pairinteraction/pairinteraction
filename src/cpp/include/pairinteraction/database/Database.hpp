@@ -8,17 +8,19 @@
 
 #include <Eigen/SparseCore>
 #include <complex>
+#include <cstdint>
 #include <filesystem>
 #include <future>
 #include <memory>
 #include <oneapi/tbb.h>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
 
 namespace duckdb {
 class DuckDB;
 class Connection;
+enum class LogicalTypeId : uint8_t;
 } // namespace duckdb
 
 namespace pairinteraction {
@@ -105,12 +107,16 @@ private:
 
     void ensure_presence_of_table(const std::string &name);
 
-    // Return the column names of the table at the given path, caching the result per path so that
-    // the schema is queried from the database at most once.
-    const std::unordered_set<std::string> &get_column_names(const std::string &table_path);
+    // Map from the column names of a states table to the type the column is stored as. The backend
+    // never interprets the column names themselves; it only needs to know which columns exist and
+    // of which type they are.
+    using column_info_t = std::unordered_map<std::string, duckdb::LogicalTypeId>;
 
-    oneapi::tbb::concurrent_unordered_map<std::string, std::unordered_set<std::string>>
-        column_names_cache;
+    // Return the column info of the states table of the given species, caching the result per table
+    // so that the schema is queried from the database at most once.
+    const column_info_t &get_states_column_info(const std::string &species);
+
+    oneapi::tbb::concurrent_unordered_map<std::string, column_info_t> column_info_cache;
 };
 
 // Extern template declarations
