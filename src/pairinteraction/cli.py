@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 
 import argparse
+import re
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
@@ -30,6 +31,7 @@ def main() -> int:
             "  pairinteraction --log-level INFO test\n"
             "  pairinteraction database list\n"
             "  pairinteraction database download Rb Cs\n"
+            "  pairinteraction database download Rb Cs --version 2.0\n"
             "  pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v2.0/Rb_v2.0.zip\n"
             "  pairinteraction database remove\n"
             "  pairinteraction config reset-gui\n"
@@ -101,7 +103,14 @@ def main() -> int:
         help="download database tables for one or more species",
     )
     db_download_parser.add_argument("species", nargs="+", help="list of species to download data for / list of URLs")
-    db_download_parser.set_defaults(func=lambda args: download_databases(args.species))
+    db_download_parser.add_argument(
+        "--version",
+        metavar="X.Y",
+        default=None,
+        help="version of the database tables to download, e.g. '2.0' or '2' for the newest tables of major version 2"
+        " (by default, the newest compatible tables are downloaded); cannot be combined with URLs",
+    )
+    db_download_parser.set_defaults(func=lambda args: download_databases(args.species, args.version))
 
     # Database remove command
     db_remove_parser = database_subparsers.add_parser(
@@ -245,16 +254,17 @@ def _download_database_from_url(url: str, tables_dir: Path) -> int:
                         "so please download tables of a matching version instead."
                     )
 
-                to_delete = list(tables_dir.glob(f"{species}*"))
-                confirmation = input(
-                    f"Do you want delete the tables in {', '.join(p.name for p in to_delete)} and "
-                    "replace them with the downloaded tables? (y/N): "
-                )
-                if confirmation.lower() not in ["y", "yes"]:
-                    print(Fore.YELLOW + "Aborted replacing tables." + Style.RESET_ALL)
-                    return 1
-                for p in to_delete:
-                    shutil.rmtree(p)
+                to_delete = list(tables_dir.glob(f"{species}_v*"))
+                if to_delete:
+                    confirmation = input(
+                        f"Do you want delete the tables in {', '.join(p.name for p in to_delete)} and "
+                        "replace them with the downloaded tables? (y/N): "
+                    )
+                    if confirmation.lower() not in ["y", "yes"]:
+                        print(Fore.YELLOW + "Aborted replacing tables." + Style.RESET_ALL)
+                        return 1
+                    for p in to_delete:
+                        shutil.rmtree(p)
 
             shutil.unpack_archive(tmp, tables_dir, format="zip")
 
@@ -267,12 +277,141 @@ def _download_database_from_url(url: str, tables_dir: Path) -> int:
         return 0
 
 
-def download_databases(species_list: list[str]) -> int:
+_TABLE_ASSET_REGEX = re.compile(r"^(\w+)_v(\d+)\.(\d+)\.zip$")
+
+
+def _parse_requested_version(version: str) -> tuple[int, int | None]:
+    """Parse a requested table version of the form 'X.Y' or 'X' (an optional 'v' prefix is allowed)."""
+    from pairinteraction._backend import COMPATIBLE_DATABASE_VERSION_MAJOR
+
+    match = re.fullmatch(r"v?(\d+)(?:\.(\d+))?", version)
+    if match is None:
+        raise ValueError(f"Invalid version '{version}'. Expected a version like '2.0' or '2'.")
+
+    major = int(match[1])
+    if major != COMPATIBLE_DATABASE_VERSION_MAJOR:
+        raise ValueError(
+            f"The requested tables use the database format v{major}, but this version of PairInteraction "
+            f"requires v{COMPATIBLE_DATABASE_VERSION_MAJOR}. They would be ignored after downloading, "
+            "so please request tables of a matching version instead."
+        )
+
+    return major, int(match[2]) if match[2] is not None else None
+
+
+def _get_releases_endpoints() -> list[str]:
+    """Return the URLs listing the releases of the configured database repositories."""
+    import json
+
+    from pairinteraction._backend import get_config_directory
+
+    host = "https://api.github.com"
+    repo_paths = [
+        "/repos/pairinteraction/database-sqdt/releases/latest",
+        "/repos/pairinteraction/database-mqdt/releases/latest",
+    ]
+
+    config_file = Path(get_config_directory()) / "database.json"
+    if config_file.exists():
+        try:
+            doc = json.loads(config_file.read_text())
+            host = doc["database_repo_host"]
+            repo_paths = doc["database_repo_paths"]
+        except Exception as e:
+            print(Fore.YELLOW + f"Ignoring {config_file}: {e}" + Style.RESET_ALL)
+
+    # Turn the endpoints of single releases (e.g. '.../releases/latest') into endpoints listing all releases
+    endpoints = [host.rstrip("/") + path.partition("/releases")[0] + "/releases" for path in repo_paths]
+    return list(dict.fromkeys(endpoints))
+
+
+def _fetch_table_assets(names: list[str]) -> dict[str, dict[tuple[int, int], str]]:
+    """Look up the tables that are available in the configured database repositories.
+
+    Args:
+        names: The names of the tables of interest (i.e., species identifiers or 'misc').
+
+    Returns:
+        A dictionary mapping each table name to the download URLs of its available versions.
+
+    """
+    import json
+    import os
+    from urllib.request import Request, urlopen
+
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": f"pairinteraction/{__version__}"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    assets: dict[str, dict[tuple[int, int], str]] = {name: {} for name in names}
+    for endpoint in _get_releases_endpoints():
+        request = Request(f"{endpoint}?per_page=100", headers=headers)  # noqa: S310
+        with urlopen(request, timeout=30) as response:  # noqa: S310
+            releases = json.load(response)
+
+        for asset in (asset for release in releases for asset in release.get("assets", [])):
+            match = _TABLE_ASSET_REGEX.match(asset["name"])
+            if match is not None and match[1] in assets:
+                assets[match[1]][int(match[2]), int(match[3])] = asset["browser_download_url"]
+
+    return assets
+
+
+def _download_databases_of_version(species_list: list[str], version: str) -> int:
+    """Download the tables of the specified version for the specified species."""
+    from pairinteraction._backend import get_cache_directory
+
+    try:
+        major, minor = _parse_requested_version(version)
+    except ValueError as e:
+        print(Fore.RED + str(e) + Style.RESET_ALL)
+        return 1
+
+    tables_dir = get_cache_directory() / "database" / "tables"
+    tables_dir.mkdir(parents=True, exist_ok=True)
+
+    # The 'misc' tables (e.g. the table of Wigner 3j symbols) are needed for calculating matrix elements
+    names = list(dict.fromkeys([*species_list, "misc"]))
+
+    print(f"Looking up tables of version {version}...")
+    try:
+        assets = _fetch_table_assets(names)
+    except Exception as e:
+        print(Fore.RED + f"Failed to look up the available tables: {e}" + Style.RESET_ALL)
+        return 1
+
+    exit_code = 0
+    for name, urls in assets.items():
+        print(f"Check for tables for {name}...")
+
+        matching = [v for v in urls if v[0] == major and (minor is None or v[1] == minor)]
+        if matching:
+            exit_code |= _download_database_from_url(urls[max(matching)], tables_dir)
+            continue
+
+        available = ", ".join(f"{v[0]}.{v[1]}" for v in sorted(urls))
+        message = f"Failed: no tables of version {version} available for {name}."
+        message += f" Available versions: {available}." if available else ""
+        is_fatal = name != "misc"  # missing misc tables are downloaded automatically when they are needed
+        print((Fore.RED if is_fatal else Fore.YELLOW) + message + Style.RESET_ALL)
+        exit_code |= int(is_fatal)
+
+    return exit_code
+
+
+def download_databases(species_list: list[str], version: str | None = None) -> int:
     """Download the required data files for the specified species."""
     from urllib.parse import urlparse
 
     import pairinteraction as pi
     from pairinteraction._backend import get_cache_directory
+
+    if version is not None:
+        if any(urlparse(species).scheme in {"http", "https"} for species in species_list):
+            print(Fore.RED + "The --version option cannot be combined with URLs." + Style.RESET_ALL)
+            return 1
+        return _download_databases_of_version(species_list, version)
 
     database_dir = get_cache_directory() / "database"
     tables_dir = database_dir / "tables"

@@ -93,6 +93,14 @@ guide helps to solve problems with the database.
 
       $ pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v2.0/Rb_v2.0.zip
 
+  By default, the newest compatible tables are downloaded. To download a specific version of the tables instead, use
+  the ``--version`` option. In addition to the tables of the given species, the ``misc`` tables of this version are
+  downloaded because they are needed for calculating matrix elements.
+
+  .. code-block:: bash
+
+      $ pairinteraction database download Rb Yb171_mqdt --version 2.0
+
 - If you see access errors (e.g., **"Rate limit reached ..."**), GitHub might have temporary blocked the download of
   database tables for unauthenticated users for whom very strict `rate limits`_ apply. The rate limits should typically
   reset within one hour. Alternatively, you can create a `GitHub Personal Access Token`_ for authentication. To make
