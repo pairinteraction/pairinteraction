@@ -77,6 +77,11 @@ SystemAtom<Scalar>::set_ion_distance_vector(const std::array<real_t, 3> &vector)
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
+    // Reject a norm that is zero (also through underflow) or NaN; infinity is allowed
+    if (!(Eigen::Map<const Eigen::Vector3<real_t>>(vector.data(), vector.size()).norm() > 0)) {
+        throw std::invalid_argument("The distance to the ion must be greater than zero.");
+    }
+
     ion_distance_vector = vector;
 
     return *this;
