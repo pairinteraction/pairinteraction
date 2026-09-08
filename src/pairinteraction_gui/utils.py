@@ -16,6 +16,7 @@ AVAILABLE_SPECIES = [
     "Yb171_mqdt",
     "Yb173_mqdt",
     "Yb174_mqdt",
+    "Sr88_ion",
 ]
 SpeciesTypes = Literal["sqdt_monovalent", "sqdt_divalent", "mqdt_halfint", "mqdt_int"]
 

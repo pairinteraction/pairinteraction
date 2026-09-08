@@ -113,10 +113,10 @@ class SystemConfigTwoAtoms(SystemConfig):
         self.order = QnItemInt(
             self,
             "Multipole order",
-            vmin=3,
+            vmin=1,
             vmax=5,
             vdefault=3,
-            tooltip="Select the order of the multipole expansion",
+            tooltip="Select the order of the multipole expansion (orders 1 and 2 only matter for charged species)",
             checkable=False,
         )
         self.layout().addWidget(self.order)
