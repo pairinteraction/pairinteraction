@@ -154,8 +154,11 @@ class KetAtom(KetBase):
     def _get_raw_label(self) -> str:
         s, l, f, m = self.s, self.l, self.f, self.m
 
-        label = self.species.split("_", 1)[0]
+        species_parts = self.species.split("_")
+        label = species_parts[0]
         label = label[0].upper() + label[1:]
+        if "ion" in species_parts[1:]:
+            label += "+"
         label += ":"
 
         if self.species.endswith("_mqdt"):

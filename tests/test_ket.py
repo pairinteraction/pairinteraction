@@ -53,6 +53,9 @@ def test_get_label_sqdt(pi_module: PairinteractionModule) -> None:
     assert ket2.get_label("raw") == "Sr88:S=0,60,S_0,0"
     ket3 = pi_module.KetAtom("Sr88_sqdt", n=60, l=1, s=1, j=2, m=1)
     assert ket3.get_label("raw") == "Sr88:S=1,60,P_2,1"
+    ket4 = pi_module.KetAtom("Sr88_ion", n=60, l=0, j=0.5, m=0.5)
+    assert ket4.get_label("raw") == "Sr88+:60,S_1/2,1/2"
+    assert ket4.get_label("ket") == "|Sr88+:60,S_1/2,1/2⟩"
 
 
 def test_get_label_mqdt(pi_module: PairinteractionModule) -> None:
