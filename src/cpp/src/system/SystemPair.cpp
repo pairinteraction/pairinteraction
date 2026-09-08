@@ -284,9 +284,12 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // where D_1,left uses conjugated convention and
     // D_2,right uses normal convention.
 
-    // Helper function for adding Rydberg-Rydberg interaction
-    auto add_interaction = [this, &sort_by_quantum_number_f, &sort_by_quantum_number_m](
-                               const auto &entries, const auto &op1, const auto &op2, int delta) {
+    // Helper function for adding Rydberg-Rydberg interaction.
+    auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_f,
+                            &sort_by_quantum_number_m, &sort_by_parity](
+                               const auto &op1, const auto &op2, int kappa1, int kappa2) {
+        const auto &entries = green_tensor_interpolator_ptr->get_spherical_entries(kappa1, kappa2);
+
         for (const auto &entry : entries) {
             if (std::holds_alternative<
                     typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry>(entry)) {
@@ -302,23 +305,26 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                                                                    op2[constant_entry.col()]);
 
             sort_by_quantum_number_f = false;
-            if (constant_entry.row() != constant_entry.col() + delta) {
+            if (constant_entry.row() != constant_entry.col() + kappa1 - kappa2) {
                 sort_by_quantum_number_m = false;
+            }
+            if ((kappa1 + kappa2) % 2 != 0) {
+                sort_by_parity = false;
             }
         }
     };
 
     // Dipole-dipole interaction
-    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(1, 1), op.d1, op.d2, 0);
+    add_interaction(op.d1, op.d2, 1, 1);
 
     // Dipole-quadrupole interaction
-    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(1, 2), op.d1, op.q2, -1);
+    add_interaction(op.d1, op.q2, 1, 2);
 
     // Quadrupole-dipole interaction
-    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 1), op.q1, op.d2, +1);
+    add_interaction(op.q1, op.d2, 2, 1);
 
     // Quadrupole-quadrupole interaction
-    add_interaction(green_tensor_interpolator_ptr->get_spherical_entries(2, 2), op.q1, op.q2, 0);
+    add_interaction(op.q1, op.q2, 2, 2);
 
     // Transform from the canonical basis into the actual basis
     this->matrix =
