@@ -274,6 +274,7 @@ def shrink() -> None:
         "Sr87_mqdt",
         "Sr88_mqdt",
         "Sr88_sqdt",
+        "Sr88_ion",
         "Yb171_mqdt",
         "Yb173_mqdt",
         "Yb174_mqdt",
