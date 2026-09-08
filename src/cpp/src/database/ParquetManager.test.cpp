@@ -28,8 +28,8 @@ public:
             // This is the repo path request, return JSON with assets
             nlohmann::json assets = nlohmann::json::array();
             nlohmann::json asset;
-            asset["name"] = "misc_v1.2.zip";
-            asset["url"] = "https://api.github.com/test/path/misc_v1.2.zip";
+            asset["name"] = "misc_v2.1.zip";
+            asset["url"] = "https://api.github.com/test/path/misc_v2.1.zip";
             assets.push_back(asset);
             nlohmann::json response;
             response["assets"] = assets;
@@ -40,7 +40,7 @@ public:
         } else {
             // This is the file download request
             std::string content = "updated_file_content";
-            std::string filename = "misc_v1.2/wigner.parquet";
+            std::string filename = "misc_v2.1/wigner.parquet";
 
             mz_zip_archive zip_archive{};
             size_t zip_size = 0;
@@ -64,10 +64,10 @@ public:
 TEST_CASE("ParquetManager functionality with mocked downloader") {
     MockDownloader downloader;
     auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.0");
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.1");
-    std::ofstream(test_dir / "tables" / "misc_v1.0" / "wigner.parquet").close();
-    std::ofstream(test_dir / "tables" / "misc_v1.1" / "wigner.parquet").close();
+    std::filesystem::create_directories(test_dir / "tables" / "misc_v2.0");
+    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.4");
+    std::ofstream(test_dir / "tables" / "misc_v2.0" / "wigner.parquet").close();
+    std::ofstream(test_dir / "tables" / "misc_v1.4" / "wigner.parquet").close();
     duckdb::DuckDB db(nullptr);
     duckdb::Connection con(db);
 
@@ -89,7 +89,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_local();
         manager.scan_remote();
 
-        std::string expected = (test_dir / "tables" / "misc_v1.1" / "wigner.parquet").string();
+        std::string expected = (test_dir / "tables" / "misc_v2.0" / "wigner.parquet").string();
         CHECK(manager.get_path("misc", "wigner") == expected);
     }
 
@@ -99,7 +99,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         manager.scan_local();
         manager.scan_remote();
 
-        std::string expected = (test_dir / "tables" / "misc_v1.2" / "wigner.parquet").string();
+        std::string expected = (test_dir / "tables" / "misc_v2.1" / "wigner.parquet").string();
         CHECK(manager.get_path("misc", "wigner") == expected);
 
         std::ifstream in(expected, std::ios::binary);

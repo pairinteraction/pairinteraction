@@ -35,24 +35,43 @@ CREATE TABLE states (
     id INTEGER PRIMARY KEY,
     energy REAL NOT NULL, -- the energy of the state: E=I-Ry/nu^2
     parity INTEGER NOT NULL, -- the parity of the state
+    f REAL NOT NULL, -- the total momentum quantum number f (int or half-int)
     n INTEGER NOT NULL, -- the principal quantum number n
     nu REAL NOT NULL, -- the effective principal quantum number nu
-    f REAL NOT NULL, -- the total momentum quantum number f (int or half-int)
+
+    -- the channels the state is composed of
     exp_nui REAL NOT NULL, -- the expectation value of the effective principal quantum numbers nu_i of the channels
-    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number l of all valence electrons
-    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number j of all valence electrons
-    exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number s of all valence electrons
-    exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron
-    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron
     std_nui REAL NOT NULL, -- the standard deviation of the effective principal quantum numbers nu_i of the channels
+
+    -- all valence electrons (LS coupling scheme)
+    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number l of all valence electrons
     std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number l of all valence electrons
-    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number j of all valence electrons
+    exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number s of all valence electrons
     std_s REAL NOT NULL, -- the standard deviation of the total spin quantum number s of all valence electrons
+    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number j of all valence electrons
+    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number j of all valence electrons
+
+    -- the Rydberg electron (jj coupling scheme)
+    exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron
     std_l_ryd REAL NOT NULL, -- the standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron
+    exp_s_ryd REAL NOT NULL, -- the expectation value of the spin quantum number s_{Ryd} of the Rydberg electron
+    std_s_ryd REAL NOT NULL, -- the standard deviation of the spin quantum number s_{Ryd} of the Rydberg electron
+    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron
     std_j_ryd REAL NOT NULL, -- the standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron
-    is_j_total_momentum BOOLEAN NOT NULL, -- whether j is the total momentum quantum number, otherwise f is used for printing the state
-    is_calculated_with_mqdt BOOLEAN NOT NULL, -- whether multi-channel quantum defect theory was used
-    underspecified_channel_contribution REAL NOT NULL -- the contribution of channels whose quantum numbers are not exactly known
+
+    -- the ionic core (jj coupling scheme)
+    exp_l_core REAL NOT NULL, -- the expectation value of the orbital quantum number l_{core} of the ionic core
+    std_l_core REAL NOT NULL, -- the standard deviation of the orbital quantum number l_{core} of the ionic core
+    exp_s_core REAL NOT NULL, -- the expectation value of the spin quantum number s_{core} of the ionic core
+    std_s_core REAL NOT NULL, -- the standard deviation of the spin quantum number s_{core} of the ionic core
+    exp_j_core REAL NOT NULL, -- the expectation value of the total angular quantum number j_{core} of the ionic core
+    std_j_core REAL NOT NULL, -- the standard deviation of the total angular quantum number j_{core} of the ionic core
+
+    -- the hyperfine structure of the ionic core (FJ coupling scheme)
+    exp_i_core REAL NOT NULL, -- the expectation value of the nuclear spin quantum number i_{core}
+    std_i_core REAL NOT NULL, -- the standard deviation of the nuclear spin quantum number i_{core}
+    exp_f_core REAL NOT NULL, -- the expectation value of the total momentum quantum number f_{core} of the ionic core
+    std_f_core REAL NOT NULL, -- the standard deviation of the total momentum quantum number f_{core} of the ionic core
 );
 
 CREATE TRIGGER check_energy
