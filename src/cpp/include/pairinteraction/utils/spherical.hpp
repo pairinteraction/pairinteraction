@@ -23,6 +23,11 @@ extern const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL_KA
 
 template <typename Scalar>
 inline const Eigen::MatrixX<Scalar> &get_transformator(int kappa) {
+    if (kappa == 0) {
+        // The monopole is a scalar, the cartesian and spherical representations coincide
+        static const auto mat = Eigen::MatrixX<Scalar>(Eigen::MatrixX<Scalar>::Identity(1, 1));
+        return mat;
+    }
     if (kappa == 1) {
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             static const auto mat = Eigen::MatrixX<Scalar>(
@@ -43,6 +48,6 @@ inline const Eigen::MatrixX<Scalar> &get_transformator(int kappa) {
             spherical::CARTESIAN_TO_SPHERICAL_KAPPA2.real().template cast<Scalar>());
         return mat;
     }
-    throw std::invalid_argument("Invalid kappa value. Must be 1 or 2.");
+    throw std::invalid_argument("Invalid kappa value. Must be 0, 1, or 2.");
 }
 } // namespace pairinteraction::spherical
