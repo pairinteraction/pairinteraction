@@ -94,6 +94,7 @@ PairInteraction relies on quantum defects provided by the community. We encourag
 | Sr88    | SQDT  | `Sr88_sqdt`  | singlet sector: [10.1103/PhysRevA.108.022815] (2023)<br>singlet sector: [10.17169/refubium-34581] (2022)<br>triplet sector: [10.1016/j.cpc.2020.107814] (2021) |
 | Sr87    | MQDT  | `Sr87_mqdt`  | [10.1088/1361-6455/ab4c22] (2019)                                                                                                                              |
 | Sr88    | MQDT  | `Sr88_mqdt`  | [10.1088/1361-6455/ab4c22] (2019)                                                                                                                              |
+| Sr88+   | SQDT  | `Sr88_ion`   | [urn:nbn:se:su:diva-184811] (2020)<br>[10.1007/978-3-030-33770-4] (2019)<br>[10.1007/BF01426593] (1991)                                                        |
 | Yb171   | MQDT  | `Yb171_mqdt` | [10.1103/PhysRevX.15.011009] (2025)<br>[10.1103/mzsv-rckx] (2025)                                                                                              |
 | Yb173   | MQDT  | `Yb173_mqdt` | MQDT model formulated by us                                                                                                                                    |
 | Yb174   | MQDT  | `Yb174_mqdt` | [10.1103/PhysRevX.15.011009] (2025)<br>[10.1103/mzsv-rckx] (2025)                                                                                              |
@@ -118,6 +119,9 @@ The identifier can be used to specify an atomic species in the PairInteraction s
 [10.17169/refubium-34581]: https://doi.org/10.17169/refubium-34581
 [10.1016/j.cpc.2020.107814]: https://doi.org/10.1016/j.cpc.2020.107814
 [10.1088/1361-6455/ab4c22]: https://doi.org/10.1088/1361-6455/ab4c22
+[urn:nbn:se:su:diva-184811]: http://urn.kb.se/resolve?urn=urn:nbn:se:su:diva-184811
+[10.1007/978-3-030-33770-4]: https://doi.org/10.1007/978-3-030-33770-4
+[10.1007/BF01426593]: https://doi.org/10.1007/BF01426593
 [10.1103/PhysRevX.15.011009]: https://doi.org/10.1103/PhysRevX.15.011009
 [10.1103/mzsv-rckx]: https://doi.org/10.1103/mzsv-rckx
 
