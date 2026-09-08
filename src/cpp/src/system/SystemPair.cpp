@@ -175,22 +175,22 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
 
     OperatorMatrices<Scalar> op;
 
+    auto has = [&green_tensor_interpolator](int kappa1, int kappa2) {
+        return !green_tensor_interpolator.get_spherical_entries(kappa1, kappa2).empty();
+    };
+
     // Operator matrices for Rydberg-Rydberg interaction
-    if (!green_tensor_interpolator.get_spherical_entries(1, 1).empty() ||
-        !green_tensor_interpolator.get_spherical_entries(1, 2).empty()) {
+    if (has(1, 1) || has(1, 2)) {
         op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-    if (!green_tensor_interpolator.get_spherical_entries(1, 1).empty() ||
-        !green_tensor_interpolator.get_spherical_entries(2, 1).empty()) {
+    if (has(1, 1) || has(2, 1)) {
         op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
-    if (!green_tensor_interpolator.get_spherical_entries(2, 2).empty() ||
-        !green_tensor_interpolator.get_spherical_entries(2, 1).empty()) {
+    if (has(2, 1) || has(2, 2)) {
         op.q1 = get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, true);
         op.q1.push_back(get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, true)[0]);
     }
-    if (!green_tensor_interpolator.get_spherical_entries(2, 2).empty() ||
-        !green_tensor_interpolator.get_spherical_entries(1, 2).empty()) {
+    if (has(1, 2) || has(2, 2)) {
         op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
             get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
