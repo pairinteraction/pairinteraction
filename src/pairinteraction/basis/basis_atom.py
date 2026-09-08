@@ -72,6 +72,10 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
     ) -> None:
         """Create a basis for a single atom.
 
+        All restrictions are inclusive and are widened by a small numerical tolerance, so that states are
+        not dropped because of floating-point noise in the values stored in the database (the quantum
+        number ranges are widened by 1e-9, the energy range by a relative 1e-12).
+
         Args:
             species: The species of the atom.
             n: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.

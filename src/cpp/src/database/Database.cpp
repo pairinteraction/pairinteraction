@@ -18,6 +18,7 @@
 #include "pairinteraction/utils/streamed.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cpptrace/cpptrace.hpp>
 #include <duckdb.hpp>
 #include <fmt/core.h>
@@ -37,13 +38,27 @@ namespace pairinteraction {
 
 namespace {
 
+std::string format_quantum_number_range(const std::string &column, const Range<double> &range) {
+    constexpr double numerical_precision = 1e-9;
+    return fmt::format("{} BETWEEN {} AND {}", column, range.min() - numerical_precision,
+                       range.max() + numerical_precision);
+}
+
 std::string format_expectation_value_range(const std::string &value_column,
                                            const std::string &std_column,
                                            const Range<double> &range,
                                            double standard_deviation_factor) {
-    return fmt::format("{} BETWEEN {}-{}*{} AND {}+{}*{}", value_column, range.min(),
-                       standard_deviation_factor, std_column, range.max(),
-                       standard_deviation_factor, std_column);
+    constexpr double numerical_precision = 1e-9;
+    return fmt::format("{} BETWEEN {}-{}*{}-{} AND {}+{}*{}+{}", value_column, range.min(),
+                       standard_deviation_factor, std_column, numerical_precision, range.max(),
+                       standard_deviation_factor, std_column, numerical_precision);
+}
+
+std::string format_energy_range(const Range<double> &range) {
+    constexpr double relative_numerical_precision = 1e-12;
+    double min = range.min() - std::abs(range.min()) * relative_numerical_precision;
+    double max = range.max() + std::abs(range.max()) * relative_numerical_precision;
+    return fmt::format("energy BETWEEN {} AND {}", min, max);
 }
 
 // Find the index of the result column with the given name.
@@ -413,9 +428,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     std::string where = "(";
     std::string separator;
     if (description.range_energy.is_finite()) {
-        where += separator +
-            fmt::format("energy BETWEEN {} AND {}", description.range_energy.min(),
-                        description.range_energy.max());
+        where += separator + format_energy_range(description.range_energy);
         separator = " AND ";
     }
     for (const auto &[name, range] : description.quantum_number_ranges) {
@@ -430,8 +443,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                          exp_column, std_column, range,
                          description.quantum_number_standard_deviation_factor);
         } else if (columns.contains(name)) {
-            where +=
-                separator + fmt::format("{} BETWEEN {} AND {}", name, range.min(), range.max());
+            where += separator + format_quantum_number_range(name, range);
         } else {
             throw std::invalid_argument(
                 fmt::format("The quantum number '{}' is not stored in the database table for "
@@ -449,8 +461,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     // Describe the restriction of the quantum number m
     std::string where_m = "(";
     if (range_quantum_number_m.is_finite()) {
-        where_m += fmt::format("m BETWEEN {} AND {}", range_quantum_number_m.min(),
-                               range_quantum_number_m.max());
+        where_m += format_quantum_number_range("m", range_quantum_number_m);
     } else {
         where_m += "TRUE";
     }

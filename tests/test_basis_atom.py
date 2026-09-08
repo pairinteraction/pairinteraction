@@ -49,7 +49,9 @@ def test_restriction_mode(pi_module: PairinteractionModule) -> None:
 
     exact_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode="exact")
     assert exact_basis.number_of_kets > 0
-    assert all(l_range[0] <= ket.l <= l_range[1] for ket in exact_basis.kets)
+    # The range is widened by a small absolute epsilon to tolerate floating-point noise in the
+    # expectation values stored in the database, see test_restriction_at_expectation_value_boundary
+    assert all(l_range[0] - 1e-9 <= ket.l <= l_range[1] + 1e-9 for ket in exact_basis.kets)
     assert exact_basis.number_of_kets < fuzzy_basis.number_of_kets
 
     factor_basis = pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode=100)
@@ -60,6 +62,22 @@ def test_restriction_mode(pi_module: PairinteractionModule) -> None:
 
     with pytest.raises(ValueError, match="non-negative"):
         pi_module.BasisAtom("Yb171_mqdt", nu=(58, 62), l=l_range, m=(0.5, 0.5), mode=-1)
+
+
+@pytest.mark.parametrize("j_max", [1, 2, 3])
+def test_restriction_at_expectation_value_boundary(pi_module: PairinteractionModule, j_max: int) -> None:
+    """Test that states are not dropped because of floating-point noise in the expectation values.
+
+    The expectation values stored in the database are channel-weighted sums, so a value that is
+    mathematically an integer or half-integer can be off by a few ulp, e.g. exp_j is
+    2.0000000000000004 for some states with j = 2. Since these states have a vanishing standard
+    deviation, a range that ends exactly at such a quantum number must not select fewer states than
+    a range widened by a physically irrelevant amount.
+    """
+    basis = pi_module.BasisAtom("Yb174_mqdt", nu=(49, 55), j=(0, j_max), mode="exact")
+    widened_basis = pi_module.BasisAtom("Yb174_mqdt", nu=(49, 55), j=(0, j_max + 1e-9), mode="exact")
+    assert basis.number_of_kets > 0
+    assert basis.number_of_kets == widened_basis.number_of_kets
 
 
 def test_coefficients(basis: BasisAtom) -> None:
