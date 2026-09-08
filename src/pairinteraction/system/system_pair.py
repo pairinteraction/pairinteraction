@@ -92,6 +92,9 @@ class SystemPair(SystemBase[BasisPair]):
         Args:
             order: The interaction order to set for the pair system.
                 The order must be 3, 4, or 5.
+                Order 3 corresponds to dipole-dipole interaction, order 4 additionally includes
+                dipole-quadrupole interactions, and order 5 additionally includes
+                quadrupole-quadrupole and dipole-octupole interactions.
 
         """
         self._interaction_order = order

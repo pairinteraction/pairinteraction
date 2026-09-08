@@ -20,6 +20,7 @@ namespace pairinteraction::spherical {
 
 extern const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL_KAPPA1;
 extern const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL_KAPPA2;
+extern const Eigen::Matrix<std::complex<double>, 7, 27> CARTESIAN_TO_SPHERICAL_KAPPA3;
 
 template <typename Scalar>
 inline const Eigen::MatrixX<Scalar> &get_transformator(int kappa) {
@@ -43,6 +44,16 @@ inline const Eigen::MatrixX<Scalar> &get_transformator(int kappa) {
             spherical::CARTESIAN_TO_SPHERICAL_KAPPA2.real().template cast<Scalar>());
         return mat;
     }
-    throw std::invalid_argument("Invalid kappa value. Must be 1 or 2.");
+    if (kappa == 3) {
+        if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
+            static const auto mat = Eigen::MatrixX<Scalar>(
+                spherical::CARTESIAN_TO_SPHERICAL_KAPPA3.template cast<Scalar>());
+            return mat;
+        }
+        static const auto mat = Eigen::MatrixX<Scalar>(
+            spherical::CARTESIAN_TO_SPHERICAL_KAPPA3.real().template cast<Scalar>());
+        return mat;
+    }
+    throw std::invalid_argument("Invalid kappa value. Must be 1, 2, or 3.");
 }
 } // namespace pairinteraction::spherical

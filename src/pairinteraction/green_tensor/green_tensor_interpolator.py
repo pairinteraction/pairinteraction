@@ -199,6 +199,10 @@ class GreenTensorInterpolator:
             - spherical: [p_{1,-1}, p_{1,0}, p_{1,1}]
         kappa = 2 corresponds to quadrupole operator with the basis
             - spherical: [p_{2,-2}, p_{2,-1}, p_{2,0}, p_{2,1}, p_{2,2}, p_{0,0}]
+        kappa = 3 corresponds to octupole operator with the basis
+            - spherical: [p_{3,-3}, p_{3,-2}, p_{3,-1}, p_{3,0}, p_{3,1}, p_{3,2}, p_{3,3}]
+            (in contrast to the quadrupole operator, no trace component is included; trace
+            components of cartesian tensors are projected out)
 
         Args:
             kappa1: The rank of the first multipole operator.
@@ -225,7 +229,7 @@ class GreenTensorInterpolator:
         omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
 
         entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
-        kappa_to_dim = {1: 3, 2: 6}
+        kappa_to_dim = {1: 3, 2: 6, 3: 7}
         dim1, dim2 = kappa_to_dim[kappa1], kappa_to_dim[kappa2]
         tensor_au = np.zeros((dim1, dim2), dtype=complex)
         for entry_cpp in entries_cpp:
