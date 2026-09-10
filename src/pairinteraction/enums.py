@@ -14,6 +14,7 @@ _FloatTypeDict: dict[FloatType, _backend.FloatType] = {
 OperatorType = Literal[
     "zero",
     "energy",
+    "electric_monopole",
     "electric_dipole",
     "electric_quadrupole",
     "electric_quadrupole_zero",
@@ -25,6 +26,7 @@ OperatorType = Literal[
 _OperatorTypeDict: dict[OperatorType, _backend.OperatorType] = {
     "zero": _backend.OperatorType.ZERO,
     "energy": _backend.OperatorType.ENERGY,
+    "electric_monopole": _backend.OperatorType.ELECTRIC_MONOPOLE,
     "electric_dipole": _backend.OperatorType.ELECTRIC_DIPOLE,
     "electric_quadrupole": _backend.OperatorType.ELECTRIC_QUADRUPOLE,
     "electric_quadrupole_zero": _backend.OperatorType.ELECTRIC_QUADRUPOLE_ZERO,

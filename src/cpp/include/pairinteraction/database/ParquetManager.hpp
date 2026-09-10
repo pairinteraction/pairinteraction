@@ -40,6 +40,7 @@ public:
     void scan_local();
     void scan_remote();
     std::string get_path(const std::string &key, const std::string &table);
+    bool has_table(const std::string &key, const std::string &table);
     std::string get_versions_info() const;
 
 private:
@@ -47,6 +48,8 @@ private:
     void react_on_exception(const std::string &context, const std::exception &e);
     void react_on_error_code(const std::string &context, int error_code);
     void update_local_asset(const std::string &key);
+    std::unordered_map<std::string, LocalAssetInfo>::iterator
+    get_local_asset(const std::string &key);
     void cache_table(std::unordered_map<std::string, PathInfo>::iterator table_it);
 
     std::filesystem::path directory_;

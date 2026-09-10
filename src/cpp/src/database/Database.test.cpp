@@ -10,6 +10,7 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 
 #include <doctest/doctest.h>
+#include <stdexcept>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("get a KetAtom") {
@@ -99,6 +100,24 @@ DOCTEST_TEST_CASE("get atomic matrix elements") {
 
     DOCTEST_MESSAGE("Number of basis states: ", basis->get_number_of_states());
     DOCTEST_MESSAGE("Number of non-zero entries: ", dipole.nonZeros());
+}
+
+DOCTEST_TEST_CASE("get the monopole operator") {
+    Database &database = Database::get_global_instance();
+
+    AtomDescriptionByRanges description;
+    description.quantum_number_ranges = {{"n", {60, 60}}, {"l", {0, 1}}};
+
+    DOCTEST_SUBCASE("singly charged ion") {
+        auto basis = database.get_basis<double>("Sr88_ion", description, {});
+        auto monopole = database.get_matrix_elements_in_canonical_basis<double>(
+            basis, basis, OperatorType::ELECTRIC_MONOPOLE, 0);
+
+        // The charge is given in units of the charge -e of the Rydberg electron
+        Eigen::MatrixXd expected = -Eigen::MatrixXd::Identity(monopole.rows(), monopole.cols());
+        DOCTEST_CHECK(basis->get_number_of_kets() > 0);
+        DOCTEST_CHECK(Eigen::MatrixXd(monopole).isApprox(expected, 1e-12));
+    }
 }
 
 DOCTEST_TEST_CASE("atomic matrix elements reject bases from a different database") {

@@ -75,6 +75,20 @@ CREATE TABLE wigner (
     PRIMARY KEY (f_initial, f_final, m_initial, m_final, kappa, q)
 );
 
+-- Create a table of matrix elements of the reduced electric monopole operator, i.e., the total charge of the species
+-- (ionic core plus Rydberg electron) in units of the charge -e of the Rydberg electron. Because the monopole operator
+-- is a scalar, its reduced matrix elements are val = -sqrt(2*f+1) for a singly charged positive Rydberg ion. The
+-- factor sqrt(2*f+1) is canceled by the entry of the wigner table for kappa = 0, so that the resulting matrix element
+-- is -1. The table is optional and only needed for charged species, if it is missing the species is treated as
+-- neutral. Note that the electric multipole operators below are also given in units of -e, i.e., they are the
+-- multipole moments of the Rydberg electron divided by its charge -e.
+CREATE TABLE matrix_elements_m (
+    id_initial INTEGER,
+    id_final INTEGER,
+    val REAL NOT NULL,
+    PRIMARY KEY (id_initial, id_final)
+);
+
 -- Create a table of matrix elements of the reduced electric dipole operator e*r*sqrt(4*pi/3)*Y_1
 CREATE TABLE matrix_elements_d (
     id_initial INTEGER,
@@ -122,6 +136,8 @@ CREATE TABLE matrix_elements_mu (
 CREATE INDEX idx_states_energy ON states (energy);
 CREATE INDEX idx_wigner_f_initial ON wigner (f_initial);
 CREATE INDEX idx_wigner_f_final ON wigner (f_final);
+CREATE INDEX idx_matrix_elements_m_id_initial ON matrix_elements_m (id_initial);
+CREATE INDEX idx_matrix_elements_m_id_final ON matrix_elements_m (id_final);
 CREATE INDEX idx_matrix_elements_d_id_initial ON matrix_elements_d (id_initial);
 CREATE INDEX idx_matrix_elements_d_id_final ON matrix_elements_d (id_final);
 CREATE INDEX idx_matrix_elements_q_id_initial ON matrix_elements_q (id_initial);

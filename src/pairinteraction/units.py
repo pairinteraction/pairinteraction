@@ -41,6 +41,7 @@ Dimension = Literal[
     "temperature",
     "time",
     "transition_rate",
+    "electric_monopole",
     "electric_dipole",
     "electric_quadrupole",
     "electric_quadrupole_zero",
@@ -68,6 +69,7 @@ _CommonUnits: dict[Dimension, str] = {
     "temperature": "K",  # 1 K = 3.1668115634555572e-06 atomic_unit_of_temperature
     "time": "s",  # 1 s = 4.134137333518244e+16 au_time
     "transition_rate": "1/s",  # 1 / s = 2.4188843265856806e-17 * 1 / au_time
+    "electric_monopole": "e",  # 1 e = 1 au_current * au_time  # the monopole is -e for a positive Rydberg ion
     "electric_dipole": "e * a0",  # 1 e * a0 = 1 au_current * au_time * bohr
     "electric_quadrupole": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
     "electric_quadrupole_zero": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2

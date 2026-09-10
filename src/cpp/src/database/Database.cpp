@@ -32,6 +32,7 @@
 #include <system_error>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 namespace pairinteraction {
 
@@ -703,6 +704,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
     std::string specifier;
     int kappa{};
     switch (type) {
+    case OperatorType::ELECTRIC_MONOPOLE:
+        specifier = "matrix_elements_m";
+        kappa = 0;
+        break;
     case OperatorType::ELECTRIC_DIPOLE:
         specifier = "matrix_elements_d";
         kappa = 1;
@@ -884,6 +889,12 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_ca
     set_task_status("Returning matrix elements in canonical basis...");
 
     return cache_it->second.get()->template cast<Scalar>();
+}
+
+int Database::get_minimal_kappa(const std::string &species) {
+    // The monopole operator is only stored for charged species. Thus, if the table exists, the
+    // species is charged and the monopole operator has to be taken into account.
+    return manager->has_table(species, "matrix_elements_m") ? 0 : 1;
 }
 
 bool Database::get_download_missing() const { return download_missing_; }

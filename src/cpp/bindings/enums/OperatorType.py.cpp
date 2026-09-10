@@ -14,6 +14,7 @@ void bind_operator_type(nb::module_ &m) {
     nb::enum_<OperatorType>(m, "OperatorType")
         .value("ZERO", OperatorType::ZERO)
         .value("ENERGY", OperatorType::ENERGY)
+        .value("ELECTRIC_MONOPOLE", OperatorType::ELECTRIC_MONOPOLE)
         .value("ELECTRIC_DIPOLE", OperatorType::ELECTRIC_DIPOLE)
         .value("ELECTRIC_QUADRUPOLE", OperatorType::ELECTRIC_QUADRUPOLE)
         .value("ELECTRIC_QUADRUPOLE_ZERO", OperatorType::ELECTRIC_QUADRUPOLE_ZERO)

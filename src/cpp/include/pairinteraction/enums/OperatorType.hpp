@@ -7,6 +7,7 @@ namespace pairinteraction {
 enum class OperatorType {
     ZERO,                     // Empty operator
     ENERGY,                   // Unperturbed Hamiltonian
+    ELECTRIC_MONOPOLE,        // Monopole operator (total charge)
     ELECTRIC_DIPOLE,          // Dipole operator
     ELECTRIC_QUADRUPOLE,      // Quadrupole operator
     ELECTRIC_QUADRUPOLE_ZERO, // Part of the diamagnetic operator and quadrupole near surfaces

@@ -428,11 +428,12 @@ void ParquetManager::cache_table(std::unordered_map<std::string, PathInfo>::iter
     table_it->second.cached = true;
 }
 
-std::string ParquetManager::get_path(const std::string &key, const std::string &table) {
+std::unordered_map<std::string, ParquetManager::LocalAssetInfo>::iterator
+ParquetManager::get_local_asset(const std::string &key) {
     // Update the local table if a newer version is available remotely
     this->update_local_asset(key);
 
-    // Ensure availability of the local table file
+    // Ensure availability of the local asset
     auto asset_it = local_asset_info.find(key);
     if (asset_it == local_asset_info.end()) {
         // If we do not know about any table that can be downloaded, downloading might be blocked.
@@ -447,6 +448,17 @@ std::string ParquetManager::get_path(const std::string &key, const std::string &
         throw std::runtime_error("No tables found for species '" + key +
                                  "'. Check the spelling of the species.");
     }
+    return asset_it;
+}
+
+bool ParquetManager::has_table(const std::string &key, const std::string &table) {
+    auto asset_it = this->get_local_asset(key);
+    return asset_it->second.paths.contains(table);
+}
+
+std::string ParquetManager::get_path(const std::string &key, const std::string &table) {
+    // Ensure availability of the local table file
+    auto asset_it = this->get_local_asset(key);
     auto table_it = asset_it->second.paths.find(table);
     if (table_it == asset_it->second.paths.end()) {
         throw std::runtime_error("No table '" + table + ".parquet' found for species '" + key +

@@ -64,6 +64,8 @@ public:
                                            std::shared_ptr<const BasisAtom<Scalar>> final_basis,
                                            OperatorType type, int q);
 
+    int get_minimal_kappa(const std::string &species);
+
     bool get_download_missing() const;
     bool get_use_cache() const;
     std::filesystem::path get_database_dir() const;
