@@ -1,0 +1,37 @@
+﻿StateAtom
+=========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~StateAtom.__init__
+      ~StateAtom.get_amplitude
+      ~StateAtom.get_coefficients
+      ~StateAtom.get_corresponding_ket
+      ~StateAtom.get_corresponding_ket_index
+      ~StateAtom.get_label
+      ~StateAtom.get_matrix_element
+      ~StateAtom.get_overlap
+      ~StateAtom.is_normalized
+      ~StateAtom.normalize
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~StateAtom.database
+   ~StateAtom.is_canonical
+   ~StateAtom.kets
+   ~StateAtom.norm
+   ~StateAtom.number_of_kets
+   ~StateAtom.species
+
+
+
+.. autoclass:: pairinteraction._wrapped.StateAtom

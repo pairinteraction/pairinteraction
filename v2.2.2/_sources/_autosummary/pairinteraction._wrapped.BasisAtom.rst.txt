@@ -1,0 +1,36 @@
+﻿BasisAtom
+=========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~BasisAtom.__init__
+      ~BasisAtom.copy
+      ~BasisAtom.get_amplitudes
+      ~BasisAtom.get_coefficients
+      ~BasisAtom.get_corresponding_ket
+      ~BasisAtom.get_corresponding_ket_index
+      ~BasisAtom.get_corresponding_state
+      ~BasisAtom.get_corresponding_state_index
+      ~BasisAtom.get_matrix_elements
+      ~BasisAtom.get_overlaps
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~BasisAtom.database
+   ~BasisAtom.kets
+   ~BasisAtom.number_of_kets
+   ~BasisAtom.number_of_states
+   ~BasisAtom.states
+
+
+
+.. autoclass:: pairinteraction._wrapped.BasisAtom

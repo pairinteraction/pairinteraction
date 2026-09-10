@@ -1,0 +1,50 @@
+﻿KetAtom
+=======
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~KetAtom.__init__
+      ~KetAtom.get_black_body_transition_rates
+      ~KetAtom.get_energy
+      ~KetAtom.get_label
+      ~KetAtom.get_lifetime
+      ~KetAtom.get_matrix_element
+      ~KetAtom.get_spontaneous_transition_rates
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~KetAtom.database
+   ~KetAtom.f
+   ~KetAtom.is_calculated_with_mqdt
+   ~KetAtom.is_j_total_momentum
+   ~KetAtom.j
+   ~KetAtom.j_ryd
+   ~KetAtom.j_ryd_std
+   ~KetAtom.j_std
+   ~KetAtom.l
+   ~KetAtom.l_ryd
+   ~KetAtom.l_ryd_std
+   ~KetAtom.l_std
+   ~KetAtom.m
+   ~KetAtom.n
+   ~KetAtom.nu
+   ~KetAtom.nui
+   ~KetAtom.nui_std
+   ~KetAtom.parity
+   ~KetAtom.s
+   ~KetAtom.s_std
+   ~KetAtom.species
+   ~KetAtom.underspecified_channel_contribution
+
+
+
+.. autoclass:: pairinteraction.KetAtom
