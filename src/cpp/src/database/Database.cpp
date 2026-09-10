@@ -18,6 +18,7 @@
 #include "pairinteraction/utils/streamed.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <cpptrace/cpptrace.hpp>
 #include <duckdb.hpp>
 #include <fmt/core.h>
@@ -38,13 +39,25 @@ namespace pairinteraction {
 
 namespace {
 
+// Absolute tolerance by which quantum number ranges are widened so that states are not dropped
+// because of the numerical noise of the (expectation) values stored in the database. This noise
+// stems from the expectation value calculation as well as from the nullspace solver tolerances
+// (MQDT in rydstate).
+constexpr double database_numerical_precision = 1e-9;
+
+std::string format_quantum_number_range(const std::string &column, const Range<double> &range) {
+    return fmt::format("{} BETWEEN {} AND {}", column, range.min() - database_numerical_precision,
+                       range.max() + database_numerical_precision);
+}
+
 std::string format_expectation_value_range(const std::string &value_column,
                                            const std::string &std_column,
                                            const Range<double> &range,
                                            double standard_deviation_factor) {
-    return fmt::format("{} BETWEEN {}-{}*{} AND {}+{}*{}", value_column, range.min(),
-                       standard_deviation_factor, std_column, range.max(),
-                       standard_deviation_factor, std_column);
+    return fmt::format("{} BETWEEN {}-{}*{}-{} AND {}+{}*{}+{}", value_column, range.min(),
+                       standard_deviation_factor, std_column, database_numerical_precision,
+                       range.max(), standard_deviation_factor, std_column,
+                       database_numerical_precision);
 }
 
 // Find the index of the result column with the given name.
@@ -431,8 +444,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
                          exp_column, std_column, range,
                          description.quantum_number_standard_deviation_factor);
         } else if (columns.contains(name)) {
-            where +=
-                separator + fmt::format("{} BETWEEN {} AND {}", name, range.min(), range.max());
+            where += separator + format_quantum_number_range(name, range);
         } else {
             throw std::invalid_argument(
                 fmt::format("The quantum number '{}' is not stored in the database table for "
@@ -450,8 +462,7 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     // Describe the restriction of the quantum number m
     std::string where_m = "(";
     if (range_quantum_number_m.is_finite()) {
-        where_m += fmt::format("m BETWEEN {} AND {}", range_quantum_number_m.min(),
-                               range_quantum_number_m.max());
+        where_m += format_quantum_number_range("m", range_quantum_number_m);
     } else {
         where_m += "TRUE";
     }
