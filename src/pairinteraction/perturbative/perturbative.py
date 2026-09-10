@@ -352,7 +352,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
     system_atoms: list[pi_real.SystemAtom | pi_complex.SystemAtom] = []
 
     delta_n = 7
-    delta_l = perturbation_order * (multipole_order - 2)
+    delta_l = perturbation_order * max(multipole_order - 2, 1)
     for i in range(2):
         kets = [ket_tuple[i] for ket_tuple in ket_tuple_list]
         nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])

@@ -34,6 +34,8 @@
 namespace pairinteraction {
 template <typename Scalar>
 struct OperatorMatrices {
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> m1;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> m2;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d1;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d2;
     std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q1;
@@ -248,17 +250,23 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
     };
 
     // Operator matrices for Rydberg-Rydberg interaction
-    if (has(1, 1) || has(1, 2)) {
+    if (has(0, 0) || has(0, 1) || has(0, 2)) {
+        op.m1 = get_matrices(basis1, OperatorType::ELECTRIC_MONOPOLE, {0}, true);
+    }
+    if (has(0, 0) || has(1, 0) || has(2, 0)) {
+        op.m2 = get_matrices(basis2, OperatorType::ELECTRIC_MONOPOLE, {0}, false);
+    }
+    if (has(1, 0) || has(1, 1) || has(1, 2)) {
         op.d1 = get_matrices(basis1, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, true);
     }
-    if (has(1, 1) || has(2, 1)) {
+    if (has(0, 1) || has(1, 1) || has(2, 1)) {
         op.d2 = get_matrices(basis2, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
     }
-    if (has(2, 1) || has(2, 2)) {
+    if (has(2, 0) || has(2, 1) || has(2, 2)) {
         op.q1 = get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, true);
         op.q1.push_back(get_matrices(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, true)[0]);
     }
-    if (has(1, 2) || has(2, 2)) {
+    if (has(0, 2) || has(1, 2) || has(2, 2)) {
         op.q2 = get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE, {-2, -1, 0, +1, +2}, false);
         op.q2.push_back(
             get_matrices(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, {0}, false)[0]);
@@ -275,8 +283,8 @@ template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_interaction_order(int value) {
     this->hamiltonian_requires_construction = true;
 
-    if (value < 3 || value > 5) {
-        throw std::invalid_argument("The order must be 3, 4, or 5.");
+    if (value > 5) {
+        throw std::invalid_argument("Interaction orders larger than 5 are not yet supported.");
     }
 
     if (green_tensor_interpolator) {
@@ -371,12 +379,22 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
             const auto &constant_entry =
                 std::get<typename GreenTensorInterpolator<Scalar>::ConstantEntry>(entry);
+
+            // Skip vanishing operators (e.g., for small basis that comprises a single state)
+            // so that they do not break the block-diagonal structure of the Hamiltonian
+            if (op1[constant_entry.row()].nonZeros() == 0 ||
+                op2[constant_entry.col()].nonZeros() == 0) {
+                continue;
+            }
+
             this->matrix += constant_entry.val() *
                 utils::calculate_tensor_product_in_canonical_basis(this->basis, this->basis,
                                                                    op1[constant_entry.row()],
                                                                    op2[constant_entry.col()]);
 
-            sort_by_quantum_number_f = false;
+            if (kappa1 != 0 || kappa2 != 0) {
+                sort_by_quantum_number_f = false;
+            }
             if (constant_entry.row() != constant_entry.col() + kappa1 - kappa2) {
                 sort_by_quantum_number_m = false;
             }
@@ -385,6 +403,21 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             }
         }
     };
+
+    // Monopole-monopole interaction
+    add_interaction(op.m1, op.m2, 0, 0);
+
+    // Monopole-dipole interaction
+    add_interaction(op.m1, op.d2, 0, 1);
+
+    // Dipole-monopole interaction
+    add_interaction(op.d1, op.m2, 1, 0);
+
+    // Monopole-quadrupole interaction
+    add_interaction(op.m1, op.q2, 0, 2);
+
+    // Quadrupole-monopole interaction
+    add_interaction(op.q1, op.m2, 2, 0);
 
     // Dipole-dipole interaction
     add_interaction(op.d1, op.d2, 1, 1);

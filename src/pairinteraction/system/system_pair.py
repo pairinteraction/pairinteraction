@@ -89,9 +89,21 @@ class SystemPair(SystemBase[BasisPair]):
     def set_interaction_order(self: Self, order: int) -> Self:
         """Set the interaction order of the pair system.
 
+        The interaction order n includes all multipole-multipole interactions between multipoles of
+        ranks kappa1 and kappa2 with kappa1 + kappa2 + 1 <= n (the interaction scales as 1/R^n):
+
+        - 1: monopole-monopole
+        - 2: + monopole-dipole
+        - 3: + monopole-quadrupole and dipole-dipole
+        - 4: + dipole-quadrupole
+        - 5: + quadrupole-quadrupole
+
+        The monopole terms vanish for neutral atoms and only contribute for charged species like
+        Rydberg ions. Default is 3.
+
         Args:
             order: The interaction order to set for the pair system.
-                The order must be 3, 4, or 5.
+                The order must be between 1 and 5.
 
         """
         self._interaction_order = order

@@ -195,6 +195,8 @@ class GreenTensorInterpolator:
     ) -> PintArray | NDArray:
         """Get the Green tensor in the given coordinates for the given ranks kappa1, kappa2 and transition energy.
 
+        kappa = 0 corresponds to the monopole operator (the charge) with the basis
+            - spherical: [p_{0,0}]
         kappa = 1 corresponds to dipole operator with the basis
             - spherical: [p_{1,-1}, p_{1,0}, p_{1,1}]
         kappa = 2 corresponds to quadrupole operator with the basis
@@ -225,7 +227,7 @@ class GreenTensorInterpolator:
         omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, "energy")
 
         entries_cpp = self._cpp.get_spherical_entries(kappa1, kappa2)
-        kappa_to_dim = {1: 3, 2: 6}
+        kappa_to_dim = {0: 1, 1: 3, 2: 6}
         dim1, dim2 = kappa_to_dim[kappa1], kappa_to_dim[kappa2]
         tensor_au = np.zeros((dim1, dim2), dtype=complex)
         for entry_cpp in entries_cpp:

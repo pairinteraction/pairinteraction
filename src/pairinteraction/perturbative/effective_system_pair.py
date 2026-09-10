@@ -203,10 +203,10 @@ class EffectiveSystemPair:
         delta_n = self._delta_n if self._delta_n is not None else 7
         delta_l = self._delta_l
         if delta_l is None:
-            delta_l = self.perturbation_order * (self.interaction_order - 2)
+            delta_l = self.perturbation_order * max(self.interaction_order - 2, 1)
         delta_m = self._delta_m
         if delta_m is None and self._delta_l is None and self._are_fields_along_z:
-            delta_m = self.perturbation_order * (self.interaction_order - 2)
+            delta_m = self.perturbation_order * max(self.interaction_order - 2, 1)
 
         basis_atoms: list[BasisAtom] = []
         use_real = isinstance(self, EffectiveSystemPairReal)
@@ -456,7 +456,7 @@ class EffectiveSystemPair:
 
         Args:
             order: The interaction order to set for the pair system.
-                The order must be 3, 4, or 5.
+                The order must be between 1 and 5, see :meth:`pairinteraction.SystemPair.set_interaction_order`.
 
         """
         self._delete_created()

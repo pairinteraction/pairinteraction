@@ -17,6 +17,7 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
+#include <array>
 #include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
@@ -103,6 +104,90 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
         transformation.adjoint() * reference_matrix * transformation;
 
     DOCTEST_CHECK(transformed_system.get_matrix().isApprox(expected_matrix, 1e-11));
+}
+
+DOCTEST_TEST_CASE("atom ion pair interaction") {
+    // The interaction of a Rydberg atom with a Rydberg ion in a single state must reproduce the
+    // interaction of the Rydberg atom with a classical point charge implemented in SystemAtom
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    auto basis_atom = BasisAtomCreator<double>()
+                          .set_species("Rb")
+                          .restrict_quantum_number("n", 58, 62)
+                          .restrict_quantum_number("l", 0, 3)
+                          .restrict_quantum_number("m", 0.5, 0.5)
+                          .create(database);
+
+    auto ket_ion = KetAtomCreator()
+                       .set_species("Sr88_ion")
+                       .set_quantum_number("n", 60)
+                       .set_quantum_number("l", 0)
+                       .set_quantum_number("j", 0.5)
+                       .set_quantum_number("m", 0.5)
+                       .create(database);
+    auto basis_ion = BasisAtomCreator<double>().add_ket(ket_ion).create(database);
+    DOCTEST_REQUIRE(basis_ion->get_number_of_states() == 1);
+
+    std::array<double, 3> distance_vector{0, 0, 3 * UM_IN_ATOMIC_UNITS};
+
+    for (int order : {2, 3}) {
+        // Pair system of the atom and the ion
+        SystemAtom<double> system_atom(basis_atom);
+        SystemAtom<double> system_ion(basis_ion);
+        auto basis_pair = BasisPairCreator<double>().add(system_atom).add(system_ion).create();
+        DOCTEST_REQUIRE(basis_pair->get_number_of_states() == basis_atom->get_number_of_states());
+
+        SystemPair<double> system_pair(basis_pair);
+        system_pair.set_interaction_order(order);
+        system_pair.set_distance_vector(distance_vector);
+        system_pair.diagonalize(diagonalizer);
+        Eigen::VectorXd energies_pair = system_pair.get_eigenenergies();
+        energies_pair.array() -= ket_ion->get_energy();
+
+        // Atom in the field of a classical point charge
+        SystemAtom<double> system_reference(basis_atom);
+        system_reference.set_ion_charge(1);
+        system_reference.set_ion_interaction_order(order);
+        system_reference.set_ion_distance_vector(distance_vector);
+        system_reference.diagonalize(diagonalizer);
+        Eigen::VectorXd energies_reference = system_reference.get_eigenenergies();
+
+        DOCTEST_REQUIRE(energies_pair.size() == energies_reference.size());
+        DOCTEST_CHECK((energies_pair - energies_reference).cwiseAbs().maxCoeff() < 1e-12);
+
+        // The interaction must have a significant effect
+        SystemAtom<double> system_unperturbed(basis_atom);
+        system_unperturbed.diagonalize(diagonalizer);
+        DOCTEST_CHECK((energies_pair - system_unperturbed.get_eigenenergies()).norm() *
+                          HARTREE_IN_GHZ >
+                      1e-3);
+    }
+}
+
+DOCTEST_TEST_CASE("ion ion pair interaction") {
+    // Two ions in a single state each repel each other via the Coulomb interaction Z1*Z2/R
+    auto &database = Database::get_global_instance();
+
+    auto ket_ion = KetAtomCreator()
+                       .set_species("Sr88_ion")
+                       .set_quantum_number("n", 60)
+                       .set_quantum_number("l", 0)
+                       .set_quantum_number("j", 0.5)
+                       .set_quantum_number("m", 0.5)
+                       .create(database);
+    auto basis_ion = BasisAtomCreator<double>().add_ket(ket_ion).create(database);
+    SystemAtom<double> system_ion(basis_ion);
+    auto basis_pair = BasisPairCreator<double>().add(system_ion).add(system_ion).create();
+    DOCTEST_REQUIRE(basis_pair->get_number_of_states() == 1);
+
+    for (double distance : {1 * UM_IN_ATOMIC_UNITS, 3 * UM_IN_ATOMIC_UNITS}) {
+        SystemPair<double> system_pair(basis_pair);
+        system_pair.set_interaction_order(3);
+        system_pair.set_distance_vector({0, 0, distance});
+        double energy = system_pair.get_matrix().coeff(0, 0) - 2 * ket_ion->get_energy();
+        DOCTEST_CHECK(energy == doctest::Approx(1 / distance).epsilon(1e-6));
+    }
 }
 
 #ifdef WITH_LAPACKE
