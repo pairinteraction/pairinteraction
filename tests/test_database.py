@@ -198,5 +198,6 @@ def test_obtaining_kets(pi_module: PairinteractionModule, species: str, quantum_
     assert ket.f == quantum_number_f
     assert ket.m == quantum_number_m
     assert ket.s == quantum_number_s if not is_mqdt else abs(ket.s - quantum_number_s) < 0.5
+    assert ket.i_core == quantum_number_i
 
     # TODO check repr(ket) (once the mqdt databases are updated)

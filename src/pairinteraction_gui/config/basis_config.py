@@ -30,6 +30,10 @@ class QuantumNumberRestrictions(TypedDict, total=False):
     s: tuple[float, float]
     j: tuple[float, float]
     l_ryd: tuple[float, float]
+    j_ryd: tuple[float, float]
+    l_core: tuple[float, float]
+    j_core: tuple[float, float]
+    f_core: tuple[float, float]
     f: tuple[float, float]
     m: tuple[float, float]
 

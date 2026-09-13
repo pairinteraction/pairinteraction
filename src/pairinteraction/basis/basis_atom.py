@@ -63,6 +63,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         j: tuple[float, float] | None = None,
         l_ryd: tuple[float, float] | None = None,
         j_ryd: tuple[float, float] | None = None,
+        l_core: tuple[float, float] | None = None,
+        j_core: tuple[float, float] | None = None,
+        f_core: tuple[float, float] | None = None,
         f: tuple[float, float] | None = None,
         m: tuple[float, float] | None = None,
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
@@ -85,6 +88,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             j: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             l_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             j_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            l_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            j_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            f_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             f: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             m: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             energy: tuple of (min, max) value for the energy. Default None, i.e. add all available states.
@@ -118,6 +124,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
+            "l_core": l_core,
+            "j_core": j_core,
+            "f_core": f_core,
             "f": f,
             "m": m,
         }
@@ -205,6 +214,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         delta_j: float | None = None,
         delta_l_ryd: float | None = None,
         delta_j_ryd: float | None = None,
+        delta_l_core: float | None = None,
+        delta_j_core: float | None = None,
+        delta_f_core: float | None = None,
         delta_f: int | None = None,
         delta_m: int | None = None,
         delta_energy: float | PintFloat | None = None,
@@ -246,6 +258,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 Default None means no restriction on l_ryd.
             delta_j_ryd: Half-width of the j_ryd window.
                 Default None means no restriction on j_ryd.
+            delta_l_core: Half-width of the l_core window.
+                Default None means no restriction on l_core.
+            delta_j_core: Half-width of the j_core window.
+                Default None means no restriction on j_core.
+            delta_f_core: Half-width of the f_core window.
+                Default None means no restriction on f_core.
             delta_f: Half-width of the f window (integer steps).
                 Default None means no restriction on f.
             delta_m: Half-width of the m window (integer steps).
@@ -303,6 +321,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             j=get_range("j", delta_j),
             l_ryd=get_range("l_ryd", delta_l_ryd),
             j_ryd=get_range("j_ryd", delta_j_ryd),
+            l_core=get_range("l_core", delta_l_core),
+            j_core=get_range("j_core", delta_j_core),
+            f_core=get_range("f_core", delta_f_core),
             f=get_range("f", delta_f),
             m=get_range("m", delta_m),
             energy=get_range("energy", delta_energy),  # type: ignore [arg-type]

@@ -56,6 +56,14 @@ class KetAtom(KetBase):
         You can still provide them to specify the atomic basis state,
         whose expectation value is closest to the provided value.
 
+    All the quantum numbers of the three coupling schemes are available as attributes:
+        General angular quantum numbers: l_ryd, s_ryd, l_core, s_core and i_core.
+        LS coupling of all valence electrons: l, s, j.
+        JJ coupling of the electrons: j_ryd, j_core.
+        FJ coupling of the hyperfine structure of the ionic core: f_core.
+        Each of these has a companion attribute with a "_std" suffix holding its standard deviation,
+        which is zero for quantum numbers that are exact.
+
     Examples:
         >>> import pairinteraction as pi
         >>> ket_s = pi.KetAtom("Rb", n=60, l=0, m=0.5)
@@ -89,6 +97,9 @@ class KetAtom(KetBase):
         j: float | None = None,
         l_ryd: float | None = None,
         j_ryd: float | None = None,
+        l_core: float | None = None,
+        j_core: float | None = None,
+        f_core: float | None = None,
         f: float | None = None,
         m: float | None = None,
         energy: float | PintFloat | None = None,
@@ -108,6 +119,9 @@ class KetAtom(KetBase):
             j: See attribute. Default None, i.e. load from the database.
             l_ryd: See attribute. Default None, i.e. load from the database.
             j_ryd: See attribute. Default None, i.e. load from the database.
+            l_core: See attribute. Default None, i.e. load from the database.
+            j_core: See attribute. Default None, i.e. load from the database.
+            f_core: See attribute. Default None, i.e. load from the database.
             f: See attribute. Default None, i.e. load from the database.
             m: See attribute. This should always be provided.
             energy: See attribute. Default None, i.e. load from the database.
@@ -135,6 +149,9 @@ class KetAtom(KetBase):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
+            "l_core": l_core,
+            "j_core": j_core,
+            "f_core": f_core,
             "parity": parity_to_int(parity) if parity is not None else None,
         }
         for name, value in quantum_numbers.items():
@@ -269,9 +286,39 @@ class KetAtom(KetBase):
         return self._cpp.get_quantum_number("l_ryd")
 
     @property
+    def s_ryd(self) -> float:
+        """The expectation value of the spin quantum number s_{Ryd} of the Rydberg electron."""
+        return self._cpp.get_quantum_number("s_ryd")
+
+    @property
     def j_ryd(self) -> float:
         """The expectation value of the total angular quantum number j_{Ryd} of the Rydberg electron."""
         return self._cpp.get_quantum_number("j_ryd")
+
+    @property
+    def l_core(self) -> float:
+        """The expectation value of the orbital quantum number l_{core} of the core electron."""
+        return self._cpp.get_quantum_number("l_core")
+
+    @property
+    def s_core(self) -> float:
+        """The expectation value of the spin quantum number s_{core} of the core electron."""
+        return self._cpp.get_quantum_number("s_core")
+
+    @property
+    def j_core(self) -> float:
+        """The expectation value of the total angular quantum number j_{core} of the core electron."""
+        return self._cpp.get_quantum_number("j_core")
+
+    @property
+    def i_core(self) -> float:
+        """The expectation value of the nuclear spin quantum number i_{core} of the ionic core."""
+        return self._cpp.get_quantum_number("i_core")
+
+    @property
+    def f_core(self) -> float:
+        """The expectation value of the total momentum quantum number f_{core} of the ionic core."""
+        return self._cpp.get_quantum_number("f_core")
 
     @property
     def nui_std(self) -> float:
@@ -299,19 +346,48 @@ class KetAtom(KetBase):
         return self._cpp.get_quantum_number_std("l_ryd")
 
     @property
+    def s_ryd_std(self) -> float:
+        """The standard deviation of the spin quantum number s_{Ryd} of the Rydberg electron."""
+        return self._cpp.get_quantum_number_std("s_ryd")
+
+    @property
     def j_ryd_std(self) -> float:
         """The standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron."""
         return self._cpp.get_quantum_number_std("j_ryd")
 
     @property
-    def is_j_total_momentum(self) -> bool:
-        """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number."""
-        return bool(self._cpp.get_quantum_number("is_j_total_momentum"))
+    def l_core_std(self) -> float:
+        """The standard deviation of the orbital quantum number l_{core} of the core electron."""
+        return self._cpp.get_quantum_number_std("l_core")
 
     @property
-    def is_calculated_with_mqdt(self) -> bool:
-        """Whether the state was calculated with multi-channel quantum defect theory."""
-        return bool(self._cpp.get_quantum_number("is_calculated_with_mqdt"))
+    def s_core_std(self) -> float:
+        """The standard deviation of the spin quantum number s_{core} of the core electron."""
+        return self._cpp.get_quantum_number_std("s_core")
+
+    @property
+    def j_core_std(self) -> float:
+        """The standard deviation of the total angular quantum number j_{core} of the core electron."""
+        return self._cpp.get_quantum_number_std("j_core")
+
+    @property
+    def i_core_std(self) -> float:
+        """The standard deviation of the nuclear spin quantum number i_{core} of the ionic core."""
+        return self._cpp.get_quantum_number_std("i_core")
+
+    @property
+    def f_core_std(self) -> float:
+        """The standard deviation of the total momentum quantum number f_{core} of the ionic core."""
+        return self._cpp.get_quantum_number_std("f_core")
+
+    @property
+    def is_j_total_momentum(self) -> bool:
+        """Whether j is the total momentum quantum number, otherwise f is the total momentum quantum number.
+
+        Without a nuclear spin there is no hyperfine coupling, thus f = j and j is the total momentum
+        quantum number.
+        """
+        return bool(self.i_core == 0)
 
     @property
     def underspecified_channel_contribution(self) -> float:
