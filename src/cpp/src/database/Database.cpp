@@ -700,7 +700,6 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
-    double min_quantum_number_nu = std::numeric_limits<double>::max();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
         set_task_status("Constructing atomic basis...");
@@ -721,29 +720,10 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             }
             last_energy = energy;
 
-            if (auto it = quantum_numbers.values.find("nu"); it != quantum_numbers.values.end()) {
-                min_quantum_number_nu = std::min(min_quantum_number_nu, it->second);
-            }
-
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom>(
                 typename KetAtom::Private(), energy, species, std::move(quantum_numbers.values),
                 std::move(quantum_numbers.stds), *this, id));
-        }
-    }
-
-    // Show a warning for low-lying states
-    if (min_quantum_number_nu < 25) {
-        if (species.ends_with("_mqdt")) {
-            SPDLOG_WARN("The multi-channel quantum defect theory might produce inaccurate results "
-                        "for effective principal quantum numbers < 25. The models get increasingly "
-                        "unreliable for small principal quantum numbers, leading to inaccurate "
-                        "matrix elements and energies. Due to missing data, even some states might "
-                        "not be present.");
-        } else {
-            SPDLOG_WARN(
-                "The single-channel quantum defect theory can be inaccurate for effective "
-                "principal quantum numbers < 25. This can lead to inaccurate matrix elements.");
         }
     }
 

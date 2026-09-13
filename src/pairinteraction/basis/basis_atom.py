@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 import numpy as np
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
 
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
+
+logger = logging.getLogger(__name__)
 
 
 class BasisAtom(BasisBase[KetAtom, StateAtom]):
@@ -162,6 +165,33 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
         self._cpp = creator.create(database._cpp)
         self._post_init()
+        self._warn_about_low_lying_states()
+
+    def _warn_about_low_lying_states(self) -> None:
+        """Warn if the basis reaches into the regime where quantum defect theory gets unreliable.
+
+        Only the lowest-energy ket is inspected: the kets of a basis are sorted by energy and
+        E=I-Ry/nu^2 grows monotonically with nu, so it is a good proxy for the smallest nu of the
+        basis, whereas materializing every ket just for this check would be expensive.
+        """
+        min_reliable_quantum_number_nu = 25
+        nu_min = self.get_ket(0).nu
+        if nu_min >= min_reliable_quantum_number_nu:
+            return
+        if self.species.endswith("_mqdt"):
+            logger.warning(
+                "The multi-channel quantum defect theory might produce inaccurate results for effective principal "
+                "quantum numbers < %d. The models get increasingly unreliable for small principal quantum numbers, "
+                "leading to inaccurate matrix elements and energies. Due to missing data, even some states might "
+                "not be present.",
+                min_reliable_quantum_number_nu,
+            )
+        else:
+            logger.warning(
+                "The single-channel quantum defect theory can be inaccurate for effective principal quantum "
+                "numbers < %d. This can lead to inaccurate matrix elements.",
+                min_reliable_quantum_number_nu,
+            )
 
     @classmethod
     def from_kets(
