@@ -5,8 +5,10 @@
 
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/QuantumNumberNotAvailableError.hpp"
 
 #include <doctest/doctest.h>
+#include <string>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a ket for rubidium") {
@@ -60,6 +62,24 @@ DOCTEST_TEST_CASE("quantum number std fallback") {
                         .create(database);
     DOCTEST_CHECK(ket_mqdt->get_quantum_number_std("l") > 0);
     DOCTEST_CHECK(ket_mqdt->get_quantum_number_std("n") == 0);
+}
+
+DOCTEST_TEST_CASE("unavailable quantum number") {
+    Database &database = Database::get_global_instance();
+    auto ket = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);
+
+    // The states table of Rb has no column for this quantum number (here a misspelling of "nui"),
+    DOCTEST_CHECK_THROWS_AS(ket->get_quantum_number("nu_i"), QuantumNumberNotAvailableError);
+    DOCTEST_CHECK_THROWS_AS(ket->get_quantum_number_std("nu_i"), QuantumNumberNotAvailableError);
+
+    // The error names the quantum number and the species, so that a caller can react to them.
+    try {
+        ket->get_quantum_number("nu_i");
+    } catch (const QuantumNumberNotAvailableError &e) {
+        DOCTEST_CHECK(e.get_name() == "nu_i");
+        DOCTEST_CHECK(e.get_species() == "Rb");
+        DOCTEST_CHECK(std::string(e.what()).find("nu_i") != std::string::npos);
+    }
 }
 
 DOCTEST_TEST_CASE("test for equality") {

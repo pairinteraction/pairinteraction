@@ -3,6 +3,7 @@
 
 #include "pairinteraction/ket/KetAtom.hpp"
 
+#include "pairinteraction/ket/QuantumNumberNotAvailableError.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <string>
@@ -23,10 +24,17 @@ Database &KetAtom::get_database() const { return database; }
 size_t KetAtom::get_id_in_database() const { return id_in_database; }
 
 double KetAtom::get_quantum_number(const std::string &name) const {
-    return quantum_numbers.at(name);
+    auto it = quantum_numbers.find(name);
+    if (it == quantum_numbers.end()) {
+        throw QuantumNumberNotAvailableError(name, species);
+    }
+    return it->second;
 }
 
 double KetAtom::get_quantum_number_std(const std::string &name) const {
+    if (!quantum_numbers.contains(name)) {
+        throw QuantumNumberNotAvailableError(name, species);
+    }
     auto it = quantum_numbers_std.find(name);
     return it != quantum_numbers_std.end() ? it->second : 0;
 }
