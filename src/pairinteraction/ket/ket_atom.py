@@ -186,6 +186,33 @@ class KetAtom(KetBase):
         database_cpp = self._cpp.get_database()
         return Database._from_cpp_object(database_cpp)
 
+    def get_quantum_number(self, name: str) -> float:
+        """Return the quantum number with the given name.
+
+        Args:
+            name: The name of the quantum number, e.g. "n", "s", "l_ryd", "j_core".
+
+        Returns:
+            The value of the quantum number.
+
+        """
+        return self._cpp.get_quantum_number(name)
+
+    def get_quantum_number_std(self, name: str) -> float:
+        """Return the standard deviation of the quantum number with the given name.
+
+        Quantum numbers that are exact (i.e. that the database does not store a standard deviation for)
+        have a standard deviation of zero.
+
+        Args:
+            name: The name of the quantum number, e.g. "n", "s", "l_ryd", "j_core".
+
+        Returns:
+            The standard deviation of the quantum number.
+
+        """
+        return self._cpp.get_quantum_number_std(name)
+
     @property
     def m(self) -> float:
         """The magnetic quantum number m (int or half-int)."""
