@@ -42,6 +42,10 @@ class QuantumNumbers(TypedDict, total=False):
     s: float
     j: float
     l_ryd: float
+    j_ryd: float
+    l_core: float
+    j_core: float
+    f_core: float
     f: float
     m: float
 

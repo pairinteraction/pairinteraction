@@ -23,7 +23,7 @@ database repositories, both created with our tool RydState_:
 You can also manually download the databases from database-sqdt_ and database-mqdt_. Simply download the zip file of the
 species you are interested in and extract it. Alternatively, you can create your own custom database (see
 https://github.com/pairinteraction/database-sqdt for an example on how to create a database for PairInteraction). Then
-move the extracted folder (e.g. ``Rb_v1.2``) to the cache directory of PairInteraction inside the
+move the extracted folder (e.g. ``Rb_v2.0``) to the cache directory of PairInteraction inside the
 ``pairinteraction/database/tables/`` directory. On Linux, this is usually located at
 ``~/.cache/pairinteraction/database/tables/``. For other platforms, you can use our command line interface to find the
 directory:
@@ -37,9 +37,9 @@ Your final directory structure should look like this:
 .. code-block:: bash
 
     ~/.cache/pairinteraction/database/tables/
-    ├── misc_v1.2
+    ├── misc_v2.0
     │   └── wigner.parquet
-    ├── Rb_v1.2
+    ├── Rb_v2.0
     │   ├── states.parquet
     │   ├── matrix_elements_d.parquet
     │   ├── matrix_elements_...

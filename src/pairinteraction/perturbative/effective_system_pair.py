@@ -215,7 +215,7 @@ class EffectiveSystemPair:
             nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])
             n_range = (int(np.min(nlfm[0])) - delta_n, int(np.max(nlfm[0])) + delta_n)
             l_range = (np.min(nlfm[1]) - delta_l, np.max(nlfm[1]) + delta_l)
-            if any(ket.is_calculated_with_mqdt for ket in kets) and self._delta_l is None:
+            if any(ket.l_std != 0 for ket in kets) and self._delta_l is None:
                 # for mqdt we increase the default delta_l by 1 to take into account the variance ...
                 l_range = (np.min(nlfm[1]) - delta_l - 1, np.max(nlfm[1]) + delta_l + 1)
             m_range = (np.min(nlfm[3]) - delta_m, np.max(nlfm[3]) + delta_m) if delta_m is not None else None

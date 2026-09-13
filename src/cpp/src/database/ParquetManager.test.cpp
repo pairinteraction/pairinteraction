@@ -28,16 +28,16 @@ public:
 
         if (remote_url == "/test/repo/path") {
             // This is a repo path request for a single release, return JSON with assets
-            result.body = make_release("1.2").dump();
+            result.body = make_release("2.1").dump();
         } else if (remote_url == "/test/repo/releases") {
             // This is a repo path request for a list of releases. The latest release only
             // provides tables whose major version differs from COMPATIBLE_DATABASE_VERSION_MAJOR
             // and is thus incompatible, the older ones are compatible. In addition, the oldest
             // release contains an asset that is not provided anymore by newer releases.
             nlohmann::json releases = nlohmann::json::array();
-            releases.push_back(make_release("2.0"));
-            releases.push_back(make_release("1.2"));
-            releases.push_back(make_release("1.1", {"misc", "retired"}));
+            releases.push_back(make_release("3.0"));
+            releases.push_back(make_release("2.1"));
+            releases.push_back(make_release("2.0", {"misc", "retired"}));
             result.body = releases.dump();
         } else if (remote_url == "/test/repo/releases_unpublished") {
             // This is a repo path request for a list of releases whose latest entries are a draft
@@ -47,13 +47,13 @@ public:
             nlohmann::json draft;
             draft["draft"] = true;
 
-            nlohmann::json prerelease = make_release("1.4");
+            nlohmann::json prerelease = make_release("2.4");
             prerelease["prerelease"] = true;
 
             nlohmann::json releases = nlohmann::json::array();
             releases.push_back(draft);
             releases.push_back(prerelease);
-            releases.push_back(make_release("1.2"));
+            releases.push_back(make_release("2.1"));
             result.body = releases.dump();
         } else if (remote_url == "/test/repo/releases_invalid") {
             // This is a repo path request whose response is not valid JSON
@@ -64,7 +64,7 @@ public:
         } else {
             // This is the file download request
             std::string content = "updated_file_content";
-            std::string filename = "misc_v1.2/wigner.parquet";
+            std::string filename = "misc_v2.1/wigner.parquet";
 
             mz_zip_archive zip_archive{};
             size_t zip_size = 0;
@@ -105,10 +105,6 @@ private:
 TEST_CASE("ParquetManager functionality with mocked downloader") {
     MockDownloader downloader;
     auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.0");
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.1");
-    std::ofstream(test_dir / "tables" / "misc_v1.0" / "wigner.parquet").close();
-    std::ofstream(test_dir / "tables" / "misc_v1.1" / "wigner.parquet").close();
     duckdb::DuckDB db(nullptr);
     duckdb::Connection con(db);
 
@@ -126,6 +122,16 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         return (test_dir / "tables" / fmt::format("misc_v{}", version) / "wigner.parquet").string();
     };
 
+    // Create a local wigner table of the misc asset of the given version
+    auto add_local_table = [&](const std::string &version) {
+        std::filesystem::create_directories(test_dir / "tables" / fmt::format("misc_v{}", version));
+        std::ofstream(wigner_path(version)).close();
+    };
+
+    // Provide a compatible version and an incompatible version with a higher minor version
+    add_local_table("2.0");
+    add_local_table("1.4");
+
     SUBCASE("Check missing table") {
         auto manager = make_manager({});
 
@@ -136,17 +142,22 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
     }
 
     SUBCASE("Check version parsing") {
+        // Provide a second compatible version in addition
+        add_local_table("2.2");
+
         auto manager = make_manager({});
 
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.1"));
+        // The newest compatible version must be used, neither the oldest compatible version nor
+        // the incompatible version with the highest minor version
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.2"));
     }
 
     SUBCASE("Check update table") {
         auto manager = make_manager({"/test/repo/path"});
 
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.2"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.1"));
 
-        std::ifstream in(wigner_path("1.2"), std::ios::binary);
+        std::ifstream in(wigner_path("2.1"), std::ios::binary);
         std::stringstream buffer;
         buffer << in.rdbuf();
         CHECK(buffer.str() == "updated_file_content");
@@ -156,7 +167,7 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         auto manager = make_manager({"/test/repo/releases"});
 
         // The latest compatible release must be used, not the latest release
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.2"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.1"));
 
         // Assets that are only provided by older releases must not be used
         CHECK_THROWS_WITH_AS(
@@ -171,14 +182,14 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         // incomplete set of tables
         auto manager = make_manager({"/test/repo/releases", "/test/repo/releases_invalid"});
 
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.1"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.0"));
     }
 
     SUBCASE("Check update table if the latest releases are unpublished") {
         auto manager = make_manager({"/test/repo/releases_unpublished"});
 
         // The latest published release must be used, neither the draft nor the pre-release
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.2"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.1"));
     }
 
     std::filesystem::remove_all(test_dir);
