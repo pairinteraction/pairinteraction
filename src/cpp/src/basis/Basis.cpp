@@ -520,9 +520,8 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::transformed(
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) const {
-    // TODO why is "numerical_precision = 100 * std::sqrt(coefficients.rows()) *
-    // std::numeric_limits<real_t>::epsilon()" too small for figuring out whether m is conserved?
-    real_t numerical_precision = 0.001;
+    const real_t numerical_precision =
+        100 * std::sqrt(coefficients.rows()) * std::numeric_limits<real_t>::epsilon();
 
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
@@ -532,12 +531,11 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
     }
 
     // Apply the transformation
-    // If a quantum number turns out to be conserved by the transformation, it will be
-    // rounded to the nearest half integer to avoid loss of numerical_precision.
     set_task_status("Applying basis transformation...");
     transformed->coefficients = coefficients * transformation;
 
     Eigen::SparseMatrix<real_t> probs = transformation.cwiseAbs2().transpose();
+    Eigen::VectorX<real_t> norm = probs * Eigen::VectorX<real_t>::Ones(probs.cols());
 
     set_task_status("Updating transformed quantum numbers...");
     {
@@ -545,12 +543,14 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
                                                             state_index_to_quantum_number_f.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
         transformed->state_index_to_quantum_number_f.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->state_index_to_quantum_number_f.size(); ++i) {
-            if (diff[i] < numerical_precision) {
-                transformed->state_index_to_quantum_number_f[i] = std::round(val[i] * 2) / 2;
+            const real_t mean = val[i] / norm[i];
+            const real_t mean_sq = sq[i] / norm[i];
+            const real_t variance = std::abs(mean_sq - mean * mean);
+            if (variance < numerical_precision * std::max(static_cast<real_t>(1), mean_sq)) {
+                transformed->state_index_to_quantum_number_f[i] = std::round(mean * 2) / 2;
             } else {
                 transformed->state_index_to_quantum_number_f[i] =
                     std::numeric_limits<real_t>::max();
@@ -564,12 +564,14 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
                                                             state_index_to_quantum_number_m.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
         transformed->state_index_to_quantum_number_m.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->state_index_to_quantum_number_m.size(); ++i) {
-            if (diff[i] < numerical_precision) {
-                transformed->state_index_to_quantum_number_m[i] = std::round(val[i] * 2) / 2;
+            const real_t mean = val[i] / norm[i];
+            const real_t mean_sq = sq[i] / norm[i];
+            const real_t variance = std::abs(mean_sq - mean * mean);
+            if (variance < numerical_precision * std::max(static_cast<real_t>(1), mean_sq)) {
+                transformed->state_index_to_quantum_number_m[i] = std::round(mean * 2) / 2;
             } else {
                 transformed->state_index_to_quantum_number_m[i] =
                     std::numeric_limits<real_t>::max();
@@ -586,12 +588,14 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
         }
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
         transformed->state_index_to_parity.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->state_index_to_parity.size(); ++i) {
-            if (diff[i] < numerical_precision) {
-                transformed->state_index_to_parity[i] = static_cast<Parity>(std::lround(val[i]));
+            const real_t mean = val[i] / norm[i];
+            const real_t mean_sq = sq[i] / norm[i];
+            const real_t variance = std::abs(mean_sq - mean * mean);
+            if (variance < numerical_precision * std::max(static_cast<real_t>(1), mean_sq)) {
+                transformed->state_index_to_parity[i] = static_cast<Parity>(std::lround(mean));
             } else {
                 transformed->state_index_to_parity[i] = Parity::UNKNOWN;
                 transformed->_has_parity = false;

@@ -13,8 +13,10 @@
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 
+#include <cmath>
 #include <doctest/doctest.h>
 #include <stdexcept>
+#include <vector>
 
 namespace pairinteraction {
 
@@ -277,6 +279,79 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
             DOCTEST_CHECK(std::abs(dipole - 135.04130) < 1e-3);
         }
     }
+}
+
+DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized coefficients") {
+    // The diagonalizers prune small entries of the eigenvectors so that the columns of the
+    // resulting transformation matrix are normalized only up to a defect of the order of rtol^2.
+    // The detection of conserved quantum numbers must not be spoiled by this defect. Otherwise,
+    // the detection would fail for a large rtol or a low floating point precision.
+    Database &database = Database::get_global_instance();
+    auto unsorted_basis = BasisAtomCreator<double>()
+                              .set_species("Rb")
+                              .restrict_quantum_number("n", 60, 60)
+                              .restrict_quantum_number("l", 0, 3)
+                              .create(database);
+    auto basis =
+        unsorted_basis->transformed(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+    DOCTEST_REQUIRE(basis->has_quantum_number_m());
+
+    auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
+    constexpr double defect = 1e-2; // the squared norm of each column is 1 - defect
+    const double scale = std::sqrt(1 - defect);
+    const double sqrt_half = std::sqrt(0.5);
+
+    // Superimpose pairs of states that have the same m, mimicking eigenvectors that are confined
+    // to a block of constant m, and scale the columns so that they are not exactly normalized
+    std::vector<Eigen::Triplet<double>> triplets;
+    for (Eigen::Index i = 0; i < dim;) {
+        auto idx = static_cast<size_t>(i);
+        if (i + 1 < dim &&
+            basis->get_quantum_number_m(idx) == basis->get_quantum_number_m(idx + 1)) {
+            triplets.emplace_back(i, i, scale * sqrt_half);
+            triplets.emplace_back(i + 1, i, scale * sqrt_half);
+            triplets.emplace_back(i, i + 1, scale * sqrt_half);
+            triplets.emplace_back(i + 1, i + 1, -scale * sqrt_half);
+            i += 2;
+        } else {
+            triplets.emplace_back(i, i, scale);
+            i += 1;
+        }
+    }
+    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation(dim, dim);
+    transformation.setFromTriplets(triplets.begin(), triplets.end());
+
+    // Because the transformation does not mix different m, m is still well-defined
+    auto transformed = basis->transformed(transformation);
+    DOCTEST_CHECK(transformed->has_quantum_number_m());
+    for (size_t i = 0; i < transformed->get_number_of_states(); ++i) {
+        DOCTEST_CHECK(transformed->get_quantum_number_m(i) == basis->get_quantum_number_m(i));
+    }
+
+    // If, in contrast, states of different m are superimposed, m is not well-defined anymore
+    Eigen::Index other = 0;
+    while (other < dim &&
+           basis->get_quantum_number_m(0) ==
+               basis->get_quantum_number_m(static_cast<size_t>(other))) {
+        ++other;
+    }
+    DOCTEST_REQUIRE(other < dim);
+    triplets.clear();
+    for (Eigen::Index i = 0; i < dim; ++i) {
+        if (i != 0 && i != other) {
+            triplets.emplace_back(i, i, scale);
+        }
+    }
+    triplets.emplace_back(0, 0, scale * sqrt_half);
+    triplets.emplace_back(other, 0, scale * sqrt_half);
+    triplets.emplace_back(0, other, scale * sqrt_half);
+    triplets.emplace_back(other, other, -scale * sqrt_half);
+    Eigen::SparseMatrix<double, Eigen::RowMajor> mixing_transformation(dim, dim);
+    mixing_transformation.setFromTriplets(triplets.begin(), triplets.end());
+
+    auto mixed = basis->transformed(mixing_transformation);
+    DOCTEST_CHECK_FALSE(mixed->has_quantum_number_m());
+    DOCTEST_CHECK_THROWS_AS(mixed->get_quantum_number_m(0), std::invalid_argument);
 }
 
 } // namespace pairinteraction
