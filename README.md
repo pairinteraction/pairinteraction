@@ -43,6 +43,19 @@ pairinteraction
 [installation-link]: https://www.pairinteraction.org/pairinteraction/stable/installation/installation.html
 [tutorial-link]: https://www.pairinteraction.org/pairinteraction/stable/tutorials/examples_python/quick_start.html
 
+## Supported Species
+
+* **Alkali atoms and hydrogen:** `H`, `Li`, `Na`, `K`, `Rb`, `Cs`
+* **Divalent atoms:** `Sr88_sqdt`, `Sr87_mqdt`, `Sr88_mqdt`, `Yb171_mqdt`, `Yb173_mqdt`, `Yb174_mqdt`
+* **Rydberg ions:** `Sr88_ion`
+
+Species whose identifier ends with `_mqdt` are described by multi-channel quantum defect theory (MQDT), all other species by single-channel quantum defect theory (SQDT).
+For the underlying quantum defects and the publications to cite, see the [quantum defect references][species-publications-link].
+Is your species missing?
+Contributions of quantum defects are very welcome, please do not hesitate to contact us.
+
+[species-publications-link]: https://www.pairinteraction.org/pairinteraction/stable/publications/publications.html
+
 ## Highlights
 
 * For calculating Rydberg pair potentials, the software uses a similar approach to the [old version of PairInteraction](https://github.com/pairinteraction/pairinteraction/tree/v0.9.10), the [Alkali.ne Rydberg Calculator](https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator), and the [rydcalc library](https://github.com/ThompsonLabPrinceton/rydcalc). We optimized the construction and diagonalization of Hamiltonians, typically achieving a **speedup of 5-20x** compared to other implementations.
