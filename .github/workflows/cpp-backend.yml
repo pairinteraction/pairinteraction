@@ -46,7 +46,7 @@ jobs:
             BUILD_ARGS: "-- --keep-going"
           - os: windows-2022
             distro: windows
-            EXTRA_CMAKE_ARGS: -G "Visual Studio 17 2022" -DPython3_FIND_REGISTRY=LAST
+            EXTRA_CMAKE_ARGS: -G "Visual Studio 17 2022"
             CXXFLAGS: "/Ox /arch:AVX2"
             TEST_TARGET: "RUN_TESTS"
             BUILD_ARGS: "--config RelWithDebInfo"
