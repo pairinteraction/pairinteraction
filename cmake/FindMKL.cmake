@@ -31,7 +31,9 @@ except PackageNotFoundError:
   else()
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 MKL_ROOT)
-    list(GET ONEAPI_PATHS_LIST 1 MKL_DIR)
+    list(GET ONEAPI_PATHS_LIST 1 MKL_CONFIG_FILE)
+    # MKL_DIR must be the directory that contains the config file, not the config file itself
+    get_filename_component(MKL_DIR "${MKL_CONFIG_FILE}" DIRECTORY)
     message(STATUS "MKL root determined to be: ${MKL_ROOT}")
     message(STATUS "MKL package config directory determined to be: ${MKL_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${MKL_DIR}")

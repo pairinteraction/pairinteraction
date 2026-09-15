@@ -27,7 +27,9 @@ except PackageNotFoundError:
   else()
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 TBB_ROOT)
-    list(GET ONEAPI_PATHS_LIST 1 TBB_DIR)
+    list(GET ONEAPI_PATHS_LIST 1 TBB_CONFIG_FILE)
+    # TBB_DIR must be the directory that contains the config file, not the config file itself
+    get_filename_component(TBB_DIR "${TBB_CONFIG_FILE}" DIRECTORY)
     message(STATUS "TBB root determined to be: ${TBB_ROOT}")
     message(STATUS "TBB package config directory determined to be: ${TBB_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${TBB_DIR}")
