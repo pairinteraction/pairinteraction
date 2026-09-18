@@ -10,6 +10,7 @@
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/ket/KetNotUniqueError.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
+#include "pairinteraction/ket/QuantumNumberNotAvailableError.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
@@ -76,6 +77,24 @@ static void declare_ket_not_unique_error(nb::module_ &m) {
         exc_type.ptr());
 }
 
+static void declare_quantum_number_not_available_error(nb::module_ &m) {
+    static nb::object exc_type = nb::exception<QuantumNumberNotAvailableError>(
+        m, "QuantumNumberNotAvailableError", PyExc_ValueError);
+    nb::register_exception_translator(
+        [](const std::exception_ptr &p, void *payload) {
+            try {
+                std::rethrow_exception(p);
+            } catch (const QuantumNumberNotAvailableError &e) {
+                auto *type = static_cast<PyObject *>(payload);
+                nb::object exc = nb::borrow(type)(e.what());
+                exc.attr("name") = nb::cast(e.get_name());
+                exc.attr("species") = nb::cast(e.get_species());
+                PyErr_SetObject(type, exc.ptr());
+            }
+        },
+        exc_type.ptr());
+}
+
 void bind_ket(nb::module_ &m) {
     declare_ket(m);
     declare_ket_atom(m);
@@ -83,4 +102,5 @@ void bind_ket(nb::module_ &m) {
     declare_ket_pair<double>(m, "Real");
     declare_ket_pair<std::complex<double>>(m, "Complex");
     declare_ket_not_unique_error(m);
+    declare_quantum_number_not_available_error(m);
 }

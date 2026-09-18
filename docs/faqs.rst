@@ -91,7 +91,7 @@ guide helps to solve problems with the database.
 
   .. code-block:: bash
 
-      $ pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v1.2/Rb_v1.2.zip
+      $ pairinteraction database download https://github.com/pairinteraction/database-sqdt/releases/download/v2.0/Rb_v2.0.zip
 
 - If you see access errors (e.g., **"Rate limit reached ..."**), GitHub might have temporary blocked the download of
   database tables for unauthenticated users for whom very strict `rate limits`_ apply. The rate limits should typically

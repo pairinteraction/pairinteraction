@@ -358,7 +358,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
         nlfm = np.transpose([[ket.n, ket.l, ket.f, ket.m] for ket in kets])
         n_range = (int(np.min(nlfm[0])) - delta_n, int(np.max(nlfm[0])) + delta_n)
         l_range = (np.min(nlfm[1]) - delta_l, np.max(nlfm[1]) + delta_l)
-        if any(ket.is_calculated_with_mqdt for ket in kets):
+        if any(ket.l_std != 0 for ket in kets):
             # for mqdt we increase delta_l by 1 to take into account the variance ...
             l_range = (np.min(nlfm[1]) - delta_l - 1, np.max(nlfm[1]) + delta_l + 1)
         m_range = None

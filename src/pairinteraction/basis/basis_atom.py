@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: LGPL-3.0-or-later
 from __future__ import annotations
 
+import logging
 from typing import TYPE_CHECKING, Any, Literal, overload
 
 import numpy as np
@@ -22,6 +23,8 @@ if TYPE_CHECKING:
 
     from pairinteraction.enums import OperatorType, Parity
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
+
+logger = logging.getLogger(__name__)
 
 
 class BasisAtom(BasisBase[KetAtom, StateAtom]):
@@ -60,6 +63,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         j: tuple[float, float] | None = None,
         l_ryd: tuple[float, float] | None = None,
         j_ryd: tuple[float, float] | None = None,
+        l_core: tuple[float, float] | None = None,
+        j_core: tuple[float, float] | None = None,
+        f_core: tuple[float, float] | None = None,
         f: tuple[float, float] | None = None,
         m: tuple[float, float] | None = None,
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
@@ -82,6 +88,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             j: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             l_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             j_ryd: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            l_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            j_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            f_core: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             f: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             m: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             energy: tuple of (min, max) value for the energy. Default None, i.e. add all available states.
@@ -115,6 +124,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             "j": j,
             "l_ryd": l_ryd,
             "j_ryd": j_ryd,
+            "l_core": l_core,
+            "j_core": j_core,
+            "f_core": f_core,
             "f": f,
             "m": m,
         }
@@ -162,6 +174,33 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
 
         self._cpp = creator.create(database._cpp)
         self._post_init()
+        self._warn_about_low_lying_states()
+
+    def _warn_about_low_lying_states(self) -> None:
+        """Warn if the basis reaches into the regime where quantum defect theory gets unreliable.
+
+        Only the lowest-energy ket is inspected: the kets of a basis are sorted by energy and
+        E=I-Ry/nu^2 grows monotonically with nu, so it is a good proxy for the smallest nu of the
+        basis, whereas materializing every ket just for this check would be expensive.
+        """
+        min_reliable_quantum_number_nu = 25
+        nu_min = self.get_ket(0).nu
+        if nu_min >= min_reliable_quantum_number_nu:
+            return
+        if self.species.endswith("_mqdt"):
+            logger.warning(
+                "The multi-channel quantum defect theory might produce inaccurate results for effective principal "
+                "quantum numbers < %d. The models get increasingly unreliable for small principal quantum numbers, "
+                "leading to inaccurate matrix elements and energies. Due to missing data, even some states might "
+                "not be present.",
+                min_reliable_quantum_number_nu,
+            )
+        else:
+            logger.warning(
+                "The single-channel quantum defect theory can be inaccurate for effective principal quantum "
+                "numbers < %d. This can lead to inaccurate matrix elements.",
+                min_reliable_quantum_number_nu,
+            )
 
     @classmethod
     def from_kets(
@@ -175,6 +214,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         delta_j: float | None = None,
         delta_l_ryd: float | None = None,
         delta_j_ryd: float | None = None,
+        delta_l_core: float | None = None,
+        delta_j_core: float | None = None,
+        delta_f_core: float | None = None,
         delta_f: int | None = None,
         delta_m: int | None = None,
         delta_energy: float | PintFloat | None = None,
@@ -216,6 +258,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 Default None means no restriction on l_ryd.
             delta_j_ryd: Half-width of the j_ryd window.
                 Default None means no restriction on j_ryd.
+            delta_l_core: Half-width of the l_core window.
+                Default None means no restriction on l_core.
+            delta_j_core: Half-width of the j_core window.
+                Default None means no restriction on j_core.
+            delta_f_core: Half-width of the f_core window.
+                Default None means no restriction on f_core.
             delta_f: Half-width of the f window (integer steps).
                 Default None means no restriction on f.
             delta_m: Half-width of the m window (integer steps).
@@ -273,6 +321,9 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             j=get_range("j", delta_j),
             l_ryd=get_range("l_ryd", delta_l_ryd),
             j_ryd=get_range("j_ryd", delta_j_ryd),
+            l_core=get_range("l_core", delta_l_core),
+            j_core=get_range("j_core", delta_j_core),
+            f_core=get_range("f_core", delta_f_core),
             f=get_range("f", delta_f),
             m=get_range("m", delta_m),
             energy=get_range("energy", delta_energy),  # type: ignore [arg-type]

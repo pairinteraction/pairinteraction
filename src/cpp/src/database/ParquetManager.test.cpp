@@ -28,7 +28,7 @@ public:
 
         if (remote_url == "/test/repo/path") {
             // This is a repo path request for a single release, return JSON with assets
-            result.body = make_release("1.2").dump();
+            result.body = make_release("2.1").dump();
         } else if (remote_url == "/test/repo/releases") {
             // This is a repo path request for a list of releases. The latest release only
             // provides tables whose major version differs from COMPATIBLE_DATABASE_VERSION_MAJOR
@@ -64,7 +64,7 @@ public:
         } else {
             // This is the file download request
             std::string content = "updated_file_content";
-            std::string filename = "misc_v1.2/wigner.parquet";
+            std::string filename = "misc_v2.1/wigner.parquet";
 
             mz_zip_archive zip_archive{};
             size_t zip_size = 0;
@@ -105,10 +105,10 @@ private:
 TEST_CASE("ParquetManager functionality with mocked downloader") {
     MockDownloader downloader;
     auto test_dir = std::filesystem::temp_directory_path() / "pairinteraction_test_db";
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.0");
-    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.1");
-    std::ofstream(test_dir / "tables" / "misc_v1.0" / "wigner.parquet").close();
-    std::ofstream(test_dir / "tables" / "misc_v1.1" / "wigner.parquet").close();
+    std::filesystem::create_directories(test_dir / "tables" / "misc_v2.0");
+    std::filesystem::create_directories(test_dir / "tables" / "misc_v1.4");
+    std::ofstream(test_dir / "tables" / "misc_v2.0" / "wigner.parquet").close();
+    std::ofstream(test_dir / "tables" / "misc_v1.4" / "wigner.parquet").close();
     duckdb::DuckDB db(nullptr);
     duckdb::Connection con(db);
 
@@ -138,13 +138,13 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
     SUBCASE("Check version parsing") {
         auto manager = make_manager({});
 
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.1"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.0"));
     }
 
     SUBCASE("Check update table") {
         auto manager = make_manager({"/test/repo/path"});
 
-        CHECK(manager->get_path("misc", "wigner") == wigner_path("1.2"));
+        CHECK(manager->get_path("misc", "wigner") == wigner_path("2.1"));
 
         std::ifstream in(wigner_path("1.2"), std::ios::binary);
         std::stringstream buffer;

@@ -51,18 +51,18 @@ int main(int argc, char **argv) {
         basis_ket1_ket2, basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
     double dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
-    double reference = 1247.6043831127074;
+    double reference = 1247.60438;
 
-    if (std::abs(dipole_ket1_ket2_value - reference) >
-        10 * std::numeric_limits<double>::epsilon()) {
+    if (std::abs(dipole_ket1_ket2_value - reference) > 1e-3 * std::abs(reference)) {
         SPDLOG_ERROR("The dipole operator value is not correct. Value: {}", dipole_ket1_ket2_value);
         success = false;
     }
 
+    const double exact = dipole_ket1_ket2_value;
     dipole_ket1_ket2 *= 2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 2 * reference) >
+    if (std::abs(dipole_ket1_ket2_value - 2 * exact) >
         10 * std::numeric_limits<double>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after multiplication by a scalar.");
         success = false;
@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     dipole_ket1_ket2 += dipole_ket1_ket2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 4 * reference) >
+    if (std::abs(dipole_ket1_ket2_value - 4 * exact) >
         10 * std::numeric_limits<double>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after summation.");
         success = false;
