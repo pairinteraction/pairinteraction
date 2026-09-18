@@ -31,13 +31,13 @@ In addition, you need to adjust your path environment variable if you want to us
 In order to smoothly run all the commands described on this page, add the following paths to your path environment
 variable:
 
-======================= ========================================================
+======================= =======================================================================
 Tool                    Path to add
-======================= ========================================================
+======================= =======================================================================
 Cmake                   ``C:\\path\to\cmake\bin``
-VCPKG                   ``C:\\path\to\vcpkg``
-clang-tidy clang-format ``C:\\path\to\VisualStudio\Community\VC\Tools\Llvm\bin``
-======================= ========================================================
+VCPKG                   ``C:\\path\to\VisualStudio\version_number\Community\VC\vcpkg``
+clang-tidy clang-format ``C:\\path\to\VisualStudio\version_number\Community\VC\Tools\Llvm\bin``
+======================= =======================================================================
 
 You can either adjust your environmental variables by using the GUI provided by the operating system, or immediately
 from the command line. If you want to use the Windows GUI, which we highly recommend, enter "environment properties"
