@@ -23,6 +23,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
@@ -67,6 +68,12 @@ void ParquetManager::react_on_error_code(const std::string &context, int error_c
     remote_asset_info.clear();
     SPDLOG_ERROR("{}: status code {}. The download of database tables is disabled.", context,
                  error_code);
+}
+
+void ParquetManager::react_on_invalid_response(const std::string &context) {
+    repo_paths_.clear();
+    remote_asset_info.clear();
+    SPDLOG_ERROR("{}. The download of database tables is disabled.", context);
 }
 
 void ParquetManager::react_on_rate_limit_reached(std::time_t reset_time) {
@@ -144,20 +151,19 @@ void ParquetManager::scan_remote() {
             }
         }
 
-        // Extract the last-modified header from the cached JSON if available
-        std::string last_modified;
-        if (!cached_doc.is_null() && cached_doc.contains("last-modified")) {
-            last_modified = cached_doc["last-modified"].get<std::string>();
+        // Extract the etag header from the cached JSON if available
+        std::string etag;
+        if (!cached_doc.is_null() && cached_doc.contains("etag")) {
+            etag = cached_doc["etag"].get<std::string>();
         }
 
-        // Issue the asynchronous download using the cached last-modified value.
+        // Issue the asynchronous download using the cached etag.
         try {
             downloads.push_back(
-                {endpoint, cache_file, cached_doc, downloader.download(endpoint, last_modified)});
+                {endpoint, cache_file, cached_doc, downloader.download(endpoint, etag)});
         } catch (const std::exception &e) {
             react_on_exception(
-                fmt::format("Failed to download overview of available tables from {}",
-                            downloads.back().endpoint),
+                fmt::format("Failed to download overview of available tables from {}", endpoint),
                 e);
             return;
         }
@@ -188,38 +194,79 @@ void ParquetManager::scan_remote() {
             doc = dl.cached_doc;
             SPDLOG_INFO("Using cached overview of available tables from {}.", dl.endpoint);
         } else {
-            doc = json::parse(result.body, nullptr, /*allow_exceptions=*/false);
-            doc["last-modified"] = result.last_modified;
-            save_json(dl.cache_file, doc);
+            // The endpoint for listing releases returns an array of releases, the endpoint for
+            // requesting a single release returns the release itself
+            json parsed = json::parse(result.body, nullptr, /*allow_exceptions=*/false);
+            if (parsed.is_discarded()) {
+                react_on_invalid_response(fmt::format(
+                    "Failed to parse the overview of available tables from {}", dl.endpoint));
+                return;
+            }
+            doc["releases"] = parsed.is_array() ? parsed : json::array({parsed});
+            doc["etag"] = result.etag;
             SPDLOG_INFO("Using downloaded overview of available tables from {}.", dl.endpoint);
         }
 
         // Validate the JSON response
-        if (doc.is_discarded() || !doc.contains("assets")) {
-            throw std::runtime_error(fmt::format(
-                "Failed to parse remote JSON or missing 'assets' key from {}.", dl.endpoint));
+        if (!doc["releases"].is_array() || doc["releases"].empty()) {
+            // Discard the cache so that the next run issues an unconditional request instead of
+            // receiving 304 Not Modified and reading the invalid cache again
+            std::error_code ec;
+            fs::remove(dl.cache_file, ec);
+            react_on_invalid_response(fmt::format(
+                "No releases contained in the overview of available tables from {}", dl.endpoint));
+            return;
         }
 
-        // Update remote_asset_info based on the asset entries
-        for (auto &asset : doc["assets"]) {
-            std::string name = asset["name"].get<std::string>();
-            std::smatch match;
+        if (result.status_code != 304) {
+            save_json(dl.cache_file, doc);
+        }
 
-            if (std::regex_match(name, match, remote_regex) && match.size() == 4) {
-                std::string key = match[1].str();
-                int version_major = std::stoi(match[2].str());
-                int version_minor = std::stoi(match[3].str());
+        // Update remote_asset_info based on the asset entries of the latest release that is
+        // compatible with this version of the software. Because the releases are ordered from the
+        // latest to the oldest one, this is not necessarily the latest release of the repository.
+        bool found_compatible_release = false;
+        for (const auto &release : doc["releases"]) {
+            // Skip malformed entries, drafts, and pre-releases because they are not meant to
+            // be used
+            if (!release.is_object() || release.value("draft", false) ||
+                release.value("prerelease", false)) {
+                continue;
+            }
+            if (!release.contains("assets") || !release["assets"].is_array()) {
+                continue;
+            }
 
-                if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
+            for (const auto &asset : release["assets"]) {
+                // Skip malformed entries
+                if (!asset.is_object() || !asset.contains("name") || !asset.contains("url")) {
                     continue;
                 }
 
-                auto it = remote_asset_info.find(key);
-                if (it == remote_asset_info.end() || version_minor > it->second.version_minor) {
-                    std::string remote_url = asset["url"].get<std::string>();
-                    const std::string host = downloader.get_host();
-                    remote_asset_info[key] = {version_minor, remote_url.erase(0, host.size())};
+                std::string name = asset["name"].get<std::string>();
+                std::smatch match;
+
+                if (std::regex_match(name, match, remote_regex) && match.size() == 4) {
+                    std::string key = match[1].str();
+                    int version_major = std::stoi(match[2].str());
+                    int version_minor = std::stoi(match[3].str());
+
+                    if (version_major != COMPATIBLE_DATABASE_VERSION_MAJOR) {
+                        continue;
+                    }
+                    found_compatible_release = true;
+
+                    auto it = remote_asset_info.find(key);
+                    if (it == remote_asset_info.end() || version_minor > it->second.version_minor) {
+                        std::string remote_url = asset["url"].get<std::string>();
+                        const std::string host = downloader.get_host();
+                        remote_asset_info[key] = {version_minor, remote_url.erase(0, host.size())};
+                    }
                 }
+            }
+
+            if (found_compatible_release) {
+                break;
             }
         }
     }
@@ -356,6 +403,16 @@ void ParquetManager::update_local_asset(const std::string &key) {
             suffix != ".parquet") {
             throw std::runtime_error(
                 fmt::format("Unexpected filename {} in zip archive.", filename));
+        }
+
+        // Ensure that the directory belongs to the asset that was requested
+        if (match[1].str() != key ||
+            std::stoi(match[2].str()) != COMPATIBLE_DATABASE_VERSION_MAJOR ||
+            std::stoi(match[3].str()) != remote_version) {
+            throw std::runtime_error(
+                fmt::format("Expected the zip archive to contain the directory {}_v{}.{}, but it "
+                            "contains {}.",
+                            key, COMPATIBLE_DATABASE_VERSION_MAJOR, remote_version, dir));
         }
 
         // Construct the path to store the table

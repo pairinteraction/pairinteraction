@@ -27,7 +27,7 @@ public:
     class Result {
     public:
         int status_code = 400;
-        std::string last_modified;
+        std::string etag;
         std::string body;
         RateLimit rate_limit;
     };
@@ -35,7 +35,7 @@ public:
     GitHubDownloader();
     virtual ~GitHubDownloader();
     virtual std::future<Result> download(const std::string &remote_url,
-                                         const std::string &if_modified_since = "",
+                                         const std::string &if_none_match = "",
                                          bool use_octet_stream = false) const;
     std::string get_host() const;
 

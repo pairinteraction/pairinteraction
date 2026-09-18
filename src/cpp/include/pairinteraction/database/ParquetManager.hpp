@@ -47,6 +47,7 @@ private:
     void react_on_rate_limit_reached(std::time_t reset_time);
     void react_on_exception(const std::string &context, const std::exception &e);
     void react_on_error_code(const std::string &context, int error_code);
+    void react_on_invalid_response(const std::string &context);
     void update_local_asset(const std::string &key);
     std::unordered_map<std::string, LocalAssetInfo>::iterator
     get_local_asset(const std::string &key);
