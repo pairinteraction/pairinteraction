@@ -16,7 +16,9 @@ In order to be able to compile the source code, you have to install the followin
 
 Build tools
     - CMake_ for running the build system (at least CMake 3.21 is required)
-    - VCPKG_ for managing the C++ packages
+    - VCPKG_ for managing the C++ packages (On Windoes, do not use the VCPKG version that comes with Visual Studio, as
+      even though the build succeeds, dll dependencies are not found at runtime. Instead, install it separately from the
+      VCPKG_ website)
     - `Visual Studio`_ or MinGW_ as a compiler. We recommend `Visual Studio`_ and will use it in further descriptions.
 
 You can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most C++ dependencies.
@@ -28,16 +30,29 @@ discovers them by querying a Python interpreter, so the Python environment into 
 requirements has to be activated when running CMake.
 
 In addition, you need to adjust your path environment variable if you want to use certain tools from the command line.
-In order to smoothly run all the commands described on this page, add the following paths to your path environment
+In order to smoothly run all the commands described on this page, add the following paths to your Path environment
 variable:
 
 ======================= =======================================================================
 Tool                    Path to add
 ======================= =======================================================================
 Cmake                   ``C:\\path\to\cmake\bin``
-VCPKG                   ``C:\\path\to\VisualStudio\version_number\Community\VC\vcpkg``
+VCPKG                   ``C:\\path\to\vcpkg``
 clang-tidy clang-format ``C:\\path\to\VisualStudio\version_number\Community\VC\Tools\Llvm\bin``
 ======================= =======================================================================
+
+As Windows only supports a maximum path length of 260 characters, it is recommended to install VCPKG_ in a short path,
+ideally in ``C:\\vcpgk``. In addition, to make sure that VCPKG_ can be found by CMake_, you have to add the following
+environment variables to your system:
+
+==================== ======================================================
+Variable name        Path to add
+==================== ======================================================
+VCPKG_ROOT           ``C:\\path\to\vcpkg``
+CMAKE_TOOLCHAIN_FILE ``C:\\path\to\vcpkg\scripts\buildsystems\vcpkg.cmake``
+==================== ======================================================
+
+to your local environment variables.
 
 You can either adjust your environmental variables by using the GUI provided by the operating system, or immediately
 from the command line. If you want to use the Windows GUI, which we highly recommend, enter "environment properties"
