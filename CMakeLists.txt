@@ -158,6 +158,30 @@ elseif(NOT DuckDB_FOUND)
     message(FATAL_ERROR "DuckDB not found and automatic fallback is only supported on macOS/Linux.")
 endif()
 
+# On Windows, DuckDB (e.g. via vcpkg) dynamically depends on ICU DLLs that live alongside
+# duckdb.dll but are not tracked as CMake dependencies, so IMPORTED_RUNTIME_ARTIFACTS won't
+# pick them up. Discover their location from the duckdb target itself (works on any machine,
+# regardless of where vcpkg/CMake put things) and bundle them.
+set(DUCKDB_EXTRA_RUNTIME_DLLS "")
+if(WIN32)
+  foreach(_prop IMPORTED_LOCATION IMPORTED_LOCATION_RELEASE IMPORTED_IMPLIB IMPORTED_IMPLIB_RELEASE)
+    get_target_property(_duckdb_loc duckdb ${_prop})
+    if(_duckdb_loc)
+      get_filename_component(_duckdb_bin_dir "${_duckdb_loc}" DIRECTORY)
+      file(GLOB _found_dlls "${_duckdb_bin_dir}/icu*.dll")
+      if(_found_dlls)
+        list(APPEND DUCKDB_EXTRA_RUNTIME_DLLS ${_found_dlls})
+        break()
+      endif()
+    endif()
+  endforeach()
+  list(REMOVE_DUPLICATES DUCKDB_EXTRA_RUNTIME_DLLS)
+  if(NOT DUCKDB_EXTRA_RUNTIME_DLLS)
+    message(WARNING "Could not locate ICU runtime DLLs next to duckdb; the installed "
+                     "package may fail to import duckdb at runtime on Windows.")
+  endif()
+endif()
+
 # Doctest
 # We use the dev version because it works with recent cmake versions that forbid a version < 3.5 for cmake_minimum_required
 FetchContent_Declare(
@@ -174,6 +198,7 @@ endif()
 FetchContent_MakeAvailable(doctest)
 
 # Httplib
+find_package(OpenSSL 3.0.0 REQUIRED)
 set(HTTPLIB_REQUIRE_OPENSSL ON)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE OFF)
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE OFF)
