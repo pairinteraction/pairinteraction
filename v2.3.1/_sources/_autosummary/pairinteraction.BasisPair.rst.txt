@@ -1,0 +1,35 @@
+﻿BasisPair
+=========
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~BasisPair.__init__
+      ~BasisPair.get_amplitudes
+      ~BasisPair.get_coefficients
+      ~BasisPair.get_corresponding_ket
+      ~BasisPair.get_corresponding_ket_index
+      ~BasisPair.get_corresponding_state
+      ~BasisPair.get_corresponding_state_index
+      ~BasisPair.get_matrix_elements
+      ~BasisPair.get_overlaps
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~BasisPair.kets
+   ~BasisPair.number_of_kets
+   ~BasisPair.number_of_states
+   ~BasisPair.states
+   ~BasisPair.system_atoms
+
+
+
+.. autoclass:: pairinteraction.BasisPair
