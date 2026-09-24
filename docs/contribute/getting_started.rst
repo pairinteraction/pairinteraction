@@ -115,10 +115,11 @@ necessary steps:
   .. code-block:: bash
 
       pip install -r .build_requirements.txt
-      mkdir build
-      cd build
-      cmake ..
-      cmake --build . -j
+      cmake -S . -B build
+      cmake --build build -j
+
+  Because the Intel oneAPI TBB and MKL libraries are discovered by querying a Python interpreter, the Python environment
+  into which you installed ``.build_requirements.txt`` must be activated when running ``cmake``.
 
 To ensure your code adheres to the project's coding standards, we highly recommend using the `pre-commit tool`_. Once
 you've installed this tool, integrate it as a pre-commit hook into your local repository with the following command:
