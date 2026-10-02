@@ -79,17 +79,31 @@ Basis<Derived>::Basis(ketvec_t &&kets)
     if (this->kets.empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
+    make_canonical();
+}
+
+template <typename Derived>
+void Basis<Derived>::make_canonical() {
+    auto n = static_cast<Eigen::Index>(kets.size());
+    if (coefficients.rows() != n || coefficients.cols() != n) {
+        throw std::invalid_argument("The coefficient matrix must be of shape n x n, where n is "
+                                    "the number of kets.");
+    }
+
+    // Make the i-th state equal to the i-th ket
+    coefficients.setIdentity();
+
+    // Assign each state the quantum numbers of the ket it is equal to
     for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
         std::vector<real_t> quantum_numbers;
-        quantum_numbers.reserve(this->kets.size());
-        for (const auto &ket : this->kets) {
+        quantum_numbers.reserve(kets.size());
+        for (const auto &ket : kets) {
             quantum_numbers.push_back(ket->has_quantum_number(name)
                                           ? static_cast<real_t>(ket->get_quantum_number(name))
                                           : std::numeric_limits<real_t>::max());
         }
         quantum_numbers_of_states[name] = std::move(quantum_numbers);
     }
-    coefficients.setIdentity();
 }
 
 template <typename Derived>
@@ -331,23 +345,9 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
     auto result = std::make_shared<Derived>(derived());
-
     size_t n = kets.size();
-
     result->coefficients.resize(n, n);
-    result->coefficients.setIdentity();
-
-    for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
-        std::vector<real_t> quantum_numbers;
-        quantum_numbers.reserve(kets.size());
-        for (const auto &ket : kets) {
-            quantum_numbers.push_back(ket->has_quantum_number(name)
-                                          ? static_cast<real_t>(ket->get_quantum_number(name))
-                                          : std::numeric_limits<real_t>::max());
-        }
-        result->quantum_numbers_of_states[name] = std::move(quantum_numbers);
-    }
-
+    result->make_canonical();
     return result;
 }
 
