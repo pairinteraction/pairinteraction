@@ -15,22 +15,12 @@ KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
     std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy,
     std::unordered_map<std::string, double> quantum_numbers)
-    : Ket(energy), quantum_numbers(std::move(quantum_numbers)), atomic_indices(atomic_indices),
+    : Ket(energy, std::move(quantum_numbers)), atomic_indices(atomic_indices),
       atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_bases.size()) {
         throw std::invalid_argument(
             "The number of atomic indices, and atomic bases must be the same.");
     }
-}
-
-template <typename Scalar>
-bool KetPair<Scalar>::has_quantum_number(const std::string &name) const {
-    return quantum_numbers.contains(name);
-}
-
-template <typename Scalar>
-double KetPair<Scalar>::get_quantum_number(const std::string &name) const {
-    return quantum_numbers.at(name);
 }
 
 template <typename Scalar>
@@ -45,8 +35,8 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomi
 
 template <typename Scalar>
 bool KetPair<Scalar>::operator==(const KetPair<Scalar> &other) const {
-    return Ket::operator==(other) && quantum_numbers == other.quantum_numbers &&
-        atomic_indices == other.atomic_indices && atomic_bases == other.atomic_bases;
+    return Ket::operator==(other) && atomic_indices == other.atomic_indices &&
+        atomic_bases == other.atomic_bases;
 }
 
 template <typename Scalar>
@@ -57,16 +47,6 @@ bool KetPair<Scalar>::operator!=(const KetPair<Scalar> &other) const {
 template <typename Scalar>
 size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
     size_t seed = typename Ket::hash()(k);
-    // The quantum numbers are stored in an unordered map, so we combine the per-entry hashes in an
-    // order-independent way (via xor) to obtain a deterministic result.
-    size_t quantum_numbers_hash = 0;
-    for (const auto &[key, value] : k.quantum_numbers) {
-        size_t entry_seed = 0;
-        utils::hash_combine(entry_seed, key);
-        utils::hash_combine(entry_seed, value);
-        quantum_numbers_hash ^= entry_seed;
-    }
-    utils::hash_combine(seed, quantum_numbers_hash);
     for (const auto &index : k.atomic_indices) {
         utils::hash_combine(seed, index);
     }

@@ -30,8 +30,6 @@ public:
     Database &get_database() const;
     size_t get_id_in_database() const;
     const std::string &get_species() const;
-    bool has_quantum_number(const std::string &name) const;
-    double get_quantum_number(const std::string &name) const;
     double get_quantum_number_std(const std::string &name) const;
 
     bool operator==(const KetAtom &other) const;
@@ -43,7 +41,6 @@ public:
 
 private:
     std::string species;
-    std::unordered_map<std::string, double> quantum_numbers;
     std::unordered_map<std::string, double> quantum_numbers_std;
     Database &database;
     size_t id_in_database;
