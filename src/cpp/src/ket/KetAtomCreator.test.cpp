@@ -100,12 +100,11 @@ DOCTEST_TEST_CASE("unavailable quantum number") {
     DOCTEST_CHECK_THROWS_AS(ket->get_quantum_number("nu_i"), QuantumNumberNotAvailableError);
     DOCTEST_CHECK_THROWS_AS(ket->get_quantum_number_std("nu_i"), QuantumNumberNotAvailableError);
 
-    // The error names the quantum number and the species, so that a caller can react to them.
+    // The error names the quantum number, so that a caller can react to it.
     try {
         ket->get_quantum_number("nu_i");
     } catch (const QuantumNumberNotAvailableError &e) {
         DOCTEST_CHECK(e.get_name() == "nu_i");
-        DOCTEST_CHECK(e.get_species() == "Rb");
         DOCTEST_CHECK(std::string(e.what()).find("nu_i") != std::string::npos);
     }
 }

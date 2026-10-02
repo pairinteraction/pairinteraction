@@ -26,7 +26,9 @@ using namespace pairinteraction;
 static void declare_ket(nb::module_ &m) {
     std::string pyclass_name = "Ket";
     nb::class_<Ket> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_energy", &Ket::get_energy);
+    pyclass.def("get_energy", &Ket::get_energy)
+        .def("has_quantum_number", &Ket::has_quantum_number)
+        .def("get_quantum_number", &Ket::get_quantum_number);
 }
 
 static void declare_ket_atom(nb::module_ &m) {
@@ -34,8 +36,6 @@ static void declare_ket_atom(nb::module_ &m) {
     nb::class_<KetAtom, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_database", &KetAtom::get_database, nb::rv_policy::reference)
         .def("get_species", &KetAtom::get_species)
-        .def("has_quantum_number", &KetAtom::has_quantum_number)
-        .def("get_quantum_number", &KetAtom::get_quantum_number)
         .def("get_quantum_number_std", &KetAtom::get_quantum_number_std)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetAtom &self) { return KetAtom::hash{}(self); });
@@ -57,8 +57,6 @@ static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
     nb::class_<KetPair<T>, Ket> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_atomic_states", &KetPair<T>::get_atomic_states)
-        .def("has_quantum_number", &KetPair<T>::has_quantum_number)
-        .def("get_quantum_number", &KetPair<T>::get_quantum_number)
         .def(nb::self == nb::self) // NOLINT(misc-redundant-expression)
         .def("__hash__", [](const KetPair<T> &self) { return typename KetPair<T>::hash{}(self); });
 }
@@ -90,7 +88,6 @@ static void declare_quantum_number_not_available_error(nb::module_ &m) {
                 auto *type = static_cast<PyObject *>(payload);
                 nb::object exc = nb::borrow(type)(e.what());
                 exc.attr("name") = nb::cast(e.get_name());
-                exc.attr("species") = nb::cast(e.get_species());
                 PyErr_SetObject(type, exc.ptr());
             }
         },

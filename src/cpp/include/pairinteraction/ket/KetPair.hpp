@@ -43,8 +43,6 @@ public:
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
             real_t energy, std::unordered_map<std::string, double> quantum_numbers);
 
-    bool has_quantum_number(const std::string &name) const;
-    double get_quantum_number(const std::string &name) const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
 
     bool operator==(const KetPair<Scalar> &other) const;
@@ -55,7 +53,6 @@ public:
     };
 
 private:
-    std::unordered_map<std::string, double> quantum_numbers;
     std::vector<size_t> atomic_indices;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases;
 };
