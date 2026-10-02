@@ -498,11 +498,11 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
         size_t num_states = sorted_basis->get_number_of_states();
         const auto &matrix = system.get_matrix();
 
-        auto parity = [&](size_t i) { return sorted_basis->get_parity(i); };
+        auto parity = [&](size_t i) { return sorted_basis->get_quantum_number("parity", i); };
         auto energy = [&](size_t i) {
             return matrix.coeff(static_cast<long>(i), static_cast<long>(i));
         };
-        auto quantum_number_m = [&](size_t i) { return sorted_basis->get_quantum_number_m(i); };
+        auto quantum_number_m = [&](size_t i) { return sorted_basis->get_quantum_number("m", i); };
 
         // The parity is the primary criterion, thus it is ascending globally ...
         for (size_t i = 1; i < num_states; ++i) {

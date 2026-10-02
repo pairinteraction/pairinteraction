@@ -355,9 +355,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
-    bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();
-    bool sort_by_quantum_number_m = this->basis->has_quantum_number_m();
-    bool sort_by_parity = this->basis->has_parity();
+    bool sort_by_quantum_number_f = this->basis->has_quantum_number("f");
+    bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
+    bool sort_by_parity = this->basis->has_quantum_number("product_of_parities");
 
     // Add Rydberg-Rydberg interaction via Green tensor
     // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]

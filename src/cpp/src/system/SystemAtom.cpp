@@ -133,9 +133,9 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
-    bool sort_by_quantum_number_f = this->basis->has_quantum_number_f();
-    bool sort_by_quantum_number_m = this->basis->has_quantum_number_m();
-    bool sort_by_parity = this->basis->has_parity();
+    bool sort_by_quantum_number_f = this->basis->has_quantum_number("f");
+    bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
+    bool sort_by_parity = this->basis->has_quantum_number("parity");
 
     // Estimate the numerical precision so that we can decide which terms to keep
     Eigen::VectorX<real_t> diag = this->matrix.diagonal().real();
