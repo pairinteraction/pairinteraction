@@ -93,8 +93,8 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
                 if (parity_under_inversion != Parity::UNKNOWN &&
                     parity_under_permutation == Parity::UNKNOWN) {
                     swapped_sign = -static_cast<int>(parity_under_inversion) *
-                        static_cast<int>(basis1->get_parity(idx1)) *
-                        static_cast<int>(basis2->get_parity(idx2));
+                        static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
+                        static_cast<int>(basis2->get_quantum_number("parity", idx2));
                 } else {
                     swapped_sign = -static_cast<int>(parity_under_permutation);
                 }
@@ -537,9 +537,10 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                  it; ++it) {
                 auto atomic_states = symmetrized_basis->get_kets()[it.row()]->get_atomic_states();
                 DOCTEST_REQUIRE(atomic_states.size() == 2);
-                DOCTEST_CHECK(static_cast<int>(atomic_states[0]->get_parity(0)) *
-                                  static_cast<int>(atomic_states[1]->get_parity(0)) ==
-                              static_cast<int>(Parity::EVEN));
+                DOCTEST_CHECK(
+                    static_cast<int>(atomic_states[0]->get_quantum_number("parity", 0)) *
+                        static_cast<int>(atomic_states[1]->get_quantum_number("parity", 0)) ==
+                    static_cast<int>(Parity::EVEN));
                 entries.emplace_back(it.row(), it.value());
             }
 

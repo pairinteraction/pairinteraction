@@ -73,18 +73,18 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     auto basis = basis_unsorted->transformed(sorter);
 
     // Check if the basis is properly sorted
-    auto parity = Parity::ODD;
+    auto parity = static_cast<double>(Parity::ODD);
     auto quantum_number_m = std::numeric_limits<double>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-        DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_parity(i),
-                        ", M = ", basis->get_quantum_number_m(i));
-        DOCTEST_CHECK(basis->get_parity(i) >= parity);
-        if (basis->get_parity(i) != parity) {
-            parity = basis->get_parity(i);
+        DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_quantum_number("parity", i),
+                        ", M = ", basis->get_quantum_number("m", i));
+        DOCTEST_CHECK(basis->get_quantum_number("parity", i) >= parity);
+        if (basis->get_quantum_number("parity", i) != parity) {
+            parity = basis->get_quantum_number("parity", i);
             quantum_number_m = std::numeric_limits<double>::lowest();
         }
-        DOCTEST_CHECK(basis->get_quantum_number_m(i) >= quantum_number_m);
-        quantum_number_m = basis->get_quantum_number_m(i);
+        DOCTEST_CHECK(basis->get_quantum_number("m", i) >= quantum_number_m);
+        quantum_number_m = basis->get_quantum_number("m", i);
     }
 
     // Check that the blocks are correctly determined
@@ -294,7 +294,7 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
                               .create(database);
     auto basis =
         unsorted_basis->transformed(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
-    DOCTEST_REQUIRE(basis->has_quantum_number_m());
+    DOCTEST_REQUIRE(basis->has_quantum_number("m"));
 
     auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
     constexpr double defect = 1e-2; // the squared norm of each column is 1 - defect
@@ -307,7 +307,7 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
     for (Eigen::Index i = 0; i < dim;) {
         auto idx = static_cast<size_t>(i);
         if (i + 1 < dim &&
-            basis->get_quantum_number_m(idx) == basis->get_quantum_number_m(idx + 1)) {
+            basis->get_quantum_number("m", idx) == basis->get_quantum_number("m", idx + 1)) {
             triplets.emplace_back(i, i, scale * sqrt_half);
             triplets.emplace_back(i + 1, i, scale * sqrt_half);
             triplets.emplace_back(i, i + 1, scale * sqrt_half);
@@ -323,16 +323,16 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
 
     // Because the transformation does not mix different m, m is still well-defined
     auto transformed = basis->transformed(transformation);
-    DOCTEST_CHECK(transformed->has_quantum_number_m());
+    DOCTEST_CHECK(transformed->has_quantum_number("m"));
     for (size_t i = 0; i < transformed->get_number_of_states(); ++i) {
-        DOCTEST_CHECK(transformed->get_quantum_number_m(i) == basis->get_quantum_number_m(i));
+        DOCTEST_CHECK(transformed->get_quantum_number("m", i) == basis->get_quantum_number("m", i));
     }
 
     // If, in contrast, states of different m are superimposed, m is not well-defined anymore
     Eigen::Index other = 0;
     while (other < dim &&
-           basis->get_quantum_number_m(0) ==
-               basis->get_quantum_number_m(static_cast<size_t>(other))) {
+           basis->get_quantum_number("m", 0) ==
+               basis->get_quantum_number("m", static_cast<size_t>(other))) {
         ++other;
     }
     DOCTEST_REQUIRE(other < dim);
@@ -350,8 +350,8 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
     mixing_transformation.setFromTriplets(triplets.begin(), triplets.end());
 
     auto mixed = basis->transformed(mixing_transformation);
-    DOCTEST_CHECK_FALSE(mixed->has_quantum_number_m());
-    DOCTEST_CHECK_THROWS_AS(mixed->get_quantum_number_m(0), std::invalid_argument);
+    DOCTEST_CHECK_FALSE(mixed->has_quantum_number("m"));
+    DOCTEST_CHECK_THROWS_AS(mixed->get_quantum_number("m", 0), std::invalid_argument);
 }
 
 } // namespace pairinteraction

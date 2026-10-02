@@ -4,9 +4,11 @@
 #pragma once
 
 #include "pairinteraction/basis/Basis.hpp"
+#include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -50,6 +52,8 @@ public:
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
+
+    static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
     BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
               Database &database);

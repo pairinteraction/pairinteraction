@@ -12,10 +12,11 @@
 #include <Eigen/SparseCore>
 #include <memory>
 #include <set>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
-enum class Parity : int;
 enum class SorterType : unsigned char;
 
 /**
@@ -26,6 +27,10 @@ enum class SorterType : unsigned char;
  * This base class represents a basis. It comprises a list of ket states and a matrix of
  * coefficients. The rows of the coefficient matrix correspond to indices of ket states and
  * the columns to indices of basis vectors.
+ * The states are assigned quantum numbers. Similar to a ket, the parity is treated like a
+ * normal quantum number.
+ * By which quantum numbers the states can be sorted is defined by the derived class, which has to
+ * provide a static sorter_type_to_quantum_number_name member that maps sorter types to names.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -45,16 +50,12 @@ public:
     Basis() = delete;
     virtual ~Basis() = default;
 
-    bool has_quantum_number_f() const;
-    bool has_quantum_number_m() const;
-    bool has_parity() const;
+    bool has_quantum_number(const std::string &name) const;
 
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
-    real_t get_quantum_number_f(size_t state_index) const;
-    real_t get_quantum_number_m(size_t state_index) const;
-    Parity get_parity(size_t state_index) const;
+    real_t get_quantum_number(const std::string &name, size_t state_index) const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
@@ -101,11 +102,10 @@ protected:
 
 private:
     const Derived &derived() const;
+    const std::vector<real_t> &get_quantum_numbers_of_states(SorterType label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 
-    std::vector<real_t> state_index_to_quantum_number_f;
-    std::vector<real_t> state_index_to_quantum_number_m;
-    std::vector<Parity> state_index_to_parity;
+    std::unordered_map<std::string, std::vector<real_t>> quantum_numbers_of_states;
 };
 } // namespace pairinteraction

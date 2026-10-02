@@ -111,7 +111,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // The quantum number m of a pair state is only well-defined if it is well-defined for both
     // atoms
     const bool has_quantum_number_m =
-        basis1->has_quantum_number_m() && basis2->has_quantum_number_m();
+        basis1->has_quantum_number("m") && basis2->has_quantum_number("m");
     if (!has_quantum_number_m && range_quantum_number_m.is_finite()) {
         throw std::invalid_argument(
             "The quantum number m must not be restricted because it is not well-defined.");
@@ -179,8 +179,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             // If only inversion is restricted, the phase is determined by the product of the
             // parities of the one-atom states and the specified inversion parity.
             phase = -static_cast<int>(parity_under_inversion) *
-                static_cast<int>(basis1->get_parity(idx1)) *
-                static_cast<int>(basis2->get_parity(idx2));
+                static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
+                static_cast<int>(basis2->get_quantum_number("parity", idx2));
         }
         transformation_triplets.emplace_back(row_index, column_index, phase * inverse_sqrt_two);
     };
@@ -214,8 +214,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
             // Check the parity of the product of the parities
             if (inferred_product_of_parities != Parity::UNKNOWN) {
-                if (static_cast<int>(basis1->get_parity(idx1)) *
-                        static_cast<int>(basis2->get_parity(idx2)) !=
+                if (static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
+                        static_cast<int>(basis2->get_quantum_number("parity", idx2)) !=
                     static_cast<int>(inferred_product_of_parities)) {
                     continue;
                 }
@@ -225,7 +225,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             std::unordered_map<std::string, double> quantum_numbers;
             if (has_quantum_number_m) {
                 const real_t m =
-                    basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
+                    basis1->get_quantum_number("m", idx1) + basis2->get_quantum_number("m", idx2);
                 if (range_quantum_number_m.is_finite() &&
                     (m < range_quantum_number_m.min() - numerical_precision ||
                      m > range_quantum_number_m.max() + numerical_precision)) {
