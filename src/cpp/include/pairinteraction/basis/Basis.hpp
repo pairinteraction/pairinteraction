@@ -102,6 +102,7 @@ protected:
 
 private:
     const Derived &derived() const;
+    void make_canonical();
     const std::vector<real_t> &get_quantum_numbers_of_states(SorterType label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
