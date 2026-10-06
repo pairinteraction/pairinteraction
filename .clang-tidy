@@ -30,7 +30,6 @@ Checks: "
 
 WarningsAsErrors:       '*'
 HeaderFilterRegex:      'src/cpp/.*'
-AnalyzeTemporaryDtors:  false
 UseColor:               true
 FormatStyle:            none
 CheckOptions:
