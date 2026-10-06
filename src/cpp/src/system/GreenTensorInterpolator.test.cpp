@@ -6,6 +6,7 @@
 #include "pairinteraction/utils/spherical.hpp"
 
 #include <Eigen/Dense>
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <complex>
@@ -31,6 +32,27 @@ get_constant_entries_as_map(const GreenTensorInterpolator<Scalar> &interpolator,
     return map;
 }
 
+double factorial(int n) { return std::tgamma(n + 1); }
+
+double binomial(int n, int k) {
+    if (k < 0 || k > n) {
+        return 0;
+    }
+    return factorial(n) / (factorial(k) * factorial(n - k));
+}
+
+// Regular solid harmonic p_{n,m}(r) = sqrt(4 pi / (2n + 1)) r^n Y_{n,m}(r) with the Condon-Shortley
+// phase, evaluated from its explicit polynomial form, e.g., p_{1,1}(r) = -(x + iy) / sqrt(2).
+std::complex<double> solid_harmonic(int n, int m, const Eigen::Vector3d &r) {
+    const std::complex<double> plus(-r.x() / 2, -r.y() / 2); // -(x + iy) / 2
+    const std::complex<double> minus(r.x() / 2, -r.y() / 2); // (x - iy) / 2
+    std::complex<double> sum = 0;
+    for (int k = std::max(0, -m); 2 * k <= n - m; ++k) {
+        sum += std::pow(plus, m + k) * std::pow(minus, k) * std::pow(r.z(), n - m - 2 * k) /
+            (factorial(m + k) * factorial(k) * factorial(n - m - 2 * k));
+    }
+    return std::sqrt(factorial(n + m) * factorial(n - m)) * sum;
+}
 // Polynomial in the cartesian components x, y, z, stored as a map from exponents to coefficients
 using Polynomial = std::map<std::array<int, 3>, double>;
 
@@ -193,6 +215,59 @@ DOCTEST_TEST_CASE("cartesian multipole green tensors agree with derivatives of t
 
         DOCTEST_REQUIRE(expected.norm() > 0);
         DOCTEST_CHECK((actual - expected).norm() < 1e-12 * expected.norm());
+    }
+}
+
+DOCTEST_TEST_CASE("full chain from cartesian tensors to spherical green tensor entries for an "
+                  "arbitrary axis") {
+    // The spherical entries for an arbitrary distance vector R = |R| u follow from the Legendre
+    // generating function of 1/|R + r2 - r1| and the translation theorem of the solid harmonics,
+    //   (-1)^(kappa2+q1) * sqrt(binom(n+M, kappa1-q1) * binom(n-M, kappa1+q1))
+    //   * p_{n,M}(u)^* / |R|^(n+1)
+    // with n = kappa1 + kappa2 and M = q2 - q1. For u = e_z, only M = 0 contributes and the
+    // coefficients of the z-oriented test case are recovered. As the formula is independent of
+    // the cartesian tensors and of the cartesian-to-spherical transformators, it tests the full
+    // chain: every coefficient that enters the interaction, the normalization of the
+    // transformators, and the complex phases of the M != 0 entries. Entries of the trace
+    // row/column of the quadrupole transformator must vanish.
+    const Eigen::Vector3d distance_vector(0.6, 0.8, 2.4); // |R| = 2.6, generic orientation
+    const double distance = distance_vector.norm();
+    const Eigen::Vector3d unitvec = distance_vector / distance;
+
+    auto interpolator = GreenTensorInterpolator<std::complex<double>>::from_multipole_expansion(
+        {distance_vector.x(), distance_vector.y(), distance_vector.z()}, 5, 0, 0);
+
+    const std::vector<std::pair<int, int>> implemented_kappas{
+        {0, 0}, {0, 1}, {1, 0}, {0, 2}, {2, 0}, {1, 1}, {1, 2}, {2, 1}, {2, 2}, {1, 3}, {3, 1}};
+
+    for (const auto &[kappa1, kappa2] : implemented_kappas) {
+        DOCTEST_INFO("kappa1 = ", kappa1, ", kappa2 = ", kappa2);
+        const int n = kappa1 + kappa2;
+
+        const auto rows = spherical::get_transformator<double>(kappa1).rows();
+        const auto cols = spherical::get_transformator<double>(kappa2).rows();
+        Eigen::MatrixXcd actual = Eigen::MatrixXcd::Zero(rows, cols);
+        const auto map = get_constant_entries_as_map(interpolator, kappa1, kappa2);
+        DOCTEST_REQUIRE(!map.empty());
+        for (const auto &[key, val] : map) {
+            actual(key.first, key.second) = val;
+        }
+
+        Eigen::MatrixXcd expected = Eigen::MatrixXcd::Zero(rows, cols);
+        for (int q1 = -kappa1; q1 <= kappa1; ++q1) {
+            for (int q2 = -kappa2; q2 <= kappa2; ++q2) {
+                const int M = q2 - q1;
+                if (std::abs(M) > n) {
+                    continue;
+                }
+                const double sign = (kappa2 + q1) % 2 == 0 ? 1 : -1;
+                expected(q1 + kappa1, q2 + kappa2) = sign *
+                    std::sqrt(binomial(n + M, kappa1 - q1) * binomial(n - M, kappa1 + q1)) *
+                    std::conj(solid_harmonic(n, M, unitvec)) / std::pow(distance, n + 1);
+            }
+        }
+
+        DOCTEST_CHECK((actual - expected).norm() <= 1e-12 * expected.norm());
     }
 }
 } // namespace pairinteraction
