@@ -3,18 +3,16 @@
 
 #pragma once
 
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 namespace pairinteraction {
-enum class Parity : int;
-
 template <typename Scalar>
 class BasisPair;
 
@@ -38,16 +36,16 @@ public:
     BasisPairCreator<Scalar> &add(const SystemAtom<Scalar> &system_atom);
     BasisPairCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisPairCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
-    BasisPairCreator<Scalar> &restrict_parity_under_inversion(Parity value);
-    BasisPairCreator<Scalar> &restrict_parity_under_permutation(Parity value);
+    BasisPairCreator<Scalar> &restrict_parity_under_inversion(int value);
+    BasisPairCreator<Scalar> &restrict_parity_under_permutation(int value);
     std::shared_ptr<const BasisPair<Scalar>> create() const;
 
 private:
     std::vector<std::reference_wrapper<const SystemAtom<Scalar>>> systems_atom;
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_m;
-    Parity parity_under_inversion{Parity::UNKNOWN};
-    Parity parity_under_permutation{Parity::UNKNOWN};
+    std::optional<int> parity_under_inversion;
+    std::optional<int> parity_under_permutation;
 };
 
 extern template class BasisPairCreator<double>;

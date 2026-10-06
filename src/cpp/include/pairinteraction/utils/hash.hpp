@@ -94,13 +94,4 @@ struct hash<std::complex<T>> {
     }
 };
 
-enum class Parity : int;
-
-template <>
-struct hash<Parity> {
-    std::size_t operator()(const Parity &parity) const {
-        return std::hash<char>{}(static_cast<char>(parity));
-    }
-};
-
 } // namespace pairinteraction::utils

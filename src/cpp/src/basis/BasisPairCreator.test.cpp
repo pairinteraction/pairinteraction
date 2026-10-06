@@ -9,7 +9,6 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
@@ -23,6 +22,7 @@
 #include <array>
 #include <cmath>
 #include <doctest/doctest.h>
+#include <optional>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -47,7 +47,8 @@ get_dominant_ket(const std::shared_ptr<const BasisAtom<Scalar>> &basis, size_t s
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
-                         Parity parity_under_inversion, Parity parity_under_permutation) {
+                         std::optional<int> parity_under_inversion,
+                         std::optional<int> parity_under_permutation) {
     using real_t = typename BasisPair<Scalar>::real_t;
 
     const auto basis1 = basis->get_basis1();
@@ -71,8 +72,7 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
             size_t id2 = get_dominant_ket(basis2, idx2)->get_id_in_database();
 
             if (id1 == id2) {
-                if (parity_under_inversion == Parity::EVEN ||
-                    parity_under_permutation == Parity::EVEN) {
+                if (parity_under_inversion == 1 || parity_under_permutation == 1) {
                     continue;
                 }
                 triplets.emplace_back(ket_index, state_index++, Scalar{1});
@@ -90,13 +90,12 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
                 triplets.emplace_back(ket_index, column_index, static_cast<Scalar>(inv_sqrt_two));
             } else {
                 int swapped_sign = 0;
-                if (parity_under_inversion != Parity::UNKNOWN &&
-                    parity_under_permutation == Parity::UNKNOWN) {
-                    swapped_sign = -static_cast<int>(parity_under_inversion) *
+                if (parity_under_inversion.has_value() && !parity_under_permutation.has_value()) {
+                    swapped_sign = -*parity_under_inversion *
                         static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
                         static_cast<int>(basis2->get_quantum_number("parity", idx2));
                 } else {
-                    swapped_sign = -static_cast<int>(parity_under_permutation);
+                    swapped_sign = -*parity_under_permutation;
                 }
                 triplets.emplace_back(ket_index, column_index,
                                       static_cast<Scalar>(swapped_sign * inv_sqrt_two));
@@ -423,11 +422,11 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         auto symmetrized_basis = BasisPairCreator<double>()
                                      .add(system)
                                      .add(system)
-                                     .restrict_parity_under_permutation(Parity::ODD)
+                                     .restrict_parity_under_permutation(-1)
                                      .create();
 
         auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, Parity::UNKNOWN, Parity::ODD));
+            build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -438,11 +437,11 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         auto symmetrized_basis = BasisPairCreator<double>()
                                      .add(system)
                                      .add(system)
-                                     .restrict_parity_under_inversion(Parity::ODD)
+                                     .restrict_parity_under_inversion(-1)
                                      .create();
 
         auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, Parity::ODD, Parity::UNKNOWN));
+            build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -453,13 +452,13 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         auto symmetrized_basis_even = BasisPairCreator<double>()
                                           .add(system)
                                           .add(system)
-                                          .restrict_parity_under_permutation(Parity::EVEN)
+                                          .restrict_parity_under_permutation(1)
                                           .create();
 
         auto symmetrized_basis_odd = BasisPairCreator<double>()
                                          .add(system)
                                          .add(system)
-                                         .restrict_parity_under_permutation(Parity::ODD)
+                                         .restrict_parity_under_permutation(-1)
                                          .create();
 
         // Count kets in the canonical basis where both atoms are in the same state (id1 == id2).
@@ -519,8 +518,8 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         auto symmetrized_basis = BasisPairCreator<double>()
                                      .add(system)
                                      .add(system)
-                                     .restrict_parity_under_inversion(Parity::ODD)
-                                     .restrict_parity_under_permutation(Parity::ODD)
+                                     .restrict_parity_under_inversion(-1)
+                                     .restrict_parity_under_permutation(-1)
                                      .create();
 
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -540,7 +539,7 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                 DOCTEST_CHECK(
                     static_cast<int>(atomic_states[0]->get_quantum_number("parity", 0)) *
                         static_cast<int>(atomic_states[1]->get_quantum_number("parity", 0)) ==
-                    static_cast<int>(Parity::EVEN));
+                    1);
                 entries.emplace_back(it.row(), it.value());
             }
 
@@ -565,19 +564,26 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
                                     .add(system)
                                     .add(system_other)
-                                    .restrict_parity_under_permutation(Parity::ODD)
+                                    .restrict_parity_under_permutation(-1)
                                     .create(),
                                 std::invalid_argument);
 
         DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
                                     .add(system)
                                     .add(system_other)
-                                    .restrict_parity_under_inversion(Parity::ODD)
+                                    .restrict_parity_under_inversion(-1)
                                     .create(),
                                 std::invalid_argument);
 
         // Without a parity restriction, two different systems remain allowed.
         DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>().add(system).add(system_other).create());
+    }
+
+    DOCTEST_SUBCASE("parity restrictions must be +1 or -1") {
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>().restrict_parity_under_inversion(0),
+                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>().restrict_parity_under_permutation(2),
+                                std::invalid_argument);
     }
 }
 

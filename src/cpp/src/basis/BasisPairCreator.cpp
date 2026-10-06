@@ -5,7 +5,6 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -50,14 +49,19 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_quantum_number_m(re
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_inversion(Parity value) {
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_inversion(int value) {
+    if (value != 1 && value != -1) {
+        throw std::invalid_argument("The parity must be +1 or -1.");
+    }
     parity_under_inversion = value;
     return *this;
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &
-BasisPairCreator<Scalar>::restrict_parity_under_permutation(Parity value) {
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_permutation(int value) {
+    if (value != 1 && value != -1) {
+        throw std::invalid_argument("The parity must be +1 or -1.");
+    }
     parity_under_permutation = value;
     return *this;
 }
@@ -81,7 +85,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
     const bool has_symmetry_restriction =
-        parity_under_inversion != Parity::UNKNOWN || parity_under_permutation != Parity::UNKNOWN;
+        parity_under_inversion.has_value() || parity_under_permutation.has_value();
 
     // This ensures that a one-atom state can be identified across both atoms by its state index
     if (has_symmetry_restriction && &systems_atom[0].get() != &systems_atom[1].get()) {
@@ -90,10 +94,9 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             "symmetrization is only defined for two identical atoms.");
     }
 
-    Parity inferred_product_of_parities = Parity::UNKNOWN;
-    if (parity_under_inversion != Parity::UNKNOWN && parity_under_permutation != Parity::UNKNOWN) {
-        inferred_product_of_parities = static_cast<Parity>(
-            static_cast<int>(parity_under_inversion) * static_cast<int>(parity_under_permutation));
+    std::optional<int> inferred_product_of_parities;
+    if (parity_under_inversion.has_value() && parity_under_permutation.has_value()) {
+        inferred_product_of_parities = *parity_under_inversion * *parity_under_permutation;
     }
 
     const auto &system1 = systems_atom[0].get();
@@ -140,8 +143,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     auto construct_symmetry_transformation = [&](Eigen::Index row_index, size_t idx1, size_t idx2) {
         // Following https://doi.org/10.1088/1361-6455/aa743a, pair states |a, a> cannot be of even
         // parity.
-        if (idx1 == idx2 &&
-            (parity_under_inversion == Parity::EVEN || parity_under_permutation == Parity::EVEN)) {
+        if (idx1 == idx2 && (parity_under_inversion == 1 || parity_under_permutation == 1)) {
             return;
         }
 
@@ -170,15 +172,15 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
         // Determine the phase of the contribution of the partner state with idx1 < idx2.
         int phase = 0;
-        if (parity_under_permutation != Parity::UNKNOWN) {
+        if (parity_under_permutation.has_value()) {
             // If both inversion and permutation are restricted, the earlier filter on the product
             // of parities already guarantees that the phases in the inversion- and
             // permutation-symmetric states are the same.
-            phase = -static_cast<int>(parity_under_permutation);
+            phase = -*parity_under_permutation;
         } else {
             // If only inversion is restricted, the phase is determined by the product of the
             // parities of the one-atom states and the specified inversion parity.
-            phase = -static_cast<int>(parity_under_inversion) *
+            phase = -*parity_under_inversion *
                 static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
                 static_cast<int>(basis2->get_quantum_number("parity", idx2));
         }
@@ -213,10 +215,10 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                    (energy >= range_energy.min() && energy <= range_energy.max()));
 
             // Check the parity of the product of the parities
-            if (inferred_product_of_parities != Parity::UNKNOWN) {
+            if (inferred_product_of_parities.has_value()) {
                 if (static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
                         static_cast<int>(basis2->get_quantum_number("parity", idx2)) !=
-                    static_cast<int>(inferred_product_of_parities)) {
+                    *inferred_product_of_parities) {
                     continue;
                 }
             }

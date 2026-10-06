@@ -21,7 +21,6 @@ add_library(
   ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp
   ./include/pairinteraction/enums/FloatType.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
-  ./include/pairinteraction/enums/Parity.hpp
   ./include/pairinteraction/enums/SorterType.hpp
   ./include/pairinteraction/interfaces/DiagonalizerInterface.hpp
   ./include/pairinteraction/interfaces/SorterBuilderInterface.hpp
@@ -71,7 +70,6 @@ add_library(
   ./src/diagonalize/DiagonalizerFeast.cpp
   ./src/diagonalize/DiagonalizerLapackeEvd.cpp
   ./src/diagonalize/DiagonalizerLapackeEvr.cpp
-  ./src/enums/Parity.test.cpp
   ./src/interfaces/DiagonalizerInterface.cpp
   ./src/interfaces/SorterBuilderInterface.cpp
   ./src/ket/Ket.cpp
