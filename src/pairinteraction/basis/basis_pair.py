@@ -13,7 +13,7 @@ from typing_extensions import Self, TypeAliasType, deprecated
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_kets
 from pairinteraction.basis.basis_base import BasisBase
-from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, get_cpp_parity
+from pairinteraction.enums import OperatorType, Parity, get_cpp_operator_type, parity_to_int
 from pairinteraction.ket import KetPair, KetPairReal, is_ket_atom_tuple
 from pairinteraction.ket.ket_pair import get_ketpairlike_energy, get_ketpairlike_m, is_ket_pair_like
 from pairinteraction.state import StatePair, StatePairReal
@@ -111,9 +111,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if parity_under_inversion is not None:
-            creator.restrict_parity_under_inversion(get_cpp_parity(parity_under_inversion))
+            creator.restrict_parity_under_inversion(parity_to_int(parity_under_inversion))
         if parity_under_permutation is not None:
-            creator.restrict_parity_under_permutation(get_cpp_parity(parity_under_permutation))
+            creator.restrict_parity_under_permutation(parity_to_int(parity_under_permutation))
         if energy is not None:
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")

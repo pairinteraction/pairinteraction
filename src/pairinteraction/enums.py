@@ -37,7 +37,6 @@ _OperatorTypeDict: dict[OperatorType, _backend.OperatorType] = {
 }
 
 Parity = Literal["even", "odd"]
-_ParityToCPP: dict[Parity, _backend.Parity] = {"even": _backend.Parity.EVEN, "odd": _backend.Parity.ODD}
 _ParityToInt: dict[Parity, int] = {"even": 1, "odd": -1}
 
 
@@ -53,20 +52,6 @@ def get_cpp_operator_type(operator_type: OperatorType) -> _backend.OperatorType:
     if operator_type not in _OperatorTypeDict:
         raise ValueError(f"Unknown operator_type '{operator_type}', should be one of {list(_OperatorTypeDict.keys())}")
     return _OperatorTypeDict[operator_type]
-
-
-def get_cpp_parity(parity: Parity) -> _backend.Parity:
-    """Convert a python Parity string to a cpp Parity enum."""
-    if parity not in _ParityToCPP:
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToCPP.keys())}")
-    return _ParityToCPP[parity]
-
-
-def get_python_parity(parity: _backend.Parity) -> Parity:
-    """Convert a cpp Parity enum to a python Parity string."""
-    if parity not in _ParityToCPP.values():
-        raise ValueError(f"Unknown parity '{parity}', should be one of {list(_ParityToCPP.values())}")
-    return next(k for k, v in _ParityToCPP.items() if v == parity)
 
 
 def parity_to_int(parity: Parity) -> int:

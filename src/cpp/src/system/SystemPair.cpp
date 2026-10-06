@@ -7,7 +7,6 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"

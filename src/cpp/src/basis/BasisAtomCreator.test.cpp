@@ -7,7 +7,6 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
@@ -73,7 +72,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     auto basis = basis_unsorted->transformed(sorter);
 
     // Check if the basis is properly sorted
-    auto parity = static_cast<double>(Parity::ODD);
+    double parity = -1;
     auto quantum_number_m = std::numeric_limits<double>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
         DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_quantum_number("parity", i),
