@@ -421,6 +421,9 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
     transformed->coefficients = coefficients * transformation;
 
     Eigen::SparseMatrix<real_t> probs = transformation.cwiseAbs2().transpose();
+    // Drop explicitly stored zeros
+    probs.prune(
+        [](Eigen::Index /*row*/, Eigen::Index /*col*/, const real_t &value) { return value != 0; });
     Eigen::VectorX<real_t> norm = probs * Eigen::VectorX<real_t>::Ones(probs.cols());
 
     set_task_status("Updating transformed quantum numbers...");

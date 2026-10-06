@@ -351,6 +351,26 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
     auto mixed = basis->transformed(mixing_transformation);
     DOCTEST_CHECK_FALSE(mixed->has_quantum_number("m"));
     DOCTEST_CHECK_THROWS_AS(mixed->get_quantum_number("m", 0), std::invalid_argument);
+
+    // An explicitly stored zero that couples a state to a state without a well-defined m must not
+    // spoil the m of the state
+    Eigen::Index target = 0;
+    while (target == 0 || target == other) {
+        ++target;
+    }
+    DOCTEST_REQUIRE(target < dim);
+    triplets.clear();
+    for (Eigen::Index i = 0; i < dim; ++i) {
+        triplets.emplace_back(i, i, 1);
+    }
+    triplets.emplace_back(0, target, 0);
+    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation_with_zero(dim, dim);
+    transformation_with_zero.setFromTriplets(triplets.begin(), triplets.end());
+    DOCTEST_REQUIRE(transformation_with_zero.nonZeros() == dim + 1);
+
+    auto transformed_with_zero = mixed->transformed(transformation_with_zero);
+    DOCTEST_CHECK(transformed_with_zero->get_quantum_number("m", static_cast<size_t>(target)) ==
+                  basis->get_quantum_number("m", static_cast<size_t>(target)));
 }
 
 } // namespace pairinteraction
