@@ -3,12 +3,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 from pairinteraction.units import AtomicUnits, QuantityScalar, ureg
 
 if TYPE_CHECKING:
+    from pairinteraction.units import PintFloat
+
     from .utils import PairinteractionModule
 
 
@@ -16,18 +18,18 @@ def test_magnetic(pi_module: PairinteractionModule) -> None:
     """Test magnetic units."""
     ket = pi_module.KetAtom("Rb", n=60, l=0, m=0.5)
 
-    mu = ket.get_matrix_element(ket, "magnetic_dipole", q=0)
+    mu = cast("PintFloat", ket.get_matrix_element(ket, "magnetic_dipole", q=0))
     mu = mu.to("bohr_magneton")
     lande_factor = 2.002319304363
     assert np.isclose(mu.magnitude, -1 / 2 * lande_factor)
 
     # check magnetic field conversion is correct
     magnetic_field = QuantityScalar.from_unit(1, "gauss", "magnetic_field")
-    magnetic_field_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
+    magnetic_field_pint = ureg.Quantity(1.0, "gauss").to("T", "Gaussian")
     assert np.isclose(magnetic_field.to_au(), magnetic_field_pint.to_base_units().magnitude)
 
     # such that mu * magnetic_field is of dimension energy
-    zeeman_energy = -mu * magnetic_field_pint
+    zeeman_energy: PintFloat = -mu * magnetic_field_pint
     assert zeeman_energy.dimensionality == AtomicUnits["energy"].dimensionality
 
     # check against constructed Hamiltonian
@@ -44,17 +46,17 @@ def test_electric_dipole(pi_module: PairinteractionModule) -> None:
     ket_b = pi_module.KetAtom("Rb", n=61, l=0, m=0.5)
     ket_c = pi_module.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
 
-    dipole_a_c = ket_a.get_matrix_element(ket_c, "electric_dipole", q=0)
-    dipole_b_c = ket_b.get_matrix_element(ket_c, "electric_dipole", q=0)
+    dipole_a_c = cast("PintFloat", ket_a.get_matrix_element(ket_c, "electric_dipole", q=0))
+    dipole_b_c = cast("PintFloat", ket_b.get_matrix_element(ket_c, "electric_dipole", q=0))
 
     kappa = ureg.Quantity(1 / (4 * np.pi), "1 / epsilon_0")
-    c3 = kappa * dipole_a_c * dipole_b_c
-    c3 = c3 * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("hartree", "spectroscopy")
+    c3: PintFloat = kappa * dipole_a_c * dipole_b_c
+    c3 = c3 * ureg.Quantity(1.0, "GHz") / ureg.Quantity(1.0, "GHz").to("hartree", "spectroscopy")
     c3 = c3.to("GHz micrometer^3")
 
     assert c3.magnitude == QuantityScalar.from_pint(kappa * dipole_a_c * dipole_b_c, "c3").to_unit("GHz micrometer^3")
 
-    distance = ureg.Quantity(10, "micrometer")
+    distance = ureg.Quantity(10.0, "micrometer")
     basis = pi_module.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
     system = pi_module.SystemAtom(basis)
     basis_pair = pi_module.BasisPair([system, system])
@@ -63,8 +65,8 @@ def test_electric_dipole(pi_module: PairinteractionModule) -> None:
     system_pair.set_distance(distance)
     system.get_hamiltonian()
 
-    ket_ab_idx = np.argmax(basis_pair.get_overlaps([ket_a, ket_b]))
-    ket_cc_idx = np.argmax(basis_pair.get_overlaps([ket_c, ket_c]))
+    ket_ab_idx = int(np.argmax(basis_pair.get_overlaps([ket_a, ket_b])))
+    ket_cc_idx = int(np.argmax(basis_pair.get_overlaps([ket_c, ket_c])))
     hamiltonian = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
 
     assert np.isclose(-2 * c3.magnitude, hamiltonian[ket_ab_idx, ket_cc_idx])

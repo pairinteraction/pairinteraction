@@ -37,8 +37,8 @@ class GreenTensorBase(ABC):
         *,
         without_vacuum_contribution: bool = False,
     ) -> None:
-        self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])
-        self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])
+        self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos1])  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
+        self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, "distance") for v in pos2])  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         self.static_limit = static_limit
         self.without_vacuum_contribution = without_vacuum_contribution
 
@@ -212,7 +212,7 @@ class GreenTensorBase(ABC):
 
         if transition_energies is not None:
             omegas_pint = [
-                QuantityScalar.convert_user_to_pint(omega, transition_energies_unit, "energy")
+                QuantityScalar.convert_user_to_pint(omega, transition_energies_unit, "energy")  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
                 for omega in transition_energies
             ]
             gti = GTIClass()

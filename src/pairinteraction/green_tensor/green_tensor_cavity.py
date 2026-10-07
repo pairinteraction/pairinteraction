@@ -88,10 +88,10 @@ class GreenTensorCavity(GreenTensorBase):
             pos1, pos2, unit, static_limit, interaction_order, without_vacuum_contribution=without_vacuum_contribution
         )
         self.point_on_plane1_au = np.array(
-            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane1]
+            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane1]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         )
         self.point_on_plane2_au = np.array(
-            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane2]
+            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane2]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         )
         if np.isclose(np.linalg.norm(surface_normal), 0):
             raise ValueError("Normal vector cannot be zero.")

@@ -218,7 +218,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             raise ValueError("kets must not be empty.")
         kets = cast("Sequence[KetAtomTuple | KetPair]", kets)
 
-        energy_range = None
+        energy_range: tuple[Any, Any] | None = None
         if delta_energy is not None:
             pair_energies = [get_ketpairlike_energy(ket, system_atoms, delta_energy_unit) for ket in kets]
             energy_range = (min(pair_energies) - delta_energy, max(pair_energies) + delta_energy)

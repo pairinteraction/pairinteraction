@@ -312,6 +312,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         def get_range(name: str, delta: float | None) -> tuple[float, float] | None:
             if delta is None:
                 return None
+            values: list[Any]
             if name == "energy":
                 values = [ket.get_energy(unit=delta_energy_unit) for ket in kets]
             else:

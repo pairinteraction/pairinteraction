@@ -72,7 +72,7 @@ class C6(EffectiveSystemPair):
         """
         h_eff_pint = self.get_effective_hamiltonian(return_order=2)
         distance = self.system_pair.get_distance()
-        c6_pint = -h_eff_pint[0, 0] * distance**6  # type: ignore [index]  # pint does not know it can be indexed
+        c6_pint = -h_eff_pint[0, 0] * distance**6  # type: ignore [index, operator]  # pint does not know it can be indexed
         return QuantityScalar.convert_pint_to_user(c6_pint, "c6", unit)
 
 

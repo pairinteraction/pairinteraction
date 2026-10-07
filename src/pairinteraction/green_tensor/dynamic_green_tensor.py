@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Literal, TypeVar
 
 import numpy as np
 import scipy.constants as const
-from numba import njit
 from scipy.integrate import quad
 
 from pairinteraction.green_tensor.bessel_function import (
@@ -31,7 +30,10 @@ if TYPE_CHECKING:
     P = ParamSpec("P")
     R = TypeVar("R")
 
-    def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...  # type: ignore [no-redef]
+    def njit(cache: bool) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+else:
+    from numba import njit
 
 
 __all__ = ["dynamic_green_tensor_homogeneous", "dynamic_green_tensor_scattered"]

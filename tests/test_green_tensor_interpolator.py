@@ -11,6 +11,7 @@ from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator
+    from pairinteraction.units import PintFloat
 
     from .utils import PairinteractionModule
 
@@ -93,7 +94,7 @@ def test_omega_dependent_green_tensor_interpolator(
 
     for ind in range(3, len(transition_energies) - 5):
         ind1, ind2 = ind, ind + 1
-        transition_energy = (transition_energies[ind1] + transition_energies[ind2]) / 2
+        transition_energy: PintFloat = (transition_energies[ind1] + transition_energies[ind2]) / 2.0
         reference_tensor = (tensors_spherical[ind1] + tensors_spherical[ind2]) / 2
 
         tensor = gti.get(1, 1, transition_energy, unit="1/micrometer", coordinates="spherical")
