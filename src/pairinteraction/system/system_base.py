@@ -9,7 +9,8 @@ import numpy as np
 
 from pairinteraction.basis.basis_pair import BasisPair
 from pairinteraction.diagonalization import diagonalize
-from pairinteraction.units import QuantityArray, QuantitySparse
+from pairinteraction.state.state_base import get_index_with_largest_overlap
+from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
@@ -19,6 +20,8 @@ if TYPE_CHECKING:
     from pairinteraction.basis import BasisBase
     from pairinteraction.diagonalization import Diagonalizer
     from pairinteraction.enums import FloatType
+    from pairinteraction.ket import KetBase
+    from pairinteraction.ket.ket_pair import KetPairLike
     from pairinteraction.units import NDArray, PintArray, PintFloat, PintSparse
 
     Quantity = TypeVar("Quantity", float, "PintFloat")
@@ -123,6 +126,31 @@ class SystemBase(ABC, Generic[BasisType]):
     def get_eigenenergies(self, unit: str | None = None) -> NDArray | PintArray:
         eigenenergies_au: NDArray = np.array(self._cpp.get_eigenenergies())
         return QuantityArray.convert_au_to_user(eigenenergies_au, "energy", unit)
+
+    @overload
+    def get_corresponding_energy(self, ket: KetBase | KetPairLike, unit: None = None) -> PintFloat: ...
+
+    @overload
+    def get_corresponding_energy(self, ket: KetBase | KetPairLike, unit: str) -> float: ...
+
+    def get_corresponding_energy(self, ket: KetBase | KetPairLike, unit: str | None = None) -> float | PintFloat:
+        """Return the energy of the eigenstate with the largest overlap with the given ket.
+
+        If the ket is distributed over several degenerate eigenstates (e.g. symmetrized pair states),
+        the corresponding energy is still unique, so no warning is logged in this case.
+        """
+        overlaps = self.get_eigenbasis().get_overlaps(ket)
+        eigenenergies_au: NDArray = np.array(self._cpp.get_eigenenergies())
+
+        state_idx = int(np.argmax(overlaps))
+        tolerance = 100 * np.finfo(float).eps
+        energy_au = eigenenergies_au[state_idx]
+        is_degenerate = np.abs(eigenenergies_au - energy_au) <= tolerance * abs(energy_au)
+        if np.sum(overlaps[is_degenerate]) <= 0.5 + tolerance:
+            # The ket is not mainly in one (degenerate) eigenspace, call only to log the warning
+            get_index_with_largest_overlap(overlaps, err_msg="energy of an eigenstate for the given ket")
+
+        return QuantityScalar.convert_au_to_user(energy_au, "energy", unit)
 
     @overload
     def get_hamiltonian(self, unit: None = None) -> PintSparse: ...
