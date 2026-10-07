@@ -38,6 +38,7 @@ public:
     BasisPairCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
     BasisPairCreator<Scalar> &restrict_parity_under_inversion(int value);
     BasisPairCreator<Scalar> &restrict_parity_under_permutation(int value);
+    BasisPairCreator<Scalar> &set_symmetrization_enabled(bool enable);
     std::shared_ptr<const BasisPair<Scalar>> create() const;
 
 private:
@@ -46,6 +47,7 @@ private:
     Range<real_t> range_quantum_number_m;
     std::optional<int> parity_under_inversion;
     std::optional<int> parity_under_permutation;
+    std::optional<bool> symmetrization_enabled;
 };
 
 extern template class BasisPairCreator<double>;

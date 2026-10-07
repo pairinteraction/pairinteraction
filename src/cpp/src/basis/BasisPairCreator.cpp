@@ -65,6 +65,12 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_permut
 }
 
 template <typename Scalar>
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::set_symmetrization_enabled(bool enable) {
+    symmetrization_enabled = enable;
+    return *this;
+}
+
+template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
@@ -87,14 +93,21 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     // Symmetrization is only defined for two identical atoms. Requiring the same SystemAtom to be
     // added twice ensures that a one-atom state can be identified across both atoms by its state
-    // index.
-    const bool is_symmetrized = &system1 == &system2;
-    if (!is_symmetrized &&
-        (parity_under_inversion.has_value() || parity_under_permutation.has_value())) {
+    // index. If it has not been explicitly enabled or disabled, symmetrization is applied whenever
+    // this is possible.
+    const bool is_symmetrization_possible = &system1 == &system2;
+    const bool has_parity_restriction =
+        parity_under_inversion.has_value() || parity_under_permutation.has_value();
+    if (symmetrization_enabled == false && has_parity_restriction) {
         throw std::invalid_argument(
-            "Parity restrictions require the same SystemAtom to be added twice, because "
-            "symmetrization is only defined for two identical atoms.");
+            "Parity restrictions require symmetrization, which has been disabled.");
     }
+    if (!is_symmetrization_possible && (symmetrization_enabled == true || has_parity_restriction)) {
+        throw std::invalid_argument(
+            "Symmetrization and parity restrictions require the same SystemAtom to be added twice, "
+            "because symmetrization is only defined for two identical atoms.");
+    }
+    const bool is_symmetrized = symmetrization_enabled.value_or(is_symmetrization_possible);
 
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers

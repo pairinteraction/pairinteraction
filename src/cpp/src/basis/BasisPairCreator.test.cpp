@@ -424,8 +424,11 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     SystemAtom<double> system(basis);
     system.diagonalize(diagonalizer);
 
-    auto canonical_basis =
-        BasisPairCreator<double>().add(system).add(system).create()->canonicalized();
+    auto canonical_basis = BasisPairCreator<double>()
+                               .add(system)
+                               .add(system)
+                               .set_symmetrization_enabled(false)
+                               .create();
 
     DOCTEST_SUBCASE("restrict permutation parity") {
         auto symmetrized_basis = BasisPairCreator<double>()
@@ -663,7 +666,28 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                                 std::invalid_argument);
     }
 
-    DOCTEST_SUBCASE("parity restrictions require the same SystemAtom twice") {
+    DOCTEST_SUBCASE("opt out of symmetrization") {
+        DOCTEST_CHECK(canonical_basis->is_canonical());
+        DOCTEST_CHECK_FALSE(canonical_basis->has_quantum_number("parity_under_permutation"));
+        DOCTEST_CHECK_FALSE(canonical_basis->has_quantum_number("parity_under_inversion"));
+
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
+                                    .add(system)
+                                    .add(system)
+                                    .set_symmetrization_enabled(false)
+                                    .restrict_parity_under_permutation(-1)
+                                    .create(),
+                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
+                                    .add(system)
+                                    .add(system)
+                                    .set_symmetrization_enabled(false)
+                                    .restrict_parity_under_inversion(-1)
+                                    .create(),
+                                std::invalid_argument);
+    }
+
+    DOCTEST_SUBCASE("symmetrization requires the same SystemAtom twice") {
         // A second, independently constructed system represents a different atom. Even though it
         // is built from the same basis, it is a distinct object, so symmetrization is rejected.
         SystemAtom<double> system_other(basis);
@@ -690,6 +714,14 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         DOCTEST_CHECK(unsymmetrized_basis->is_canonical());
         DOCTEST_CHECK_FALSE(unsymmetrized_basis->has_quantum_number("parity_under_permutation"));
         DOCTEST_CHECK_FALSE(unsymmetrized_basis->has_quantum_number("parity_under_inversion"));
+
+        // Explicitly enabling symmetrization for two different systems is rejected.
+        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
+                                    .add(system)
+                                    .add(system_other)
+                                    .set_symmetrization_enabled(true)
+                                    .create(),
+                                std::invalid_argument);
     }
 
     DOCTEST_SUBCASE("parity restrictions must be +1 or -1") {
