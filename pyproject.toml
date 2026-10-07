@@ -54,7 +54,7 @@ dependencies = [
   "numpy >= 2.0.2",
   "scipy >= 1.10",
   "certifi >= 2024.8.30",
-  "pint >= 0.24.4, < 0.25.1", # FIXME: unpin pint when https://github.com/hgrecco/pint/issues/2245 is resolved (see also .pre-commit-config.yaml)
+  "pint >= 0.24.4",
   "colorama >= 0.4.6",
   "pyside6 >= 6.8.2",
   "matplotlib >= 3.8",
@@ -90,7 +90,7 @@ tests = [
   "sympy >= 1.13.3",
 ]
 mypy = [
-  "mypy == 1.20",  # FIXME: update this regularly
+  "mypy == 2.4",  # FIXME: update this regularly
   "types-colorama >= 0.4.15.12",
   "pyside6-stubs >= 6.7.3.0",
 ]
