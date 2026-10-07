@@ -5,6 +5,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
+#include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -249,10 +250,6 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     for (const auto &[label, name] : basis_t::sorter_type_to_quantum_number_name) {
         quantum_numbers_of_states[name].reserve(kets.size());
     }
-    auto &states_parity_under_inversion = quantum_numbers_of_states["parity_under_inversion"];
-    auto &states_parity_under_permutation = quantum_numbers_of_states["parity_under_permutation"];
-    states_parity_under_inversion.reserve(kets.size());
-    states_parity_under_permutation.reserve(kets.size());
 
     Eigen::Index state_index = 0;
     auto add_state = [&](const ket_t &ket, int permutation, std::optional<int> inversion) {
@@ -260,15 +257,20 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             (parity_under_inversion.has_value() && inversion != *parity_under_inversion)) {
             return false;
         }
-        // The kets contributing to a state share all quantum numbers carried by kets
         for (const auto &[label, name] : basis_t::sorter_type_to_quantum_number_name) {
-            quantum_numbers_of_states[name].push_back(
-                ket.has_quantum_number(name) ? static_cast<real_t>(ket.get_quantum_number(name))
-                                             : std::numeric_limits<real_t>::max());
+            real_t quantum_number = std::numeric_limits<real_t>::max();
+            if (label == SorterType::PARITY_UNDER_PERMUTATION) {
+                quantum_number = permutation;
+            } else if (label == SorterType::PARITY_UNDER_INVERSION) {
+                if (inversion.has_value()) {
+                    quantum_number = *inversion;
+                }
+            } else if (ket.has_quantum_number(name)) {
+                // The kets contributing to a state share all quantum numbers carried by kets
+                quantum_number = static_cast<real_t>(ket.get_quantum_number(name));
+            }
+            quantum_numbers_of_states[name].push_back(quantum_number);
         }
-        states_parity_under_permutation.push_back(permutation);
-        states_parity_under_inversion.push_back(
-            inversion.has_value() ? *inversion : std::numeric_limits<real_t>::max());
         ++state_index;
         return true;
     };

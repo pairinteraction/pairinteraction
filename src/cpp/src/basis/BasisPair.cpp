@@ -25,6 +25,8 @@ const std::map<SorterType, std::string> BasisPair<Scalar>::sorter_type_to_quantu
     {SorterType::QUANTUM_NUMBER_F, "f"},
     {SorterType::QUANTUM_NUMBER_M, "m"},
     {SorterType::PARITY, "product_of_parities"},
+    {SorterType::PARITY_UNDER_INVERSION, "parity_under_inversion"},
+    {SorterType::PARITY_UNDER_PERMUTATION, "parity_under_permutation"},
 };
 
 template <typename Scalar>
