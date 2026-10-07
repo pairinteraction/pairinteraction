@@ -14,6 +14,7 @@
 #include <memory>
 #include <miniz.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 class MockDownloader : public GitHubDownloader {
@@ -180,7 +181,11 @@ TEST_CASE("ParquetManager functionality with mocked downloader") {
         // If one repository returns an invalid response, the download of database tables must be
         // disabled altogether so that the local tables are used instead of silently providing an
         // incomplete set of tables
+        // The invalid response is expected here, so its error message is not logged
+        auto log_level = spdlog::default_logger()->level();
+        spdlog::default_logger()->set_level(spdlog::level::off);
         auto manager = make_manager({"/test/repo/releases", "/test/repo/releases_invalid"});
+        spdlog::default_logger()->set_level(log_level);
 
         CHECK(manager->get_path("misc", "wigner") == wigner_path("2.0"));
     }
