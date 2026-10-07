@@ -434,6 +434,13 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->matrix =
         this->basis->get_coefficients().adjoint() * this->matrix * this->basis->get_coefficients();
 
+    // Drop explicitly stored zeros. In a symmetrized basis, the couplings between different
+    // symmetry sectors cancel exactly because the Hamiltonian is symmetric under the exchange of
+    // the atoms. Storing them would double the memory footprint of the Hamiltonian.
+    this->matrix.prune([](Eigen::Index /*row*/, Eigen::Index /*col*/, const Scalar &value) {
+        return value != Scalar{0};
+    });
+
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
     if (sort_by_quantum_number_f) {
