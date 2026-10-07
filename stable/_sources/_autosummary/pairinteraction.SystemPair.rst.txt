@@ -1,0 +1,36 @@
+﻿SystemPair
+==========
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~SystemPair.__init__
+      ~SystemPair.diagonalize
+      ~SystemPair.get_corresponding_energy
+      ~SystemPair.get_distance
+      ~SystemPair.get_distance_vector
+      ~SystemPair.get_eigenbasis
+      ~SystemPair.get_eigenenergies
+      ~SystemPair.get_hamiltonian
+      ~SystemPair.set_distance
+      ~SystemPair.set_distance_vector
+      ~SystemPair.set_green_tensor
+      ~SystemPair.set_interaction_order
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~SystemPair.basis
+   ~SystemPair.is_diagonal
+   ~SystemPair.matrix
+
+
+
+.. autoclass:: pairinteraction.SystemPair

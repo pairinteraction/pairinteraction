@@ -1,0 +1,54 @@
+﻿C6
+==
+
+.. currentmodule:: pairinteraction.perturbative
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~C6.__init__
+      ~C6.check_for_resonances
+      ~C6.copy
+      ~C6.get
+      ~C6.get_effective_basis
+      ~C6.get_effective_basisvectors
+      ~C6.get_effective_hamiltonian
+      ~C6.get_pair_energies
+      ~C6.set_angle
+      ~C6.set_delta_l
+      ~C6.set_delta_m
+      ~C6.set_delta_n
+      ~C6.set_diamagnetism_enabled
+      ~C6.set_distance
+      ~C6.set_distance_vector
+      ~C6.set_electric_field
+      ~C6.set_interaction_order
+      ~C6.set_magnetic_field
+      ~C6.set_maximum_number_of_ket_pairs
+      ~C6.set_minimum_number_of_ket_pairs
+      ~C6.set_perturbation_order
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~C6.basis_atoms
+   ~C6.basis_pair
+   ~C6.diamagnetism_enabled
+   ~C6.distance_vector
+   ~C6.electric_field
+   ~C6.interaction_order
+   ~C6.ket_tuples
+   ~C6.magnetic_field
+   ~C6.model_inds
+   ~C6.perturbation_order
+   ~C6.system_atoms
+   ~C6.system_pair
+
+
+
+.. autoclass:: pairinteraction.perturbative.C6
