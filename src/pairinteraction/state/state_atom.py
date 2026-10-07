@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import warnings
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, Any, cast, overload
 
 import numpy as np
 from scipy.sparse import csr_matrix
@@ -188,7 +188,7 @@ class StateAtom(StateBase[KetAtom]):
 
     def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
-        coeffs = self._cpp.get_coefficients()
+        coeffs: Any = self._cpp.get_coefficients()
         self._cpp = self._cpp.copy_with_coefficients(coeffs / self.norm)
         return self
 

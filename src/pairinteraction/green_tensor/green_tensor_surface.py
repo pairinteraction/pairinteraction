@@ -81,7 +81,7 @@ class GreenTensorSurface(GreenTensorBase):
             pos1, pos2, unit, static_limit, interaction_order, without_vacuum_contribution=without_vacuum_contribution
         )
         self.point_on_plane_au = np.array(
-            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane]
+            [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in point_on_plane]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         )
         if np.isclose(np.linalg.norm(surface_normal), 0):
             raise ValueError("Normal vector cannot be zero.")

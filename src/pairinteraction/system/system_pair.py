@@ -143,7 +143,7 @@ class SystemPair(SystemBase[BasisPair]):
                 Default None expects a `pint.Quantity`.
 
         """
-        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
+        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         self._cpp.set_distance_vector(distance_au)
         self._distance_vector_au = np.array(distance_au)
         return self

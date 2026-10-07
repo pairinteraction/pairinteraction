@@ -47,7 +47,8 @@ def normalize(vector: NDArray) -> NDArray:
     norm = np.linalg.norm(vector)
     if np.isclose(norm, 0):
         raise ValueError("Cannot normalize a zero vector.")
-    return vector / norm  # type: ignore [no-any-return]
+    normalized: NDArray = vector / norm
+    return normalized
 
 
 def get_lab_to_local_rotation_matrix(normal: NDArray) -> NDArray:

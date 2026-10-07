@@ -171,7 +171,7 @@ class EffectiveSystemPair:
         """The basis objects for the single-atom systems."""
         if not self._is_created("basis_atoms"):
             self._create_basis_atoms()
-        return self._basis_atoms  # type: ignore [return-value]
+        return self._basis_atoms
 
     @basis_atoms.setter
     def basis_atoms(self, basis_atoms: tuple[BasisAtom, BasisAtom]) -> None:
@@ -349,7 +349,7 @@ class EffectiveSystemPair:
         """
         return [  # type: ignore [return-value]
             sum(
-                system.get_corresponding_energy(ket, unit=unit)
+                system.get_corresponding_energy(ket, unit=unit)  # type: ignore [misc]
                 for system, ket in zip(self.system_atoms, ket_tuple, strict=True)
             )
             for ket_tuple in self.ket_tuples
@@ -524,7 +524,7 @@ class EffectiveSystemPair:
         assert unit in ("radian", "degree"), f"Unit {unit} is not supported for angle."
         if unit == "radian":
             angle = np.rad2deg(angle)
-        distance_mum: float = np.linalg.norm(self.distance_vector.to("micrometer").magnitude)  # type: ignore [assignment]
+        distance_mum = float(np.linalg.norm(self.distance_vector.to("micrometer").magnitude))
         return self.set_distance(distance_mum, angle, "micrometer")
 
     def _create_system_pair(self) -> None:

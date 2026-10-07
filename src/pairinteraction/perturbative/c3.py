@@ -54,7 +54,7 @@ class C3(EffectiveSystemPair):
         """
         h_eff_pint = self.get_effective_hamiltonian(return_order=1)
         distance = self.system_pair.get_distance()
-        c3_pint = h_eff_pint[1, 0] * distance**3  # type: ignore [index]  # pint does not know it can be indexed
+        c3_pint = h_eff_pint[1, 0] * distance**3  # type: ignore [index, operator]  # pint does not know it can be indexed
         return QuantityScalar.convert_pint_to_user(c3_pint, "c3", unit)
 
 

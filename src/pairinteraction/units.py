@@ -149,7 +149,7 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
         """Initialize a Quantity from a value and a unit given as string."""
         if isinstance(value, PlainQuantity):
             raise TypeError("method from_unit: value must be a scalar or an array, not a pint.Quantity")
-        return cls(ureg.Quantity(value, unit), dimension)
+        return cls(ureg.Quantity(value, unit), dimension)  # type: ignore [arg-type] # pint typing does not support generic magnitudes
 
     @classmethod
     def from_au(
@@ -159,7 +159,7 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
     ) -> Self:
         """Initialize a Quantity from a value in atomic units (a.u.) and a (list of) dimension(s)."""
         unit = cls.get_atomic_unit(dimension)
-        return cls(ureg.Quantity(value, unit), dimension)
+        return cls(ureg.Quantity(value, unit), dimension)  # type: ignore [arg-type] # pint typing does not support generic magnitudes
 
     @classmethod
     def from_pint_or_unit(
@@ -196,8 +196,10 @@ class QuantityAbstract(Generic[ValueTypeLike, ValueType]):
             # however, something like "hartree * bohr^3" -> "GHz * bohr^3" does not work
             # the following is a workaround for this kind of conversions
             if "spectroscopy" in contexts:
-                q = self._quantity * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("hartree", "spectroscopy")
-                return q.to(unit, *contexts).magnitude  # type: ignore [no-any-return]
+                q: PlainQuantity[ValueType] = (  # type: ignore [type-var]
+                    self._quantity * ureg.Quantity(1, "GHz") / ureg.Quantity(1, "GHz").to("hartree", "spectroscopy")
+                )
+                return q.to(unit, *contexts).magnitude
             raise
 
     def to_au(self) -> ValueType:

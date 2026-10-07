@@ -8,6 +8,7 @@ import math
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
+from matplotlib.backend_bases import MouseEvent
 from matplotlib.cm import ScalarMappable
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Normalize
@@ -91,12 +92,14 @@ class PlotWidget(WidgetV):
 
         press_positions: dict[Any, tuple[float, float]] = {}
 
-        def on_press(event: mpl.backend_bases.MouseEvent) -> None:
-            if event.x is None or event.y is None:
+        def on_press(event: mpl.backend_bases.Event) -> None:
+            if not isinstance(event, MouseEvent) or event.x is None or event.y is None:
                 return
             press_positions[event.button] = (event.x, event.y)
 
-        def on_release(event: mpl.backend_bases.MouseEvent) -> None:
+        def on_release(event: mpl.backend_bases.Event) -> None:
+            if not isinstance(event, MouseEvent):
+                return
             start = press_positions.pop(event.button, None)
             if start is None or event.x is None or event.y is None:
                 return
@@ -104,7 +107,7 @@ class PlotWidget(WidgetV):
                 return  # this was a drag (e.g. a zoom rectangle), not a click
             on_click(event)
 
-        def on_figure_leave(_event: mpl.backend_bases.LocationEvent) -> None:
+        def on_figure_leave(_event: mpl.backend_bases.Event) -> None:
             # Forget pending presses whose release we will not see, a stale entry would otherwise
             # be used as the starting point of some later, unrelated release.
             press_positions.clear()
@@ -404,7 +407,7 @@ class PlotLifetimes(PlotWidget):
 
         show_status_tip(self, "Preparing transition rates...")
         labels = ["Spontaneous Decay", "Black Body Radiation"]
-        n_list = np.arange(0, np.max([s.n for s in results.kets_bbr + results.kets_sp] + [0]) + 1)
+        n_list = list(range(max([s.n for s in results.kets_bbr + results.kets_sp], default=0) + 1))
         sorted_rates: dict[str, dict[int, list[tuple[KetData, float]]]] = {}
         for key, kets, rates in [
             (labels[0], results.kets_sp, results.transition_rates_sp),

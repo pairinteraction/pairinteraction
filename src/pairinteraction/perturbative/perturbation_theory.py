@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from scipy import sparse
@@ -81,8 +81,8 @@ def _calculate_unsorted_perturbative_hamiltonian(
     if perturbation_order == 0:
         return eff_h_dict, eff_vecs
 
-    v_offdiag = hamiltonian - sparse.diags(energies, dtype=float)
-    v_mm = v_offdiag[np.ix_(m_inds, m_inds)]  # type: ignore [index]
+    v_offdiag: Any = hamiltonian - sparse.diags(energies, dtype=float)
+    v_mm = v_offdiag[np.ix_(m_inds, m_inds)]
     eff_h_dict[1] = v_mm.toarray()
 
     if perturbation_order == 1:
@@ -91,7 +91,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     energies_diff = energies_m[np.newaxis, :] - energies[o_inds, np.newaxis]
     with np.errstate(divide="ignore"):
         delta_e_em = 1 / energies_diff
-    v_me = v_offdiag[np.ix_(m_inds, o_inds)]  # type: ignore [index]
+    v_me = v_offdiag[np.ix_(m_inds, o_inds)]
     eff_h_dict[2] = (v_me @ ((v_me.conj().T).multiply(delta_e_em))).toarray()
 
     addition_mm = sparse.csr_matrix((len(m_inds), len(m_inds)))
@@ -120,7 +120,7 @@ def _calculate_unsorted_perturbative_hamiltonian(
     diff = energies_m[np.newaxis, :] - energies_m[:, np.newaxis]
     diff = np.where(diff == 0, np.inf, diff)
     delta_e_mm = 1 / diff
-    v_ee = v_offdiag[np.ix_(o_inds, o_inds)]  # type: ignore [index]
+    v_ee = v_offdiag[np.ix_(o_inds, o_inds)]
     if len(m_inds) > 1:
         logger.debug(
             "At third order, the effective basisvectors are currently only valid, "

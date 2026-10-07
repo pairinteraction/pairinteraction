@@ -71,7 +71,7 @@ class SystemAtom(SystemBase[BasisAtom]):
                 Default None expects a `pint.Quantity`.
 
         """
-        electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, "electric_field") for v in electric_field]
+        electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, "electric_field") for v in electric_field]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         self._cpp.set_electric_field(electric_field_au)
         return self
 
@@ -88,7 +88,7 @@ class SystemAtom(SystemBase[BasisAtom]):
                 Default None expects a `pint.Quantity`.
 
         """
-        magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, "magnetic_field") for v in magnetic_field]
+        magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, "magnetic_field") for v in magnetic_field]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
@@ -113,7 +113,7 @@ class SystemAtom(SystemBase[BasisAtom]):
         distance: PintArrayLike | ArrayLike,
         unit: str | None = None,
     ) -> Self:
-        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]
+        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
         self._cpp.set_ion_distance_vector(distance_au)
         return self
 
