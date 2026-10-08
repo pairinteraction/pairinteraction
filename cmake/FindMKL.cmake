@@ -3,6 +3,10 @@
 
 include(FindPackageHandleStandardArgs)
 
+# Remember how this module was called, the nested find_package calls below overwrite these variables
+set(MKL_IS_REQUIRED "${MKL_FIND_REQUIRED}")
+set(MKL_IS_QUIET "${MKL_FIND_QUIETLY}")
+
 if(MKL_THREADING STREQUAL "tbb_thread")
   find_package(TBB REQUIRED)
 endif()
@@ -27,11 +31,13 @@ except PackageNotFoundError:
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   if(NOT ONEAPI_RESULT EQUAL 0)
-    message(STATUS "Failed to find Intel oneAPI libraries using Python.")
+    message(STATUS "Failed to find the 'mkl-devel' Python package using ${Python3_EXECUTABLE}.")
   else()
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 MKL_ROOT)
-    list(GET ONEAPI_PATHS_LIST 1 MKL_DIR)
+    list(GET ONEAPI_PATHS_LIST 1 MKL_CONFIG_FILE)
+    # MKL_DIR must be the directory that contains the config file, not the config file itself
+    get_filename_component(MKL_DIR "${MKL_CONFIG_FILE}" DIRECTORY)
     message(STATUS "MKL root determined to be: ${MKL_ROOT}")
     message(STATUS "MKL package config directory determined to be: ${MKL_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${MKL_DIR}")
@@ -41,6 +47,10 @@ else()
 endif()
 
 find_package(MKL QUIET CONFIG)
+
+set(MKL_FIND_REQUIRED "${MKL_IS_REQUIRED}")
+set(MKL_FIND_QUIETLY "${MKL_IS_QUIET}")
+
 if(MKL_CONSIDERED_CONFIGS)
   set(target MKL::MKL)
 
@@ -74,7 +84,11 @@ else()
   find_package_handle_standard_args(
     MKL
     REQUIRED_VARS MKL_FOUND
-    VERSION_VAR MKL_VERSION)
+    VERSION_VAR MKL_VERSION
+    REASON_FAILURE_MESSAGE
+      "MKL is obtained from the 'mkl-devel' Python package. To use MKL, install the build requirements into the Python \
+environment that CMake uses (${Python3_EXECUTABLE}) by running 'pip install -r .build_requirements.txt'. Otherwise, \
+LAPACKE is used instead of MKL.")
 
   if(MKL_FOUND)
     add_library(MKL::MKL ALIAS PkgConfig::MKL)
