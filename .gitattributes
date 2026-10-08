@@ -1,1 +1,6 @@
+# Normalize line endings: text files are stored and checked out with LF, which matches the
+# "mixed-line-ending --fix=lf" pre-commit hook. Windows batch files need CRLF to be reliable.
+* text=auto eol=lf
+*.bat text eol=crlf
+
 data/database/tables/**/*.parquet filter=lfs diff=lfs merge=lfs -text
