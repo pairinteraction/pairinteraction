@@ -118,19 +118,29 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-# Find duckdb  # keep the version used here in sync with pyproject.toml
+# Find duckdb
+set(DUCKDB_EXPECTED_VERSION 1.4.4) # keep in sync with pyproject.toml
 find_package(DuckDB QUIET)
+# DuckDB reports its version with a "v" prefix (e.g., "v1.4.4"), which CMake's version comparison treats as older than
+# any "1.x.y". Thus, we cannot pass the version to find_package and compare the versions ourselves.
+if(DuckDB_FOUND)
+  string(REGEX REPLACE "^v" "" DUCKDB_FOUND_VERSION "${DuckDB_VERSION}")
+  if(NOT DUCKDB_FOUND_VERSION VERSION_EQUAL DUCKDB_EXPECTED_VERSION)
+    message(WARNING "Found DuckDB ${DuckDB_VERSION} in ${DuckDB_DIR}, but version ${DUCKDB_EXPECTED_VERSION} is "
+                    "expected to match the duckdb Python package.")
+  endif()
+endif()
 if(NOT DuckDB_FOUND AND (APPLE OR UNIX))
   if(APPLE)
-    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-osx-universal.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v${DUCKDB_EXPECTED_VERSION}/libduckdb-osx-universal.zip)
     set(DUCKDB_LIBNAME libduckdb.dylib)
-    set(DUCKDB_SHA256 efd0c2424589f0d5743ffdc0de22ce84b99bf307c330752f44277cffa3406e43)
+    set(DUCKDB_SHA256 5e6d79f5fb86bbd4f24d59cee3bc38f113d1433761df35337e3c01c62eeafe26)
   elseif(UNIX)
     # You can manually compile DuckDB and use it by calling CMake with
     # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
-    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-linux-amd64.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v${DUCKDB_EXPECTED_VERSION}/libduckdb-linux-amd64.zip)
     set(DUCKDB_LIBNAME libduckdb.so)
-    set(DUCKDB_SHA256 3c7bb8d586d39ccce56442c3f6bafa97f53d7b6bb5405dac827442fcb31494aa)
+    set(DUCKDB_SHA256 09cc288295964d897b47665d1898e16e8ef176cae9ea615797fc136eae15bd5d)
   endif()
   FetchContent_Declare(
     duckdb
