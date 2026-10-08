@@ -96,7 +96,7 @@ class SystemPair(SystemBase[BasisPair]):
         - 2: + monopole-dipole
         - 3: + monopole-quadrupole and dipole-dipole
         - 4: + dipole-quadrupole
-        - 5: + quadrupole-quadrupole
+        - 5: + quadrupole-quadrupole and dipole-octupole
 
         The monopole terms vanish for neutral atoms and only contribute for charged species like
         Rydberg ions. Default is 3.

@@ -146,6 +146,27 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     real_t typical_electric_dipole = 1e4;     // ~n^2
     real_t typical_electric_quadrupole = 1e8; // ~n^4
 
+    // Helper function for adding the interaction with a field
+    // Because an electric multipole operator of order kappa has parity (-1)^kappa,
+    // whereas the magnetic dipole operator is an axial vector and thus parity-even,
+    // the parity is broken by an electric operator of odd order only.
+    auto add_field_interaction = [this, &get_operator_matrix, &numerical_precision,
+                                  &sort_by_quantum_number_f, &sort_by_quantum_number_m,
+                                  &sort_by_parity](const auto &coefficients, OperatorType type,
+                                                   int kappa, real_t typical_magnitude,
+                                                   real_t prefactor = 1) {
+        for (int q = -kappa; q <= kappa; ++q) {
+            if (std::abs(coefficients[q + kappa]) * typical_magnitude > numerical_precision) {
+                this->matrix -= prefactor * coefficients[q + kappa] * get_operator_matrix(type, q);
+                sort_by_quantum_number_f = false;
+                sort_by_quantum_number_m &= (q == 0);
+                if (type != OperatorType::MAGNETIC_DIPOLE && kappa % 2 != 0) {
+                    sort_by_parity = false;
+                }
+            }
+        }
+    };
+
     // Add the interaction with the field of an ion (see
     // https://en.wikipedia.org/wiki/Multipole_expansion#Spherical_form for details)
 
@@ -162,16 +183,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             spherical::get_transformator<Scalar>(1) * vector_map / distance;
         vector_dipole_order = vector_dipole_order.conjugate() / std::pow(distance, 2);
 
-        for (int q = -1; q <= 1; ++q) {
-            if (std::abs(vector_dipole_order[q + 1]) * typical_electric_dipole >
-                numerical_precision) {
-                this->matrix -= ion_charge * vector_dipole_order[q + 1] *
-                    get_operator_matrix(OperatorType::ELECTRIC_DIPOLE, q);
-                sort_by_quantum_number_f = false;
-                sort_by_parity = false;
-                sort_by_quantum_number_m &= (q == 0);
-            }
-        }
+        add_field_interaction(vector_dipole_order, OperatorType::ELECTRIC_DIPOLE, 1,
+                              typical_electric_dipole, ion_charge);
     }
 
     // Quadrupole order (the last entry of vector_quadrupole_order would correspond to
@@ -184,15 +197,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             Eigen::KroneckerProduct(vector_map / distance, vector_map / distance);
         vector_quadrupole_order = 3 * vector_quadrupole_order.conjugate() / std::pow(distance, 3);
 
-        for (int q = -2; q <= 2; ++q) {
-            if (std::abs(vector_quadrupole_order[q + 2]) * typical_electric_quadrupole >
-                numerical_precision) {
-                this->matrix -= ion_charge * vector_quadrupole_order[q + 2] *
-                    get_operator_matrix(OperatorType::ELECTRIC_QUADRUPOLE, q);
-                sort_by_quantum_number_f = false;
-                sort_by_quantum_number_m &= (q == 0);
-            }
-        }
+        add_field_interaction(vector_quadrupole_order, OperatorType::ELECTRIC_QUADRUPOLE, 2,
+                              typical_electric_quadrupole, ion_charge);
     }
 
     // Add external fields (see https://arxiv.org/abs/1612.08053 for details)
@@ -211,30 +217,15 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // = - d_{1,0} E_{0} - d_{1,1} E_{+}^* - d_{1,-1} E_{-}^*
     // with the electric dipole operator: d_{1,q} = - e r sqrt{4 pi / 3} Y_{1,q}(\theta, \phi)
     // where electric_field_spherical=[E_{-}^*, E_{0}, E_{+}^*]
-    for (int q = -1; q <= 1; ++q) {
-        if (std::abs(electric_field_spherical[q + 1]) * typical_electric_dipole >
-            numerical_precision) {
-            this->matrix -= electric_field_spherical[q + 1] *
-                get_operator_matrix(OperatorType::ELECTRIC_DIPOLE, q);
-            sort_by_quantum_number_f = false;
-            sort_by_parity = false;
-            sort_by_quantum_number_m &= (q == 0);
-        }
-    }
+    add_field_interaction(electric_field_spherical, OperatorType::ELECTRIC_DIPOLE, 1,
+                          typical_electric_dipole);
 
     // Zeeman effect: - \vec{\mu} \vec{B} = - \mu_{1,0} B_{0} + \mu_{1,1} B_{-} + \mu_{1,-1} B_{+}
     // = - \mu_{1,0} B_{0} - \mu_{1,1} B_{+}^* - \mu_{1,-1} B_{-}^*
     // with the magnetic dipole operator: \vec{\mu} = - \mu_B / \hbar (g_l \vec{l} + g_s \vec{s})
     // where magnetic_field_spherical=[B_{-}^*, B_{0}, B_{+}^*]
-    for (int q = -1; q <= 1; ++q) {
-        if (std::abs(magnetic_field_spherical[q + 1]) * typical_magnetic_dipole >
-            numerical_precision) {
-            this->matrix -= magnetic_field_spherical[q + 1] *
-                get_operator_matrix(OperatorType::MAGNETIC_DIPOLE, q);
-            sort_by_quantum_number_f = false;
-            sort_by_quantum_number_m &= (q == 0);
-        }
-    }
+    add_field_interaction(magnetic_field_spherical, OperatorType::MAGNETIC_DIPOLE, 1,
+                          typical_magnetic_dipole);
 
     // Diamagnetism: 1 / (8 m_e) abs(\vec{d} \times \vec{B})^2
     // = (1/12) \left[ B_0^2 (q0 - d_{2,0}) +  B_+ B_- (-2 q0 - d_{2,0})
@@ -309,10 +300,13 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // where D_left uses conjugated convention and
     // D_right uses normal convention.
 
-    // Helper function for adding self interaction
-    auto add_interaction = [this, &sort_by_quantum_number_f,
-                            &sort_by_quantum_number_m](const auto &entries, const auto &op_left,
-                                                       const auto &op_right, int delta) {
+    // Helper function for adding self interaction.
+    auto add_interaction = [this, &sort_by_quantum_number_f, &sort_by_quantum_number_m,
+                            &sort_by_parity](const auto &op_left, const auto &op_right, int kappa1,
+                                             int kappa2) {
+        const auto &entries =
+            this->green_tensor_interpolator->get_spherical_entries(kappa1, kappa2);
+
         for (const auto &entry : entries) {
             if (std::holds_alternative<
                     typename GreenTensorInterpolator<Scalar>::OmegaDependentEntry>(entry)) {
@@ -329,8 +323,11 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             this->matrix += self_interaction;
 
             sort_by_quantum_number_f = false;
-            if (constant_entry.row() != constant_entry.col() + delta) {
+            if (constant_entry.row() != constant_entry.col() + kappa1 - kappa2) {
                 sort_by_quantum_number_m = false;
+            }
+            if ((kappa1 + kappa2) % 2 != 0) {
+                sort_by_parity = false;
             }
         }
     };
@@ -342,8 +339,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             auto dipole_right =
                 get_matrices(this->basis, OperatorType::ELECTRIC_DIPOLE, {-1, 0, +1}, false);
 
-            add_interaction(green_tensor_interpolator->get_spherical_entries(1, 1), dipole_left,
-                            dipole_right, 0);
+            add_interaction(dipole_left, dipole_right, 1, 1);
         }
     }
 

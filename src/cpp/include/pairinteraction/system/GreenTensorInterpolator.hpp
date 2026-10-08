@@ -8,6 +8,7 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/Dense>
+#include <array>
 #include <complex>
 #include <map>
 #include <unsupported/Eigen/Splines>
@@ -56,6 +57,10 @@ public:
     };
 
     using Entry = std::variant<ConstantEntry, OmegaDependentEntry>;
+
+    static GreenTensorInterpolator<Scalar>
+    from_multipole_expansion(const std::array<real_t, 3> &distance_vector, int interaction_order,
+                             int minimal_kappa1, int minimal_kappa2);
 
     void
     create_entries_from_cartesian(int kappa1, int kappa2,
