@@ -8,7 +8,8 @@ For building the documentation, we are using Sphinx_. In order to build the docu
 :ref:`development environment <system_setup>` and create a :ref:`Python environment <python_setup>`. If not stated
 otherwise, all commands described are run from the `docs` folder of the PairInteraction repository.
 
-In order to install all dependencies to smoothly run Sphinx_, you should first run
+In order to install all dependencies to smoothly run Sphinx_, you should first run in the root directory of the
+repository
 
 .. code-block:: bash
 

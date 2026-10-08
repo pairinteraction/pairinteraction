@@ -151,6 +151,10 @@ VERSION_PATCH \s* =? \s* (?P<patch>\d+)
 '''
 result = "{major}.{minor}.{patch}"
 
+[tool.scikit-build.cmake.define]
+# Force x64 with the Visual Studio generator on Windows (defaults to Win32/x86 otherwise);
+# no-op on Linux/macOS. Required since MKL/TBB only provide 64-bit builds.
+CMAKE_GENERATOR_PLATFORM = "x64"
 
 [tool.cibuildwheel]
 build = [  # for python >= 3.12 only one stable abi wheel is built, which is then tested against all specified python versions

@@ -248,6 +248,50 @@ Breakpoints and stepping
 ``s``                    Execute next source-code line, stepping into function calls
 ======================== ===========================================================
 
+*************************
+ Windows specific issues
+*************************
+
+Some typical issues that occur on Windows are related to environment variables or path handling.
+
+Incorrect ``Python_ROOT_DIR``
+=============================
+
+Make sure that the ``Python_ROOT_DIR`` variable does not point to a Python installation other than the ``uv``
+environment you intend to use. If this variable is set incorrectly, CMake may pick up the wrong interpreter and
+libraries, leading to build or runtime errors. In case you do not necessary need the ``Python_ROOT_DIR`` variable, it is
+recommended to delete it and restart your shell before running CMake.
+
+Maximum Path Length
+===================
+
+Windows imposes a maximum path length of 260 characters by default. Since DuckDB_ tends to generate deeply nested paths
+within the build folder, this limit can easily be exceeded, causing build failures.
+
+To work around this, it is recommended to map the project root to a virtual drive letter, which effectively shortens the
+path:
+
+.. code-block:: bash
+
+    subst P: .
+    mkdir build
+    cd build
+    cmake -S .. -B P:\build
+    cmake --build .
+
+Outdated vcpkg Baseline
+=======================
+
+Another common issue is that the local vcpkg baseline may be outdated compared to the upstream GitHub repository. When
+this happens, vcpkg may fail to locate the package versions specified in your ``vcpkg.json``, since it cannot resolve
+them against its known baseline. To fix this, update the baseline by running:
+
+.. code-block:: bash
+
+    vcpkg x-update-baseline
+
+.. _duckdb: https://duckdb.org/
+
 .. _gdb's commands: http://www.unknownroad.com/rtfm/gdbtut/gdbtoc.html
 
 .. _pip: https://pypi.org/project/pip/

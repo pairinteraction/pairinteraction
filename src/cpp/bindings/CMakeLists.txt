@@ -56,16 +56,62 @@ set_target_properties(
 target_include_directories(backend SYSTEM PRIVATE ${NB_DIR}/include)
 
 # Windows-specific post-build command to copy runtime DLLs
+# Windows-specific post-build command to copy runtime DLLs
 if(WIN32)
+  # OpenSSL's imported targets from vcpkg only define per-config
+  # properties for RELEASE and DEBUG (no RELWITHDEBINFO/MINSIZEREL), so
+  # the bare IMPORTED_IMPLIB/IMPORTED_LOCATION properties resolve to
+  # NOTFOUND for those build types. Look up the config-specific property
+  # explicitly, using the Release libs for anything other than Debug.
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(_openssl_config "DEBUG")
+  else()
+    set(_openssl_config "RELEASE")
+  endif()
+
+  get_target_property(OPENSSL_SSL_IMPLIB OpenSSL::SSL IMPORTED_IMPLIB_${_openssl_config})
+  get_target_property(OPENSSL_CRYPTO_IMPLIB OpenSSL::Crypto IMPORTED_IMPLIB_${_openssl_config})
+
+  if(NOT OPENSSL_SSL_IMPLIB)
+    get_target_property(OPENSSL_SSL_IMPLIB OpenSSL::SSL IMPORTED_LOCATION_${_openssl_config})
+  endif()
+
+  if(NOT OPENSSL_SSL_IMPLIB)
+    message(FATAL_ERROR "Could not determine OpenSSL::SSL import library for config ${_openssl_config}")
+  endif()
+
+  get_filename_component(OPENSSL_LIB_DIR ${OPENSSL_SSL_IMPLIB} DIRECTORY)
+  get_filename_component(OPENSSL_BIN_DIR ${OPENSSL_LIB_DIR}/../bin ABSOLUTE)
+
+  file(GLOB OPENSSL_DLLS "${OPENSSL_BIN_DIR}/libssl-*.dll" "${OPENSSL_BIN_DIR}/libcrypto-*.dll")
+
+  if(NOT OPENSSL_DLLS)
+    message(FATAL_ERROR "Could not find OpenSSL DLLs in ${OPENSSL_BIN_DIR}")
+  endif()
+
   add_custom_command(
     TARGET backend
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:backend> $<TARGET_FILE_DIR:backend>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      $<TARGET_RUNTIME_DLLS:backend>
+      ${OPENSSL_DLLS}
+      $<TARGET_FILE_DIR:backend>
     COMMAND_EXPAND_LISTS)
+
+  install(FILES ${OPENSSL_DLLS} DESTINATION pairinteraction)
+  install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction)
 endif()
 
 install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction)
+
+if(WIN32 AND DUCKDB_EXTRA_RUNTIME_DLLS)
+  install(FILES ${DUCKDB_EXTRA_RUNTIME_DLLS} DESTINATION pairinteraction)
+endif()
 install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction)
+
+
+
+
 
 # If one cross-compiles, the resulting python package cannot be imported. Thus, a stub file cannot be generated.
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL CMAKE_HOST_SYSTEM_PROCESSOR AND NOT CMAKE_CXX_FLAGS MATCHES "sanitize=address")
