@@ -366,6 +366,12 @@ class EffectiveSystemPair:
     @basis_pair.setter
     def basis_pair(self, basis_pair: BasisPair) -> None:
         self._ensure_not_created()
+        # The effective Hamiltonian can only be calculated in a product state basis
+        if basis_pair._cpp.has_quantum_number("parity_under_permutation"):
+            raise ValueError(
+                "The basis_pair must not be symmetrized for calculating effective Hamiltonians. "
+                "Create the basis_pair with `symmetrize=False`."
+            )
         self._user_set_parts.add("basis_pair")
         self._basis_pair = basis_pair
         self.system_atoms = basis_pair.system_atoms
@@ -396,6 +402,7 @@ class EffectiveSystemPair:
                 delta_energy=delta_energy,
                 delta_energy_unit=delta_energy_unit,
                 number_of_kets=number_of_kets,
+                symmetrize=False,
             )
             return
 
@@ -407,6 +414,7 @@ class EffectiveSystemPair:
             system_atoms=self.system_atoms,
             delta_energy=delta_energy_ghz,
             delta_energy_unit="GHz",
+            symmetrize=False,
         )
 
         if basis_pair.number_of_kets > 25_000:
@@ -440,9 +448,9 @@ class EffectiveSystemPair:
         self._ensure_not_created()
         if self._interaction_order is not None or self._distance_vector is not None:
             logger.warning("Setting system_pair will overwrite parameters defined for system_pair.")
+        self.basis_pair = system_pair.basis
         self._user_set_parts.add("system_pair")
         self._system_pair = system_pair
-        self.basis_pair = system_pair.basis
 
     @property
     def interaction_order(self) -> int:

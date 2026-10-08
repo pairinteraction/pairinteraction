@@ -46,6 +46,7 @@ public:
     using real_t = typename traits::CrtpTraits<Derived>::real_t;
     using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
+    using quantum_numbers_of_states_t = std::unordered_map<std::string, std::vector<real_t>>;
 
     Basis() = delete;
     virtual ~Basis() = default;
@@ -98,6 +99,8 @@ public:
 
 protected:
     Basis(ketvec_t &&kets);
+    Basis(ketvec_t &&kets, Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
+          quantum_numbers_of_states_t &&quantum_numbers_of_states);
     ketvec_t kets;
 
 private:
@@ -107,6 +110,6 @@ private:
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 
-    std::unordered_map<std::string, std::vector<real_t>> quantum_numbers_of_states;
+    quantum_numbers_of_states_t quantum_numbers_of_states;
 };
 } // namespace pairinteraction

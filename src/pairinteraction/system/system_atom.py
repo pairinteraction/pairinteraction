@@ -161,15 +161,14 @@ class SystemAtom(SystemBase[BasisAtom]):
         self._cpp.set_green_tensor_interpolator(gti._cpp)
         return self
 
-    @overload
+    @overload  # type: ignore [override]
     def get_corresponding_energy(self: Self, ket: KetAtom, unit: None = None) -> PintFloat: ...
 
     @overload
     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str) -> float: ...
 
     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str | None = None) -> float | PintFloat:
-        state_idx = self.get_eigenbasis().get_corresponding_state_index(ket)
-        return self.get_eigenenergies(unit=unit)[state_idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return super().get_corresponding_energy(ket, unit)
 
 
 class SystemAtomReal(SystemAtom):

@@ -68,6 +68,13 @@ public:
               map_indices_t &&state_indices_to_ket_index,
               std::shared_ptr<const BasisAtom<Scalar>> basis1,
               std::shared_ptr<const BasisAtom<Scalar>> basis2);
+    BasisPair(Private /*unused*/, ketvec_t &&kets,
+              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+              typename Basis<Type>::quantum_numbers_of_states_t &&quantum_numbers_of_states,
+              map_range_t &&state_index1_to_state_index_range2,
+              map_indices_t &&state_indices_to_ket_index,
+              std::shared_ptr<const BasisAtom<Scalar>> basis1,
+              std::shared_ptr<const BasisAtom<Scalar>> basis2);
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;

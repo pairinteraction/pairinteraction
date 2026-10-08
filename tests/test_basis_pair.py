@@ -197,7 +197,7 @@ def test_symmetrization_is_complete(
     Summing the number of states over the even and odd sector reproduces the number of states of
     the unsymmetrized basis, i.e. symmetrization neither loses nor duplicates states.
     """
-    canonical = pi_module.BasisPair([system_atom, system_atom])
+    canonical = pi_module.BasisPair([system_atom, system_atom], symmetrize=False)
     sectors = [pi_module.BasisPair([system_atom, system_atom], **{restriction: parity}) for parity in ["even", "odd"]]  # type: ignore [arg-type]
 
     assert sum(sector.number_of_states for sector in sectors) == canonical.number_of_states
@@ -219,6 +219,25 @@ def test_symmetrization_requires_same_system(
     # Without a parity restriction, two different systems remain allowed.
     basis = pi_module.BasisPair([system_atom, system_atom2])
     assert basis.number_of_states > 0
+    assert basis.is_canonical
+
+    # Explicitly requesting symmetrization of two different systems is rejected.
+    with pytest.raises(ValueError, match="same SystemAtom"):
+        pi_module.BasisPair([system_atom, system_atom2], symmetrize=True)
+
+
+def test_symmetrization_opt_out(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:
+    """Symmetrization is applied by default if possible and can be disabled to obtain product states."""
+    symmetrized = pi_module.BasisPair([system_atom, system_atom])
+    canonical = pi_module.BasisPair([system_atom, system_atom], symmetrize=False)
+
+    assert not symmetrized.is_canonical
+    assert not pi_module.BasisPair([system_atom, system_atom], symmetrize=True).is_canonical
+    assert canonical.is_canonical
+    assert symmetrized.number_of_states == canonical.number_of_states
+
+    with pytest.raises(ValueError, match="symmetrization"):
+        pi_module.BasisPair([system_atom, system_atom], parity_under_permutation="odd", symmetrize=False)
 
 
 def test_from_kets(pi_module: PairinteractionModule, system_atom: SystemAtom) -> None:

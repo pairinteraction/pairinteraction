@@ -25,6 +25,8 @@ const std::map<SorterType, std::string> BasisPair<Scalar>::sorter_type_to_quantu
     {SorterType::QUANTUM_NUMBER_F, "f"},
     {SorterType::QUANTUM_NUMBER_M, "m"},
     {SorterType::PARITY, "product_of_parities"},
+    {SorterType::PARITY_UNDER_INVERSION, "parity_under_inversion"},
+    {SorterType::PARITY_UNDER_PERMUTATION, "parity_under_permutation"},
 };
 
 template <typename Scalar>
@@ -34,6 +36,20 @@ BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
                              std::shared_ptr<const BasisAtom<Scalar>> basis1,
                              std::shared_ptr<const BasisAtom<Scalar>> basis2)
     : Basis<BasisPair<Scalar>>(std::move(kets)),
+      state_index1_to_state_index_range2(std::move(state_index1_to_state_index_range2)),
+      state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
+      basis2(std::move(basis2)) {}
+
+template <typename Scalar>
+BasisPair<Scalar>::BasisPair(
+    Private /*unused*/, ketvec_t &&kets,
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+    typename Basis<Type>::quantum_numbers_of_states_t &&quantum_numbers_of_states,
+    map_range_t &&state_index1_to_state_index_range2, map_indices_t &&state_indices_to_ket_index,
+    std::shared_ptr<const BasisAtom<Scalar>> basis1,
+    std::shared_ptr<const BasisAtom<Scalar>> basis2)
+    : Basis<BasisPair<Scalar>>(std::move(kets), std::move(coefficients),
+                               std::move(quantum_numbers_of_states)),
       state_index1_to_state_index_range2(std::move(state_index1_to_state_index_range2)),
       state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
       basis2(std::move(basis2)) {}

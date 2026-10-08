@@ -83,6 +83,27 @@ Basis<Derived>::Basis(ketvec_t &&kets)
 }
 
 template <typename Derived>
+Basis<Derived>::Basis(ketvec_t &&kets,
+                      Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
+                      quantum_numbers_of_states_t &&quantum_numbers_of_states)
+    : kets(std::move(kets)), coefficients(std::move(coefficients)),
+      quantum_numbers_of_states(std::move(quantum_numbers_of_states)) {
+    if (this->kets.empty()) {
+        throw std::invalid_argument("The basis must contain at least one element.");
+    }
+    if (this->coefficients.rows() != static_cast<Eigen::Index>(this->kets.size())) {
+        throw std::invalid_argument(
+            "The number of rows of the coefficient matrix must equal the number of kets.");
+    }
+    for (const auto &[name, quantum_numbers] : this->quantum_numbers_of_states) {
+        if (quantum_numbers.size() != static_cast<size_t>(this->coefficients.cols())) {
+            throw std::invalid_argument("The number of values of the quantum number " + name +
+                                        " must equal the number of states.");
+        }
+    }
+}
+
+template <typename Derived>
 void Basis<Derived>::make_canonical() {
     auto n = static_cast<Eigen::Index>(kets.size());
     if (coefficients.rows() != n || coefficients.cols() != n) {
@@ -93,7 +114,9 @@ void Basis<Derived>::make_canonical() {
     // Make the i-th state equal to the i-th ket
     coefficients.setIdentity();
 
-    // Assign each state the quantum numbers of the ket it is equal to
+    // Assign each state the quantum numbers of the ket it is equal to. Quantum numbers that are
+    // not carried by the kets, e.g., symmetry labels, are dropped.
+    quantum_numbers_of_states.clear();
     for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
         std::vector<real_t> quantum_numbers;
         quantum_numbers.reserve(kets.size());

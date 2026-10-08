@@ -59,7 +59,7 @@ def test_electric_dipole(pi_module: PairinteractionModule) -> None:
     distance = ureg.Quantity(10.0, "micrometer")
     basis = pi_module.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
     system = pi_module.SystemAtom(basis)
-    basis_pair = pi_module.BasisPair([system, system])
+    basis_pair = pi_module.BasisPair([system, system], symmetrize=False)
     system_pair = pi_module.SystemPair(basis_pair)
     system_pair.set_interaction_order(3)
     system_pair.set_distance(distance)

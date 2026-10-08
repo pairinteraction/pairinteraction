@@ -96,6 +96,7 @@ static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_n
              &BasisPairCreator<T>::restrict_parity_under_inversion)
         .def("restrict_parity_under_permutation",
              &BasisPairCreator<T>::restrict_parity_under_permutation)
+        .def("set_symmetrization_enabled", &BasisPairCreator<T>::set_symmetrization_enabled)
         .def("create", &BasisPairCreator<T>::create, nb::call_guard<nb::gil_scoped_release>());
 }
 

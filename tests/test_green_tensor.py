@@ -100,7 +100,9 @@ def test_vacuum_green_tensor(
     basis = pi_module.BasisAtom("Rb", n=(0, 0), additional_kets=[ket1, ket2])
     system = pi_module.SystemAtom(basis)
     pair_energy = ket1.get_energy("GHz") + ket2.get_energy("GHz")
-    basis_pair = pi_module.BasisPair((system, system), energy=(pair_energy - 0.1, pair_energy + 0.1), energy_unit="GHz")
+    basis_pair = pi_module.BasisPair(
+        (system, system), energy=(pair_energy - 0.1, pair_energy + 0.1), energy_unit="GHz", symmetrize=False
+    )
 
     dd = ket1.get_matrix_element(ket2, "electric_dipole", q=0)
     gt_reference = reference_green_tensor_vacuum(distance_vector_mum)
