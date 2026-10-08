@@ -386,6 +386,7 @@ def create_system_for_perturbative(  # noqa: C901, PLR0912, PLR0915
             system_atoms,
             energy=(min(pair_energies_au) - delta_energy_au, max(pair_energies_au) + delta_energy_au),
             energy_unit="hartree",
+            symmetrize=False,
         )
 
     mhz_au = QuantityScalar.convert_user_to_au(1, "MHz", "energy")

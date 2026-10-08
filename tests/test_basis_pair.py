@@ -197,7 +197,7 @@ def test_symmetrization_is_complete(
     Summing the number of states over the even and odd sector reproduces the number of states of
     the unsymmetrized basis, i.e. symmetrization neither loses nor duplicates states.
     """
-    canonical = pi_module.BasisPair([system_atom, system_atom])
+    canonical = pi_module.BasisPair([system_atom, system_atom], symmetrize=False)
     sectors = [pi_module.BasisPair([system_atom, system_atom], **{restriction: parity}) for parity in ["even", "odd"]]  # type: ignore [arg-type]
 
     assert sum(sector.number_of_states for sector in sectors) == canonical.number_of_states

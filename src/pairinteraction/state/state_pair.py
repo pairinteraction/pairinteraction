@@ -108,7 +108,7 @@ class StatePair(StateBase[KetPair]):
         considered_num_kets_list = [100, 1_000, 10_000] if considered_num_kets is None else [considered_num_kets]
         for number_of_kets in considered_num_kets_list:
             canonical_basis_pair = basis_pair_class.from_kets(
-                ket_atom_tuple, system_atoms, number_of_kets=number_of_kets, warn_number_of_kets=False
+                ket_atom_tuple, system_atoms, number_of_kets=number_of_kets, symmetrize=False, warn_number_of_kets=False
             )
 
             amplitudes = canonical_basis_pair.get_amplitudes(self)
