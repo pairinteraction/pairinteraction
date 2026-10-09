@@ -197,7 +197,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     if (this->is_diagonal()) {
-        if (sort_by_energy && !this->is_diagonal_and_sorted_by_energy()) {
+        if (sort_by_energy && !basis->is_sorted_by_energy()) {
             transform(get_sorter({SorterType::ENERGY}));
         }
         return *this;
@@ -373,16 +373,6 @@ bool System<Derived>::is_diagonal() const {
     }
 
     return true;
-}
-
-template <typename Derived>
-bool System<Derived>::is_diagonal_and_sorted_by_energy() const {
-    if (!this->is_diagonal()) {
-        return false;
-    }
-
-    Eigen::VectorX<real_t> eigenenergies = matrix.diagonal().real();
-    return std::is_sorted(eigenenergies.data(), eigenenergies.data() + eigenenergies.size());
 }
 
 // Explicit instantiation
