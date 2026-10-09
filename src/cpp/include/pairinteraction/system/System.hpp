@@ -51,7 +51,6 @@ public:
                                  std::optional<real_t> max_eigenenergy = {}, double rtol = 1e-6,
                                  bool sort_by_energy = true);
     bool is_diagonal() const;
-    bool is_diagonal_and_sorted_by_energy() const;
 
 protected:
     mutable std::shared_ptr<const basis_t> basis;
