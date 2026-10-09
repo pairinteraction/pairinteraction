@@ -28,24 +28,24 @@ int main(int argc, char **argv) {
     bool success = true;
 
     // Create a dipole operator coupling two specific states
-    auto ket1 = pairinteraction::KetAtomCreator()
+    auto ket1 = pairinteraction::KetAtomCreator(database)
                     .set_species("Rb")
                     .set_quantum_number("n", 60)
                     .set_quantum_number("l", 0)
                     .set_quantum_number("j", 0.5)
                     .set_quantum_number("m", 0.5)
-                    .create(database);
+                    .create();
 
-    auto ket2 = pairinteraction::KetAtomCreator()
+    auto ket2 = pairinteraction::KetAtomCreator(database)
                     .set_species("Rb")
                     .set_quantum_number("n", 60)
                     .set_quantum_number("l", 1)
                     .set_quantum_number("j", 0.5)
                     .set_quantum_number("m", 0.5)
-                    .create(database);
+                    .create();
 
     auto basis_ket1_ket2 =
-        pairinteraction::BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).create(database);
+        pairinteraction::BasisAtomCreator<double>(database).add_ket(ket1).add_ket(ket2).create();
 
     auto dipole_ket1_ket2 = database.get_matrix_elements_in_canonical_basis<double>(
         basis_ket1_ket2, basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
@@ -78,12 +78,12 @@ int main(int argc, char **argv) {
     }
 
     // Create dipole operators in a typical basis
-    auto basis = pairinteraction::BasisAtomCreator<std::complex<double>>()
+    auto basis = pairinteraction::BasisAtomCreator<std::complex<double>>(database)
                      .set_species("Sr88_sqdt")
                      .restrict_quantum_number("n", 60, 63)
                      .restrict_quantum_number("l", 0, 3)
                      .restrict_quantum_number("s", 0, 0)
-                     .create(database);
+                     .create();
 
     auto dipole_0 = database.get_matrix_elements_in_canonical_basis<std::complex<double>>(
         basis, basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);

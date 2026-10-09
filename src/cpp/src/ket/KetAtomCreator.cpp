@@ -9,8 +9,11 @@
 #include <cmath>
 
 namespace pairinteraction {
-KetAtomCreator::KetAtomCreator(std::string species, int n, double l, double j, double m)
-    : species(std::move(species)) {
+KetAtomCreator::KetAtomCreator(Database &database) : database(database) {}
+
+KetAtomCreator::KetAtomCreator(Database &database, std::string species, int n, double l, double j,
+                               double m)
+    : database(database), species(std::move(species)) {
     set_quantum_number("n", n);
     set_quantum_number("l", l);
     set_quantum_number("j", j);
@@ -39,7 +42,7 @@ KetAtomCreator &KetAtomCreator::set_quantum_number(const std::string &name, doub
     return *this;
 }
 
-std::shared_ptr<const KetAtom> KetAtomCreator::create(Database &database) const {
+std::shared_ptr<const KetAtom> KetAtomCreator::create() const {
 
     if (!species.has_value()) {
         throw std::runtime_error("Species not set.");

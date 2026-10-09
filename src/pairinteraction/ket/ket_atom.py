@@ -131,7 +131,11 @@ class KetAtom(KetBase):
             database: Which database to use. Default None, i.e. use the global database instance.
 
         """
-        creator = _backend.KetAtomCreator()
+        if database is None:
+            if Database.get_global_database() is None:
+                Database.initialize_global_database()
+            database = Database.get_global_database()
+        creator = _backend.KetAtomCreator(database._cpp)
         creator.set_species(species)
         if energy is not None:
             energy_au = QuantityScalar.convert_user_to_au(energy, energy_unit, "energy")
@@ -157,12 +161,8 @@ class KetAtom(KetBase):
         for name, value in quantum_numbers.items():
             if value is not None:
                 creator.set_quantum_number(name, value)
-        if database is None:
-            if Database.get_global_database() is None:
-                Database.initialize_global_database()
-            database = Database.get_global_database()
         try:
-            self._cpp = creator.create(database._cpp)
+            self._cpp = creator.create()
         except _backend.KetNotUniqueError as err:
             candidates = [type(self)._from_cpp_object(ket) for ket in err.kets]  # type: ignore [attr-defined]
             labels = "\n".join(ket.get_label("ket") for ket in candidates)

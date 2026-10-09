@@ -9,6 +9,9 @@
 
 namespace pairinteraction {
 template <typename Scalar>
+BasisAtomCreator<Scalar>::BasisAtomCreator(Database &database) : database(database) {}
+
+template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(const std::string &value) {
     species.emplace(value);
     return *this;
@@ -59,8 +62,7 @@ BasisAtomCreator<Scalar>::add_ket(const std::shared_ptr<const ket_t> &ket) {
 }
 
 template <typename Scalar>
-std::shared_ptr<const BasisAtom<Scalar>>
-BasisAtomCreator<Scalar>::create(Database &database) const {
+std::shared_ptr<const BasisAtom<Scalar>> BasisAtomCreator<Scalar>::create() const {
 
     if (species.has_value() && additional_ket_species.has_value() &&
         species.value() != additional_ket_species.value()) {

@@ -66,7 +66,8 @@ template <typename T>
 static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtomCreator" + type_name;
     nb::class_<BasisAtomCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
+    // keep_alive because the creator stores a reference to the database
+    pyclass.def(nb::init<Database &>(), nb::keep_alive<1, 2>())
         .def("set_species", &BasisAtomCreator<T>::set_species)
         .def("restrict_energy", &BasisAtomCreator<T>::restrict_energy)
         .def("restrict_quantum_number", &BasisAtomCreator<T>::restrict_quantum_number)

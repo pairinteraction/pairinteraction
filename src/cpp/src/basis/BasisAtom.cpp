@@ -70,7 +70,7 @@ BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
             "Canonicalize the bases first.");
     }
 
-    BasisAtomCreator<Scalar> creator;
+    BasisAtomCreator<Scalar> creator(database);
     std::unordered_set<size_t> ket_ids;
     ket_ids.reserve(this->kets.size() + other->kets.size());
     for (const auto &basis : {this, other.get()}) {
@@ -80,7 +80,7 @@ BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
             }
         }
     }
-    return creator.create(database);
+    return creator.create();
 }
 
 template <typename Scalar>

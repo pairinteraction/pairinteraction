@@ -35,7 +35,7 @@ class BasisAtomCreator {
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom;
-    BasisAtomCreator() = default;
+    explicit BasisAtomCreator(Database &database);
     BasisAtomCreator<Scalar> &set_species(const std::string &value);
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
     // Set the quantum number range with the given logical name (e.g. "f", "m", "n", "l", ...).
@@ -44,9 +44,10 @@ public:
                                                       real_t max);
     BasisAtomCreator<Scalar> &set_quantum_number_standard_deviation_factor(real_t value);
     BasisAtomCreator<Scalar> &add_ket(const std::shared_ptr<const ket_t> &ket);
-    std::shared_ptr<const BasisAtom<Scalar>> create(Database &database) const;
+    std::shared_ptr<const BasisAtom<Scalar>> create() const;
 
 private:
+    Database &database;
     std::optional<std::string> species;
     Range<real_t> range_energy;
     std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;

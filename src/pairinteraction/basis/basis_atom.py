@@ -109,7 +109,12 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
         """
         self._args = {"species": species}
 
-        creator = self._cpp_creator()
+        if database is None:
+            if Database.get_global_database() is None:
+                Database.initialize_global_database()
+            database = Database.get_global_database()
+
+        creator = self._cpp_creator(database._cpp)
         creator.set_species(species)
 
         if n is not None and not all(isinstance(x, int) or x.is_integer() for x in n):
@@ -146,11 +151,6 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
 
-        if database is None:
-            if Database.get_global_database() is None:
-                Database.initialize_global_database()
-            database = Database.get_global_database()
-
         if additional_kets is not None:
             self._args["additional_kets"] = additional_kets
             for ket in additional_kets:
@@ -172,7 +172,7 @@ class BasisAtom(BasisBase[KetAtom, StateAtom]):
                 raise ValueError(msg)
         creator.set_quantum_number_standard_deviation_factor(quantum_number_standard_deviation_factor)
 
-        self._cpp = creator.create(database._cpp)
+        self._cpp = creator.create()
         self._post_init()
         self._warn_about_low_lying_states()
 
@@ -437,7 +437,8 @@ def get_cpp_basis_atom_from_kets(kets: Sequence[KetAtom], *, real: bool) -> _bac
     """
     if len(kets) == 0:
         raise ValueError("Cannot create a basis with zero kets.")
-    creator = _backend.BasisAtomCreatorReal() if real else _backend.BasisAtomCreatorComplex()
+    creator_class = _backend.BasisAtomCreatorReal if real else _backend.BasisAtomCreatorComplex
+    creator = creator_class(kets[0].database._cpp)
     for ket in kets:
         creator.add_ket(ket._cpp)
-    return creator.create(kets[0].database._cpp)  # type: ignore [return-value]
+    return creator.create()  # type: ignore [return-value]
