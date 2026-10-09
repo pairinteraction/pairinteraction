@@ -22,7 +22,6 @@ class KetAtom;
 class KetAtomCreator {
 public:
     explicit KetAtomCreator(Database &database);
-    KetAtomCreator(Database &database, std::string species, int n, double l, double j, double m);
     KetAtomCreator &set_species(const std::string &value);
     KetAtomCreator &set_energy(double value);
     // Set the quantum number with the given logical name (e.g. "f", "m", "n", "nu", "l", ...).

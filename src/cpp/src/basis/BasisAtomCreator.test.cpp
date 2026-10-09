@@ -48,9 +48,27 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
 
 DOCTEST_TEST_CASE("create a basis from kets") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator(database, "Sr88_sqdt", 59, 0, 0, 0).create();
-    auto ket2 = KetAtomCreator(database, "Sr88_sqdt", 60, 0, 0, 0).create();
-    auto ket3 = KetAtomCreator(database, "Sr88_sqdt", 61, 0, 0, 0).create();
+    auto ket1 = KetAtomCreator(database)
+                    .set_species("Sr88_sqdt")
+                    .set_quantum_number("n", 59)
+                    .set_quantum_number("l", 0)
+                    .set_quantum_number("j", 0)
+                    .set_quantum_number("m", 0)
+                    .create();
+    auto ket2 = KetAtomCreator(database)
+                    .set_species("Sr88_sqdt")
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 0)
+                    .set_quantum_number("j", 0)
+                    .set_quantum_number("m", 0)
+                    .create();
+    auto ket3 = KetAtomCreator(database)
+                    .set_species("Sr88_sqdt")
+                    .set_quantum_number("n", 61)
+                    .set_quantum_number("l", 0)
+                    .set_quantum_number("j", 0)
+                    .set_quantum_number("m", 0)
+                    .create();
     auto basis =
         BasisAtomCreator<double>(database).add_ket(ket1).add_ket(ket2).add_ket(ket3).create();
     for (const auto &ket : *basis) {
