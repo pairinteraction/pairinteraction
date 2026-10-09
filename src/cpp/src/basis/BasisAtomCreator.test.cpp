@@ -373,4 +373,45 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
                   basis->get_quantum_number("m", static_cast<size_t>(target)));
 }
 
+DOCTEST_TEST_CASE("energies of the states of a basis") {
+    Database &database = Database::get_global_instance();
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 60)
+                     .restrict_quantum_number("l", 0, 1)
+                     .create(database);
+    auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
+
+    // The states of a canonical basis have the energies of the kets, by which they are sorted
+    DOCTEST_CHECK(basis->has_energy());
+    DOCTEST_CHECK(basis->is_sorted_by_energy());
+    for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
+        DOCTEST_CHECK(basis->get_energy(i) == basis->get_ket(i)->get_energy());
+        DOCTEST_CHECK(basis->get_state(i)->get_energy(0) == basis->get_ket(i)->get_energy());
+    }
+
+    // Sorting permutes the energies along with the states
+    auto sorter = basis->get_sorter({SorterType::QUANTUM_NUMBER_M});
+    auto sorted = basis->transformed(sorter);
+    DOCTEST_CHECK(sorted->has_energy());
+    DOCTEST_CHECK_FALSE(sorted->is_sorted_by_energy());
+    for (Eigen::Index i = 0; i < dim; ++i) {
+        DOCTEST_CHECK(sorted->get_energy(static_cast<size_t>(i)) ==
+                      basis->get_energy(static_cast<size_t>(sorter.indices()[i])));
+    }
+
+    // In general, transformed states do not have well-defined energies
+    Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
+    identity.setIdentity();
+    auto transformed = basis->transformed(identity);
+    DOCTEST_CHECK_FALSE(transformed->has_energy());
+    DOCTEST_CHECK_FALSE(transformed->is_sorted_by_energy());
+    DOCTEST_CHECK_THROWS_AS(transformed->get_energy(0), std::invalid_argument);
+
+    // Arbitrary coefficients do not have a well-defined energy
+    auto copied = basis->copy_with_coefficients(basis->get_coefficients());
+    DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
+    DOCTEST_CHECK_FALSE(copied->has_energy());
+}
+
 } // namespace pairinteraction
