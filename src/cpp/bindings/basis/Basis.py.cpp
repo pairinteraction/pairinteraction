@@ -89,8 +89,8 @@ template <typename T>
 static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPairCreator" + type_name;
     nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def("add", &BasisPairCreator<T>::add)
+    pyclass
+        .def(nb::init<std::shared_ptr<const BasisAtom<T>>, std::shared_ptr<const BasisAtom<T>>>())
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
         .def("restrict_parity_under_inversion",
