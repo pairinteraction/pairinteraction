@@ -13,7 +13,13 @@
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a ket for rubidium") {
     Database &database = Database::get_global_instance();
-    auto ket = KetAtomCreator(database, "Rb", 60, 1, 0.5, 0.5).create();
+    auto ket = KetAtomCreator(database)
+                   .set_species("Rb")
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 1)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
+                   .create();
     DOCTEST_CHECK(ket->get_species() == "Rb");
     DOCTEST_CHECK(ket->get_quantum_number("n") == 60);
     DOCTEST_CHECK(ket->get_quantum_number("l") == 1);
@@ -46,7 +52,13 @@ DOCTEST_TEST_CASE("quantum number std fallback") {
 
     // n, f, and nu have no "std_<name>" column in the states table, so get_quantum_number_std
     // falls back to 0.
-    auto ket = KetAtomCreator(database, "Rb", 60, 0, 0.5, 0.5).create();
+    auto ket = KetAtomCreator(database)
+                   .set_species("Rb")
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 0)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
+                   .create();
     DOCTEST_CHECK(ket->get_quantum_number_std("n") == 0);
     DOCTEST_CHECK(ket->get_quantum_number_std("f") == 0);
     DOCTEST_CHECK(ket->get_quantum_number_std("nu") == 0);
@@ -68,7 +80,13 @@ DOCTEST_TEST_CASE("quantum numbers of the coupling schemes") {
     Database &database = Database::get_global_instance();
 
     // The backend does not know any of these names; they are whatever the states table provides.
-    auto ket = KetAtomCreator(database, "Rb", 60, 1, 0.5, 0.5).create();
+    auto ket = KetAtomCreator(database)
+                   .set_species("Rb")
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 1)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
+                   .create();
     for (const auto &name : {"l", "s", "j", "l_ryd", "s_ryd", "j_ryd", "l_core", "s_core", "j_core",
                              "i_core", "f_core"}) {
         DOCTEST_CHECK_NOTHROW(ket->get_quantum_number(name));
@@ -94,7 +112,13 @@ DOCTEST_TEST_CASE("quantum numbers of the coupling schemes") {
 
 DOCTEST_TEST_CASE("unavailable quantum number") {
     Database &database = Database::get_global_instance();
-    auto ket = KetAtomCreator(database, "Rb", 60, 1, 0.5, 0.5).create();
+    auto ket = KetAtomCreator(database)
+                   .set_species("Rb")
+                   .set_quantum_number("n", 60)
+                   .set_quantum_number("l", 1)
+                   .set_quantum_number("j", 0.5)
+                   .set_quantum_number("m", 0.5)
+                   .create();
 
     // The states table of Rb has no column for this quantum number (here a misspelling of "nui"),
     DOCTEST_CHECK_THROWS_AS(ket->get_quantum_number("nu_i"), QuantumNumberNotAvailableError);
@@ -111,9 +135,27 @@ DOCTEST_TEST_CASE("unavailable quantum number") {
 
 DOCTEST_TEST_CASE("test for equality") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator(database, "Rb", 60, 1, 0.5, 0.5).create();
-    auto ket2 = KetAtomCreator(database, "Rb", 60, 1, 0.5, 0.5).create();
-    auto ket3 = KetAtomCreator(database, "Rb", 60, 1, 1.5, 0.5).create();
+    auto ket1 = KetAtomCreator(database)
+                    .set_species("Rb")
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 1)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
+                    .create();
+    auto ket2 = KetAtomCreator(database)
+                    .set_species("Rb")
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 1)
+                    .set_quantum_number("j", 0.5)
+                    .set_quantum_number("m", 0.5)
+                    .create();
+    auto ket3 = KetAtomCreator(database)
+                    .set_species("Rb")
+                    .set_quantum_number("n", 60)
+                    .set_quantum_number("l", 1)
+                    .set_quantum_number("j", 1.5)
+                    .set_quantum_number("m", 0.5)
+                    .create();
     DOCTEST_CHECK(*ket1 == *ket2);
     DOCTEST_CHECK(*ket1 != *ket3);
 }

@@ -11,15 +11,6 @@
 namespace pairinteraction {
 KetAtomCreator::KetAtomCreator(Database &database) : database(database) {}
 
-KetAtomCreator::KetAtomCreator(Database &database, std::string species, int n, double l, double j,
-                               double m)
-    : database(database), species(std::move(species)) {
-    set_quantum_number("n", n);
-    set_quantum_number("l", l);
-    set_quantum_number("j", j);
-    set_quantum_number("m", m);
-}
-
 KetAtomCreator &KetAtomCreator::set_species(const std::string &value) {
     species.emplace(value);
     return *this;
