@@ -438,8 +438,15 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::transformed(
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) const {
+std::shared_ptr<const Derived>
+Basis<Derived>::transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
+                            const std::vector<real_t> &energy_of_transformed_states) const {
+    if (!energy_of_transformed_states.empty() &&
+        energy_of_transformed_states.size() != static_cast<size_t>(transformation.cols())) {
+        throw std::invalid_argument(
+            "The number of energies must match the number of transformed states.");
+    }
+
     const real_t numerical_precision =
         100 * std::sqrt(coefficients.rows()) * std::numeric_limits<real_t>::epsilon();
 
@@ -481,9 +488,14 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
         }
     }
 
-    // In general, the transformed states do not have well-defined energies
-    transformed->energy_of_states.assign(static_cast<size_t>(transformation.cols()),
-                                         std::numeric_limits<real_t>::max());
+    // The transformed states only have well-defined energies if they are explicitly specified,
+    // e.g., as eigenenergies
+    if (energy_of_transformed_states.empty()) {
+        transformed->energy_of_states.assign(static_cast<size_t>(transformation.cols()),
+                                             std::numeric_limits<real_t>::max());
+    } else {
+        transformed->energy_of_states = energy_of_transformed_states;
+    }
 
     return transformed;
 }

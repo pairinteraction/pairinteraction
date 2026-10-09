@@ -95,7 +95,8 @@ public:
     bool is_canonical() const;
     virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
-    transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) const;
+    transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
+                const std::vector<real_t> &energy_of_transformed_states = {}) const;
     std::shared_ptr<const Derived>
     transformed(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 

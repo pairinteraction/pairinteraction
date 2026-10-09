@@ -312,6 +312,60 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
     }
 }
 
+DOCTEST_TEST_CASE("the eigenbasis knows the eigenenergies") {
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    DOCTEST_SUBCASE("diagonalized Hamiltonian") {
+        auto basis = BasisAtomCreator<double>()
+                         .set_species("Rb")
+                         .restrict_quantum_number("n", 58, 62)
+                         .restrict_quantum_number("l", 0, 1)
+                         .create(database);
+
+        for (bool restrict_energy : {false, true}) {
+            auto system = SystemAtom<double>(basis);
+            system.set_electric_field(
+                {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+            if (restrict_energy) {
+                system.diagonalize(diagonalizer, 0.153355, 0.153360);
+            } else {
+                system.diagonalize(diagonalizer);
+            }
+
+            auto eigenbasis = system.get_eigenbasis();
+            auto eigenenergies = system.get_eigenenergies();
+            DOCTEST_REQUIRE(eigenbasis->get_number_of_states() ==
+                            static_cast<size_t>(eigenenergies.size()));
+            for (Eigen::Index i = 0; i < eigenenergies.size(); ++i) {
+                DOCTEST_CHECK(eigenbasis->get_energy(static_cast<size_t>(i)) == eigenenergies[i]);
+            }
+        }
+    }
+
+    DOCTEST_SUBCASE("Hamiltonian that is diagonal without diagonalization") {
+        // For a single fine structure level, the Zeeman Hamiltonian is diagonal in the canonical
+        // basis
+        auto basis = BasisAtomCreator<double>()
+                         .set_species("Rb")
+                         .restrict_quantum_number("n", 60, 60)
+                         .restrict_quantum_number("l", 0, 0)
+                         .create(database);
+        auto system = SystemAtom<double>(basis);
+        system.set_magnetic_field({0, 0, 1e-6});
+
+        auto eigenbasis = system.get_eigenbasis();
+        auto eigenenergies = system.get_eigenenergies();
+        DOCTEST_REQUIRE(eigenenergies.size() == 2);
+        for (Eigen::Index i = 0; i < eigenenergies.size(); ++i) {
+            auto state_index = static_cast<size_t>(i);
+            DOCTEST_CHECK(eigenbasis->get_energy(state_index) == eigenenergies[i]);
+            DOCTEST_CHECK(eigenbasis->get_energy(state_index) !=
+                          eigenbasis->get_ket(state_index)->get_energy());
+        }
+    }
+}
+
 #ifdef WITH_MKL
 #include <Eigen/Dense>
 #include <mkl.h>
