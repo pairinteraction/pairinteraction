@@ -408,6 +408,18 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     DOCTEST_CHECK_FALSE(transformed->is_sorted_by_energy());
     DOCTEST_CHECK_THROWS_AS(transformed->get_energy(0), std::invalid_argument);
 
+    // Unless the energies of the transformed states are explicitly specified
+    std::vector<double> energies(basis->get_number_of_states());
+    for (size_t i = 0; i < energies.size(); ++i) {
+        energies[i] = basis->get_energy(i);
+    }
+    auto transformed_with_energies = basis->transformed(identity, energies);
+    DOCTEST_CHECK(transformed_with_energies->is_sorted_by_energy());
+    for (size_t i = 0; i < energies.size(); ++i) {
+        DOCTEST_CHECK(transformed_with_energies->get_energy(i) == energies[i]);
+    }
+    DOCTEST_CHECK_THROWS_AS(basis->transformed(identity, {energies[0]}), std::invalid_argument);
+
     // Arbitrary coefficients do not have a well-defined energy
     auto copied = basis->copy_with_coefficients(basis->get_coefficients());
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);

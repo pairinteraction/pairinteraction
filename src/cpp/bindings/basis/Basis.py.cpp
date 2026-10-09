@@ -44,8 +44,10 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
         .def("transformed",
-             nb::overload_cast<const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &>(
-                 &Basis<T>::transformed, nb::const_))
+             [](const Basis<T> &self,
+                const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
+                 return self.transformed(transformation);
+             })
         .def("transformed",
              nb::overload_cast<const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &>(
                  &Basis<T>::transformed, nb::const_))
