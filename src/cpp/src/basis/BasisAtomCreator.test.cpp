@@ -23,12 +23,12 @@ constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
 
 DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Sr88_sqdt")
                      .restrict_quantum_number("n", 60, 60)
                      .restrict_quantum_number("l", 0, 2)
                      .restrict_quantum_number("s", 0, 0)
-                     .create(database);
+                     .create();
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_sqdt");
     }
@@ -36,11 +36,11 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
 
 DOCTEST_TEST_CASE("create a basis for strontium 87") {
     Database &database = Database::get_global_instance();
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Sr87_mqdt")
                      .restrict_quantum_number("nu", 59, 61)
                      .restrict_quantum_number("l", 0, 0)
-                     .create(database);
+                     .create();
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr87_mqdt");
     }
@@ -48,11 +48,11 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
 
 DOCTEST_TEST_CASE("create a basis from kets") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator("Sr88_sqdt", 59, 0, 0, 0).create(database);
-    auto ket2 = KetAtomCreator("Sr88_sqdt", 60, 0, 0, 0).create(database);
-    auto ket3 = KetAtomCreator("Sr88_sqdt", 61, 0, 0, 0).create(database);
+    auto ket1 = KetAtomCreator(database, "Sr88_sqdt", 59, 0, 0, 0).create();
+    auto ket2 = KetAtomCreator(database, "Sr88_sqdt", 60, 0, 0, 0).create();
+    auto ket3 = KetAtomCreator(database, "Sr88_sqdt", 61, 0, 0, 0).create();
     auto basis =
-        BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
+        BasisAtomCreator<double>(database).add_ket(ket1).add_ket(ket2).add_ket(ket3).create();
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_sqdt");
     }
@@ -60,12 +60,12 @@ DOCTEST_TEST_CASE("create a basis from kets") {
 
 DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     Database &database = Database::get_global_instance();
-    auto basis_unsorted = BasisAtomCreator<double>()
+    auto basis_unsorted = BasisAtomCreator<double>(database)
                               .set_species("Rb")
                               .restrict_quantum_number("n", 60, 60)
                               .restrict_quantum_number("l", 0, 3)
                               .restrict_quantum_number("m", -0.5, 0.5)
-                              .create(database);
+                              .create();
 
     // Sort the basis by parity and the m quantum number
     auto sorter = basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M});
@@ -111,11 +111,11 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity matrix") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 60)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     DOCTEST_CHECK(basis->is_canonical());
 
@@ -145,12 +145,12 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
 
 DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     Database &database = Database::get_global_instance();
-    auto basis_unsorted = BasisAtomCreator<double>()
+    auto basis_unsorted = BasisAtomCreator<double>(database)
                               .set_species("Rb")
                               .restrict_quantum_number("n", 60, 60)
                               .restrict_quantum_number("l", 0, 3)
                               .restrict_quantum_number("m", -0.5, 0.5)
-                              .create(database);
+                              .create();
 
     // In the unsorted basis, states that share the same labels are scattered over the basis. They
     // would end up in several blocks and couplings between them would be lost.
@@ -187,34 +187,34 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
 DOCTEST_TEST_CASE("calculation of matrix elements") {
     auto &database = Database::get_global_instance();
 
-    auto ket_s = KetAtomCreator()
+    auto ket_s = KetAtomCreator(database)
                      .set_species("Rb")
                      .set_quantum_number("n", 60)
                      .set_quantum_number("l", 0)
                      .set_quantum_number("j", 0.5)
                      .set_quantum_number("m", 0.5)
-                     .create(database);
+                     .create();
 
-    auto ket_p = KetAtomCreator()
+    auto ket_p = KetAtomCreator(database)
                      .set_species("Rb")
                      .set_quantum_number("n", 60)
                      .set_quantum_number("l", 1)
                      .set_quantum_number("j", 0.5)
                      .set_quantum_number("m", 0.5)
-                     .create(database);
+                     .create();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 59, 61)
                      .restrict_quantum_number("l", 0, 1)
                      .restrict_quantum_number("m", 0.5, 0.5)
-                     .create(database);
+                     .create();
 
     SystemAtom<double> system(basis);
 
     auto get_corresponding_state_index = [&database](const auto &b,
                                                      const std::shared_ptr<const KetAtom> &ket) {
-        auto basis_ket = BasisAtomCreator<double>().add_ket(ket).create(database);
+        auto basis_ket = BasisAtomCreator<double>(database).add_ket(ket).create();
         Eigen::MatrixXd overlaps =
             Eigen::MatrixXd(b->get_matrix_elements(basis_ket, OperatorType::IDENTITY, 0))
                 .cwiseAbs();
@@ -224,7 +224,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     };
 
     DOCTEST_SUBCASE("calculate energy") {
-        auto basis_ket_s = BasisAtomCreator<double>().add_ket(ket_s).create(database);
+        auto basis_ket_s = BasisAtomCreator<double>(database).add_ket(ket_s).create();
 
         auto m1 = basis_ket_s->get_matrix_elements(basis_ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m1.rows() == 1);
@@ -242,7 +242,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     }
 
     DOCTEST_SUBCASE("calculate electric dipole matrix element") {
-        auto basis_ket_p = BasisAtomCreator<double>().add_ket(ket_p).create(database);
+        auto basis_ket_p = BasisAtomCreator<double>(database).add_ket(ket_p).create();
 
         auto m = basis->get_matrix_elements(basis_ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
         DOCTEST_CHECK(m.rows() == 1);
@@ -286,11 +286,11 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
     // The detection of conserved quantum numbers must not be spoiled by this defect. Otherwise,
     // the detection would fail for a large rtol or a low floating point precision.
     Database &database = Database::get_global_instance();
-    auto unsorted_basis = BasisAtomCreator<double>()
+    auto unsorted_basis = BasisAtomCreator<double>(database)
                               .set_species("Rb")
                               .restrict_quantum_number("n", 60, 60)
                               .restrict_quantum_number("l", 0, 3)
-                              .create(database);
+                              .create();
     auto basis =
         unsorted_basis->transformed(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
     DOCTEST_REQUIRE(basis->has_quantum_number("m"));
@@ -375,11 +375,11 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
 
 DOCTEST_TEST_CASE("energies of the states of a basis") {
     Database &database = Database::get_global_instance();
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 60)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
     auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
 
     // The states of a canonical basis have the energies of the kets, by which they are sorted

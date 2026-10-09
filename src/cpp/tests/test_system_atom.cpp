@@ -25,11 +25,11 @@ int main(int argc, char **argv) {
     pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
-    auto basis = pairinteraction::BasisAtomCreator<double>()
+    auto basis = pairinteraction::BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 3)
-                     .create(database);
+                     .create();
 
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
 
