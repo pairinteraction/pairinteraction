@@ -33,12 +33,12 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     auto diagonalizer = DiagonalizerEigen<double>();
 
     // Construct and diagonalize the constituent systems
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
                      .restrict_quantum_number("m", -0.5, 0.5)
-                     .create(database);
+                     .create();
 
     SystemAtom<double> system1(basis);
     SystemAtom<double> system2(basis);
@@ -47,7 +47,8 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
     // Construct and diagonalize the system_pair
-    auto basis_pair = BasisPairCreator<double>().add(system1).add(system2).create();
+    auto basis_pair =
+        BasisPairCreator<double>(system1.get_eigenbasis(), system2.get_eigenbasis()).create();
     DOCTEST_MESSAGE("Number of states in pair basis: ", basis_pair->get_number_of_states());
 
     auto system_pair = SystemPair<double>(basis_pair);
@@ -63,12 +64,12 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
 DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
                      .restrict_quantum_number("m", -0.5, 0.5)
-                     .create(database);
+                     .create();
 
     auto diagonalizer = DiagonalizerEigen<double>();
     SystemAtom<double> system1(basis);
@@ -77,7 +78,8 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
     system2.set_electric_field({0, 0, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS});
     diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
-    auto pair_basis = BasisPairCreator<double>().add(system1).add(system2).create();
+    auto pair_basis =
+        BasisPairCreator<double>(system1.get_eigenbasis(), system2.get_eigenbasis()).create();
     DOCTEST_REQUIRE(pair_basis->get_number_of_states() >= 2);
 
     SystemPair<double> reference_system(pair_basis);
@@ -112,30 +114,28 @@ DOCTEST_TEST_CASE("atom ion pair interaction") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
 
-    auto basis_atom = BasisAtomCreator<double>()
+    auto basis_atom = BasisAtomCreator<double>(database)
                           .set_species("Rb")
                           .restrict_quantum_number("n", 58, 62)
                           .restrict_quantum_number("l", 0, 3)
                           .restrict_quantum_number("m", 0.5, 0.5)
-                          .create(database);
+                          .create();
 
-    auto ket_ion = KetAtomCreator()
+    auto ket_ion = KetAtomCreator(database)
                        .set_species("Sr88_ion")
                        .set_quantum_number("n", 60)
                        .set_quantum_number("l", 0)
                        .set_quantum_number("j", 0.5)
                        .set_quantum_number("m", 0.5)
-                       .create(database);
-    auto basis_ion = BasisAtomCreator<double>().add_ket(ket_ion).create(database);
+                       .create();
+    auto basis_ion = BasisAtomCreator<double>(database).add_ket(ket_ion).create();
     DOCTEST_REQUIRE(basis_ion->get_number_of_states() == 1);
 
     std::array<double, 3> distance_vector{0, 0, 3 * UM_IN_ATOMIC_UNITS};
 
     for (int order : {2, 3}) {
         // Pair system of the atom and the ion
-        SystemAtom<double> system_atom(basis_atom);
-        SystemAtom<double> system_ion(basis_ion);
-        auto basis_pair = BasisPairCreator<double>().add(system_atom).add(system_ion).create();
+        auto basis_pair = BasisPairCreator<double>(basis_atom, basis_ion).create();
         DOCTEST_REQUIRE(basis_pair->get_number_of_states() == basis_atom->get_number_of_states());
 
         SystemPair<double> system_pair(basis_pair);
@@ -169,16 +169,15 @@ DOCTEST_TEST_CASE("ion ion pair interaction") {
     // Two ions in a single state each repel each other via the Coulomb interaction Z1*Z2/R
     auto &database = Database::get_global_instance();
 
-    auto ket_ion = KetAtomCreator()
+    auto ket_ion = KetAtomCreator(database)
                        .set_species("Sr88_ion")
                        .set_quantum_number("n", 60)
                        .set_quantum_number("l", 0)
                        .set_quantum_number("j", 0.5)
                        .set_quantum_number("m", 0.5)
-                       .create(database);
-    auto basis_ion = BasisAtomCreator<double>().add_ket(ket_ion).create(database);
-    SystemAtom<double> system_ion(basis_ion);
-    auto basis_pair = BasisPairCreator<double>().add(system_ion).add(system_ion).create();
+                       .create();
+    auto basis_ion = BasisAtomCreator<double>(database).add_ket(ket_ion).create();
+    auto basis_pair = BasisPairCreator<double>(basis_ion, basis_ion).create();
     DOCTEST_REQUIRE(basis_pair->get_number_of_states() == 1);
 
     for (double distance : {1 * UM_IN_ATOMIC_UNITS, 3 * UM_IN_ATOMIC_UNITS}) {
@@ -196,28 +195,26 @@ DOCTEST_TEST_CASE("diagonalize with lapacke_evr") {
     auto diagonalizer = DiagonalizerLapackeEvr<double>();
 
     // Construct the state of interest
-    auto ket = KetAtomCreator()
+    auto ket = KetAtomCreator(database)
                    .set_species("Rb")
                    .set_quantum_number("n", 60)
                    .set_quantum_number("l", 0)
                    .set_quantum_number("j", 0.5)
                    .set_quantum_number("m", 0.5)
-                   .create(database);
+                   .create();
 
     // Construct and diagonalize the constituent systems
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", ket->get_quantum_number("n") - 3,
                                               ket->get_quantum_number("n") + 3)
                      .restrict_quantum_number("l", ket->get_quantum_number("l") - 1,
                                               ket->get_quantum_number("l") + 1)
-                     .create(database);
+                     .create();
     SystemAtom<double> system(basis);
 
     // Construct and diagonalize the system_pair
-    auto basis_pair = BasisPairCreator<double>()
-                          .add(system)
-                          .add(system)
+    auto basis_pair = BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
                           .restrict_energy(2 * ket->get_energy() - 2 / HARTREE_IN_GHZ,
                                            2 * ket->get_energy() + 2 / HARTREE_IN_GHZ)
                           .create();

@@ -32,21 +32,21 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
 
-    auto ket1 = KetAtomCreator()
+    auto ket1 = KetAtomCreator(database)
                     .set_species("Rb")
                     .set_quantum_number("n", 60)
                     .set_quantum_number("l", 0)
                     .set_quantum_number("j", 0.5)
                     .set_quantum_number("m", 0.5)
-                    .create(database);
-    auto ket2 = KetAtomCreator()
+                    .create();
+    auto ket2 = KetAtomCreator(database)
                     .set_species("Rb")
                     .set_quantum_number("n", 60)
                     .set_quantum_number("l", 1)
                     .set_quantum_number("j", 0.5)
                     .set_quantum_number("m", 0.5)
-                    .create(database);
-    auto basis = BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).create(database);
+                    .create();
+    auto basis = BasisAtomCreator<double>(database).add_ket(ket1).add_ket(ket2).create();
 
     auto system = SystemAtom<double>(basis);
     system.set_electric_field({0, 0, 0.0001});
@@ -73,11 +73,11 @@ DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<std::complex<double>>();
 
-    auto basis = BasisAtomCreator<std::complex<double>>()
+    auto basis = BasisAtomCreator<std::complex<double>>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 59, 61)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     auto system1 = SystemAtom<std::complex<double>>(basis);
     system1.set_electric_field({0, 0, 0.0001});
@@ -102,12 +102,12 @@ DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
 DOCTEST_TEST_CASE("construct an atomic Hamiltonian in a non-canonical atomic basis") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
                      .restrict_quantum_number("m", 0.5, 0.5)
-                     .create(database);
+                     .create();
     DOCTEST_REQUIRE(basis->get_number_of_states() >= 2);
 
     SystemAtom<double> reference_system(basis);
@@ -147,11 +147,11 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel" 
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<std::complex<double>>();
 
-    auto basis = BasisAtomCreator<std::complex<double>>()
+    auto basis = BasisAtomCreator<std::complex<double>>(database)
                      .set_species("Sr87_mqdt")
                      .restrict_quantum_number("nu", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     std::vector<SystemAtom<std::complex<double>>> systems;
     systems.reserve(n);
@@ -169,11 +169,11 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel" 
 DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different methods") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<std::complex<double>>()
+    auto basis = BasisAtomCreator<std::complex<double>>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     // Diagonalize using the Eigen library
     auto system = SystemAtom<std::complex<double>>(basis);
@@ -258,11 +258,11 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     // Diagonalize using the Eigen library
     auto system = SystemAtom<double>(basis);
@@ -312,6 +312,60 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
     }
 }
 
+DOCTEST_TEST_CASE("the eigenbasis knows the eigenenergies") {
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    DOCTEST_SUBCASE("diagonalized Hamiltonian") {
+        auto basis = BasisAtomCreator<double>(database)
+                         .set_species("Rb")
+                         .restrict_quantum_number("n", 58, 62)
+                         .restrict_quantum_number("l", 0, 1)
+                         .create();
+
+        for (bool restrict_energy : {false, true}) {
+            auto system = SystemAtom<double>(basis);
+            system.set_electric_field(
+                {1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+            if (restrict_energy) {
+                system.diagonalize(diagonalizer, 0.153355, 0.153360);
+            } else {
+                system.diagonalize(diagonalizer);
+            }
+
+            auto eigenbasis = system.get_eigenbasis();
+            auto eigenenergies = system.get_eigenenergies();
+            DOCTEST_REQUIRE(eigenbasis->get_number_of_states() ==
+                            static_cast<size_t>(eigenenergies.size()));
+            for (Eigen::Index i = 0; i < eigenenergies.size(); ++i) {
+                DOCTEST_CHECK(eigenbasis->get_energy(static_cast<size_t>(i)) == eigenenergies[i]);
+            }
+        }
+    }
+
+    DOCTEST_SUBCASE("Hamiltonian that is diagonal without diagonalization") {
+        // For a single fine structure level, the Zeeman Hamiltonian is diagonal in the canonical
+        // basis
+        auto basis = BasisAtomCreator<double>(database)
+                         .set_species("Rb")
+                         .restrict_quantum_number("n", 60, 60)
+                         .restrict_quantum_number("l", 0, 0)
+                         .create();
+        auto system = SystemAtom<double>(basis);
+        system.set_magnetic_field({0, 0, 1e-6});
+
+        auto eigenbasis = system.get_eigenbasis();
+        auto eigenenergies = system.get_eigenenergies();
+        DOCTEST_REQUIRE(eigenenergies.size() == 2);
+        for (Eigen::Index i = 0; i < eigenenergies.size(); ++i) {
+            auto state_index = static_cast<size_t>(i);
+            DOCTEST_CHECK(eigenbasis->get_energy(state_index) == eigenenergies[i]);
+            DOCTEST_CHECK(eigenbasis->get_energy(state_index) !=
+                          eigenbasis->get_ket(state_index)->get_energy());
+        }
+    }
+}
+
 #ifdef WITH_MKL
 #include <Eigen/Dense>
 #include <mkl.h>
@@ -338,11 +392,11 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenenergies are within energy re
 
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
     diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>());
@@ -366,23 +420,23 @@ DOCTEST_TEST_CASE("atom ion interaction") {
     auto &database = Database::get_global_instance();
     DiagonalizerEigen<double> diagonalizer;
 
-    auto ket = KetAtomCreator()
+    auto ket = KetAtomCreator(database)
                    .set_species("Rb")
                    .set_quantum_number("n", 60)
                    .set_quantum_number("l", 1)
                    .set_quantum_number("j", 0.5)
                    .set_quantum_number("m", 0.5)
-                   .create(database);
+                   .create();
     double energy = ket->get_energy();
     double min_energy = energy - 50 / HARTREE_IN_GHZ;
     double max_energy = energy + 50 / HARTREE_IN_GHZ;
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 3)
                      .restrict_quantum_number("m", 0.5, 0.5)
-                     .create(database);
+                     .create();
 
     auto system3 = SystemAtom<double>(basis);
     system3.set_ion_interaction_order(3);
@@ -406,11 +460,11 @@ DOCTEST_TEST_CASE("atom ion interaction") {
 DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 60)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     auto system = SystemAtom<double>(basis);
     system.set_electric_field({0, 0, 0.0001});
@@ -447,11 +501,11 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
 DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
     auto &database = Database::get_global_instance();
 
-    auto basis = BasisAtomCreator<double>()
+    auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 60)
                      .restrict_quantum_number("l", 0, 1)
-                     .create(database);
+                     .create();
 
     // The first label is the primary sorting criterion, the following labels only break ties
     {

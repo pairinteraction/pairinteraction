@@ -104,6 +104,13 @@ void Basis<Derived>::make_canonical() {
         }
         quantum_numbers_of_states[name] = std::move(quantum_numbers);
     }
+
+    // Assign each state the energy of the ket it is equal to
+    energy_of_states.clear();
+    energy_of_states.reserve(kets.size());
+    for (const auto &ket : kets) {
+        energy_of_states.push_back(static_cast<real_t>(ket->get_energy()));
+    }
 }
 
 template <typename Derived>
@@ -115,6 +122,17 @@ bool Basis<Derived>::has_quantum_number(const std::string &name) const {
     return std::none_of(it->second.begin(), it->second.end(), [](real_t quantum_number) {
         return quantum_number == std::numeric_limits<real_t>::max();
     });
+}
+
+template <typename Derived>
+bool Basis<Derived>::has_energy() const {
+    return std::none_of(energy_of_states.begin(), energy_of_states.end(),
+                        [](real_t energy) { return energy == std::numeric_limits<real_t>::max(); });
+}
+
+template <typename Derived>
+bool Basis<Derived>::is_sorted_by_energy() const {
+    return has_energy() && std::is_sorted(energy_of_states.begin(), energy_of_states.end());
 }
 
 template <typename Derived>
@@ -168,6 +186,8 @@ std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
         std::fill(quantum_numbers.begin(), quantum_numbers.end(),
                   std::numeric_limits<real_t>::max());
     }
+    std::fill(result->energy_of_states.begin(), result->energy_of_states.end(),
+              std::numeric_limits<real_t>::max());
 
     return result;
 }
@@ -189,6 +209,15 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::st
 }
 
 template <typename Derived>
+typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t state_index) const {
+    real_t energy = energy_of_states.at(state_index);
+    if (energy == std::numeric_limits<real_t>::max()) {
+        throw std::invalid_argument("The state does not have a well-defined energy.");
+    }
+    return energy;
+}
+
+template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) const {
     // Create a copy of the current object
     auto restricted = std::make_shared<Derived>(derived());
@@ -199,6 +228,7 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     for (auto &[name, quantum_numbers] : restricted->quantum_numbers_of_states) {
         quantum_numbers = {quantum_numbers_of_states.at(name)[state_index]};
     }
+    restricted->energy_of_states = {energy_of_states.at(state_index)};
 
     return restricted;
 }
@@ -399,13 +429,24 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
             transformed_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];
         }
     }
+    transformed->energy_of_states.resize(sorter.size());
+    for (int i = 0; i < sorter.size(); ++i) {
+        transformed->energy_of_states[i] = energy_of_states[sorter.indices()[i]];
+    }
 
     return transformed;
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::transformed(
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) const {
+std::shared_ptr<const Derived>
+Basis<Derived>::transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
+                            const std::vector<real_t> &energy_of_transformed_states) const {
+    if (!energy_of_transformed_states.empty() &&
+        energy_of_transformed_states.size() != static_cast<size_t>(transformation.cols())) {
+        throw std::invalid_argument(
+            "The number of energies must match the number of transformed states.");
+    }
+
     const real_t numerical_precision =
         100 * std::sqrt(coefficients.rows()) * std::numeric_limits<real_t>::epsilon();
 
@@ -445,6 +486,15 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(
                 transformed_quantum_numbers[i] = std::numeric_limits<real_t>::max();
             }
         }
+    }
+
+    // The transformed states only have well-defined energies if they are explicitly specified,
+    // e.g., as eigenenergies
+    if (energy_of_transformed_states.empty()) {
+        transformed->energy_of_states.assign(static_cast<size_t>(transformation.cols()),
+                                             std::numeric_limits<real_t>::max());
+    } else {
+        transformed->energy_of_states = energy_of_transformed_states;
     }
 
     return transformed;

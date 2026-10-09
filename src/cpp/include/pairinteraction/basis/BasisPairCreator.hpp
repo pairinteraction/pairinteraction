@@ -7,7 +7,6 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
-#include <functional>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -17,7 +16,7 @@ template <typename Scalar>
 class BasisPair;
 
 template <typename Scalar>
-class SystemAtom;
+class BasisAtom;
 
 template <typename Scalar>
 class KetPair;
@@ -32,8 +31,8 @@ public:
     using ket_t = KetPair<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 
-    BasisPairCreator() = default;
-    BasisPairCreator<Scalar> &add(const SystemAtom<Scalar> &system_atom);
+    BasisPairCreator(std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                     std::shared_ptr<const BasisAtom<Scalar>> basis2);
     BasisPairCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisPairCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
     BasisPairCreator<Scalar> &restrict_parity_under_inversion(int value);
@@ -41,7 +40,8 @@ public:
     std::shared_ptr<const BasisPair<Scalar>> create() const;
 
 private:
-    std::vector<std::reference_wrapper<const SystemAtom<Scalar>>> systems_atom;
+    std::shared_ptr<const BasisAtom<Scalar>> basis1;
+    std::shared_ptr<const BasisAtom<Scalar>> basis2;
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_m;
     std::optional<int> parity_under_inversion;

@@ -35,18 +35,18 @@ int main(int argc, char **argv) {
     pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
-    auto ket = pairinteraction::KetAtomCreator()
+    auto ket = pairinteraction::KetAtomCreator(database)
                    .set_species("Rb")
                    .set_quantum_number("n", 60)
                    .set_quantum_number("l", 0)
                    .set_quantum_number("m", 0.5)
-                   .create(database);
+                   .create();
 
-    auto basis = pairinteraction::BasisAtomCreator<double>()
+    auto basis = pairinteraction::BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 2)
-                     .create(database);
+                     .create();
 
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
 
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
         systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
     Eigen::MatrixX<double> overlaps(systems.size(), basis->get_number_of_states());
 
-    auto basis_ket = pairinteraction::BasisAtomCreator<double>().add_ket(ket).create(database);
+    auto basis_ket = pairinteraction::BasisAtomCreator<double>(database).add_ket(ket).create();
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
         eigenenergies.row(i) = systems[i].get_eigenenergies() * HARTREE_IN_GHZ;

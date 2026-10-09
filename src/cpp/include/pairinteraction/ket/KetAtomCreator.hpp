@@ -21,16 +21,16 @@ class KetAtom;
  */
 class KetAtomCreator {
 public:
-    KetAtomCreator() = default;
-    KetAtomCreator(std::string species, int n, double l, double j, double m);
+    explicit KetAtomCreator(Database &database);
     KetAtomCreator &set_species(const std::string &value);
     KetAtomCreator &set_energy(double value);
     // Set the quantum number with the given logical name (e.g. "f", "m", "n", "nu", "l", ...).
     // The parity is set via the name "parity" with a value of +1 (even) or -1 (odd).
     KetAtomCreator &set_quantum_number(const std::string &name, double value);
-    std::shared_ptr<const KetAtom> create(Database &database) const;
+    std::shared_ptr<const KetAtom> create() const;
 
 private:
+    Database &database;
     std::optional<std::string> species;
     std::optional<double> energy;
     std::unordered_map<std::string, double> quantum_numbers;

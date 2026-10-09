@@ -51,11 +51,14 @@ public:
     virtual ~Basis() = default;
 
     bool has_quantum_number(const std::string &name) const;
+    bool has_energy() const;
+    bool is_sorted_by_energy() const;
 
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
     real_t get_quantum_number(const std::string &name, size_t state_index) const;
+    real_t get_energy(size_t state_index) const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
@@ -92,7 +95,8 @@ public:
     bool is_canonical() const;
     virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
-    transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) const;
+    transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
+                const std::vector<real_t> &energy_of_transformed_states = {}) const;
     std::shared_ptr<const Derived>
     transformed(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 
@@ -108,5 +112,6 @@ private:
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 
     std::unordered_map<std::string, std::vector<real_t>> quantum_numbers_of_states;
+    std::vector<real_t> energy_of_states;
 };
 } // namespace pairinteraction

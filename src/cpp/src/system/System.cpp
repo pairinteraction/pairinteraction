@@ -22,6 +22,7 @@
 #include <oneapi/tbb.h>
 #include <optional>
 #include <spdlog/spdlog.h>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Derived>
@@ -196,7 +197,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     if (this->is_diagonal()) {
-        if (sort_by_energy && !this->is_diagonal_and_sorted_by_energy()) {
+        if (sort_by_energy && !basis->is_sorted_by_energy()) {
             transform(get_sorter({SorterType::ENERGY}));
         }
         return *this;
@@ -322,9 +323,15 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         eigenvectors = eigenvectors * phase_matrix;
     }
 
-    // Store the diagonalized hamiltonian
+    // Store the diagonalized hamiltonian and assign the eigenenergies to the eigenstates
     matrix = eigenenergies;
-    basis = basis->transformed(eigenvectors);
+    std::vector<real_t> energy_of_eigenstates;
+    energy_of_eigenstates.reserve(num_cols);
+    for (const auto &eigenenergies_block : eigenenergies_blocks) {
+        energy_of_eigenstates.insert(energy_of_eigenstates.end(), eigenenergies_block.data(),
+                                     eigenenergies_block.data() + eigenenergies_block.size());
+    }
+    basis = basis->transformed(eigenvectors, energy_of_eigenstates);
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
@@ -354,20 +361,18 @@ bool System<Derived>::is_diagonal() const {
             }
         }
 
+        // The states of the basis are eigenstates, so assign them the diagonal entries of the
+        // Hamiltonian as energies
+        Eigen::VectorX<real_t> diagonal = matrix.diagonal().real();
+        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> identity(matrix.rows(), matrix.cols());
+        identity.setIdentity();
+        basis = basis->transformed(
+            identity, std::vector<real_t>(diagonal.data(), diagonal.data() + diagonal.size()));
+
         hamiltonian_is_diagonal = true;
     }
 
     return true;
-}
-
-template <typename Derived>
-bool System<Derived>::is_diagonal_and_sorted_by_energy() const {
-    if (!this->is_diagonal()) {
-        return false;
-    }
-
-    Eigen::VectorX<real_t> eigenenergies = matrix.diagonal().real();
-    return std::is_sorted(eigenenergies.data(), eigenenergies.data() + eigenenergies.size());
 }
 
 // Explicit instantiation

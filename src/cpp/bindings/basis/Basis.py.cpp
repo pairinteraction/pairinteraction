@@ -12,7 +12,6 @@
 #include "pairinteraction/interfaces/SorterBuilderInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
-#include "pairinteraction/system/SystemAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -35,14 +34,19 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_number_of_states", &Basis<T>::get_number_of_states)
         .def("get_number_of_kets", &Basis<T>::get_number_of_kets)
         .def("has_quantum_number", &Basis<T>::has_quantum_number)
+        .def("has_energy", &Basis<T>::has_energy)
+        .def("is_sorted_by_energy", &Basis<T>::is_sorted_by_energy)
         .def("get_quantum_number", &Basis<T>::get_quantum_number)
+        .def("get_energy", &Basis<T>::get_energy)
         .def("get_coefficients", &Basis<T>::get_coefficients)
         .def("copy_with_coefficients", &Basis<T>::copy_with_coefficients)
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
         .def("transformed",
-             nb::overload_cast<const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &>(
-                 &Basis<T>::transformed, nb::const_))
+             [](const Basis<T> &self,
+                const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
+                 return self.transformed(transformation);
+             })
         .def("transformed",
              nb::overload_cast<const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &>(
                  &Basis<T>::transformed, nb::const_))
@@ -62,7 +66,8 @@ template <typename T>
 static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtomCreator" + type_name;
     nb::class_<BasisAtomCreator<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
+    // keep_alive because the creator stores a reference to the database
+    pyclass.def(nb::init<Database &>(), nb::keep_alive<1, 2>())
         .def("set_species", &BasisAtomCreator<T>::set_species)
         .def("restrict_energy", &BasisAtomCreator<T>::restrict_energy)
         .def("restrict_quantum_number", &BasisAtomCreator<T>::restrict_quantum_number)
@@ -86,10 +91,7 @@ static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_n
     std::string pyclass_name = "BasisPairCreator" + type_name;
     nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass
-        .def(nb::init<>())
-        // keep_alive because add() stores only a reference to the system, which must outlive the
-        // creator (the system is dereferenced in create())
-        .def("add", &BasisPairCreator<T>::add, nb::keep_alive<1, 2>())
+        .def(nb::init<std::shared_ptr<const BasisAtom<T>>, std::shared_ptr<const BasisAtom<T>>>())
         .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
         .def("restrict_parity_under_inversion",

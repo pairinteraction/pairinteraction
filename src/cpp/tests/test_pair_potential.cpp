@@ -35,31 +35,30 @@ int main(int argc, char **argv) {
     pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create and diagonalize systems for two atoms
-    auto basis = pairinteraction::BasisAtomCreator<double>()
+    auto basis = pairinteraction::BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 58, 62)
                      .restrict_quantum_number("l", 0, 2)
-                     .create(database);
+                     .create();
     SPDLOG_INFO("Number of single-atom basis states: {}", basis->get_number_of_states());
 
     pairinteraction::SystemAtom<double> system(basis);
 
     // Create two-atom systems for different interatomic distances
-    auto ket = pairinteraction::KetAtomCreator()
+    auto ket = pairinteraction::KetAtomCreator(database)
                    .set_species("Rb")
                    .set_quantum_number("n", 60)
                    .set_quantum_number("l", 0)
                    .set_quantum_number("m", 0.5)
-                   .create(database);
+                   .create();
     double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
-    auto basis_pair = pairinteraction::BasisPairCreator<double>()
-                          .add(system)
-                          .add(system)
-                          .restrict_energy(min_energy, max_energy)
-                          .restrict_quantum_number_m(1, 1)
-                          .create();
+    auto basis_pair =
+        pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+            .restrict_energy(min_energy, max_energy)
+            .restrict_quantum_number_m(1, 1)
+            .create();
     SPDLOG_INFO("Number of two-atom basis states: {}", basis_pair->get_number_of_states());
 
     std::vector<pairinteraction::SystemPair<double>> system_pairs;
@@ -81,10 +80,8 @@ int main(int argc, char **argv) {
                                            basis_pair->get_number_of_states());
     Eigen::MatrixX<double> overlaps(system_pairs.size(), basis_pair->get_number_of_states());
 
-    auto basis_ket = pairinteraction::BasisAtomCreator<double>().add_ket(ket).create(database);
-    auto system_ket = pairinteraction::SystemAtom<double>(basis_ket);
-    auto basis_pair_ket =
-        pairinteraction::BasisPairCreator<double>().add(system_ket).add(system_ket).create();
+    auto basis_ket = pairinteraction::BasisAtomCreator<double>(database).add_ket(ket).create();
+    auto basis_pair_ket = pairinteraction::BasisPairCreator<double>(basis_ket, basis_ket).create();
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
         eigenenergies.row(i) = system_pairs[i].get_eigenenergies() * HARTREE_IN_GHZ;

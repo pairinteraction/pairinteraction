@@ -44,8 +44,8 @@ static void declare_ket_atom(nb::module_ &m) {
 static void declare_ket_atom_creator(nb::module_ &m) {
     std::string pyclass_name = "KetAtomCreator";
     nb::class_<KetAtomCreator> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def(nb::init<std::string, int, double, double, double>())
+    // keep_alive because the creator stores a reference to the database
+    pyclass.def(nb::init<Database &>(), nb::keep_alive<1, 2>())
         .def("set_species", &KetAtomCreator::set_species)
         .def("set_energy", &KetAtomCreator::set_energy)
         .def("set_quantum_number", &KetAtomCreator::set_quantum_number)
