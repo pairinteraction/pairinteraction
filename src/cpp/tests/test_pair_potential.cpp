@@ -55,8 +55,8 @@ int main(int argc, char **argv) {
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     auto basis_pair = pairinteraction::BasisPairCreator<double>()
-                          .add(system)
-                          .add(system)
+                          .add(system.get_eigenbasis())
+                          .add(system.get_eigenbasis())
                           .restrict_energy(min_energy, max_energy)
                           .restrict_quantum_number_m(1, 1)
                           .create();
@@ -82,9 +82,8 @@ int main(int argc, char **argv) {
     Eigen::MatrixX<double> overlaps(system_pairs.size(), basis_pair->get_number_of_states());
 
     auto basis_ket = pairinteraction::BasisAtomCreator<double>().add_ket(ket).create(database);
-    auto system_ket = pairinteraction::SystemAtom<double>(basis_ket);
     auto basis_pair_ket =
-        pairinteraction::BasisPairCreator<double>().add(system_ket).add(system_ket).create();
+        pairinteraction::BasisPairCreator<double>().add(basis_ket).add(basis_ket).create();
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
         eigenenergies.row(i) = system_pairs[i].get_eigenenergies() * HARTREE_IN_GHZ;

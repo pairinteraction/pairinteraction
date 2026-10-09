@@ -6,7 +6,6 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
-#include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
@@ -19,19 +18,24 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
-    // The system must be diagonalized and its eigenstates sorted by energy.
-    // Sorting is required for the binary search of the energetically allowed range in create().
-    // By default, System::diagonalize ensures this.
-    if (!system_atom.is_diagonal_and_sorted_by_energy()) {
-        throw std::invalid_argument(
-            "The system must be diagonalized and sorted by energy before it can be added. "
-            "Consider calling diagonalize() on the SystemAtom which also sorts the eigenstates.");
+BasisPairCreator<Scalar> &
+BasisPairCreator<Scalar>::add(std::shared_ptr<const BasisAtom<Scalar>> basis_atom) {
+    if (bases_atom.size() >= 2) {
+        throw std::invalid_argument("At most two BasisAtom can be added.");
     }
-    systems_atom.push_back(system_atom);
+
+    // Sorting is required for the binary search of the energetically allowed range in create()
+    if (!basis_atom->is_sorted_by_energy()) {
+        throw std::invalid_argument(
+            "The states of the BasisAtom must have well-defined energies and be sorted by energy. "
+            "Consider adding the eigenbasis of a diagonalized SystemAtom.");
+    }
+
+    bases_atom.push_back(std::move(basis_atom));
     return *this;
 }
 
@@ -70,17 +74,8 @@ template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     set_task_status("Constructing pair basis...");
 
-    if (systems_atom.size() != 2) {
-        throw std::invalid_argument("Two SystemAtom must be added before creating the BasisPair.");
-    }
-
-    // Only references to the systems are stored, so a system might have been changed since add()
-    for (const auto &system_atom : systems_atom) {
-        if (!system_atom.get().is_diagonal_and_sorted_by_energy()) {
-            throw std::invalid_argument(
-                "The systems must still be diagonalized and sorted by energy when the BasisPair is "
-                "created. Do not change a SystemAtom after it has been added.");
-        }
+    if (bases_atom.size() != 2) {
+        throw std::invalid_argument("Two BasisAtom must be added before creating the BasisPair.");
     }
 
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
@@ -88,9 +83,9 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         parity_under_inversion.has_value() || parity_under_permutation.has_value();
 
     // This ensures that a one-atom state can be identified across both atoms by its state index
-    if (has_symmetry_restriction && &systems_atom[0].get() != &systems_atom[1].get()) {
+    if (has_symmetry_restriction && bases_atom[0] != bases_atom[1]) {
         throw std::invalid_argument(
-            "Parity restrictions require the same SystemAtom to be added twice, because "
+            "Parity restrictions require the same BasisAtom to be added twice, because "
             "symmetrization is only defined for two identical atoms.");
     }
 
@@ -99,17 +94,21 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         inferred_product_of_parities = *parity_under_inversion * *parity_under_permutation;
     }
 
-    const auto &system1 = systems_atom[0].get();
-    const auto &system2 = systems_atom[1].get();
-
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers
-    auto basis1 = system1.get_basis();
-    auto basis2 = system2.get_basis();
-    auto eigenenergies1 = system1.get_eigenenergies();
-    auto eigenenergies2 = system2.get_eigenenergies();
-    real_t *eigenenergies2_begin = eigenenergies2.data();
-    real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
+    const auto &basis1 = bases_atom[0];
+    const auto &basis2 = bases_atom[1];
+    auto get_energies = [](const auto &basis) {
+        std::vector<real_t> energies(basis->get_number_of_states());
+        for (size_t state_index = 0; state_index < energies.size(); ++state_index) {
+            energies[state_index] = basis->get_energy(state_index);
+        }
+        return energies;
+    };
+    const std::vector<real_t> eigenenergies1 = get_energies(basis1);
+    const std::vector<real_t> eigenenergies2 = get_energies(basis2);
+    const real_t *eigenenergies2_begin = eigenenergies2.data();
+    const real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
 
     // The quantum number m of a pair state is only well-defined if it is well-defined for both
     // atoms
@@ -189,7 +188,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     // Loop only over states with an allowed energy
     size_t ket_index = 0;
-    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenenergies1.size()); ++idx1) {
+    for (size_t idx1 = 0; idx1 < eigenenergies1.size(); ++idx1) {
         set_task_status("Constructing pair basis...");
 
         // Get the energetically allowed range of the second index

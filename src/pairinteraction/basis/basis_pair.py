@@ -105,9 +105,15 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
         """
         assert len(system_atoms) == 2, "BasisPair requires exactly two SystemAtom objects."
+        has_symmetry_restriction = parity_under_inversion is not None or parity_under_permutation is not None
+        if has_symmetry_restriction and system_atoms[0] is not system_atoms[1]:
+            raise ValueError(
+                "Parity restrictions require the same SystemAtom to be passed for both atoms, "
+                "because symmetrization is only defined for two identical atoms."
+            )
         creator = self._cpp_creator()
         for system in system_atoms:
-            creator.add(system._cpp)
+            creator.add(system._cpp.get_eigenbasis())
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if parity_under_inversion is not None:
@@ -426,14 +432,7 @@ def get_cpp_basis_pair_from_atom_bases(
     Like for the _cpp attributes, the cpp objects are annotated as the complex variants,
     although for BasisPairReal the real variants are used.
     """
-    if not real:
-        cpp_system_atom_class = _backend.SystemAtomComplex
-        creator = _backend.BasisPairCreatorComplex()
-    else:
-        cpp_system_atom_class = _backend.SystemAtomReal  # type: ignore [assignment]
-        creator = _backend.BasisPairCreatorReal()  # type: ignore [assignment]
-
-    systems = [cpp_system_atom_class(basis_cpp) for basis_cpp in basis_atoms_cpp]
-    for system in systems:
-        creator.add(system)
-    return creator.create()
+    creator = _backend.BasisPairCreatorReal() if real else _backend.BasisPairCreatorComplex()
+    for basis_cpp in basis_atoms_cpp:
+        creator.add(basis_cpp)  # type: ignore [arg-type]
+    return creator.create()  # type: ignore [return-value]
