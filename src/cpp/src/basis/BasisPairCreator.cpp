@@ -22,21 +22,15 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisPairCreator<Scalar> &
-BasisPairCreator<Scalar>::add(std::shared_ptr<const BasisAtom<Scalar>> basis_atom) {
-    if (bases_atom.size() >= 2) {
-        throw std::invalid_argument("At most two BasisAtom can be added.");
-    }
-
+BasisPairCreator<Scalar>::BasisPairCreator(std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                                           std::shared_ptr<const BasisAtom<Scalar>> basis2)
+    : basis1(std::move(basis1)), basis2(std::move(basis2)) {
     // Sorting is required for the binary search of the energetically allowed range in create()
-    if (!basis_atom->is_sorted_by_energy()) {
+    if (!this->basis1->is_sorted_by_energy() || !this->basis2->is_sorted_by_energy()) {
         throw std::invalid_argument(
             "The states of the BasisAtom must have well-defined energies and be sorted by energy. "
-            "Consider adding the eigenbasis of a diagonalized SystemAtom.");
+            "Consider using the eigenbasis of a diagonalized SystemAtom.");
     }
-
-    bases_atom.push_back(std::move(basis_atom));
-    return *this;
 }
 
 template <typename Scalar>
@@ -74,18 +68,14 @@ template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     set_task_status("Constructing pair basis...");
 
-    if (bases_atom.size() != 2) {
-        throw std::invalid_argument("Two BasisAtom must be added before creating the BasisPair.");
-    }
-
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
     const bool has_symmetry_restriction =
         parity_under_inversion.has_value() || parity_under_permutation.has_value();
 
     // This ensures that a one-atom state can be identified across both atoms by its state index
-    if (has_symmetry_restriction && bases_atom[0] != bases_atom[1]) {
+    if (has_symmetry_restriction && basis1 != basis2) {
         throw std::invalid_argument(
-            "Parity restrictions require the same BasisAtom to be added twice, because "
+            "Parity restrictions require the same BasisAtom for both atoms, because "
             "symmetrization is only defined for two identical atoms.");
     }
 
@@ -96,8 +86,6 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers
-    const auto &basis1 = bases_atom[0];
-    const auto &basis2 = bases_atom[1];
     auto get_energies = [](const auto &basis) {
         std::vector<real_t> energies(basis->get_number_of_states());
         for (size_t state_index = 0; state_index < energies.size(); ++state_index) {

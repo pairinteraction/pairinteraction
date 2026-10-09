@@ -113,7 +113,7 @@ template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>>
 build_pair_basis(std::shared_ptr<const BasisAtom<Scalar>> basis1,
                  std::shared_ptr<const BasisAtom<Scalar>> basis2) {
-    return BasisPairCreator<Scalar>().add(std::move(basis1)).add(std::move(basis2)).create();
+    return BasisPairCreator<Scalar>(std::move(basis1), std::move(basis2)).create();
 }
 
 template <typename Scalar>
@@ -161,18 +161,16 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     // Create two-atom bases
-    auto basis_pair_a = pairinteraction::BasisPairCreator<double>()
-                            .add(system.get_eigenbasis())
-                            .add(system.get_eigenbasis())
-                            .restrict_energy(min_energy, max_energy)
-                            .restrict_quantum_number_m(1, 1)
-                            .create();
-    auto basis_pair_b = pairinteraction::BasisPairCreator<double>()
-                            .add(system.get_eigenbasis())
-                            .add(system.get_eigenbasis())
-                            .restrict_energy(min_energy, max_energy)
-                            .restrict_quantum_number_m(1, 1)
-                            .create();
+    auto basis_pair_a =
+        pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+            .restrict_energy(min_energy, max_energy)
+            .restrict_quantum_number_m(1, 1)
+            .create();
+    auto basis_pair_b =
+        pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+            .restrict_energy(min_energy, max_energy)
+            .restrict_quantum_number_m(1, 1)
+            .create();
 
     DOCTEST_SUBCASE("check equality of kets") {
         // Obtain kets from the two-atom bases and check for equality
@@ -227,14 +225,10 @@ DOCTEST_TEST_CASE("merge rejects differently transformed atomic bases") {
     system_b.set_electric_field({0, 0, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS});
     system_b.diagonalize(DiagonalizerEigen<double>());
 
-    auto pair_basis_a = BasisPairCreator<double>()
-                            .add(system_a.get_eigenbasis())
-                            .add(system_a.get_eigenbasis())
-                            .create();
-    auto pair_basis_b = BasisPairCreator<double>()
-                            .add(system_b.get_eigenbasis())
-                            .add(system_b.get_eigenbasis())
-                            .create();
+    auto pair_basis_a =
+        BasisPairCreator<double>(system_a.get_eigenbasis(), system_a.get_eigenbasis()).create();
+    auto pair_basis_b =
+        BasisPairCreator<double>(system_b.get_eigenbasis(), system_b.get_eigenbasis()).create();
 
     DOCTEST_CHECK_THROWS_WITH_AS(pair_basis_a->merge(pair_basis_b),
                                  doctest::Contains("Cannot merge two pair bases"),
@@ -266,12 +260,11 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     // Create two-atom system
-    auto basis_pair_unperturbed = pairinteraction::BasisPairCreator<double>()
-                                      .add(system.get_eigenbasis())
-                                      .add(system.get_eigenbasis())
-                                      .restrict_energy(min_energy, max_energy)
-                                      .restrict_quantum_number_m(1, 1)
-                                      .create();
+    auto basis_pair_unperturbed =
+        pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+            .restrict_energy(min_energy, max_energy)
+            .restrict_quantum_number_m(1, 1)
+            .create();
     auto system_pair = SystemPair<double>(basis_pair_unperturbed)
                            .set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
     system_pair.diagonalize(diagonalizer);
@@ -381,18 +374,15 @@ DOCTEST_TEST_CASE("get amplitudes (via matrix elements) between different pair b
 
     double min_energy = 2 * ket->get_energy() - 20 / HARTREE_IN_GHZ;
     double max_energy = 2 * ket->get_energy() + 20 / HARTREE_IN_GHZ;
-    auto perturbed_basis = BasisPairCreator<double>()
-                               .add(perturbed_system1.get_eigenbasis())
-                               .add(perturbed_system2.get_eigenbasis())
+    auto perturbed_basis = BasisPairCreator<double>(perturbed_system1.get_eigenbasis(),
+                                                    perturbed_system2.get_eigenbasis())
                                .restrict_energy(min_energy, max_energy)
                                .create();
     auto state_in_perturbed_basis = perturbed_basis->get_state(42);
 
     min_energy = 2 * ket->get_energy() - 10 / HARTREE_IN_GHZ;
     max_energy = 2 * ket->get_energy() + 10 / HARTREE_IN_GHZ;
-    auto small_unperturbed_basis = BasisPairCreator<double>()
-                                       .add(atomic_basis)
-                                       .add(atomic_basis)
+    auto small_unperturbed_basis = BasisPairCreator<double>(atomic_basis, atomic_basis)
                                        .restrict_energy(min_energy, max_energy)
                                        .create();
     DOCTEST_CHECK(perturbed_basis->get_number_of_states() !=
@@ -418,17 +408,14 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     SystemAtom<double> system(basis);
     system.diagonalize(diagonalizer);
 
-    auto canonical_basis = BasisPairCreator<double>()
-                               .add(system.get_eigenbasis())
-                               .add(system.get_eigenbasis())
-                               .create();
+    auto canonical_basis =
+        BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
 
     DOCTEST_SUBCASE("restrict permutation parity") {
-        auto symmetrized_basis = BasisPairCreator<double>()
-                                     .add(system.get_eigenbasis())
-                                     .add(system.get_eigenbasis())
-                                     .restrict_parity_under_permutation(-1)
-                                     .create();
+        auto symmetrized_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_parity_under_permutation(-1)
+                .create();
 
         auto expected_basis = canonical_basis->transformed(
             build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
@@ -439,11 +426,10 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     }
 
     DOCTEST_SUBCASE("restrict inversion parity") {
-        auto symmetrized_basis = BasisPairCreator<double>()
-                                     .add(system.get_eigenbasis())
-                                     .add(system.get_eigenbasis())
-                                     .restrict_parity_under_inversion(-1)
-                                     .create();
+        auto symmetrized_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_parity_under_inversion(-1)
+                .create();
 
         auto expected_basis = canonical_basis->transformed(
             build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
@@ -454,17 +440,15 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     }
 
     DOCTEST_SUBCASE("restrict permutation parity to EVEN includes identical-state kets") {
-        auto symmetrized_basis_even = BasisPairCreator<double>()
-                                          .add(system.get_eigenbasis())
-                                          .add(system.get_eigenbasis())
-                                          .restrict_parity_under_permutation(1)
-                                          .create();
+        auto symmetrized_basis_even =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_parity_under_permutation(1)
+                .create();
 
-        auto symmetrized_basis_odd = BasisPairCreator<double>()
-                                         .add(system.get_eigenbasis())
-                                         .add(system.get_eigenbasis())
-                                         .restrict_parity_under_permutation(-1)
-                                         .create();
+        auto symmetrized_basis_odd =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_parity_under_permutation(-1)
+                .create();
 
         // Count kets in the canonical basis where both atoms are in the same state (id1 == id2).
         // Such kets are always permutation-symmetric and must appear in EVEN but not ODD.
@@ -520,12 +504,11 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     }
 
     DOCTEST_SUBCASE("combine inversion and permutation parity") {
-        auto symmetrized_basis = BasisPairCreator<double>()
-                                     .add(system.get_eigenbasis())
-                                     .add(system.get_eigenbasis())
-                                     .restrict_parity_under_inversion(-1)
-                                     .restrict_parity_under_permutation(-1)
-                                     .create();
+        auto symmetrized_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_parity_under_inversion(-1)
+                .restrict_parity_under_permutation(-1)
+                .create();
 
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
                       canonical_basis->get_number_of_states());
@@ -566,36 +549,36 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         SystemAtom<double> system_other(basis);
         system_other.diagonalize(diagonalizer);
 
-        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
-                                    .add(system.get_eigenbasis())
-                                    .add(system_other.get_eigenbasis())
-                                    .restrict_parity_under_permutation(-1)
-                                    .create(),
-                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .restrict_parity_under_permutation(-1)
+                .create(),
+            std::invalid_argument);
 
-        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>()
-                                    .add(system.get_eigenbasis())
-                                    .add(system_other.get_eigenbasis())
-                                    .restrict_parity_under_inversion(-1)
-                                    .create(),
-                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .restrict_parity_under_inversion(-1)
+                .create(),
+            std::invalid_argument);
 
         // Without a parity restriction, two different systems remain allowed.
-        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>()
-                                  .add(system.get_eigenbasis())
-                                  .add(system_other.get_eigenbasis())
-                                  .create());
+        DOCTEST_CHECK_NOTHROW(
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .create());
     }
 
     DOCTEST_SUBCASE("parity restrictions must be +1 or -1") {
-        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>().restrict_parity_under_inversion(0),
-                                std::invalid_argument);
-        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>().restrict_parity_under_permutation(2),
-                                std::invalid_argument);
+        auto eigenbasis = system.get_eigenbasis();
+        DOCTEST_CHECK_THROWS_AS(
+            BasisPairCreator<double>(eigenbasis, eigenbasis).restrict_parity_under_inversion(0),
+            std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(
+            BasisPairCreator<double>(eigenbasis, eigenbasis).restrict_parity_under_permutation(2),
+            std::invalid_argument);
     }
 }
 
-DOCTEST_TEST_CASE("add checks the BasisAtom") {
+DOCTEST_TEST_CASE("the constructor of BasisPairCreator checks the BasisAtom") {
     auto &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
                      .set_species("Rb")
@@ -603,24 +586,13 @@ DOCTEST_TEST_CASE("add checks the BasisAtom") {
                      .restrict_quantum_number("l", 0, 1)
                      .create(database);
 
-    DOCTEST_SUBCASE("a canonical basis sorted by energy can be added") {
-        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>().add(basis).add(basis).create());
-    }
-
-    DOCTEST_SUBCASE("at most two bases can be added") {
-        BasisPairCreator<double> creator;
-        creator.add(basis).add(basis);
-        DOCTEST_CHECK_THROWS_AS(creator.add(basis), std::invalid_argument);
-    }
-
-    DOCTEST_SUBCASE("two bases must be added before creating the pair basis") {
-        DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>().add(basis).create(),
-                                std::invalid_argument);
+    DOCTEST_SUBCASE("a canonical basis sorted by energy can be used") {
+        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>(basis, basis).create());
     }
 
     DOCTEST_SUBCASE("the states must have well-defined energies") {
         auto basis_without_energies = basis->copy_with_coefficients(basis->get_coefficients());
-        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>().add(basis_without_energies),
+        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies),
                                      doctest::Contains("well-defined energies"),
                                      std::invalid_argument);
     }
@@ -628,18 +600,16 @@ DOCTEST_TEST_CASE("add checks the BasisAtom") {
     DOCTEST_SUBCASE("the states must be sorted by energy") {
         auto basis_sorted_by_m =
             basis->transformed(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
-        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>().add(basis_sorted_by_m),
+        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis_sorted_by_m, basis),
                                      doctest::Contains("sorted by energy"), std::invalid_argument);
     }
 
-    DOCTEST_SUBCASE("the eigenbasis of a diagonalized system can be added") {
+    DOCTEST_SUBCASE("the eigenbasis of a diagonalized system can be used") {
         SystemAtom<double> system(basis);
         system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
-        DOCTEST_CHECK_THROWS(BasisPairCreator<double>().add(system.get_eigenbasis()));
-
         system.diagonalize(DiagonalizerEigen<double>());
         auto eigenbasis = system.get_eigenbasis();
-        auto pair_basis = BasisPairCreator<double>().add(eigenbasis).add(eigenbasis).create();
+        auto pair_basis = BasisPairCreator<double>(eigenbasis, eigenbasis).create();
 
         // The energies of the pair states are the sums of the eigenenergies of the atoms
         for (const auto &ket : *pair_basis) {
@@ -649,12 +619,12 @@ DOCTEST_TEST_CASE("add checks the BasisAtom") {
                 doctest::Approx(atomic_states[0]->get_energy(0) + atomic_states[1]->get_energy(0)));
         }
 
-        // A system without sorting by energy cannot be added
+        // The eigenbasis of a system that was not sorted by energy cannot be used
         SystemAtom<double> unsorted_system(basis);
         unsorted_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
         unsorted_system.diagonalize(DiagonalizerEigen<double>(), {}, {}, 1e-6, false);
         DOCTEST_CHECK_THROWS_WITH_AS(
-            BasisPairCreator<double>().add(unsorted_system.get_eigenbasis()),
+            BasisPairCreator<double>(unsorted_system.get_eigenbasis(), eigenbasis),
             doctest::Contains("sorted by energy"), std::invalid_argument);
     }
 }
