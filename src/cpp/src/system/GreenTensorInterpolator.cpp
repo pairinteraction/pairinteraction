@@ -318,7 +318,10 @@ GreenTensorInterpolator<Scalar> GreenTensorInterpolator<Scalar>::from_multipole_
                                                         distance_vector.size());
     real_t distance = vector_map.norm();
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
-    if (!std::isfinite(distance)) {
+    if (std::isnan(distance)) {
+        throw std::invalid_argument("The distance between the atoms must not be NaN.");
+    }
+    if (std::isinf(distance)) {
         return green_tensor_interpolator;
     }
     if (distance == 0) {

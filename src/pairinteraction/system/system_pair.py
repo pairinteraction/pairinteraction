@@ -127,7 +127,15 @@ class SystemPair(SystemBase[BasisPair]):
                 Default None expects a `pint.Quantity`.
 
         """
-        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        if angle_degree == 0:
+            # Avoid sin(0) * inf = NaN for an infinite distance
+            distance_vector = [0, 0, distance]
+        else:
+            distance_vector = [
+                np.sin(np.deg2rad(angle_degree)) * distance,
+                0,
+                np.cos(np.deg2rad(angle_degree)) * distance,
+            ]
         return self.set_distance_vector(distance_vector, unit)
 
     def set_distance_vector(
