@@ -2,6 +2,9 @@
     "name": "pairinteraction",
     "version-string": "1",
     "builtin-baseline": "1577f17ee57f42a0ef6d75bbb82cb37d0b76d7e8",
+    "vcpkg-configuration": {
+        "overlay-triplets": ["./cmake/triplets"]
+    },
     "dependencies": [
         "cpptrace",
         "eigen3",
