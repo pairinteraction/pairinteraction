@@ -43,13 +43,6 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
                     return Path(p.locate()).resolve()
         return None
 
-    def find_library_file_in_directory(substring: str, directory: Path = Path(__file__).parent) -> Path | None:
-        """Find the library file if it is in the specified directory."""
-        for p in directory.glob("*"):
-            if substring in p.stem:
-                return p.resolve()
-        return None
-
     def load_candidate(candidate: Path, loader: Callable[[str], object]) -> None:
         try:
             loader(str(candidate))
@@ -62,19 +55,22 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
     # Load shared libraries
     # ---------------------------------------------------------------------------------------
 
-    def fix_ssl() -> None:
-        """Fix SSL library loading issues under Windows."""
+    def add_vcpkg_dll_directories() -> None:
+        """Make the DLLs of the vcpkg dependencies findable under Windows."""
         assert add_dll_directory is not None
 
-        # If PairInteraction was installed, the SSL library might have been installed together with it
-        if (
-            is_package_installed("pairinteraction")
-            and find_library_file_in_package("ssl", "pairinteraction") is not None
-        ):
+        # If PairInteraction was installed from a wheel, delvewheel bundled the vcpkg DLLs into the directory
+        # pairinteraction.libs next to the package and added it to the DLL search path in its patch of this file.
+        if (Path(__file__).resolve().parent.parent / "pairinteraction.libs").is_dir():
             return
 
-        # If PairInteraction is running under PyInstaller, the SSL library might have been bundled with the executable
-        if is_running_under_pyinstaller() and find_library_file_in_directory("ssl", Path(__file__).parent) is not None:
+        # If PairInteraction is running under PyInstaller, the vcpkg DLLs might have been bundled with the executable.
+        # If it was frozen from a wheel, they are in pairinteraction.libs, which the check above covers. Otherwise,
+        # PyInstaller might have collected them directly into sys._MEIPASS or next to the backend.
+        if is_running_under_pyinstaller() and any(
+            next(directory.glob("fmt*.dll"), None) is not None
+            for directory in (Path(sys._MEIPASS), Path(__file__).resolve().parent)  # type: ignore[attr-defined]
+        ):
             return
 
         # Else, PairInteraction is probably running in development mode and we add a bunch of directories to
@@ -150,7 +146,7 @@ def _setup_dynamic_libraries() -> None:  # noqa: C901, PLR0915
 
     system = platform.system()
     if system == "Windows":
-        fix_ssl()
+        add_vcpkg_dll_directories()
     if Info.with_mkl:
         load_mkl(system)
 
