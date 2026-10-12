@@ -3,9 +3,11 @@
 
 #include "pairinteraction/system/GreenTensorInterpolator.hpp"
 
+#include "pairinteraction/utils/maths.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
 #include <Eigen/Dense>
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <complex>
@@ -112,6 +114,49 @@ Eigen::MatrixXd reference_cartesian_tensor(int kappa1, int kappa2,
     }
     return tensor;
 }
+
+// Regular solid harmonic p_{n,m}(r) = sqrt(4 pi / (2n + 1)) r^n Y_{n,m}(r) with the Condon-Shortley
+// phase, evaluated from its explicit polynomial form, e.g., p_{1,1}(r) = -(x + iy) / sqrt(2).
+std::complex<double> solid_harmonic(int n, int m, const Eigen::Vector3d &r) {
+    const std::complex<double> plus(-r.x() / 2, -r.y() / 2); // -(x + iy) / 2
+    const std::complex<double> minus(r.x() / 2, -r.y() / 2); // (x - iy) / 2
+    std::complex<double> sum = 0;
+    for (int k = std::max(0, -m); 2 * k <= n - m; ++k) {
+        sum += std::pow(plus, m + k) * std::pow(minus, k) * std::pow(r.z(), n - m - 2 * k) /
+            (maths::factorial<double>(m + k) * maths::factorial<double>(k) *
+             maths::factorial<double>(n - m - 2 * k));
+    }
+    return std::sqrt(maths::factorial<double>(n + m) * maths::factorial<double>(n - m)) * sum;
+}
+
+// Reference for the spherical green tensor entries for an arbitrary distance vector R = |R| u,
+// following from the Legendre generating function of 1/|R + r2 - r1| and the translation theorem
+// of the solid harmonics,
+//   (-1)^(kappa2+q1) * sqrt(binom(n+M, kappa1-q1) * binom(n-M, kappa1+q1))
+//   * p_{n,M}(u)^* / |R|^(n+1)
+// with n = kappa1 + kappa2 and M = q2 - q1. For u = e_z, only M = 0 contributes and the
+// coefficients of the z-oriented test case are recovered. Entries of the trace row/column of the
+// quadrupole transformator vanish.
+Eigen::MatrixXcd reference_spherical_entries(int kappa1, int kappa2,
+                                             const Eigen::Vector3d &distance_vector) {
+    const int n = kappa1 + kappa2;
+    const double distance = distance_vector.norm();
+    const Eigen::Vector3d unitvec = distance_vector / distance;
+    Eigen::MatrixXcd entries =
+        Eigen::MatrixXcd::Zero(spherical::get_transformator<double>(kappa1).rows(),
+                               spherical::get_transformator<double>(kappa2).rows());
+    for (int q1 = -kappa1; q1 <= kappa1; ++q1) {
+        for (int q2 = -kappa2; q2 <= kappa2; ++q2) {
+            const int M = q2 - q1;
+            const double sign = (kappa2 + q1) % 2 == 0 ? 1 : -1;
+            entries(q1 + kappa1, q2 + kappa2) = sign *
+                std::sqrt(maths::binomial_coefficient<double>(n + M, kappa1 - q1) *
+                          maths::binomial_coefficient<double>(n - M, kappa1 + q1)) *
+                std::conj(solid_harmonic(n, M, unitvec)) / std::pow(distance, n + 1);
+        }
+    }
+    return entries;
+}
 } // namespace
 
 DOCTEST_TEST_CASE("spherical entries of the multipole green tensors for a z-oriented axis") {
@@ -163,14 +208,19 @@ DOCTEST_TEST_CASE("spherical entries of the multipole green tensors for a z-orie
 }
 
 DOCTEST_TEST_CASE("multipole green tensors for an arbitrary axis") {
-    // The cartesian tensors are obtained by symbolic differentiation of 1/R and transformed to the
-    // spherical basis with the same transformators as the implementation. This tests the cartesian
-    // interaction tensors of GreenTensorInterpolator.cpp in isolation, errors in the transformators
-    // cancel and are covered by spherical.test.cpp instead. The derivatives are symmetric under
-    // permutations of the cartesian indices, so the order in which reference_cartesian_tensor()
-    // decodes the row and column into indices does not matter.
+    // The spherical entries are compared against two independent references:
+    // - "cartesian tensors": the cartesian tensors are obtained by symbolic differentiation of 1/R
+    //   and transformed to the spherical basis with the same transformators as the implementation.
+    //   This tests the cartesian interaction tensors of GreenTensorInterpolator.cpp in isolation,
+    //   errors in the transformators cancel and are covered by spherical.test.cpp instead. The
+    //   derivatives are symmetric under permutations of the cartesian indices, so the order in
+    //   which reference_cartesian_tensor() decodes the row and column into indices does not matter.
+    // - "full chain": the closed-form expression of reference_spherical_entries() is independent
+    //   of the cartesian tensors and of the transformators, so it tests every coefficient that
+    //   enters the interaction, the normalization of the transformators, and the complex phases of
+    //   the M != 0 entries.
     using complex_t = std::complex<double>;
-    const std::vector<Eigen::Vector3d> distance_vectors{{0.3, -1.1, 0.7}};
+    const std::vector<Eigen::Vector3d> distance_vectors{{0.3, -1.1, 0.7}, {0.6, 0.8, 2.4}};
 
     for (const auto &distance_vector : distance_vectors) {
         DOCTEST_INFO("distance_vector = (", distance_vector.x(), ", ", distance_vector.y(), ", ",
@@ -194,6 +244,13 @@ DOCTEST_TEST_CASE("multipole green tensors for an arbitrary axis") {
             DOCTEST_CHECK_MESSAGE((actual - expected_cartesian).norm() <
                                       1e-12 * expected_cartesian.norm(),
                                   "cartesian tensors");
+
+            const Eigen::MatrixXcd expected_full_chain =
+                reference_spherical_entries(kappa1, kappa2, distance_vector);
+            DOCTEST_REQUIRE(expected_full_chain.norm() > 0);
+            DOCTEST_CHECK_MESSAGE((actual - expected_full_chain).norm() <
+                                      1e-12 * expected_full_chain.norm(),
+                                  "full chain");
         }
     }
 }
