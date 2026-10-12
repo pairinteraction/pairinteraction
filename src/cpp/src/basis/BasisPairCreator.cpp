@@ -24,14 +24,7 @@ namespace pairinteraction {
 template <typename Scalar>
 BasisPairCreator<Scalar>::BasisPairCreator(std::shared_ptr<const BasisAtom<Scalar>> basis1,
                                            std::shared_ptr<const BasisAtom<Scalar>> basis2)
-    : basis1(std::move(basis1)), basis2(std::move(basis2)) {
-    // Sorting is required for the binary search of the energetically allowed range in create()
-    if (!this->basis1->is_sorted_by_energy() || !this->basis2->is_sorted_by_energy()) {
-        throw std::invalid_argument(
-            "The states of the BasisAtom must have well-defined energies and be sorted by energy. "
-            "Consider using the eigenbasis of a diagonalized SystemAtom.");
-    }
-}
+    : basis1(std::move(basis1)), basis2(std::move(basis2)) {}
 
 template <typename Scalar>
 BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, real_t max) {
@@ -84,12 +77,24 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         inferred_product_of_parities = *parity_under_inversion * *parity_under_permutation;
     }
 
+    // Sorting is required for the binary search of the energetically allowed range
+    if (range_energy.is_finite() &&
+        (!basis1->is_sorted_by_energy() || !basis2->is_sorted_by_energy())) {
+        throw std::invalid_argument(
+            "The energy can only be restricted if the states of the BasisAtom have well-defined "
+            "energies and are sorted by energy. Consider using the eigenbasis of a diagonalized "
+            "SystemAtom.");
+    }
+
     // Construct the canonical basis that contains all KetPair objects with allowed energies and
-    // quantum numbers
+    // quantum numbers. States without a well-defined energy are marked by the maximum value.
+    static constexpr real_t unknown_energy = std::numeric_limits<real_t>::max();
     auto get_energies = [](const auto &basis) {
-        std::vector<real_t> energies(basis->get_number_of_states());
-        for (size_t state_index = 0; state_index < energies.size(); ++state_index) {
-            energies[state_index] = basis->get_energy(state_index);
+        std::vector<real_t> energies(basis->get_number_of_states(), unknown_energy);
+        if (basis->has_energy()) {
+            for (size_t state_index = 0; state_index < energies.size(); ++state_index) {
+                energies[state_index] = basis->get_energy(state_index);
+            }
         }
         return energies;
     };
@@ -197,7 +202,10 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         // Loop over the energetically allowed range of the second index
         for (size_t idx2 = min; idx2 < max; ++idx2) {
             // Get energy
-            const real_t energy = eigenenergies1[idx1] + eigenenergies2[idx2];
+            const real_t energy =
+                (eigenenergies1[idx1] == unknown_energy || eigenenergies2[idx2] == unknown_energy)
+                ? unknown_energy
+                : eigenenergies1[idx1] + eigenenergies2[idx2];
             assert(!range_energy.is_finite() ||
                    (energy >= range_energy.min() && energy <= range_energy.max()));
 

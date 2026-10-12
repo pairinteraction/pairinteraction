@@ -578,30 +578,46 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     }
 }
 
-DOCTEST_TEST_CASE("the constructor of BasisPairCreator checks the BasisAtom") {
+DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
     auto &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>(database)
                      .set_species("Rb")
                      .restrict_quantum_number("n", 60, 61)
                      .restrict_quantum_number("l", 0, 1)
                      .create();
+    double min_energy = 2 * basis->get_energy(0);
+    double max_energy = 2 * basis->get_energy(basis->get_number_of_states() - 1);
 
     DOCTEST_SUBCASE("a canonical basis sorted by energy can be used") {
         DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>(basis, basis).create());
+        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>(basis, basis)
+                                  .restrict_energy(min_energy, max_energy)
+                                  .create());
     }
 
-    DOCTEST_SUBCASE("the states must have well-defined energies") {
+    DOCTEST_SUBCASE("the states must have well-defined energies for an energy restriction") {
         auto basis_without_energies = basis->copy_with_coefficients(basis->get_coefficients());
-        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies),
+        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies)
+                                         .restrict_energy(min_energy, max_energy)
+                                         .create(),
                                      doctest::Contains("well-defined energies"),
                                      std::invalid_argument);
+
+        // Without an energy restriction, the pair states do not have a well-defined energy
+        auto pair_basis = BasisPairCreator<double>(basis, basis_without_energies).create();
+        DOCTEST_CHECK(pair_basis->get_number_of_states() ==
+                      basis->get_number_of_states() * basis->get_number_of_states());
+        DOCTEST_CHECK_FALSE(pair_basis->has_energy());
     }
 
-    DOCTEST_SUBCASE("the states must be sorted by energy") {
+    DOCTEST_SUBCASE("the states must be sorted by energy for an energy restriction") {
         auto basis_sorted_by_m =
             basis->transformed(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
-        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis_sorted_by_m, basis),
+        DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis_sorted_by_m, basis)
+                                         .restrict_energy(min_energy, max_energy)
+                                         .create(),
                                      doctest::Contains("sorted by energy"), std::invalid_argument);
+        DOCTEST_CHECK_NOTHROW(BasisPairCreator<double>(basis_sorted_by_m, basis).create());
     }
 
     DOCTEST_SUBCASE("the eigenbasis of a diagonalized system can be used") {
@@ -619,12 +635,15 @@ DOCTEST_TEST_CASE("the constructor of BasisPairCreator checks the BasisAtom") {
                 doctest::Approx(atomic_states[0]->get_energy(0) + atomic_states[1]->get_energy(0)));
         }
 
-        // The eigenbasis of a system that was not sorted by energy cannot be used
+        // The eigenbasis of a system that was not sorted by energy cannot be used with an energy
+        // restriction
         SystemAtom<double> unsorted_system(basis);
         unsorted_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
         unsorted_system.diagonalize(DiagonalizerEigen<double>(), {}, {}, 1e-6, false);
         DOCTEST_CHECK_THROWS_WITH_AS(
-            BasisPairCreator<double>(unsorted_system.get_eigenbasis(), eigenbasis),
+            BasisPairCreator<double>(unsorted_system.get_eigenbasis(), eigenbasis)
+                .restrict_energy(min_energy, max_energy)
+                .create(),
             doctest::Contains("sorted by energy"), std::invalid_argument);
     }
 }
