@@ -51,6 +51,30 @@ option(WITH_COVERAGE "Generate code coverage report" OFF)
 # Windows specific build instructions
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
+# Our vcpkg triplet (cmake/triplets/x64-windows.cmake) builds only the release versions of the dependencies. Because
+# objects that are compiled against the debug runtime are binary incompatible with them, we use the release runtime for
+# all build types, including Debug. For the same reason, imported targets that provide debug versions (e.g., TBB::tbb from
+# tbb-devel) must use their release versions in Debug builds, too. We detect a release-only triplet by the missing debug
+# directory instead of by the triplet name, because vcpkg's built-in triplet of the same name builds debug versions.
+# Other setups keep CMake's defaults.
+if(MSVC
+   AND DEFINED VCPKG_TARGET_TRIPLET
+   AND IS_DIRECTORY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin"
+   AND NOT EXISTS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug"
+   AND NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
+  if(NOT DEFINED CMAKE_MAP_IMPORTED_CONFIG_DEBUG)
+    # If none of the listed configurations is provided, CMake treats the imported target as not found. Thus, we list
+    # all other configurations, too: NoConfig (packages exported without a build type), the empty entry (targets without
+    # configuration-specific properties), and Debug last (for packages that only provide debug versions).
+    set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG "Release;RelWithDebInfo;MinSizeRel;NoConfig;;Debug")
+  endif()
+  # In Debug builds, vcpkg's toolchain copies the DLLs of the dependencies from the non-existent debug/bin directory, i.e.,
+  # not at all. $<TARGET_RUNTIME_DLLS> covers only DLLs of imported shared targets but not, e.g., the ICU DLLs needed by
+  # duckdb. Thus, the post-build steps that copy the runtime DLLs additionally copy the release DLLs in Debug builds.
+  file(GLOB VCPKG_RELEASE_DLLS_FOR_DEBUG "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
+endif()
+
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
 
