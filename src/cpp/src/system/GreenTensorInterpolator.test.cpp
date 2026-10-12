@@ -48,8 +48,19 @@ get_constant_entries_as_matrix(const GreenTensorInterpolator<Scalar> &interpolat
 }
 
 // Combinations of multipole orders for which the green tensors are implemented
-constexpr std::array<std::pair<int, int>, 11> IMPLEMENTED_KAPPAS{
-    {{0, 0}, {0, 1}, {1, 0}, {0, 2}, {2, 0}, {1, 1}, {1, 2}, {2, 1}, {2, 2}, {1, 3}, {3, 1}}};
+constexpr std::array<std::pair<int, int>, 13> IMPLEMENTED_KAPPAS{{{0, 0},
+                                                                  {0, 1},
+                                                                  {1, 0},
+                                                                  {0, 2},
+                                                                  {2, 0},
+                                                                  {1, 1},
+                                                                  {0, 3},
+                                                                  {3, 0},
+                                                                  {1, 2},
+                                                                  {2, 1},
+                                                                  {2, 2},
+                                                                  {1, 3},
+                                                                  {3, 1}}};
 
 // Polynomial in the cartesian components x, y, z, stored as a map from exponents to coefficients
 using Polynomial = std::map<std::array<int, 3>, double>;
@@ -204,6 +215,22 @@ DOCTEST_TEST_CASE("spherical entries of the multipole green tensors for a z-orie
         DOCTEST_CHECK(map.at({2, 2}) == doctest::Approx(6));
         DOCTEST_CHECK(map.at({3, 3}) == doctest::Approx(-4));
         DOCTEST_CHECK(map.at({4, 4}) == doctest::Approx(1));
+    }
+
+    DOCTEST_SUBCASE("monopole-octupole") {
+        auto interpolator_ions =
+            GreenTensorInterpolator<double>::from_multipole_expansion({0, 0, 1}, 5, 0, 0);
+        auto map = get_constant_entries_as_map(interpolator_ions, 0, 3);
+        DOCTEST_REQUIRE(map.size() == 1);
+        DOCTEST_CHECK(map.at({0, 3}) == doctest::Approx(-1));
+    }
+
+    DOCTEST_SUBCASE("octupole-monopole") {
+        auto interpolator_ions =
+            GreenTensorInterpolator<double>::from_multipole_expansion({0, 0, 1}, 5, 0, 0);
+        auto map = get_constant_entries_as_map(interpolator_ions, 3, 0);
+        DOCTEST_REQUIRE(map.size() == 1);
+        DOCTEST_CHECK(map.at({3, 0}) == doctest::Approx(1));
     }
 
     DOCTEST_SUBCASE("dipole-octupole") {

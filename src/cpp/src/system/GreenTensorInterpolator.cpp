@@ -245,6 +245,44 @@ Eigen::Matrix<Real, 9, 1> quadrupole_monopole_tensor(const Eigen::Vector3<Real> 
     return entries;
 }
 
+// Green function of monopole-octupole interaction
+template <typename Real>
+Eigen::Matrix<Real, 1, 27> monopole_octupole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 1, 27> entries = Eigen::Matrix<Real, 1, 27>::Zero();
+    for (Eigen::Index j = 0; j < 3; ++j) {
+        for (Eigen::Index i = 0; i < 3; ++i) {
+            for (Eigen::Index k = 0; k < 3; ++k) {
+                Eigen::Index col = 9 * j + 3 * i + k;
+                Real v = -15 * unitvec[j] * unitvec[i] * unitvec[k];
+                if (i == j) v += 3 * unitvec[k];
+                if (k == j) v += 3 * unitvec[i];
+                if (k == i) v += 3 * unitvec[j];
+                entries(0, col) += v;
+            }
+        }
+    }
+    return entries;
+}
+
+// Green function of octupole-monopole interaction
+template <typename Real>
+Eigen::Matrix<Real, 27, 1> octupole_monopole_tensor(const Eigen::Vector3<Real> &unitvec) {
+    Eigen::Matrix<Real, 27, 1> entries = Eigen::Matrix<Real, 27, 1>::Zero();
+    for (Eigen::Index q = 0; q < 3; ++q) {
+        for (Eigen::Index j = 0; j < 3; ++j) {
+            for (Eigen::Index i = 0; i < 3; ++i) {
+                Eigen::Index row = 9 * q + 3 * j + i;
+                Real v = 15 * unitvec[q] * unitvec[j] * unitvec[i];
+                if (i == j) v += -3 * unitvec[q];
+                if (i == q) v += -3 * unitvec[j];
+                if (j == q) v += -3 * unitvec[i];
+                entries(row, 0) += v;
+            }
+        }
+    }
+    return entries;
+}
+
 // Dyadic green function of dipole-dipole interaction
 template <typename Real>
 Eigen::Matrix3<Real> dipole_dipole_tensor(const Eigen::Vector3<Real> &unitvec) {
@@ -442,6 +480,17 @@ GreenTensorInterpolator<Scalar> GreenTensorInterpolator<Scalar>::from_multipole_
         green_tensor_interpolator.create_entries_from_cartesian(
             2, 1,
             (quadrupole_dipole_tensor(unitvec) / std::pow(distance, 4)).template cast<Scalar>());
+    }
+
+    if (is_required(0, 3)) {
+        green_tensor_interpolator.create_entries_from_cartesian(
+            0, 3,
+            (monopole_octupole_tensor(unitvec) / std::pow(distance, 4)).template cast<Scalar>());
+    }
+    if (is_required(3, 0)) {
+        green_tensor_interpolator.create_entries_from_cartesian(
+            3, 0,
+            (octupole_monopole_tensor(unitvec) / std::pow(distance, 4)).template cast<Scalar>());
     }
 
     if (is_required(2, 2)) {

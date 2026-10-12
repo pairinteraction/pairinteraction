@@ -72,10 +72,10 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
     };
 
     // Operator matrices for Rydberg-Rydberg interaction
-    if (has(0, 0) || has(0, 1) || has(0, 2)) {
+    if (has(0, 0) || has(0, 1) || has(0, 2) || has(0, 3)) {
         op.m1 = get_matrices(basis1, OperatorType::ELECTRIC_MONOPOLE, {0}, true);
     }
-    if (has(0, 0) || has(1, 0) || has(2, 0)) {
+    if (has(0, 0) || has(1, 0) || has(2, 0) || has(3, 0)) {
         op.m2 = get_matrices(basis2, OperatorType::ELECTRIC_MONOPOLE, {0}, false);
     }
     if (has(1, 0) || has(1, 1) || has(1, 2) || has(1, 3)) {
@@ -95,11 +95,11 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
     }
     // In contrast to the quadrupole operators, no trace operator must be appended because the
     // cartesian-to-spherical transformator for kappa == 3 does not contain trace rows.
-    if (has(3, 1)) {
+    if (has(3, 0) || has(3, 1)) {
         op.o1 = get_matrices(basis1, OperatorType::ELECTRIC_OCTUPOLE, {-3, -2, -1, 0, +1, +2, +3},
                              true);
     }
-    if (has(1, 3)) {
+    if (has(0, 3) || has(1, 3)) {
         op.o2 = get_matrices(basis2, OperatorType::ELECTRIC_OCTUPOLE, {-3, -2, -1, 0, +1, +2, +3},
                              false);
     }
@@ -264,6 +264,12 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Quadrupole-dipole interaction
     add_interaction(op.q1, op.d2, 2, 1);
+
+    // Monopole-octupole interaction
+    add_interaction(op.m1, op.o2, 0, 3);
+
+    // Octupole-monopole interaction
+    add_interaction(op.o1, op.m2, 3, 0);
 
     // Quadrupole-quadrupole interaction
     add_interaction(op.q1, op.q2, 2, 2);

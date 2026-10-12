@@ -95,7 +95,7 @@ class SystemPair(SystemBase[BasisPair]):
         - 1: monopole-monopole
         - 2: + monopole-dipole
         - 3: + monopole-quadrupole and dipole-dipole
-        - 4: + dipole-quadrupole
+        - 4: + monopole-octupole and dipole-quadrupole
         - 5: + quadrupole-quadrupole and dipole-octupole
 
         The monopole terms vanish for neutral atoms and only contribute for charged species like
