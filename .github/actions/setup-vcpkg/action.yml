@@ -7,10 +7,6 @@ runs:
       shell: pwsh
       run: echo "VCPKG_INSTALLED_DIR=$env:GITHUB_WORKSPACE\vcpkg_installed" >> $env:GITHUB_ENV
 
-    - name: Specify the directory of our overlay triplet that tells vcpkg to build only the release versions
-      shell: pwsh
-      run: echo "VCPKG_OVERLAY_TRIPLETS=$env:GITHUB_WORKSPACE\cmake\triplets" >> $env:GITHUB_ENV
-
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v11
       with:
