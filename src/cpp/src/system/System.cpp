@@ -7,6 +7,8 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -22,6 +24,7 @@
 #include <oneapi/tbb.h>
 #include <optional>
 #include <spdlog/spdlog.h>
+#include <stdexcept>
 #include <vector>
 
 namespace pairinteraction {
@@ -29,7 +32,14 @@ template <typename Derived>
 System<Derived>::System(std::shared_ptr<const basis_t> basis)
     : basis(std::move(basis)),
       matrix(static_cast<Eigen::Index>(this->basis->get_number_of_states()),
-             static_cast<Eigen::Index>(this->basis->get_number_of_states())) {}
+             static_cast<Eigen::Index>(this->basis->get_number_of_states())) {
+    // The unperturbed Hamiltonian is constructed from the energies of the kets
+    for (const auto &ket : this->basis->get_kets()) {
+        if (static_cast<real_t>(ket->get_energy()) == std::numeric_limits<real_t>::max()) {
+            throw std::invalid_argument("The kets of the basis do not have a well-defined energy.");
+        }
+    }
+}
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
