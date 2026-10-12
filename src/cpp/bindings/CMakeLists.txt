@@ -58,7 +58,8 @@ if(WIN32)
   add_custom_command(
     TARGET backend
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:backend> $<TARGET_FILE_DIR:backend>
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:backend>
+            "$<$<CONFIG:Debug>:${VCPKG_RELEASE_DLLS_FOR_DEBUG}>" $<TARGET_FILE_DIR:backend>
     COMMAND_EXPAND_LISTS)
 endif()
 
