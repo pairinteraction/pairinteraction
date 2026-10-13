@@ -105,7 +105,15 @@ class SystemAtom(SystemBase[BasisAtom]):
     def set_distance_to_ion(
         self: Self, distance: float | PintFloat, angle_degree: float = 0, unit: str | None = None
     ) -> Self:
-        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        if angle_degree == 0:
+            # Avoid sin(0) * inf = NaN for an infinite distance
+            distance_vector = [0, 0, distance]
+        else:
+            distance_vector = [
+                np.sin(np.deg2rad(angle_degree)) * distance,
+                0,
+                np.cos(np.deg2rad(angle_degree)) * distance,
+            ]
         return self.set_ion_distance_vector(distance_vector, unit)
 
     def set_ion_distance_vector(

@@ -16,7 +16,7 @@ from pairinteraction.basis import BasisAtom, BasisAtomReal, BasisPair, BasisPair
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
 from pairinteraction.system import SystemAtom, SystemAtomReal, SystemPair, SystemPairReal
-from pairinteraction.units import QuantityArray
+from pairinteraction.units import QuantityArray, QuantityScalar
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from pairinteraction.ket import KetAtom, KetAtomTuple  # noqa: F401
-    from pairinteraction.units import ArrayLike, NDArray, PintArray, PintFloat
+    from pairinteraction.units import ArrayLike, NDArray, PintArray, PintArrayLike, PintFloat
 
 
 logger = logging.getLogger(__name__)
@@ -487,12 +487,20 @@ class EffectiveSystemPair:
                 Default None expects a `pint.Quantity`.
 
         """
-        distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]
+        if angle_degree == 0:
+            # Avoid sin(0) * inf = NaN for an infinite distance
+            distance_vector = [0, 0, distance]
+        else:
+            distance_vector = [
+                np.sin(np.deg2rad(angle_degree)) * distance,
+                0,
+                np.cos(np.deg2rad(angle_degree)) * distance,
+            ]
         return self.set_distance_vector(distance_vector, unit)
 
     def set_distance_vector(
         self: Self,
-        distance: ArrayLike | PintArray,
+        distance: ArrayLike | PintArrayLike,
         unit: str | None = None,
     ) -> Self:
         """Set the distance vector between the atoms.
@@ -504,7 +512,8 @@ class EffectiveSystemPair:
 
         """
         self._delete_created("system_pair")
-        self._distance_vector = QuantityArray.convert_user_to_pint(distance, unit, "distance")
+        distance_au = [QuantityScalar.convert_user_to_au(v, unit, "distance") for v in distance]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__
+        self._distance_vector = QuantityArray.from_au(np.array(distance_au), "distance").to_pint()
         return self
 
     def set_angle(
