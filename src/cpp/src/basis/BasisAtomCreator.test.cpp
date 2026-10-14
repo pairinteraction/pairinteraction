@@ -87,7 +87,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 
     // Sort the basis by parity and the m quantum number
     auto sorter = basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M});
-    auto basis = basis_unsorted->transformed(sorter);
+    auto basis = basis_unsorted->sorted(sorter);
 
     // Check if the basis is properly sorted
     double parity = -1;
@@ -157,7 +157,7 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
     DOCTEST_CHECK_FALSE(basis->copy_with_coefficients(non_identity)->is_canonical());
 
     // Sorting the basis makes it non-canonical
-    auto sorted = basis->transformed(basis->get_sorter({SorterType::PARITY}));
+    auto sorted = basis->sorted(basis->get_sorter({SorterType::PARITY}));
     DOCTEST_CHECK_FALSE(sorted->is_canonical());
 }
 
@@ -176,7 +176,7 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
         basis_unsorted->get_indices_of_blocks({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}),
         std::invalid_argument);
 
-    auto basis = basis_unsorted->transformed(
+    auto basis = basis_unsorted->sorted(
         basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}));
 
     // After sorting, the states of equal parity and m are contiguous ...
@@ -309,8 +309,7 @@ DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized
                               .restrict_quantum_number("n", 60, 60)
                               .restrict_quantum_number("l", 0, 3)
                               .create();
-    auto basis =
-        unsorted_basis->transformed(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+    auto basis = unsorted_basis->sorted(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
     DOCTEST_REQUIRE(basis->has_quantum_number("m"));
 
     auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
@@ -410,7 +409,7 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
 
     // Sorting permutes the energies along with the states
     auto sorter = basis->get_sorter({SorterType::QUANTUM_NUMBER_M});
-    auto sorted = basis->transformed(sorter);
+    auto sorted = basis->sorted(sorter);
     DOCTEST_CHECK(sorted->has_energy());
     DOCTEST_CHECK_FALSE(sorted->is_sorted_by_energy());
     for (Eigen::Index i = 0; i < dim; ++i) {

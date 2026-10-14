@@ -188,7 +188,7 @@ System<Derived>::transform(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen:
     set_task_status("Applying transformation...");
     if (matrix.cols() != 0) {
         matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->transformed(sorter);
+        basis = basis->sorted(sorter);
     }
 
     return *this;
@@ -220,7 +220,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     if (!blockdiagonalizing_labels.empty()) {
         auto sorter = get_sorter(blockdiagonalizing_labels);
         matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->transformed(sorter);
+        basis = basis->sorted(sorter);
     }
 
     // Get the indices of the blocks

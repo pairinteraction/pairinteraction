@@ -408,33 +408,33 @@ bool Basis<Derived>::is_canonical() const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::transformed(
+std::shared_ptr<const Derived> Basis<Derived>::sorted(
     const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
     // Create a copy of the current object
-    auto transformed = std::make_shared<Derived>(derived());
+    auto result = std::make_shared<Derived>(derived());
 
     if (coefficients.cols() == 0) {
-        return transformed;
+        return result;
     }
 
     // Apply the sorting
     set_task_status("Applying basis sorting...");
-    transformed->coefficients = coefficients * sorter;
+    result->coefficients = coefficients * sorter;
 
     set_task_status("Relabeling sorted basis states...");
-    for (auto &[name, transformed_quantum_numbers] : transformed->quantum_numbers_of_states) {
+    for (auto &[name, sorted_quantum_numbers] : result->quantum_numbers_of_states) {
         const auto &quantum_numbers = quantum_numbers_of_states.at(name);
-        transformed_quantum_numbers.resize(sorter.size());
+        sorted_quantum_numbers.resize(sorter.size());
         for (int i = 0; i < sorter.size(); ++i) {
-            transformed_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];
+            sorted_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];
         }
     }
-    transformed->energy_of_states.resize(sorter.size());
+    result->energy_of_states.resize(sorter.size());
     for (int i = 0; i < sorter.size(); ++i) {
-        transformed->energy_of_states[i] = energy_of_states[sorter.indices()[i]];
+        result->energy_of_states[i] = energy_of_states[sorter.indices()[i]];
     }
 
-    return transformed;
+    return result;
 }
 
 template <typename Derived>
