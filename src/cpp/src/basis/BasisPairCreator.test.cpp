@@ -611,8 +611,7 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
     }
 
     DOCTEST_SUBCASE("the states must be sorted by energy for an energy restriction") {
-        auto basis_sorted_by_m =
-            basis->transformed(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+        auto basis_sorted_by_m = basis->sorted(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
         DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis_sorted_by_m, basis)
                                          .restrict_energy(min_energy, max_energy)
                                          .create(),

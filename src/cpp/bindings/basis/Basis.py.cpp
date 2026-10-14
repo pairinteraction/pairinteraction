@@ -47,9 +47,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
                 const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
                  return self.transformed(transformation);
              })
-        .def("transformed",
-             nb::overload_cast<const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &>(
-                 &Basis<T>::transformed, nb::const_))
+        .def("sorted", &Basis<T>::sorted)
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("is_canonical", &Basis<T>::is_canonical)
         .def("merge", &Basis<T>::merge);
