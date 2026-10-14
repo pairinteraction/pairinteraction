@@ -126,7 +126,8 @@ DOCTEST_TEST_CASE("construct an atomic Hamiltonian in a non-canonical atomic bas
     transformation.coeffRef(1, 1) = -inverse_sqrt_two;
     transformation.makeCompressed();
 
-    auto transformed_basis = basis->transformed(transformation);
+    auto transformed_basis =
+        basis->copy_with_coefficients(basis->get_coefficients() * transformation);
     SystemAtom<double> transformed_system(transformed_basis);
     transformed_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
@@ -454,6 +455,50 @@ DOCTEST_TEST_CASE("atom ion interaction") {
     size_t num_energies = std::min(energies2.size(), energies3.size());
     for (size_t i = 0; i < num_energies; ++i) {
         DOCTEST_CHECK(std::abs(energies3[i] - energies2[i]) * HARTREE_IN_GHZ > 1e-6);
+    }
+}
+
+DOCTEST_TEST_CASE("the eigenbasis knows the conserved quantum numbers") {
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    auto basis = BasisAtomCreator<double>(database)
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 60)
+                     .restrict_quantum_number("l", 0, 1)
+                     .create();
+
+    // An electric field along z conserves m, but neither f nor the parity
+    {
+        auto system = SystemAtom<double>(basis);
+        system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+        system.diagonalize(diagonalizer);
+        auto eigenbasis = system.get_eigenbasis();
+
+        DOCTEST_CHECK(eigenbasis->has_quantum_number("m"));
+        DOCTEST_CHECK_FALSE(eigenbasis->has_quantum_number("parity"));
+        DOCTEST_CHECK_FALSE(eigenbasis->has_quantum_number("f"));
+
+        // Each eigenstate comprises only kets of the m it is labeled with
+        const auto &coefficients = eigenbasis->get_coefficients();
+        for (Eigen::Index row = 0; row < coefficients.outerSize(); ++row) {
+            for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(coefficients, row);
+                 it; ++it) {
+                if (std::abs(it.value()) > 1e-10) {
+                    DOCTEST_CHECK(
+                        eigenbasis->get_quantum_number("m", static_cast<size_t>(it.col())) ==
+                        eigenbasis->get_ket(static_cast<size_t>(row))->get_quantum_number("m"));
+                }
+            }
+        }
+    }
+
+    // An electric field along x does not conserve m
+    {
+        auto system = SystemAtom<double>(basis);
+        system.set_electric_field({1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 0, 0});
+        system.diagonalize(diagonalizer);
+        DOCTEST_CHECK_FALSE(system.get_eigenbasis()->has_quantum_number("m"));
     }
 }
 

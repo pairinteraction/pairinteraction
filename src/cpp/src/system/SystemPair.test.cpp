@@ -12,6 +12,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
+#include "pairinteraction/enums/SorterType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -201,7 +202,8 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
     transformation.coeffRef(1, 1) = -inverse_sqrt_two;
     transformation.makeCompressed();
 
-    auto transformed_pair_basis = pair_basis->transformed(transformation);
+    auto transformed_pair_basis =
+        pair_basis->copy_with_coefficients(pair_basis->get_coefficients() * transformation);
     SystemPair<double> transformed_system(transformed_pair_basis);
     transformed_system.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
 

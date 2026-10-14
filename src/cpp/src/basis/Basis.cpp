@@ -220,18 +220,24 @@ std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
         throw std::invalid_argument("Incompatible number of columns.");
     }
 
-    // Create a copy of the current object and update the coefficients of the copy
+    // Arbitrary coefficients have neither well-defined energies nor quantum numbers
+    return copy_with_states(
+        values,
+        std::vector<real_t>(static_cast<size_t>(values.cols()), std::numeric_limits<real_t>::max()),
+        {});
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived>
+Basis<Derived>::copy_with_states(Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients,
+                                 std::vector<real_t> energy_of_states,
+                                 quantum_numbers_t quantum_numbers_of_states) const {
+    // Create a copy of the current object and replace the states of the copy
     auto result = std::make_shared<Derived>(derived());
-
-    result->coefficients = values;
-
-    for (auto &[name, quantum_numbers] : result->quantum_numbers_of_states) {
-        std::fill(quantum_numbers.begin(), quantum_numbers.end(),
-                  std::numeric_limits<real_t>::max());
-    }
-    std::fill(result->energy_of_states.begin(), result->energy_of_states.end(),
-              std::numeric_limits<real_t>::max());
-
+    result->coefficients = std::move(coefficients);
+    result->energy_of_states = std::move(energy_of_states);
+    result->quantum_numbers_of_states = std::move(quantum_numbers_of_states);
+    result->check_states();
     return result;
 }
 
@@ -249,6 +255,11 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::st
                                     name + ".");
     }
     return quantum_number;
+}
+
+template <typename Derived>
+const typename Basis<Derived>::quantum_numbers_t &Basis<Derived>::get_quantum_numbers() const {
+    return quantum_numbers_of_states;
 }
 
 template <typename Derived>
@@ -478,69 +489,6 @@ std::shared_ptr<const Derived> Basis<Derived>::sorted(
     }
 
     return result;
-}
-
-template <typename Derived>
-std::shared_ptr<const Derived>
-Basis<Derived>::transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
-                            const std::vector<real_t> &energy_of_transformed_states) const {
-    if (!energy_of_transformed_states.empty() &&
-        energy_of_transformed_states.size() != static_cast<size_t>(transformation.cols())) {
-        throw std::invalid_argument(
-            "The number of energies must match the number of transformed states.");
-    }
-
-    const real_t numerical_precision =
-        100 * std::sqrt(coefficients.rows()) * std::numeric_limits<real_t>::epsilon();
-
-    // Create a copy of the current object
-    auto transformed = std::make_shared<Derived>(derived());
-
-    if (coefficients.cols() == 0) {
-        return transformed;
-    }
-
-    // Apply the transformation
-    set_task_status("Applying basis transformation...");
-    transformed->coefficients = coefficients * transformation;
-
-    Eigen::SparseMatrix<real_t> probs = transformation.cwiseAbs2().transpose();
-    // Drop explicitly stored zeros
-    probs.prune(
-        [](Eigen::Index /*row*/, Eigen::Index /*col*/, const real_t &value) { return value != 0; });
-    Eigen::VectorX<real_t> norm = probs * Eigen::VectorX<real_t>::Ones(probs.cols());
-
-    set_task_status("Updating transformed quantum numbers...");
-    for (auto &[name, transformed_quantum_numbers] : transformed->quantum_numbers_of_states) {
-        const auto &quantum_numbers = quantum_numbers_of_states.at(name);
-        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(
-            quantum_numbers.data(), static_cast<Eigen::Index>(quantum_numbers.size()));
-        Eigen::VectorX<real_t> val = probs * map;
-        Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        transformed_quantum_numbers.resize(probs.rows());
-
-        for (size_t i = 0; i < transformed_quantum_numbers.size(); ++i) {
-            const real_t mean = val[i] / norm[i];
-            const real_t mean_sq = sq[i] / norm[i];
-            const real_t variance = std::abs(mean_sq - mean * mean);
-            if (variance < numerical_precision * std::max(static_cast<real_t>(1), mean_sq)) {
-                transformed_quantum_numbers[i] = std::round(mean * 2) / 2;
-            } else {
-                transformed_quantum_numbers[i] = std::numeric_limits<real_t>::max();
-            }
-        }
-    }
-
-    // The transformed states only have well-defined energies if they are explicitly specified,
-    // e.g., as eigenenergies
-    if (energy_of_transformed_states.empty()) {
-        transformed->energy_of_states.assign(static_cast<size_t>(transformation.cols()),
-                                             std::numeric_limits<real_t>::max());
-    } else {
-        transformed->energy_of_states = energy_of_transformed_states;
-    }
-
-    return transformed;
 }
 
 // Explicit instantiations

@@ -109,6 +109,20 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
     return transformation;
 }
 
+// Construct the basis whose states are the given superpositions of the states of the basis
+template <typename Scalar>
+std::shared_ptr<const BasisPair<Scalar>>
+superimpose(const std::shared_ptr<const BasisPair<Scalar>> &basis,
+            const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &superpositions) {
+    using real_t = typename BasisPair<Scalar>::real_t;
+    constexpr real_t unknown = std::numeric_limits<real_t>::max();
+    auto num_states = static_cast<size_t>(superpositions.cols());
+
+    // The superpositions have neither well-defined energies nor quantum numbers
+    return basis->copy_with_states(basis->get_coefficients() * superpositions,
+                                   std::vector<real_t>(num_states, unknown), {});
+}
+
 template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>>
 build_pair_basis(std::shared_ptr<const BasisAtom<Scalar>> basis1,
@@ -425,8 +439,8 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                 .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
+        auto expected_basis = superimpose(
+            canonical_basis, build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -450,8 +464,8 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                 .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
+        auto expected_basis = superimpose(
+            canonical_basis, build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <

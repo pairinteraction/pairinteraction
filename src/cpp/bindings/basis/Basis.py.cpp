@@ -26,7 +26,6 @@ using namespace pairinteraction;
 template <typename T>
 static void declare_basis(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "Basis" + type_name;
-    using scalar_t = typename Basis<T>::scalar_t;
     nb::class_<Basis<T>, SorterBuilderInterface> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_kets", &Basis<T>::get_kets)
         .def("get_ket", &Basis<T>::get_ket)
@@ -42,11 +41,6 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("copy_with_coefficients", &Basis<T>::copy_with_coefficients)
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
-        .def("transformed",
-             [](const Basis<T> &self,
-                const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
-                 return self.transformed(transformation);
-             })
         .def("sorted", &Basis<T>::sorted)
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("is_canonical", &Basis<T>::is_canonical)

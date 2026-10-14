@@ -309,7 +309,25 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         energy_of_eigenstates.insert(energy_of_eigenstates.end(), eigenenergies_block.data(),
                                      eigenenergies_block.data() + eigenenergies_block.size());
     }
-    basis = basis->transformed(eigenvectors, energy_of_eigenstates);
+
+    // The eigenstates of a block share the quantum numbers that label the block. Other quantum
+    // numbers are not conserved by the Hamiltonian, so they are not well-defined.
+    typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
+    for (const auto &label : blockdiagonalizing_labels) {
+        const auto &name = basis_t::sorter_type_to_quantum_number_name.at(label);
+        auto &quantum_numbers = quantum_numbers_of_eigenstates[name];
+        quantum_numbers.reserve(num_cols);
+        for (size_t idx = 0; idx < blocks.size(); ++idx) {
+            quantum_numbers.insert(quantum_numbers.end(),
+                                   static_cast<size_t>(eigenenergies_blocks[idx].size()),
+                                   basis->get_quantum_number(name, blocks[idx].start));
+        }
+    }
+
+    set_task_status("Constructing eigenbasis...");
+    basis = basis->copy_with_states(basis->get_coefficients() * eigenvectors,
+                                    std::move(energy_of_eigenstates),
+                                    std::move(quantum_numbers_of_eigenstates));
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
@@ -342,10 +360,10 @@ bool System<Derived>::is_diagonal() const {
         // The states of the basis are eigenstates, so assign them the diagonal entries of the
         // Hamiltonian as energies
         Eigen::VectorX<real_t> diagonal = matrix.diagonal().real();
-        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> identity(matrix.rows(), matrix.cols());
-        identity.setIdentity();
-        basis = basis->transformed(
-            identity, std::vector<real_t>(diagonal.data(), diagonal.data() + diagonal.size()));
+        basis = basis->copy_with_states(
+            basis->get_coefficients(),
+            std::vector<real_t>(diagonal.data(), diagonal.data() + diagonal.size()),
+            basis->get_quantum_numbers());
 
         hamiltonian_is_diagonal = true;
     }
