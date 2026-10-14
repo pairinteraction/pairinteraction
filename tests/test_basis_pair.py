@@ -190,7 +190,7 @@ def test_error_handling(basis: BasisPair) -> None:
         basis.get_matrix_elements("not a ket", ("energy", "energy"), (0, 0))  # type: ignore [arg-type]
 
 
-@pytest.mark.parametrize("restriction", ["parity_under_inversion", "parity_under_permutation"])
+@pytest.mark.parametrize("restriction", ["product_of_parities", "parity_under_inversion", "parity_under_permutation"])
 def test_symmetrization_is_complete(
     pi_module: PairinteractionModule, system_atom: SystemAtom, restriction: str
 ) -> None:
@@ -222,6 +222,14 @@ def test_symmetrization_requires_same_system(
 
     # Without a parity restriction, two different systems remain allowed.
     basis = pi_module.BasisPair([system_atom, system_atom2])
+    assert basis.number_of_states > 0
+
+
+def test_product_of_parities_does_not_require_same_system(
+    pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom
+) -> None:
+    """The product of parities is well-defined without symmetrization."""
+    basis = pi_module.BasisPair([system_atom, system_atom2], product_of_parities="odd")
     assert basis.number_of_states > 0
 
 
