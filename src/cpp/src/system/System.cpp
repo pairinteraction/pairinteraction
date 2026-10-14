@@ -155,43 +155,13 @@ System<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) co
 }
 
 template <typename Derived>
-System<Derived> &
-System<Derived>::transform(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
+    set_task_status("Sorting Hamiltonian...");
 
-    set_task_status("Applying transformation...");
-    if (matrix.cols() != 0) {
-        matrix = transformation.adjoint() * matrix * transformation;
-        basis = basis->transformed(transformation);
-    }
-
-    hamiltonian_is_diagonal = false;
-
-    // A transformed system might have lost its block-diagonalizability if the
-    // transformation was not a sorting
-    blockdiagonalizing_labels.clear();
-
-    return *this;
-}
-
-template <typename Derived>
-System<Derived> &
-System<Derived>::transform(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-
-    set_task_status("Applying transformation...");
-    if (matrix.cols() != 0) {
+    if (!hamiltonian_requires_construction) {
         matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->sorted(sorter);
     }
-
-    return *this;
+    basis = basis->sorted(sorter);
 }
 
 template <typename Derived>
@@ -208,7 +178,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
-            transform(get_sorter({SorterType::ENERGY}));
+            sort(get_sorter({SorterType::ENERGY}));
         }
         return *this;
     }
@@ -218,9 +188,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        auto sorter = get_sorter(blockdiagonalizing_labels);
-        matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->sorted(sorter);
+        sort(get_sorter(blockdiagonalizing_labels));
     }
 
     // Get the indices of the blocks
@@ -345,7 +313,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
-        transform(get_sorter({SorterType::ENERGY}));
+        sort(get_sorter({SorterType::ENERGY}));
     }
 
     return *this;

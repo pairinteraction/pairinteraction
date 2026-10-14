@@ -42,16 +42,6 @@ static void declare_system(nb::module_ &m, const std::string &type_name) {
         .def("get_indices_of_blocks", &S::get_indices_of_blocks,
              nb::call_guard<nb::gil_scoped_release>())
         .def(
-            "transform",
-            [](S &self, const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation)
-                -> T & { return static_cast<T &>(self.transform(transformation)); },
-            nb::call_guard<nb::gil_scoped_release>())
-        .def(
-            "transform",
-            [](S &self, const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter)
-                -> T & { return static_cast<T &>(self.transform(sorter)); },
-            nb::call_guard<nb::gil_scoped_release>())
-        .def(
             "diagonalize",
             [](S &self, const DiagonalizerInterface<scalar_t> &diagonalizer,
                std::optional<real_t> min_eigenenergy, std::optional<real_t> max_eigenenergy,
