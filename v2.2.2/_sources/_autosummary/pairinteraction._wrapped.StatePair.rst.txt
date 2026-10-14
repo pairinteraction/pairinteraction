@@ -1,0 +1,32 @@
+﻿StatePair
+=========
+
+.. currentmodule:: pairinteraction._wrapped
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~StatePair.__init__
+      ~StatePair.get_amplitude
+      ~StatePair.get_coefficients
+      ~StatePair.get_corresponding_ket
+      ~StatePair.get_corresponding_ket_index
+      ~StatePair.get_label
+      ~StatePair.get_matrix_element
+      ~StatePair.get_overlap
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~StatePair.kets
+   ~StatePair.norm
+   ~StatePair.number_of_kets
+
+
+
+.. autoclass:: pairinteraction._wrapped.StatePair
