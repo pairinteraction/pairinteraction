@@ -83,6 +83,49 @@ Basis<Derived>::Basis(ketvec_t &&kets)
 }
 
 template <typename Derived>
+Basis<Derived>::Basis(ketvec_t &&kets,
+                      Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
+                      std::vector<real_t> &&energy_of_states,
+                      quantum_numbers_t &&quantum_numbers_of_states)
+    : kets(std::move(kets)), coefficients(std::move(coefficients)),
+      quantum_numbers_of_states(std::move(quantum_numbers_of_states)),
+      energy_of_states(std::move(energy_of_states)) {
+    if (this->kets.empty()) {
+        throw std::invalid_argument("The basis must contain at least one element.");
+    }
+    check_states();
+}
+
+template <typename Derived>
+void Basis<Derived>::check_states() const {
+    auto num_states = static_cast<size_t>(coefficients.cols());
+
+    if (static_cast<size_t>(coefficients.rows()) != kets.size()) {
+        throw std::invalid_argument(
+            "The number of rows of the coefficient matrix must match the number of kets.");
+    }
+
+    if (energy_of_states.size() != num_states) {
+        throw std::invalid_argument("The number of energies must match the number of states.");
+    }
+
+    // The states can only be labeled by quantum numbers by which they can be sorted. Quantum
+    // numbers that are not given are not well-defined.
+    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
+        if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
+                         Derived::sorter_type_to_quantum_number_name.end(),
+                         [&](const auto &entry) { return entry.second == name; })) {
+            throw std::invalid_argument("The states cannot be labeled by the quantum number " +
+                                        name + ".");
+        }
+        if (quantum_numbers.size() != num_states) {
+            throw std::invalid_argument("The number of values of the quantum number " + name +
+                                        " must match the number of states.");
+        }
+    }
+}
+
+template <typename Derived>
 void Basis<Derived>::make_canonical() {
     auto n = static_cast<Eigen::Index>(kets.size());
     if (coefficients.rows() != n || coefficients.cols() != n) {

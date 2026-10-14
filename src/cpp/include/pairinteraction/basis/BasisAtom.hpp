@@ -52,11 +52,16 @@ public:
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
+    using quantum_numbers_t = typename Basis<Type>::quantum_numbers_t;
 
     static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
     BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
               Database &database);
+    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
+              Database &database, Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+              std::vector<real_t> &&energy_of_states,
+              quantum_numbers_t &&quantum_numbers_of_states);
     Database &get_database() const;
     const std::string &get_species() const;
     const std::string &get_canonical_basis_id() const;
