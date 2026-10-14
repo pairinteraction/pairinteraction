@@ -54,6 +54,7 @@ class BasisPair : public Basis<BasisPair<Scalar>>,
 public:
     using Type = BasisPair<Scalar>;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
+    using quantum_numbers_t = typename Basis<Type>::quantum_numbers_t;
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using range_t = Range<size_t>;
@@ -68,6 +69,13 @@ public:
               map_indices_t &&state_indices_to_ket_index,
               std::shared_ptr<const BasisAtom<Scalar>> basis1,
               std::shared_ptr<const BasisAtom<Scalar>> basis2);
+    BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&state_index1_to_state_index_range2,
+              map_indices_t &&state_indices_to_ket_index,
+              std::shared_ptr<const BasisAtom<Scalar>> basis1,
+              std::shared_ptr<const BasisAtom<Scalar>> basis2,
+              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+              std::vector<real_t> &&energy_of_states,
+              quantum_numbers_t &&quantum_numbers_of_states);
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
