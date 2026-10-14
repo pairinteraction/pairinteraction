@@ -41,6 +41,21 @@ BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
       basis2(std::move(basis2)) {}
 
 template <typename Scalar>
+BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
+                             map_range_t &&state_index1_to_state_index_range2,
+                             map_indices_t &&state_indices_to_ket_index,
+                             std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                             std::shared_ptr<const BasisAtom<Scalar>> basis2,
+                             Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+                             std::vector<real_t> &&energy_of_states,
+                             quantum_numbers_t &&quantum_numbers_of_states)
+    : Basis<BasisPair<Scalar>>(std::move(kets), std::move(coefficients),
+                               std::move(energy_of_states), std::move(quantum_numbers_of_states)),
+      state_index1_to_state_index_range2(std::move(state_index1_to_state_index_range2)),
+      state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
+      basis2(std::move(basis2)) {}
+
+template <typename Scalar>
 const typename BasisPair<Scalar>::range_t &
 BasisPair<Scalar>::get_index_range(size_t state_index1) const {
     return state_index1_to_state_index_range2.at(state_index1);
