@@ -466,12 +466,12 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
                      .restrict_quantum_number("l", 0, 1)
                      .create();
 
-    auto system = SystemAtom<double>(basis);
+    // The electric field conserves the quantum number m, thus the Hamiltonian can be
+    // block-diagonalized by m if the basis is sorted by m
+    auto sorted_basis = basis->sorted(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+    auto system = SystemAtom<double>(sorted_basis);
     system.set_electric_field({0, 0, 0.0001});
 
-    // The electric field conserves the quantum number m, thus the Hamiltonian can be
-    // block-diagonalized by m
-    system.transform(system.get_sorter({SorterType::QUANTUM_NUMBER_M}));
     auto blocks = system.get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M});
     DOCTEST_CHECK(blocks.size() > 1);
 
@@ -507,18 +507,26 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
                      .restrict_quantum_number("l", 0, 1)
                      .create();
 
+    auto system = SystemAtom<double>(basis);
+    system.set_electric_field({0, 0, 0.0001});
+
+    // Applies the sorter of the system to its Hamiltonian and basis
+    auto sort = [&](const std::vector<SorterType> &labels) {
+        auto sorter = system.get_sorter(labels);
+        Eigen::SparseMatrix<double, Eigen::RowMajor> matrix;
+        matrix = system.get_matrix().twistedBy(sorter.inverse());
+        return std::make_pair(matrix, system.get_basis()->sorted(sorter));
+    };
+
     // The first label is the primary sorting criterion, the following labels only break ties
     {
-        auto system = SystemAtom<double>(basis);
-        system.set_electric_field({0, 0, 0.0001});
-        system.transform(system.get_sorter({SorterType::QUANTUM_NUMBER_M, SorterType::ENERGY}));
+        auto [matrix, sorted_basis] = sort({SorterType::QUANTUM_NUMBER_M, SorterType::ENERGY});
 
         // Sorting by m first means that states of equal m are contiguous ...
-        auto blocks = system.get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M});
+        auto blocks = sorted_basis->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M});
         DOCTEST_CHECK(blocks.size() > 1);
 
         // ... and that within each block, the energies are ascending
-        const auto &matrix = system.get_matrix();
         for (const auto &block : blocks) {
             for (auto i = static_cast<long>(block.start) + 1; i < static_cast<long>(block.end);
                  ++i) {
@@ -529,11 +537,8 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
 
     // If the energy is the first label, the states are sorted by the energy globally
     {
-        auto system = SystemAtom<double>(basis);
-        system.set_electric_field({0, 0, 0.0001});
-        system.transform(system.get_sorter({SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M}));
+        auto [matrix, sorted_basis] = sort({SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M});
 
-        const auto &matrix = system.get_matrix();
         for (long i = 1; i < matrix.rows(); ++i) {
             DOCTEST_CHECK(matrix.coeff(i - 1, i - 1) <= matrix.coeff(i, i));
         }
@@ -542,14 +547,10 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
     // If the energy is enclosed by other labels, the labels before the energy take precedence over
     // the energy and the energy takes precedence over the labels after it
     {
-        auto system = SystemAtom<double>(basis);
-        system.set_electric_field({0, 0, 0.0001});
-        system.transform(system.get_sorter(
-            {SorterType::PARITY, SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M}));
+        auto [matrix, sorted_basis] =
+            sort({SorterType::PARITY, SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M});
 
-        auto sorted_basis = system.get_basis();
         size_t num_states = sorted_basis->get_number_of_states();
-        const auto &matrix = system.get_matrix();
 
         auto parity = [&](size_t i) { return sorted_basis->get_quantum_number("parity", i); };
         auto energy = [&](size_t i) {

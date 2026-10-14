@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
-from pairinteraction import _backend
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
@@ -146,14 +145,11 @@ def test_neutral_pair_unaffected(pi_module: PairinteractionModule) -> None:
 
     # For a distance vector along z, the Hamiltonian must be block-diagonal with respect to the quantum number m
     system_pair = pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(3, unit="micrometer")
-    labels = [_backend.SorterType.QUANTUM_NUMBER_M]
-    system_pair._cpp.transform(system_pair._cpp.get_sorter(labels))
-    blocks = system_pair._cpp.get_indices_of_blocks(labels)
-    assert len(blocks) > 1
+    basis_cpp = system_pair._cpp.get_basis()
+    m = np.array([basis_cpp.get_quantum_number("m", i) for i in range(basis_cpp.get_number_of_states())])
+    assert len(np.unique(m)) > 1
     hamiltonian = system_pair.get_hamiltonian(unit="GHz").toarray()
-    for block in blocks:
-        hamiltonian[block.start : block.end, block.start : block.end] = 0
-    assert np.all(hamiltonian == 0)
+    assert np.all(hamiltonian[m[:, None] != m[None, :]] == 0)
 
     # Without charged species, the interaction orders 1 and 2 do not contribute
     system_pair_order_2 = pi_module.SystemPair(basis_pair).set_interaction_order(2).set_distance(3, unit="micrometer")

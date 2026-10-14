@@ -41,11 +41,6 @@ public:
     std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::vector<SorterType> &labels) const override;
 
-    System<Derived> &
-    transform(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation);
-    System<Derived> &
-    transform(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);
-
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  std::optional<real_t> min_eigenenergy = {},
                                  std::optional<real_t> max_eigenenergy = {}, double rtol = 1e-6,
@@ -60,5 +55,8 @@ protected:
     mutable std::vector<SorterType> blockdiagonalizing_labels;
 
     virtual void construct_hamiltonian() const = 0;
+
+private:
+    void sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);
 };
 } // namespace pairinteraction
