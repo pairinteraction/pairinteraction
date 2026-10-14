@@ -358,6 +358,17 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
     bool sort_by_product_of_parities = this->basis->has_quantum_number("product_of_parities");
 
+    // The interaction in vacuum is invariant under the inversion of the pair. Because this
+    // inversion equals the permutation of the atoms combined with the inversion of each atom, the
+    // interaction is additionally invariant under the permutation if only multipole operators of
+    // the same parity are coupled, see below. A user-defined Green tensor, e.g., of a surface,
+    // might break both symmetries.
+    const bool is_vacuum = !green_tensor_interpolator;
+    const bool sort_by_parity_under_inversion =
+        is_vacuum && this->basis->has_quantum_number("parity_under_inversion");
+    bool sort_by_parity_under_permutation =
+        is_vacuum && this->basis->has_quantum_number("parity_under_permutation");
+
     // Add Rydberg-Rydberg interaction via Green tensor
     // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]
     // where D_1,left uses conjugated convention and
@@ -365,8 +376,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Helper function for adding Rydberg-Rydberg interaction.
     auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_f,
-                            &sort_by_quantum_number_m, &sort_by_product_of_parities](
-                               const auto &op1, const auto &op2, int kappa1, int kappa2) {
+                            &sort_by_quantum_number_m, &sort_by_product_of_parities,
+                            &sort_by_parity_under_permutation](const auto &op1, const auto &op2,
+                                                               int kappa1, int kappa2) {
         const auto &entries = green_tensor_interpolator_ptr->get_spherical_entries(kappa1, kappa2);
 
         for (const auto &entry : entries) {
@@ -399,6 +411,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             }
             if ((kappa1 + kappa2) % 2 != 0) {
                 sort_by_product_of_parities = false;
+                sort_by_parity_under_permutation = false;
             }
         }
     };
@@ -444,6 +457,12 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     }
     if (sort_by_product_of_parities) {
         this->blockdiagonalizing_labels.push_back(SorterType::PRODUCT_OF_PARITIES);
+    }
+    if (sort_by_parity_under_inversion) {
+        this->blockdiagonalizing_labels.push_back(SorterType::PARITY_UNDER_INVERSION);
+    }
+    if (sort_by_parity_under_permutation) {
+        this->blockdiagonalizing_labels.push_back(SorterType::PARITY_UNDER_PERMUTATION);
     }
 }
 
