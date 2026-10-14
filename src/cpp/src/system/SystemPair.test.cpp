@@ -17,10 +17,12 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
+#include <numbers>
 
 namespace pairinteraction {
 
@@ -105,6 +107,60 @@ DOCTEST_TEST_CASE("the product of parities labels the pair states") {
         system_pair.diagonalize(diagonalizer);
         DOCTEST_CHECK_FALSE(
             system_pair.get_eigenbasis()->has_quantum_number("product_of_parities"));
+    }
+}
+
+DOCTEST_TEST_CASE("block-diagonalize a pair Hamiltonian by parities") {
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    auto basis = BasisAtomCreator<double>(database)
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 2)
+                     .create();
+    SystemAtom<double> system(basis);
+    system.set_magnetic_field({0, 0, 1e-4});
+    system.diagonalize(diagonalizer);
+
+    auto symmetrized_basis =
+        BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+    auto product_basis = BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                             .set_symmetrization_enabled(false)
+                             .create();
+
+    // The quantum number m is not conserved for the tilted distance vector, so that the blocks
+    // are given by the parities only
+    const double angle = 35. / 180. * std::numbers::pi;
+    const std::array<double, 3> distance_vector{3 * UM_IN_ATOMIC_UNITS * std::sin(angle), 0,
+                                                3 * UM_IN_ATOMIC_UNITS * std::cos(angle)};
+
+    // Dipole-quadrupole interactions (order 4) break the permutation symmetry and the product of
+    // parities, while the inversion symmetry is conserved for all orders
+    for (int order : {3, 4}) {
+        DOCTEST_CAPTURE(order);
+        auto system_symmetrized = SystemPair<double>(symmetrized_basis)
+                                      .set_interaction_order(order)
+                                      .set_distance_vector(distance_vector);
+        auto system_product = SystemPair<double>(product_basis)
+                                  .set_interaction_order(order)
+                                  .set_distance_vector(distance_vector);
+        system_symmetrized.diagonalize(diagonalizer);
+        system_product.diagonalize(diagonalizer);
+
+        // The symmetrization does not change the eigenenergies
+        Eigen::VectorXd eigenenergies_symmetrized = system_symmetrized.get_eigenenergies();
+        Eigen::VectorXd eigenenergies_product = system_product.get_eigenenergies();
+        std::sort(eigenenergies_symmetrized.begin(), eigenenergies_symmetrized.end());
+        std::sort(eigenenergies_product.begin(), eigenenergies_product.end());
+        DOCTEST_CHECK(eigenenergies_symmetrized.isApprox(eigenenergies_product, 1e-11));
+
+        // The eigenstates keep the labels of the conserved symmetries
+        auto eigenbasis = system_symmetrized.get_eigenbasis();
+        DOCTEST_CHECK_FALSE(eigenbasis->has_quantum_number("m"));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number("parity_under_inversion"));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number("parity_under_permutation") == (order == 3));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number("product_of_parities") == (order == 3));
     }
 }
 
