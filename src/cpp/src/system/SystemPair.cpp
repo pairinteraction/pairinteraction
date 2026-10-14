@@ -356,7 +356,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->hamiltonian_is_diagonal = false;
     bool sort_by_quantum_number_f = this->basis->has_quantum_number("f");
     bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
-    bool sort_by_parity = this->basis->has_quantum_number("product_of_parities");
+    bool sort_by_product_of_parities = this->basis->has_quantum_number("product_of_parities");
 
     // Add Rydberg-Rydberg interaction via Green tensor
     // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]
@@ -365,7 +365,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Helper function for adding Rydberg-Rydberg interaction.
     auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_f,
-                            &sort_by_quantum_number_m, &sort_by_parity](
+                            &sort_by_quantum_number_m, &sort_by_product_of_parities](
                                const auto &op1, const auto &op2, int kappa1, int kappa2) {
         const auto &entries = green_tensor_interpolator_ptr->get_spherical_entries(kappa1, kappa2);
 
@@ -398,7 +398,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                 sort_by_quantum_number_m = false;
             }
             if ((kappa1 + kappa2) % 2 != 0) {
-                sort_by_parity = false;
+                sort_by_product_of_parities = false;
             }
         }
     };
@@ -442,8 +442,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     if (sort_by_quantum_number_m) {
         this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_M);
     }
-    if (sort_by_parity) {
-        this->blockdiagonalizing_labels.push_back(SorterType::PARITY);
+    if (sort_by_product_of_parities) {
+        this->blockdiagonalizing_labels.push_back(SorterType::PRODUCT_OF_PARITIES);
     }
 }
 
