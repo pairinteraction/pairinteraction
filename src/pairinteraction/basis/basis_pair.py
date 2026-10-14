@@ -84,6 +84,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
         energy_unit: str | None = None,
         *,
+        product_of_parities: Parity | None = None,
         symmetrize: bool | None = None,
     ) -> None:
         """Create a basis for a pair of atoms.
@@ -102,6 +103,8 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.
             energy_unit: In which unit the energy values are given, e.g. "GHz".
                 Default None, i.e. energy is provided as pint object.
+            product_of_parities: Restrict to pair states with this product of the parities of the two atoms.
+                Default None, i.e. no restriction.
             symmetrize: Whether to symmetrize the pair basis under the permutation of the atoms.
                 Symmetrization is only possible if the same SystemAtom is passed for both atoms,
                 since it is only defined for two identical atoms. Default None, i.e. the pair
@@ -120,6 +123,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         creator.set_symmetrization_enabled(has_symmetry_restriction if symmetrize is None else symmetrize)
         if m is not None:
             creator.restrict_quantum_number("m", *m)
+        if product_of_parities is not None:
+            parity_int = parity_to_int(product_of_parities)
+            creator.restrict_quantum_number("product_of_parities", parity_int, parity_int)
         if parity_under_inversion is not None:
             parity_int = parity_to_int(parity_under_inversion)
             creator.restrict_quantum_number("parity_under_inversion", parity_int, parity_int)
@@ -154,6 +160,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         number_of_kets: int | None = None,
         *,
         warn_number_of_kets: bool = True,
+        product_of_parities: Parity | None = None,
         symmetrize: bool | None = None,
     ) -> Self:
         """Create a BasisPair from one or more pairs of kets with optional energy/m windows.
@@ -192,6 +199,8 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 reference ket pairs. Mutually exclusive with ``delta_energy``.
                 Default None means no count restriction.
             warn_number_of_kets: Don't warn about the possible issues with using number_of_kets.
+            product_of_parities: Restrict to pair states with this product of the parities of the two atoms.
+                Default None means no restriction.
             symmetrize: Whether to symmetrize the pair basis under the permutation of the atoms,
                 see :class:`BasisPair`. Default None, i.e. symmetrize if a parity restriction is given.
 
@@ -246,6 +255,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             m=m_range,
             parity_under_inversion=parity_under_inversion,
             parity_under_permutation=parity_under_permutation,
+            product_of_parities=product_of_parities,
             energy=energy_range,
             energy_unit=delta_energy_unit,
             symmetrize=symmetrize,
@@ -266,6 +276,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             m=m_range,
             parity_under_inversion=parity_under_inversion,
             parity_under_permutation=parity_under_permutation,
+            product_of_parities=product_of_parities,
             energy=(min_energy_au - delta_energy, max_energy_au + delta_energy),
             energy_unit="hartree",
             symmetrize=symmetrize,
