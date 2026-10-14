@@ -51,6 +51,30 @@ option(WITH_COVERAGE "Generate code coverage report" OFF)
 # Windows specific build instructions
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
+# Our vcpkg triplet (cmake/triplets/x64-windows.cmake) builds only the release versions of the dependencies. Because
+# objects that are compiled against the debug runtime are binary incompatible with them, we use the release runtime for
+# all build types, including Debug. For the same reason, imported targets that provide debug versions (e.g., TBB::tbb from
+# tbb-devel) must use their release versions in Debug builds, too. We detect a release-only triplet by the missing debug
+# directory instead of by the triplet name, because vcpkg's built-in triplet of the same name builds debug versions.
+# Other setups keep CMake's defaults.
+if(MSVC
+   AND DEFINED VCPKG_TARGET_TRIPLET
+   AND IS_DIRECTORY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin"
+   AND NOT EXISTS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug"
+   AND NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
+  if(NOT DEFINED CMAKE_MAP_IMPORTED_CONFIG_DEBUG)
+    # If none of the listed configurations is provided, CMake treats the imported target as not found. Thus, we list
+    # all other configurations, too: NoConfig (packages exported without a build type), the empty entry (targets without
+    # configuration-specific properties), and Debug last (for packages that only provide debug versions).
+    set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG "Release;RelWithDebInfo;MinSizeRel;NoConfig;;Debug")
+  endif()
+  # In Debug builds, vcpkg's toolchain copies the DLLs of the dependencies from the non-existent debug/bin directory, i.e.,
+  # not at all. $<TARGET_RUNTIME_DLLS> covers only DLLs of imported shared targets but not, e.g., the ICU DLLs needed by
+  # duckdb. Thus, the post-build steps that copy the runtime DLLs additionally copy the release DLLs in Debug builds.
+  file(GLOB VCPKG_RELEASE_DLLS_FOR_DEBUG "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
+endif()
+
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
 
@@ -118,19 +142,29 @@ execute_process(
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 
-# Find duckdb  # keep the version used here in sync with pyproject.toml
+# Find duckdb
+set(DUCKDB_EXPECTED_VERSION 1.4.4) # keep in sync with pyproject.toml
 find_package(DuckDB QUIET)
+# DuckDB reports its version with a "v" prefix (e.g., "v1.4.4"), which CMake's version comparison treats as older than
+# any "1.x.y". Thus, we cannot pass the version to find_package and compare the versions ourselves.
+if(DuckDB_FOUND)
+  string(REGEX REPLACE "^v" "" DUCKDB_FOUND_VERSION "${DuckDB_VERSION}")
+  if(NOT DUCKDB_FOUND_VERSION VERSION_EQUAL DUCKDB_EXPECTED_VERSION)
+    message(WARNING "Found DuckDB ${DuckDB_VERSION} in ${DuckDB_DIR}, but version ${DUCKDB_EXPECTED_VERSION} is "
+                    "expected to match the duckdb Python package.")
+  endif()
+endif()
 if(NOT DuckDB_FOUND AND (APPLE OR UNIX))
   if(APPLE)
-    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-osx-universal.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v${DUCKDB_EXPECTED_VERSION}/libduckdb-osx-universal.zip)
     set(DUCKDB_LIBNAME libduckdb.dylib)
-    set(DUCKDB_SHA256 efd0c2424589f0d5743ffdc0de22ce84b99bf307c330752f44277cffa3406e43)
+    set(DUCKDB_SHA256 5e6d79f5fb86bbd4f24d59cee3bc38f113d1433761df35337e3c01c62eeafe26)
   elseif(UNIX)
     # You can manually compile DuckDB and use it by calling CMake with
     # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
-    set(DUCKDB_URL https://install.duckdb.org/v1.4.3/libduckdb-linux-amd64.zip)
+    set(DUCKDB_URL https://install.duckdb.org/v${DUCKDB_EXPECTED_VERSION}/libduckdb-linux-amd64.zip)
     set(DUCKDB_LIBNAME libduckdb.so)
-    set(DUCKDB_SHA256 3c7bb8d586d39ccce56442c3f6bafa97f53d7b6bb5405dac827442fcb31494aa)
+    set(DUCKDB_SHA256 09cc288295964d897b47665d1898e16e8ef176cae9ea615797fc136eae15bd5d)
   endif()
   FetchContent_Declare(
     duckdb
