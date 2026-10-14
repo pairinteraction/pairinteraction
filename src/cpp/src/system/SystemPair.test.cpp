@@ -61,6 +61,53 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     DOCTEST_MESSAGE("Highest energy: ", eigenenergies.maxCoeff());
 }
 
+DOCTEST_TEST_CASE("the product of parities labels the pair states") {
+    auto &database = Database::get_global_instance();
+    auto diagonalizer = DiagonalizerEigen<double>();
+
+    // Without fields, the one-atom states have a well-defined parity
+    auto basis = BasisAtomCreator<double>(database)
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 61)
+                     .restrict_quantum_number("l", 0, 2)
+                     .restrict_quantum_number("m", -0.5, 0.5)
+                     .create();
+    SystemAtom<double> system1(basis);
+    SystemAtom<double> system2(basis);
+    diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
+
+    auto basis_pair =
+        BasisPairCreator<double>(system1.get_eigenbasis(), system2.get_eigenbasis()).create();
+    DOCTEST_REQUIRE(basis_pair->has_quantum_number("product_of_parities"));
+
+    // The pair states can be sorted by the product of parities, but not by the parity of an atom
+    auto sorted_basis =
+        basis_pair->sorted(basis_pair->get_sorter({SorterType::PRODUCT_OF_PARITIES}));
+    DOCTEST_CHECK(sorted_basis->get_indices_of_blocks({SorterType::PRODUCT_OF_PARITIES}).size() ==
+                  2);
+    DOCTEST_CHECK_THROWS_AS(basis_pair->get_sorter({SorterType::PARITY}), std::invalid_argument);
+
+    // The dipole-dipole interaction conserves the product of parities, so the eigenstates have a
+    // well-defined product of parities ...
+    {
+        auto system_pair = SystemPair<double>(basis_pair);
+        system_pair.set_interaction_order(3);
+        system_pair.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
+        system_pair.diagonalize(diagonalizer);
+        DOCTEST_CHECK(system_pair.get_eigenbasis()->has_quantum_number("product_of_parities"));
+    }
+
+    // ... whereas the dipole-quadrupole interaction does not conserve it
+    {
+        auto system_pair = SystemPair<double>(basis_pair);
+        system_pair.set_interaction_order(4);
+        system_pair.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
+        system_pair.diagonalize(diagonalizer);
+        DOCTEST_CHECK_FALSE(
+            system_pair.get_eigenbasis()->has_quantum_number("product_of_parities"));
+    }
+}
+
 DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") {
     auto &database = Database::get_global_instance();
 

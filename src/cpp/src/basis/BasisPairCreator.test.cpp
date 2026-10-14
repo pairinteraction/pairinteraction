@@ -164,12 +164,12 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     auto basis_pair_a =
         pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
             .restrict_energy(min_energy, max_energy)
-            .restrict_quantum_number_m(1, 1)
+            .restrict_quantum_number("m", 1, 1)
             .create();
     auto basis_pair_b =
         pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
             .restrict_energy(min_energy, max_energy)
-            .restrict_quantum_number_m(1, 1)
+            .restrict_quantum_number("m", 1, 1)
             .create();
 
     DOCTEST_SUBCASE("check equality of kets") {
@@ -263,7 +263,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     auto basis_pair_unperturbed =
         pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
             .restrict_energy(min_energy, max_energy)
-            .restrict_quantum_number_m(1, 1)
+            .restrict_quantum_number("m", 1, 1)
             .create();
     auto system_pair = SystemPair<double>(basis_pair_unperturbed)
                            .set_distance_vector({0, 0, 1 * UM_IN_ATOMIC_UNITS});
@@ -291,7 +291,11 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                       basis_pair_unperturbed->get_number_of_states());
 
         {
-            Eigen::RowVectorXd ref = matrix_elements_all.row(0);
+            // The basis is symmetrized, so the first ket is a superposition of the states. Because
+            // the symmetrization is a real orthogonal transformation, the coefficients of this
+            // superposition are given by the first row of the coefficient matrix.
+            Eigen::RowVectorXd ref =
+                basis_pair_unperturbed->get_coefficients().row(0) * matrix_elements_all;
             DOCTEST_CHECK(ref.isApprox(matrix_elements_ket_pair, 1e-11));
         }
 
@@ -408,13 +412,17 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     SystemAtom<double> system(basis);
     system.diagonalize(diagonalizer);
 
+    // As both atoms share the same BasisAtom, the created basis is symmetrized. We undo the
+    // symmetrization to compare against a manual symmetrization.
     auto canonical_basis =
-        BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+        BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+            .create()
+            ->canonicalized();
 
     DOCTEST_SUBCASE("restrict permutation parity") {
         auto symmetrized_basis =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .restrict_parity_under_permutation(-1)
+                .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
         auto expected_basis = canonical_basis->transformed(
@@ -423,12 +431,23 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
                       canonical_basis->get_number_of_states());
+
+        // A symmetrized state has the energy of the kets it comprises, which share the same energy
+        DOCTEST_REQUIRE(symmetrized_basis->has_energy());
+        const auto &coefficients = symmetrized_basis->get_coefficients();
+        for (Eigen::Index row = 0; row < coefficients.outerSize(); ++row) {
+            for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(coefficients, row);
+                 it; ++it) {
+                DOCTEST_CHECK(symmetrized_basis->get_energy(static_cast<size_t>(it.col())) ==
+                              symmetrized_basis->get_ket(static_cast<size_t>(row))->get_energy());
+            }
+        }
     }
 
     DOCTEST_SUBCASE("restrict inversion parity") {
         auto symmetrized_basis =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .restrict_parity_under_inversion(-1)
+                .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create();
 
         auto expected_basis = canonical_basis->transformed(
@@ -442,12 +461,12 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     DOCTEST_SUBCASE("restrict permutation parity to EVEN includes identical-state kets") {
         auto symmetrized_basis_even =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .restrict_parity_under_permutation(1)
+                .restrict_quantum_number("parity_under_permutation", 1, 1)
                 .create();
 
         auto symmetrized_basis_odd =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .restrict_parity_under_permutation(-1)
+                .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
         // Count kets in the canonical basis where both atoms are in the same state (id1 == id2).
@@ -506,8 +525,8 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
     DOCTEST_SUBCASE("combine inversion and permutation parity") {
         auto symmetrized_basis =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .restrict_parity_under_inversion(-1)
-                .restrict_parity_under_permutation(-1)
+                .restrict_quantum_number("parity_under_inversion", -1, -1)
+                .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -551,13 +570,13 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
 
         DOCTEST_CHECK_THROWS_AS(
             BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
-                .restrict_parity_under_permutation(-1)
+                .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create(),
             std::invalid_argument);
 
         DOCTEST_CHECK_THROWS_AS(
             BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
-                .restrict_parity_under_inversion(-1)
+                .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create(),
             std::invalid_argument);
 
@@ -567,13 +586,95 @@ DOCTEST_TEST_CASE("create a symmetrized BasisPair") {
                 .create());
     }
 
-    DOCTEST_SUBCASE("parity restrictions must be +1 or -1") {
-        auto eigenbasis = system.get_eigenbasis();
+    DOCTEST_SUBCASE("restrict the product of parities") {
+        for (bool symmetrization_enabled : {false, true}) {
+            auto restricted_basis =
+                BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                    .set_symmetrization_enabled(symmetrization_enabled)
+                    .restrict_quantum_number("product_of_parities", -1, -1)
+                    .create();
+            DOCTEST_REQUIRE(restricted_basis->get_number_of_states() > 0);
+            for (size_t i = 0; i < restricted_basis->get_number_of_states(); ++i) {
+                DOCTEST_CHECK(restricted_basis->get_quantum_number("product_of_parities", i) == -1);
+            }
+            for (const auto &ket : restricted_basis->get_kets()) {
+                DOCTEST_CHECK(ket->get_quantum_number("product_of_parities") == -1);
+            }
+        }
+    }
+
+    DOCTEST_SUBCASE("the symmetrization is enabled by default if possible") {
+        SystemAtom<double> system_other(basis);
+        system_other.diagonalize(diagonalizer);
+
+        // For the same BasisAtom, the pair states are symmetrized by default ...
+        auto symmetrized_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+        DOCTEST_CHECK_FALSE(symmetrized_basis->is_canonical());
+        DOCTEST_CHECK(symmetrized_basis->has_quantum_number("parity_under_permutation"));
+
+        // ... unless the symmetrization is disabled
+        auto product_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .set_symmetrization_enabled(false)
+                .create();
+        DOCTEST_CHECK(product_basis->is_canonical());
+        DOCTEST_CHECK_FALSE(product_basis->has_quantum_number("parity_under_permutation"));
+
+        // For different BasisAtom objects, the pair states cannot be symmetrized
+        auto different_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .create();
+        DOCTEST_CHECK(different_basis->is_canonical());
         DOCTEST_CHECK_THROWS_AS(
-            BasisPairCreator<double>(eigenbasis, eigenbasis).restrict_parity_under_inversion(0),
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .set_symmetrization_enabled(true),
             std::invalid_argument);
+    }
+
+    DOCTEST_SUBCASE("quantum number restrictions are validated") {
+        BasisPairCreator<double> creator(system.get_eigenbasis(), system.get_eigenbasis());
+
+        // Parities must be +1 or -1
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("parity_under_inversion", 0, 0),
+                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("parity_under_permutation", 2, 2),
+                                std::invalid_argument);
+
+        // The quantum number m must be an integer or half-integer
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("m", 0.25, 1),
+                                std::invalid_argument);
+
+        // The minimum must not exceed the maximum
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("parity_under_inversion", 1, -1),
+                                std::invalid_argument);
+
+        // Only quantum numbers of pair states can be restricted
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("n", 60, 60),
+                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("parity", 1, 1),
+                                std::invalid_argument);
+    }
+
+    DOCTEST_SUBCASE("a range comprising both parities does not restrict the parity") {
+        auto unrestricted_basis =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+        auto basis_with_both_parities =
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .restrict_quantum_number("parity_under_inversion", -1, 1)
+                .restrict_quantum_number("parity_under_permutation", -1, 1)
+                .create();
+        DOCTEST_CHECK(basis_with_both_parities->get_coefficients().isApprox(
+            unrestricted_basis->get_coefficients()));
+
+        // Like for any other quantum number, the parities can only be restricted if they are
+        // well-defined, which requires both atoms to share the same BasisAtom
+        SystemAtom<double> system_other(basis);
+        system_other.diagonalize(diagonalizer);
         DOCTEST_CHECK_THROWS_AS(
-            BasisPairCreator<double>(eigenbasis, eigenbasis).restrict_parity_under_permutation(2),
+            BasisPairCreator<double>(system.get_eigenbasis(), system_other.get_eigenbasis())
+                .restrict_quantum_number("parity_under_inversion", -1, 1)
+                .create(),
             std::invalid_argument);
     }
 }
