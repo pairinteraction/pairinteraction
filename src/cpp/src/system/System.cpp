@@ -42,20 +42,23 @@ System<Derived>::System(std::shared_ptr<const basis_t> basis)
 }
 
 template <typename Derived>
-std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
+void System<Derived>::ensure_hamiltonian_constructed() const {
+    if (!hamiltonian_requires_construction) {
+        return;
     }
+    construct_hamiltonian();
+    hamiltonian_requires_construction = false;
+}
+
+template <typename Derived>
+std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
+    ensure_hamiltonian_constructed();
     return basis;
 }
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_eigenbasis() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -64,10 +67,7 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
 
 template <typename Derived>
 Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenergies() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -77,10 +77,7 @@ Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenerg
 template <typename Derived>
 const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
 System<Derived>::get_matrix() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
     return matrix;
 }
 
@@ -88,10 +85,7 @@ template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
 System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
     // The first sorter type in labels is supposed to be the primary sorting criterion.
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
 
     // Drop repeated sorter types. This also ensures that energy occurs at most once.
     std::vector<SorterType> unique_labels;
@@ -137,10 +131,7 @@ System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
 template <typename Derived>
 std::vector<IndicesOfBlock>
 System<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
 
     std::set<SorterType> unique_labels(labels.begin(), labels.end());
     basis->perform_blocks_checks(unique_labels);
@@ -155,43 +146,13 @@ System<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) co
 }
 
 template <typename Derived>
-System<Derived> &
-System<Derived>::transform(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
+    set_task_status("Sorting Hamiltonian...");
 
-    set_task_status("Applying transformation...");
-    if (matrix.cols() != 0) {
-        matrix = transformation.adjoint() * matrix * transformation;
-        basis = basis->transformed(transformation);
-    }
-
-    hamiltonian_is_diagonal = false;
-
-    // A transformed system might have lost its block-diagonalizability if the
-    // transformation was not a sorting
-    blockdiagonalizing_labels.clear();
-
-    return *this;
-}
-
-template <typename Derived>
-System<Derived> &
-System<Derived>::transform(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-
-    set_task_status("Applying transformation...");
-    if (matrix.cols() != 0) {
+    if (!hamiltonian_requires_construction) {
         matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->transformed(sorter);
     }
-
-    return *this;
+    basis = basis->sorted(sorter);
 }
 
 template <typename Derived>
@@ -201,14 +162,11 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
                                               bool sort_by_energy) {
     set_task_status("Preparing Hamiltonian...");
 
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
 
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
-            transform(get_sorter({SorterType::ENERGY}));
+            sort(get_sorter({SorterType::ENERGY}));
         }
         return *this;
     }
@@ -218,9 +176,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        auto sorter = get_sorter(blockdiagonalizing_labels);
-        matrix = matrix.twistedBy(sorter.inverse());
-        basis = basis->transformed(sorter);
+        sort(get_sorter(blockdiagonalizing_labels));
     }
 
     // Get the indices of the blocks
@@ -345,7 +301,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
-        transform(get_sorter({SorterType::ENERGY}));
+        sort(get_sorter({SorterType::ENERGY}));
     }
 
     return *this;
@@ -353,10 +309,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
 template <typename Derived>
 bool System<Derived>::is_diagonal() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
+    ensure_hamiltonian_constructed();
 
     if (!hamiltonian_is_diagonal) {
         real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();

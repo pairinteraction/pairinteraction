@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, TypeGuard, cast, overload
 
 import numpy as np
 from scipy.sparse import csr_matrix
-from typing_extensions import Self, TypeAliasType, deprecated
+from typing_extensions import Self, TypeAliasType
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_kets
@@ -261,30 +261,6 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         )
 
     @classmethod
-    @deprecated("Use `BasisPair.from_kets` instead.")
-    def from_ket_atoms(
-        cls: type[Self],
-        ket_atom_tuples: KetAtomTuple | Sequence[KetAtomTuple],
-        system_atoms: Sequence[SystemAtom],
-        delta_m: float | None = None,
-        parity_under_inversion: Parity | None = None,
-        parity_under_permutation: Parity | None = None,
-        delta_energy: float | PintFloat | None = None,
-        delta_energy_unit: str | None = None,
-        number_of_kets: int | None = None,
-    ) -> Self:
-        return cls.from_kets(
-            ket_atom_tuples,
-            system_atoms,
-            delta_m=delta_m,
-            parity_under_inversion=parity_under_inversion,
-            parity_under_permutation=parity_under_permutation,
-            delta_energy=delta_energy,
-            delta_energy_unit=delta_energy_unit,
-            number_of_kets=number_of_kets,
-        )
-
-    @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, system_atoms: tuple[SystemAtom, SystemAtom]) -> Self:
         obj = super()._from_cpp_object(cpp_obj)
         obj.system_atoms = system_atoms
@@ -379,16 +355,16 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         if is_ket_pair_like(other) or is_state_pair_like(other):
             # KetPair like
             if isinstance(other, KetPair):
-                other_cpp = get_cpp_basis_pair_from_atom_bases(other._cpp.get_atomic_states(), real=is_real)
+                other_cpp = self._cpp_creator(*other._cpp.get_atomic_states()).create()
             elif is_ket_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases(
-                    [get_cpp_basis_atom_from_kets([ket], real=is_real) for ket in other], real=is_real
-                )
+                other_cpp = self._cpp_creator(
+                    *(get_cpp_basis_atom_from_kets([ket], real=is_real) for ket in other)
+                ).create()
             # StatePair like
             elif isinstance(other, StatePair):
                 other_cpp = other._cpp
             elif is_state_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases([state._cpp for state in other], real=is_real)
+                other_cpp = self._cpp_creator(*(state._cpp for state in other)).create()
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 
@@ -401,7 +377,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             if isinstance(other, BasisPair):
                 other_cpp = other._cpp
             elif is_basis_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases([basis._cpp for basis in other], real=is_real)
+                other_cpp = self._cpp_creator(*(basis._cpp for basis in other)).create()
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 
@@ -420,15 +396,3 @@ class BasisPairReal(BasisPair):
 
 
 BasisPairLike = TypeAliasType("BasisPairLike", BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom])
-
-
-def get_cpp_basis_pair_from_atom_bases(
-    basis_atoms_cpp: Sequence[_backend.BasisAtomComplex], *, real: bool
-) -> _backend.BasisPairComplex:
-    """Create a cpp BasisPair object from the product of two cpp BasisAtom objects.
-
-    Like for the _cpp attributes, the cpp objects are annotated as the complex variants,
-    although for BasisPairReal the real variants are used.
-    """
-    creator_class = _backend.BasisPairCreatorReal if real else _backend.BasisPairCreatorComplex
-    return creator_class(*basis_atoms_cpp).create()  # type: ignore [arg-type, return-value]
