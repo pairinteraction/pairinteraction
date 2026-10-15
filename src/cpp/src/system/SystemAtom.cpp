@@ -362,6 +362,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     if (sort_by_parity) {
         this->blockdiagonalizing_labels.push_back(SorterType::PARITY);
     }
+
+    this->prune_couplings_between_blocks();
 }
 
 // Explicit instantiations
