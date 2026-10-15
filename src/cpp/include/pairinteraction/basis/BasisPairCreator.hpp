@@ -47,7 +47,7 @@ private:
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
     Range<real_t> range_energy;
     std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;
-    bool symmetrization_enabled{false};
+    bool symmetrization_enabled;
 };
 
 extern template class BasisPairCreator<double>;

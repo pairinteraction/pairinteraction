@@ -44,8 +44,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     Add all product states of the eigenstates of two given SystemAtom objects to the basis,
     which pair energy is within the given energy range.
-    You can also specify which total magnetic quantum number m the pair should have (if it is conserved)
-    and which parities under inversion and permutation should be used for symmetrization.
+    You can also specify which total magnetic quantum number m the pair should have (if it is conserved).
+    If the same SystemAtom is used for both atoms, the basis is by default symmetrized, i.e.
+    every state has a well-defined parity under permutation and, if the parities of the single-atom
+    states are well-defined, under inversion. The basis can be restricted to states with given parities.
     Due to the possible restrictions of the basis states, the BasisPair coefficients matrix will in general
     not be square but (n x d),
     where n is the number of all involved kets (typically basis1.number_of_kets * basis2.number_of_kets)
@@ -63,7 +65,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         ...     energy_unit="GHz",
         ... )
         >>> print(pair_basis)
-        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)
+        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:60,S_1/2,1/2; Rb:60,S_1/2,1/2⟩)
 
     """
 
@@ -108,19 +110,14 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             symmetrize: Whether to symmetrize the pair basis under the permutation of the atoms.
                 Symmetrization is only possible if the same SystemAtom is passed for both atoms,
                 since it is only defined for two identical atoms. Default None, i.e. the pair
-                basis is symmetrized if a parity restriction is given. Otherwise, the pair states
-                are the product states of the two atoms.
+                basis is symmetrized whenever possible. Otherwise, the pair states are the
+                product states of the two atoms.
 
         """
         assert len(system_atoms) == 2, "BasisPair requires exactly two SystemAtom objects."
-        has_symmetry_restriction = parity_under_inversion is not None or parity_under_permutation is not None
-        if has_symmetry_restriction and system_atoms[0] is not system_atoms[1]:
-            raise ValueError(
-                "Parity restrictions require the same SystemAtom to be passed for both atoms, "
-                "because symmetrization is only defined for two identical atoms."
-            )
         creator = self._cpp_creator(*(system._cpp.get_eigenbasis() for system in system_atoms))
-        creator.set_symmetrization_enabled(has_symmetry_restriction if symmetrize is None else symmetrize)
+        if symmetrize is not None:
+            creator.set_symmetrization_enabled(symmetrize)
         if m is not None:
             creator.restrict_quantum_number("m", *m)
         if product_of_parities is not None:
@@ -202,7 +199,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             product_of_parities: Restrict to pair states with this product of the parities of the two atoms.
                 Default None means no restriction.
             symmetrize: Whether to symmetrize the pair basis under the permutation of the atoms,
-                see :class:`BasisPair`. Default None, i.e. symmetrize if a parity restriction is given.
+                see :class:`BasisPair`. Default None, i.e. symmetrize whenever possible.
 
         Returns:
             A new :class:`BasisPair` whose energy (and optionally m) range is
@@ -399,7 +396,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             if isinstance(other, BasisPair):
                 other_cpp = other._cpp
             elif is_basis_atom_tuple(other):
-                other_cpp = self._cpp_creator(*(basis._cpp for basis in other)).create()
+                # The symmetrization is disabled so that the pair states are the product states
+                other_cpp = (
+                    self._cpp_creator(*(basis._cpp for basis in other)).set_symmetrization_enabled(False).create()
+                )
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 

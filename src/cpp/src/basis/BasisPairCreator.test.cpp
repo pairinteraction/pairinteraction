@@ -291,7 +291,11 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                       basis_pair_unperturbed->get_number_of_states());
 
         {
-            Eigen::RowVectorXd ref = matrix_elements_all.row(0);
+            // The basis is symmetrized, so the first ket is a superposition of the states. Because
+            // the symmetrization is a real orthogonal transformation, the coefficients of this
+            // superposition are given by the first row of the coefficient matrix.
+            Eigen::RowVectorXd ref =
+                basis_pair_unperturbed->get_coefficients().row(0) * matrix_elements_all;
             DOCTEST_CHECK(ref.isApprox(matrix_elements_ket_pair, 1e-11));
         }
 
@@ -411,8 +415,12 @@ struct SymmetrizedBasisPairFixture {
 
     SymmetrizedBasisPairFixture() {
         system.diagonalize(diagonalizer);
-        canonical_basis =
-            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+
+        // As both atoms share the same BasisAtom, the created basis is symmetrized. We undo the
+        // symmetrization to compare against a manual symmetrization.
+        canonical_basis = BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                              .create()
+                              ->canonicalized();
     }
 };
 } // namespace
@@ -421,7 +429,6 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
     DOCTEST_SUBCASE("restrict permutation parity") {
         auto symmetrized_basis =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
                 .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
@@ -448,7 +455,6 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
     DOCTEST_SUBCASE("restrict inversion parity") {
         auto symmetrized_basis =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
                 .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create();
 
@@ -463,13 +469,11 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
     DOCTEST_SUBCASE("restrict permutation parity to EVEN includes identical-state kets") {
         auto symmetrized_basis_even =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
                 .restrict_quantum_number("parity_under_permutation", 1, 1)
                 .create();
 
         auto symmetrized_basis_odd =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
                 .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
@@ -540,23 +544,23 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
         }
     }
 
-    DOCTEST_SUBCASE("the symmetrization can be enabled for the same BasisAtom") {
+    DOCTEST_SUBCASE("the symmetrization is enabled by default if possible") {
         // A second, independently constructed system represents a different atom. Even though it
         // is built from the same basis, it is a distinct object, so symmetrization is impossible.
         SystemAtom<double> system_other(basis);
         system_other.diagonalize(diagonalizer);
 
-        // For the same BasisAtom, the pair basis is symmetrized if requested ...
+        // For the same BasisAtom, the pair basis is symmetrized by default ...
         auto symmetrized_basis =
-            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
-                .create();
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
         DOCTEST_CHECK_FALSE(symmetrized_basis->is_canonical());
         DOCTEST_CHECK(symmetrized_basis->has_quantum_number("parity_under_permutation"));
 
-        // ... and are product states otherwise
+        // ... unless the symmetrization is disabled
         auto product_basis =
-            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
+                .set_symmetrization_enabled(false)
+                .create();
         DOCTEST_CHECK(product_basis->is_canonical());
         DOCTEST_CHECK_FALSE(product_basis->has_quantum_number("parity_under_permutation"));
 
@@ -613,12 +617,9 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture,
 
     DOCTEST_SUBCASE("a range comprising both parities does not restrict the parity") {
         auto unrestricted_basis =
-            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
-                .create();
+            BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis()).create();
         auto basis_with_both_parities =
             BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
-                .set_symmetrization_enabled(true)
                 .restrict_quantum_number("parity_under_inversion", -1, 1)
                 .restrict_quantum_number("parity_under_permutation", -1, 1)
                 .create();
@@ -639,7 +640,6 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture,
             for (int parity_under_inversion : {1, -1}) {
                 auto restricted_basis =
                     BasisPairCreator<double>(eigenbasis, eigenbasis)
-                        .set_symmetrization_enabled(true)
                         .restrict_quantum_number("parity_under_permutation",
                                                  parity_under_permutation, parity_under_permutation)
                         .restrict_quantum_number("parity_under_inversion", parity_under_inversion,
@@ -696,14 +696,11 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture,
         system_in_field.diagonalize(diagonalizer);
         auto eigenbasis = system_in_field.get_eigenbasis();
 
-        auto symmetrized_basis = BasisPairCreator<double>(eigenbasis, eigenbasis)
-                                     .set_symmetrization_enabled(true)
-                                     .create();
+        auto symmetrized_basis = BasisPairCreator<double>(eigenbasis, eigenbasis).create();
         DOCTEST_CHECK(symmetrized_basis->has_quantum_number("parity_under_permutation"));
         DOCTEST_CHECK_FALSE(symmetrized_basis->has_quantum_number("parity_under_inversion"));
 
         DOCTEST_CHECK_THROWS_AS(BasisPairCreator<double>(eigenbasis, eigenbasis)
-                                    .set_symmetrization_enabled(true)
                                     .restrict_quantum_number("parity_under_inversion", -1, -1)
                                     .create(),
                                 std::invalid_argument);
