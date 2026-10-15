@@ -8,7 +8,8 @@
 
 #include <complex>
 #include <memory>
-#include <optional>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
@@ -34,18 +35,19 @@ public:
     BasisPairCreator(std::shared_ptr<const BasisAtom<Scalar>> basis1,
                      std::shared_ptr<const BasisAtom<Scalar>> basis2);
     BasisPairCreator<Scalar> &restrict_energy(real_t min, real_t max);
-    BasisPairCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
-    BasisPairCreator<Scalar> &restrict_parity_under_inversion(int value);
-    BasisPairCreator<Scalar> &restrict_parity_under_permutation(int value);
+    // Set the quantum number range with the given name ("m", "parity_under_inversion", ...).
+    // The parities are restricted with values of +1 (even) or -1 (odd).
+    BasisPairCreator<Scalar> &restrict_quantum_number(const std::string &name, real_t min,
+                                                      real_t max);
+    BasisPairCreator<Scalar> &set_symmetrization_enabled(bool value);
     std::shared_ptr<const BasisPair<Scalar>> create() const;
 
 private:
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
     Range<real_t> range_energy;
-    Range<real_t> range_quantum_number_m;
-    std::optional<int> parity_under_inversion;
-    std::optional<int> parity_under_permutation;
+    std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;
+    bool symmetrization_enabled{false};
 };
 
 extern template class BasisPairCreator<double>;

@@ -112,12 +112,15 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 "because symmetrization is only defined for two identical atoms."
             )
         creator = self._cpp_creator(*(system._cpp.get_eigenbasis() for system in system_atoms))
+        creator.set_symmetrization_enabled(has_symmetry_restriction)
         if m is not None:
-            creator.restrict_quantum_number_m(*m)
+            creator.restrict_quantum_number("m", *m)
         if parity_under_inversion is not None:
-            creator.restrict_parity_under_inversion(parity_to_int(parity_under_inversion))
+            parity_int = parity_to_int(parity_under_inversion)
+            creator.restrict_quantum_number("parity_under_inversion", parity_int, parity_int)
         if parity_under_permutation is not None:
-            creator.restrict_parity_under_permutation(parity_to_int(parity_under_permutation))
+            parity_int = parity_to_int(parity_under_permutation)
+            creator.restrict_quantum_number("parity_under_permutation", parity_int, parity_int)
         if energy is not None:
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
