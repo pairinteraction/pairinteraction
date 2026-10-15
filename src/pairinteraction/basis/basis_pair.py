@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, TypeGuard, cast, overload
 
 import numpy as np
 from scipy.sparse import csr_matrix
-from typing_extensions import Self, TypeAliasType, deprecated
+from typing_extensions import Self, TypeAliasType
 
 from pairinteraction import _backend
 from pairinteraction.basis.basis_atom import BasisAtom, get_cpp_basis_atom_from_kets
@@ -258,30 +258,6 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             parity_under_permutation=parity_under_permutation,
             energy=(min_energy_au - delta_energy, max_energy_au + delta_energy),
             energy_unit="hartree",
-        )
-
-    @classmethod
-    @deprecated("Use `BasisPair.from_kets` instead.")
-    def from_ket_atoms(
-        cls: type[Self],
-        ket_atom_tuples: KetAtomTuple | Sequence[KetAtomTuple],
-        system_atoms: Sequence[SystemAtom],
-        delta_m: float | None = None,
-        parity_under_inversion: Parity | None = None,
-        parity_under_permutation: Parity | None = None,
-        delta_energy: float | PintFloat | None = None,
-        delta_energy_unit: str | None = None,
-        number_of_kets: int | None = None,
-    ) -> Self:
-        return cls.from_kets(
-            ket_atom_tuples,
-            system_atoms,
-            delta_m=delta_m,
-            parity_under_inversion=parity_under_inversion,
-            parity_under_permutation=parity_under_permutation,
-            delta_energy=delta_energy,
-            delta_energy_unit=delta_energy_unit,
-            number_of_kets=number_of_kets,
         )
 
     @classmethod
