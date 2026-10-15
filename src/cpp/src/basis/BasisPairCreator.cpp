@@ -22,7 +22,8 @@ namespace pairinteraction {
 template <typename Scalar>
 BasisPairCreator<Scalar>::BasisPairCreator(std::shared_ptr<const BasisAtom<Scalar>> basis1,
                                            std::shared_ptr<const BasisAtom<Scalar>> basis2)
-    : basis1(std::move(basis1)), basis2(std::move(basis2)) {}
+    : basis1(std::move(basis1)), basis2(std::move(basis2)),
+      symmetrization_enabled(this->basis1 == this->basis2) {}
 
 template <typename Scalar>
 BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, real_t max) {
