@@ -57,6 +57,7 @@ protected:
     virtual void construct_hamiltonian() const = 0;
 
 private:
+    void ensure_hamiltonian_constructed() const;
     void sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);
 };
 } // namespace pairinteraction
