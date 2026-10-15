@@ -355,16 +355,16 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         if is_ket_pair_like(other) or is_state_pair_like(other):
             # KetPair like
             if isinstance(other, KetPair):
-                other_cpp = get_cpp_basis_pair_from_atom_bases(other._cpp.get_atomic_states(), real=is_real)
+                other_cpp = self._cpp_creator(*other._cpp.get_atomic_states()).create()
             elif is_ket_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases(
-                    [get_cpp_basis_atom_from_kets([ket], real=is_real) for ket in other], real=is_real
-                )
+                other_cpp = self._cpp_creator(
+                    *(get_cpp_basis_atom_from_kets([ket], real=is_real) for ket in other)
+                ).create()
             # StatePair like
             elif isinstance(other, StatePair):
                 other_cpp = other._cpp
             elif is_state_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases([state._cpp for state in other], real=is_real)
+                other_cpp = self._cpp_creator(*(state._cpp for state in other)).create()
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 
@@ -377,7 +377,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             if isinstance(other, BasisPair):
                 other_cpp = other._cpp
             elif is_basis_atom_tuple(other):
-                other_cpp = get_cpp_basis_pair_from_atom_bases([basis._cpp for basis in other], real=is_real)
+                other_cpp = self._cpp_creator(*(basis._cpp for basis in other)).create()
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 
@@ -396,15 +396,3 @@ class BasisPairReal(BasisPair):
 
 
 BasisPairLike = TypeAliasType("BasisPairLike", BasisPair | tuple[BasisAtom, BasisAtom] | Sequence[BasisAtom])
-
-
-def get_cpp_basis_pair_from_atom_bases(
-    basis_atoms_cpp: Sequence[_backend.BasisAtomComplex], *, real: bool
-) -> _backend.BasisPairComplex:
-    """Create a cpp BasisPair object from the product of two cpp BasisAtom objects.
-
-    Like for the _cpp attributes, the cpp objects are annotated as the complex variants,
-    although for BasisPairReal the real variants are used.
-    """
-    creator_class = _backend.BasisPairCreatorReal if real else _backend.BasisPairCreatorComplex
-    return creator_class(*basis_atoms_cpp).create()  # type: ignore [arg-type, return-value]
