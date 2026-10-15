@@ -58,9 +58,12 @@ def test_static_green_tensor_interpolator(
         pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(distance_mum, unit="micrometer")
     )
 
-    # Check that the two systems are equivalent
+    # Check that the two systems are equivalent. Couplings that vanish analytically might be stored with rounding
+    # errors in one system but not the other, so dense matrices are compared with an absolute tolerance.
     np.testing.assert_allclose(
-        system_pairs.get_hamiltonian(unit="GHz").data, system_pairs_reference.get_hamiltonian(unit="GHz").data
+        system_pairs.get_hamiltonian(unit="GHz").toarray(),
+        system_pairs_reference.get_hamiltonian(unit="GHz").toarray(),
+        atol=1e-8,
     )
 
 

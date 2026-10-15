@@ -464,6 +464,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     if (sort_by_parity_under_permutation) {
         this->blockdiagonalizing_labels.push_back(SorterType::PARITY_UNDER_PERMUTATION);
     }
+
+    this->prune_couplings_between_blocks();
 }
 
 // Explicit instantiations

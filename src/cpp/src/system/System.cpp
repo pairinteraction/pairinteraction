@@ -17,7 +17,10 @@
 
 #include <Eigen/SparseCore>
 #include <algorithm>
+#include <cmath>
 #include <complex>
+#include <cstdint>
+#include <fmt/format.h>
 #include <limits>
 #include <memory>
 #include <numeric>
@@ -48,6 +51,51 @@ void System<Derived>::ensure_hamiltonian_constructed() const {
     }
     construct_hamiltonian();
     hamiltonian_requires_construction = false;
+}
+
+template <typename Derived>
+void System<Derived>::prune_couplings_between_blocks() const {
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+
+    // Get the block-diagonalizing labels of the states. The quantum numbers are (half-)integers,
+    // thus doubling them yields an exact integer.
+    std::vector<std::vector<int64_t>> labels_of_states;
+    labels_of_states.reserve(blockdiagonalizing_labels.size());
+    for (const auto &label : blockdiagonalizing_labels) {
+        const auto &name = basis_t::sorter_type_to_quantum_number_name.at(label);
+        auto &values = labels_of_states.emplace_back(basis->get_number_of_states());
+        for (size_t state_index = 0; state_index < values.size(); ++state_index) {
+            values[state_index] = std::llround(2 * basis->get_quantum_number(name, state_index));
+        }
+    }
+
+    // Couplings between states with different labels vanish analytically. However, they can be
+    // stored with rounding errors, e.g., in a symmetrized pair basis, whose couplings between
+    // different symmetry sectors do not cancel exactly on all platforms (e.g., because of fused
+    // multiply-adds). We drop these couplings so that they neither take up memory nor break the
+    // block structure. As a consistency check that no physical coupling is dropped, we throw if a
+    // coupling is larger than the rounding errors. Explicitly stored zeros are dropped as well.
+    matrix.makeCompressed();
+    const real_t tolerance =
+        matrix.nonZeros() == 0 ? 0 : numerical_precision * matrix.coeffs().cwiseAbs().maxCoeff();
+    matrix.prune([&](Eigen::Index row, Eigen::Index col, const scalar_t &value) {
+        if (value == scalar_t{0}) {
+            return false;
+        }
+        bool is_within_block =
+            std::all_of(labels_of_states.begin(), labels_of_states.end(),
+                        [&](const auto &values) { return values[row] == values[col]; });
+        if (is_within_block) {
+            return true;
+        }
+        if (std::abs(value) > tolerance) {
+            throw std::runtime_error(fmt::format(
+                "The Hamiltonian couples the states {} and {} with the coupling {:.3e} (tolerance "
+                "{:.3e}), although they belong to different blocks. This should not happen.",
+                row, col, std::abs(value), tolerance));
+        }
+        return false;
+    });
 }
 
 template <typename Derived>
