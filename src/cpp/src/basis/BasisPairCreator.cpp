@@ -7,10 +7,8 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
-#include "pairinteraction/utils/hash.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cassert>
 #include <cmath>
 #include <limits>
@@ -33,27 +31,34 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, 
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_quantum_number_m(real_t min,
-                                                                              real_t max) {
-    range_quantum_number_m = {min, max};
+BasisPairCreator<Scalar> &
+BasisPairCreator<Scalar>::restrict_quantum_number(const std::string &name, real_t min, real_t max) {
+    if (name == "m") {
+        if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
+            throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
+        }
+    } else if (name == "product_of_parities" || name == "parity_under_inversion" ||
+               name == "parity_under_permutation") {
+        if ((min != 1 && min != -1) || (max != 1 && max != -1)) {
+            throw std::invalid_argument("The parity must be +1 or -1.");
+        }
+    } else {
+        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
+    }
+    quantum_number_ranges[name] = {min, max};
     return *this;
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_inversion(int value) {
-    if (value != 1 && value != -1) {
-        throw std::invalid_argument("The parity must be +1 or -1.");
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::set_symmetrization_enabled(bool value) {
+    // The pair states can only be symmetrized if both atoms share the same BasisAtom, so that a
+    // one-atom state can be identified across both atoms by its state index
+    if (value && basis1 != basis2) {
+        throw std::invalid_argument(
+            "The symmetrization requires the same BasisAtom for both atoms, because it is only "
+            "defined for two identical atoms.");
     }
-    parity_under_inversion = value;
-    return *this;
-}
-
-template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_parity_under_permutation(int value) {
-    if (value != 1 && value != -1) {
-        throw std::invalid_argument("The parity must be +1 or -1.");
-    }
-    parity_under_permutation = value;
+    symmetrization_enabled = value;
     return *this;
 }
 
@@ -62,20 +67,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     set_task_status("Constructing pair basis...");
 
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    const bool has_symmetry_restriction =
-        parity_under_inversion.has_value() || parity_under_permutation.has_value();
-
-    // This ensures that a one-atom state can be identified across both atoms by its state index
-    if (has_symmetry_restriction && basis1 != basis2) {
-        throw std::invalid_argument(
-            "Parity restrictions require the same BasisAtom for both atoms, because "
-            "symmetrization is only defined for two identical atoms.");
-    }
-
-    std::optional<int> inferred_product_of_parities;
-    if (parity_under_inversion.has_value() && parity_under_permutation.has_value()) {
-        inferred_product_of_parities = *parity_under_inversion * *parity_under_permutation;
-    }
+    static constexpr real_t unknown = std::numeric_limits<real_t>::max();
 
     // Sorting is required for the binary search of the energetically allowed range
     if (range_energy.is_finite() &&
@@ -86,11 +78,107 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             "SystemAtom.");
     }
 
-    // Construct the canonical basis that contains all KetPair objects with allowed energies and
-    // quantum numbers. States without a well-defined energy are marked by the maximum value.
-    static constexpr real_t unknown_energy = std::numeric_limits<real_t>::max();
+    // ---------------------------------------------------------------------------------------------
+    // Determine which quantum numbers of the pair states are well-defined
+    // ---------------------------------------------------------------------------------------------
+
+    const bool has_quantum_number_m =
+        basis1->has_quantum_number("m") && basis2->has_quantum_number("m");
+    const bool has_product_of_parities =
+        basis1->has_quantum_number("parity") && basis2->has_quantum_number("parity");
+
+    const std::unordered_map<std::string, bool> is_well_defined{
+        {"m", has_quantum_number_m},
+        {"product_of_parities", has_product_of_parities},
+        {"parity_under_permutation", symmetrization_enabled},
+        {"parity_under_inversion", symmetrization_enabled && has_product_of_parities},
+    };
+    for (const auto &[name, range] : quantum_number_ranges) {
+        if (!is_well_defined.at(name)) {
+            throw std::invalid_argument(
+                "The quantum number " + name +
+                " must not be restricted because it is not well-defined. Note that the parities "
+                "under inversion and permutation are only well-defined if the symmetrization is "
+                "enabled. The parity under inversion and the product of parities additionally "
+                "require the one-atom states to have a well-defined parity.");
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Define helpers for adding kets and states
+    // ---------------------------------------------------------------------------------------------
+
+    using quantum_numbers_of_state_t = std::unordered_map<std::string, double>;
+
+    ketvec_t kets;
+    typename basis_t::map_range_t state_index1_to_state_index_range2;
+    state_index1_to_state_index_range2.reserve(basis1->get_number_of_states());
+    typename basis_t::map_indices_t state_indices_to_ket_index;
+
+    auto add_ket = [&](size_t first_index, size_t second_index, real_t energy,
+                       const quantum_numbers_of_state_t &quantum_numbers) {
+        auto ket_index = static_cast<Eigen::Index>(kets.size());
+        state_indices_to_ket_index.try_emplace(std::vector<size_t>{first_index, second_index},
+                                               kets.size());
+        kets.emplace_back(std::make_shared<ket_t>(
+            typename ket_t::Private(), std::initializer_list<size_t>{first_index, second_index},
+            std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2}, energy,
+            quantum_numbers));
+        return ket_index;
+    };
+
+    std::vector<Eigen::Triplet<Scalar>> triplets;
+    std::vector<real_t> energy_of_states;
+    typename basis_t::quantum_numbers_t quantum_numbers_of_states;
+    Eigen::Index num_states = 0;
+
+    // Get the quantum numbers of the symmetrized state that shares the quantum numbers of its
+    // kets and has the given parity under permutation. Following
+    // https://doi.org/10.1088/1361-6455/aa743a, its parity under inversion is the product of the
+    // parity under permutation and the product of parities.
+    auto get_quantum_numbers_of_state = [&](quantum_numbers_of_state_t quantum_numbers,
+                                            int parity_under_permutation) {
+        quantum_numbers["parity_under_permutation"] = parity_under_permutation;
+        if (has_product_of_parities) {
+            quantum_numbers["parity_under_inversion"] =
+                parity_under_permutation * quantum_numbers.at("product_of_parities");
+        }
+        return quantum_numbers;
+    };
+
+    // Check whether all quantum numbers of a state are within their ranges. Quantum numbers
+    // without a restriction are always allowed.
+    auto is_allowed_state = [&](const quantum_numbers_of_state_t &quantum_numbers) {
+        return std::ranges::all_of(quantum_numbers, [&](const auto &name_and_value) {
+            const auto &[name, value] = name_and_value;
+            auto it = quantum_number_ranges.find(name);
+            return it == quantum_number_ranges.end() ||
+                (value >= it->second.min() - numerical_precision &&
+                 value <= it->second.max() + numerical_precision);
+        });
+    };
+
+    // Add the state that is the superposition of the given kets (row index and coefficient). It
+    // shares the energy of the kets.
+    auto add_state = [&](std::initializer_list<std::pair<Eigen::Index, Scalar>> components,
+                         real_t energy, const quantum_numbers_of_state_t &quantum_numbers) {
+        for (const auto &[row_index, coefficient] : components) {
+            triplets.emplace_back(row_index, num_states, coefficient);
+        }
+        energy_of_states.push_back(energy);
+        for (const auto &[name, value] : quantum_numbers) {
+            quantum_numbers_of_states[name].push_back(static_cast<real_t>(value));
+        }
+        ++num_states;
+    };
+
+    // ---------------------------------------------------------------------------------------------
+    // Construct the kets and the states
+    // ---------------------------------------------------------------------------------------------
+
+    // States without a well-defined energy are marked by the maximum value
     auto get_energies = [](const auto &basis) {
-        std::vector<real_t> energies(basis->get_number_of_states(), unknown_energy);
+        std::vector<real_t> energies(basis->get_number_of_states(), unknown);
         if (basis->has_energy()) {
             for (size_t state_index = 0; state_index < energies.size(); ++state_index) {
                 energies[state_index] = basis->get_energy(state_index);
@@ -103,182 +191,105 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     const real_t *eigenenergies2_begin = eigenenergies2.data();
     const real_t *eigenenergies2_end = eigenenergies2_begin + eigenenergies2.size();
 
-    // The quantum number m of a pair state is only well-defined if it is well-defined for both
-    // atoms
-    const bool has_quantum_number_m =
-        basis1->has_quantum_number("m") && basis2->has_quantum_number("m");
-    if (!has_quantum_number_m && range_quantum_number_m.is_finite()) {
-        throw std::invalid_argument(
-            "The quantum number m must not be restricted because it is not well-defined.");
-    }
+    const auto inverse_sqrt_two = static_cast<Scalar>(1 / std::sqrt(2.0));
 
-    ketvec_t kets;
-    kets.reserve(eigenenergies1.size() * eigenenergies2.size());
-
-    typename basis_t::map_range_t state_index1_to_state_index_range2;
-    state_index1_to_state_index_range2.reserve(eigenenergies1.size());
-
-    typename basis_t::map_indices_t state_indices_to_ket_index;
-
-    Eigen::Index state_index = 0;
-    std::unordered_map<std::array<size_t, 2>, Eigen::Index, utils::hash<std::array<size_t, 2>>>
-        ket_indices2state_index;
-    std::vector<Eigen::Triplet<Scalar>> transformation_triplets;
-    if (has_symmetry_restriction) {
-        transformation_triplets.reserve(eigenenergies1.size() * eigenenergies2.size());
-    }
-    const double inverse_sqrt_two = 1 / std::sqrt(2.0);
-
-    // Construct the symmetry transformation by recording the contribution of the pair state
-    // |idx1, idx2> to the symmetrized basis. Because the two atoms are identical (enforced above),
-    // a one-atom state is uniquely identified across both atoms by its state index alone.
-    auto construct_symmetry_transformation = [&](Eigen::Index row_index, size_t idx1, size_t idx2) {
-        // Following https://doi.org/10.1088/1361-6455/aa743a, pair states |a, a> cannot be of even
-        // parity.
-        if (idx1 == idx2 && (parity_under_inversion == 1 || parity_under_permutation == 1)) {
-            return;
-        }
-
-        // Map the (unordered) pair of one-atom state indices to the column index of the symmetrized
-        // state it contributes to, creating a new column the first time the pair is encountered.
-        std::array<size_t, 2> ordered_indices{std::max(idx1, idx2), std::min(idx1, idx2)};
-        auto [iterator, inserted] =
-            ket_indices2state_index.try_emplace(ordered_indices, state_index);
-        if (inserted) {
-            ++state_index;
-        }
-        Eigen::Index column_index = iterator->second;
-
-        // A pair state |a, a> contributes with coefficient one.
-        if (idx1 == idx2) {
-            transformation_triplets.emplace_back(row_index, column_index, 1);
-            return;
-        }
-
-        // We let pair states with idx1 > idx2 contribute with coefficient 1/sqrt(2) and put the
-        // phase into the contribution of the partner state with idx1 < idx2.
-        if (idx1 > idx2) {
-            transformation_triplets.emplace_back(row_index, column_index, inverse_sqrt_two);
-            return;
-        }
-
-        // Determine the phase of the contribution of the partner state with idx1 < idx2.
-        int phase = 0;
-        if (parity_under_permutation.has_value()) {
-            // If both inversion and permutation are restricted, the earlier filter on the product
-            // of parities already guarantees that the phases in the inversion- and
-            // permutation-symmetric states are the same.
-            phase = -*parity_under_permutation;
-        } else {
-            // If only inversion is restricted, the phase is determined by the product of the
-            // parities of the one-atom states and the specified inversion parity.
-            phase = -*parity_under_inversion *
-                static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
-                static_cast<int>(basis2->get_quantum_number("parity", idx2));
-        }
-        transformation_triplets.emplace_back(row_index, column_index, phase * inverse_sqrt_two);
-    };
-
-    // Loop only over states with an allowed energy
-    size_t ket_index = 0;
     for (size_t idx1 = 0; idx1 < eigenenergies1.size(); ++idx1) {
         set_task_status("Constructing pair basis...");
 
-        // Get the energetically allowed range of the second index
+        // Get the range of the second index for which the pair energy is allowed.
         size_t min = 0;
         size_t max = eigenenergies2.size();
         if (range_energy.is_finite()) {
-            real_t min_val2 = range_energy.min() - eigenenergies1[idx1];
-            real_t max_val2 = range_energy.max() - eigenenergies1[idx1];
-            min =
-                std::distance(eigenenergies2_begin,
-                              std::lower_bound(eigenenergies2_begin, eigenenergies2_end, min_val2));
-            max =
-                std::distance(eigenenergies2_begin,
-                              std::upper_bound(eigenenergies2_begin, eigenenergies2_end, max_val2));
+            const real_t energy1 = eigenenergies1[idx1];
+            min = std::distance(
+                eigenenergies2_begin,
+                std::partition_point(eigenenergies2_begin, eigenenergies2_end, [&](real_t energy2) {
+                    return energy1 + energy2 < range_energy.min();
+                }));
+            max = std::distance(
+                eigenenergies2_begin,
+                std::partition_point(eigenenergies2_begin, eigenenergies2_end, [&](real_t energy2) {
+                    return energy1 + energy2 <= range_energy.max();
+                }));
         }
         state_index1_to_state_index_range2.try_emplace(idx1, typename basis_t::range_t(min, max));
 
-        // Loop over the energetically allowed range of the second index
+        // If symmetrizing, the kets |a, b> and |b, a> are handled together for a <= b
+        if (symmetrization_enabled) {
+            min = std::max(min, idx1);
+        }
+
         for (size_t idx2 = min; idx2 < max; ++idx2) {
-            // Get energy
             const real_t energy =
-                (eigenenergies1[idx1] == unknown_energy || eigenenergies2[idx2] == unknown_energy)
-                ? unknown_energy
+                (eigenenergies1[idx1] == unknown || eigenenergies2[idx2] == unknown)
+                ? unknown
                 : eigenenergies1[idx1] + eigenenergies2[idx2];
-            assert(!range_energy.is_finite() ||
-                   (energy >= range_energy.min() && energy <= range_energy.max()));
 
-            // Check the parity of the product of the parities
-            if (inferred_product_of_parities.has_value()) {
-                if (static_cast<int>(basis1->get_quantum_number("parity", idx1)) *
-                        static_cast<int>(basis2->get_quantum_number("parity", idx2)) !=
-                    *inferred_product_of_parities) {
-                    continue;
-                }
-            }
-
-            // Get the quantum numbers and check the quantum number m
-            std::unordered_map<std::string, double> quantum_numbers;
+            // Get the quantum numbers of the ket. They are symmetric under the exchange of the
+            // atoms, so that all checks below are symmetric, too.
+            quantum_numbers_of_state_t quantum_numbers;
             if (has_quantum_number_m) {
-                const real_t m =
+                quantum_numbers["m"] =
                     basis1->get_quantum_number("m", idx1) + basis2->get_quantum_number("m", idx2);
-                if (range_quantum_number_m.is_finite() &&
-                    (m < range_quantum_number_m.min() - numerical_precision ||
-                     m > range_quantum_number_m.max() + numerical_precision)) {
-                    continue;
-                }
-                quantum_numbers["m"] = m;
+            }
+            if (has_product_of_parities) {
+                quantum_numbers["product_of_parities"] =
+                    basis1->get_quantum_number("parity", idx1) *
+                    basis2->get_quantum_number("parity", idx2);
             }
 
-            // Create a KetPair object
-            auto ket = std::make_shared<ket_t>(
-                typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
-                std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
-                energy, std::move(quantum_numbers));
+            // Without symmetrization, the ket itself is a state of the basis
+            if (!symmetrization_enabled) {
+                if (is_allowed_state(quantum_numbers)) {
+                    auto row_index = add_ket(idx1, idx2, energy, quantum_numbers);
+                    add_state({{row_index, 1}}, energy, quantum_numbers);
+                }
+                continue;
+            }
 
-            // Store the KetPair object as a ket
-            kets.emplace_back(std::move(ket));
-            state_indices_to_ket_index.try_emplace(std::vector<size_t>{idx1, idx2}, ket_index);
+            // The ket |a, a> is symmetric under the exchange of the atoms. Following
+            // https://doi.org/10.1088/1361-6455/aa743a, it has the parity under permutation -1.
+            if (idx1 == idx2) {
+                auto quantum_numbers_of_state = get_quantum_numbers_of_state(quantum_numbers, -1);
+                if (is_allowed_state(quantum_numbers_of_state)) {
+                    auto row_index = add_ket(idx1, idx2, energy, quantum_numbers);
+                    add_state({{row_index, 1}}, energy, quantum_numbers_of_state);
+                }
+                continue;
+            }
 
-            auto row_index = static_cast<Eigen::Index>(ket_index++);
-            if (has_symmetry_restriction) {
-                construct_symmetry_transformation(row_index, idx1, idx2);
+            // Following https://doi.org/10.1088/1361-6455/aa743a, the symmetrized states are
+            // (|a, b> - f |b, a>) / sqrt(2) for a < b with the parity under permutation f. Here,
+            // it is a = idx1 and b = idx2. The kets are only added if one of the states is allowed.
+            const auto quantum_numbers_plus = get_quantum_numbers_of_state(quantum_numbers, 1);
+            const auto quantum_numbers_minus = get_quantum_numbers_of_state(quantum_numbers, -1);
+            const bool is_allowed_plus = is_allowed_state(quantum_numbers_plus);
+            const bool is_allowed_minus = is_allowed_state(quantum_numbers_minus);
+            if (!is_allowed_plus && !is_allowed_minus) {
+                continue;
+            }
+            auto row_index_ab = add_ket(idx1, idx2, energy, quantum_numbers);
+            auto row_index_ba = add_ket(idx2, idx1, energy, quantum_numbers);
+            if (is_allowed_plus) {
+                add_state({{row_index_ab, inverse_sqrt_two}, {row_index_ba, -inverse_sqrt_two}},
+                          energy, quantum_numbers_plus);
+            }
+            if (is_allowed_minus) {
+                add_state({{row_index_ab, inverse_sqrt_two}, {row_index_ba, inverse_sqrt_two}},
+                          energy, quantum_numbers_minus);
             }
         }
     }
-
     kets.shrink_to_fit();
 
-    std::shared_ptr<const basis_t> basis = std::make_shared<basis_t>(
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients(
+        static_cast<Eigen::Index>(kets.size()), num_states);
+    coefficients.setFromTriplets(triplets.begin(), triplets.end());
+
+    return std::make_shared<const basis_t>(
         typename basis_t::Private(), std::move(kets), std::move(state_index1_to_state_index_range2),
-        std::move(state_indices_to_ket_index), basis1, basis2);
-
-    if (!has_symmetry_restriction) {
-        return basis;
-    }
-
-    transformation_triplets.shrink_to_fit();
-
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> transformation_matrix(
-        basis->get_number_of_states(), state_index);
-    transformation_matrix.setFromTriplets(transformation_triplets.begin(),
-                                          transformation_triplets.end());
-
-    Eigen::Matrix<real_t, Eigen::Dynamic, 1> sum_of_squared_coefficients =
-        transformation_matrix.cwiseAbs2().transpose() *
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1>::Ones(transformation_matrix.rows());
-    for (Eigen::Index column_index = 0; column_index < sum_of_squared_coefficients.size();
-         ++column_index) {
-        if (std::abs(sum_of_squared_coefficients[column_index] - 1) > numerical_precision) {
-            throw std::invalid_argument(
-                "The basis could not be symmetrized. This likely means that the specified parity "
-                "restrictions are invalid for the given one-atom systems.");
-        }
-    }
-
-    // TODO: on the long run, construct the coefficient matrix directly
-    return basis->transformed(transformation_matrix);
+        std::move(state_indices_to_ket_index), basis1, basis2, std::move(coefficients),
+        std::move(energy_of_states), std::move(quantum_numbers_of_states));
 }
 
 // Explicit instantiations
