@@ -210,13 +210,15 @@ def test_symmetrization_is_complete(
 def test_symmetrization_requires_same_system(
     pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom, restriction: str
 ) -> None:
-    """A parity restriction requires the identical SystemAtom object for both atoms.
+    """A parity restriction requires the symmetrization, i.e. the identical SystemAtom object for both atoms.
 
     Two distinct SystemAtom objects represent different atoms, so symmetrization is rejected
     (mirrors the C++ guard in BasisPairCreator::create).
     """
     with pytest.raises(ValueError, match="same SystemAtom"):
         pi_module.BasisPair([system_atom, system_atom2], **{restriction: "odd"})  # type: ignore [arg-type]
+    with pytest.raises(ValueError, match="not well-defined"):
+        pi_module.BasisPair([system_atom, system_atom], **{restriction: "odd"}, symmetrize=False)  # type: ignore [arg-type]
 
     # Without a parity restriction, two different systems remain allowed.
     basis = pi_module.BasisPair([system_atom, system_atom2])
