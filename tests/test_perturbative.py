@@ -63,7 +63,7 @@ def system_pair_sample(pi_module: PairinteractionModule) -> SystemPair:
     system.set_diamagnetism_enabled(False)
     system.set_magnetic_field([0, 0, 1e-3], "gauss")
     pi_module.diagonalize([system], diagonalizer="eigen")
-    basis_pair = pi_module.BasisPair([system, system])
+    basis_pair = pi_module.BasisPair([system, system], symmetrize=False)
     system_pair = pi_module.SystemPair(basis_pair)
     theta = 0
     r = 12
@@ -193,6 +193,23 @@ def test_c6(pi_module: PairinteractionModule) -> None:
 
     c6 = c6_obj.get(unit="planck_constant * gigahertz * micrometer^6")
     assert np.isclose(c6, -169.135)
+
+
+def test_symmetrized_basis_pair_is_rejected(pi_module: PairinteractionModule) -> None:
+    """Test that a symmetrized basis pair cannot be used for the effective Hamiltonian."""
+    ket1 = pi_module.KetAtom("Rb", n=61, l=0, j=0.5, m=0.5)
+    ket2 = pi_module.KetAtom("Rb", n=61, l=1, j=1.5, m=0.5)
+    system = pi_module.SystemAtom(pi_module.BasisAtom("Rb", n=(60, 62), l=(0, 1)))
+    pi_module.diagonalize([system], diagonalizer="eigen")
+    basis_pair = pi_module.BasisPair.from_kets(
+        [(ket1, ket2)], system_atoms=(system, system), delta_energy=3, delta_energy_unit="GHz", symmetrize=True
+    )
+
+    eff_system = pi_module.EffectiveSystemPair([(ket1, ket2), (ket2, ket1)])
+    with pytest.raises(ValueError, match="must not be symmetrized"):
+        eff_system.basis_pair = basis_pair
+    with pytest.raises(ValueError, match="must not be symmetrized"):
+        eff_system.system_pair = pi_module.SystemPair(basis_pair)
 
 
 def test_exact_resonance_detection(

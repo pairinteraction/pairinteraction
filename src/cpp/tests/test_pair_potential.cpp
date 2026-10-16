@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     auto basis_pair =
         pairinteraction::BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
             .restrict_energy(min_energy, max_energy)
-            .restrict_quantum_number_m(1, 1)
+            .restrict_quantum_number("m", 1, 1)
             .create();
     SPDLOG_INFO("Number of two-atom basis states: {}", basis_pair->get_number_of_states());
 

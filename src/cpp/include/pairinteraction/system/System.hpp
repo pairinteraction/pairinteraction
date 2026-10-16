@@ -55,6 +55,7 @@ protected:
     mutable std::vector<SorterType> blockdiagonalizing_labels;
 
     virtual void construct_hamiltonian() const = 0;
+    void prune_couplings_between_blocks() const;
 
 private:
     void ensure_hamiltonian_constructed() const;

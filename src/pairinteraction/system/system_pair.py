@@ -48,9 +48,9 @@ class SystemPair(SystemBase[BasisPair]):
         ... )
         >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_interaction_order(3)
         >>> print(pair_system)
-        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=False)
+        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:60,S_1/2,1/2; Rb:60,S_1/2,1/2⟩), is_diagonal=False)
         >>> pair_system.diagonalize()
-        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩), is_diagonal=True)
+        SystemPair(BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:60,S_1/2,1/2; Rb:60,S_1/2,1/2⟩), is_diagonal=True)
         >>> eigenenergies = pair_system.get_eigenenergies(unit="GHz")
         >>> print(f"{eigenenergies[0] - pair_energy:.5f}")
         -2.18394
@@ -184,15 +184,14 @@ class SystemPair(SystemBase[BasisPair]):
         self._cpp.set_green_tensor_interpolator(gti._cpp)
         return self
 
-    @overload
+    @overload  # type: ignore [override]
     def get_corresponding_energy(self: Self, ket: KetPairLike, unit: None = None) -> PintFloat: ...
 
     @overload
     def get_corresponding_energy(self: Self, ket: KetPairLike, unit: str) -> float: ...
 
     def get_corresponding_energy(self: Self, ket: KetPairLike, unit: str | None = None) -> float | PintFloat:
-        state_idx = self.get_eigenbasis().get_corresponding_state_index(ket)
-        return self.get_eigenenergies(unit=unit)[state_idx]  # type: ignore [index,no-any-return] # PintArray does not know it can be indexed
+        return super().get_corresponding_energy(ket, unit)
 
 
 class SystemPairReal(SystemPair):

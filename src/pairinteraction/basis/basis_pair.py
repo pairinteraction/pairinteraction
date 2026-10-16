@@ -44,8 +44,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
 
     Add all product states of the eigenstates of two given SystemAtom objects to the basis,
     which pair energy is within the given energy range.
-    You can also specify which total magnetic quantum number m the pair should have (if it is conserved)
-    and which parities under inversion and permutation should be used for symmetrization.
+    You can also specify which total magnetic quantum number m the pair should have (if it is conserved).
+    If the same SystemAtom is used for both atoms, the basis states are by default symmetrized, i.e.
+    every state has a well-defined parity under permutation and, if the parities of the single-atom
+    states are well-defined, under inversion. The basis can be restricted to states with given parities.
     Due to the possible restrictions of the basis states, the BasisPair coefficients matrix will in general
     not be square but (n x d),
     where n is the number of all involved kets (typically basis1.number_of_kets * basis2.number_of_kets)
@@ -63,7 +65,7 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         ...     energy_unit="GHz",
         ... )
         >>> print(pair_basis)
-        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:58,F_7/2,7/2; Rb:59,S_1/2,1/2⟩)
+        BasisPair(|Rb:59,S_1/2,-1/2; Rb:61,S_1/2,-1/2⟩ ... |Rb:60,S_1/2,1/2; Rb:60,S_1/2,1/2⟩)
 
     """
 
@@ -83,6 +85,9 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         parity_under_permutation: Parity | None = None,
         energy: tuple[float, float] | tuple[PintFloat, PintFloat] | None = None,
         energy_unit: str | None = None,
+        *,
+        product_of_parities: Parity | None = None,
+        symmetrize: bool | None = None,
     ) -> None:
         """Create a basis for a pair of atoms.
 
@@ -92,32 +97,38 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             m: tuple of (min, max) values for the total magnetic quantum number m of the pair state.
                 Default None, i.e. no restriction.
             parity_under_inversion: Restrict to pair states with this parity under inversion.
-                Default None, i.e. do not apply inversion symmetrization.
-                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
-                only defined for two identical atoms.
+                Default None, i.e. no restriction.
+                Requires the pair states to be symmetrized, see ``symmetrize``.
             parity_under_permutation: Restrict to pair states with this parity under permutation.
-                Default None, i.e. do not apply permutation symmetrization.
-                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
-                only defined for two identical atoms.
+                Default None, i.e. no restriction.
+                Requires the pair states to be symmetrized, see ``symmetrize``.
             energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.
             energy_unit: In which unit the energy values are given, e.g. "GHz".
                 Default None, i.e. energy is provided as pint object.
+            product_of_parities: Restrict to pair states with this product of the parities of the two atoms.
+                Default None, i.e. no restriction.
+            symmetrize: Whether to symmetrize the pair states under the permutation of the atoms.
+                Symmetrization is only possible if the same SystemAtom is passed for both atoms,
+                since it is only defined for two identical atoms. Default None, i.e. the pair
+                states are symmetrized whenever possible. Otherwise, the pair states are the
+                product states of the two atoms.
 
         """
         assert len(system_atoms) == 2, "BasisPair requires exactly two SystemAtom objects."
-        has_symmetry_restriction = parity_under_inversion is not None or parity_under_permutation is not None
-        if has_symmetry_restriction and system_atoms[0] is not system_atoms[1]:
-            raise ValueError(
-                "Parity restrictions require the same SystemAtom to be passed for both atoms, "
-                "because symmetrization is only defined for two identical atoms."
-            )
         creator = self._cpp_creator(*(system._cpp.get_eigenbasis() for system in system_atoms))
+        if symmetrize is not None:
+            creator.set_symmetrization_enabled(symmetrize)
         if m is not None:
-            creator.restrict_quantum_number_m(*m)
+            creator.restrict_quantum_number("m", *m)
+        if product_of_parities is not None:
+            parity_int = parity_to_int(product_of_parities)
+            creator.restrict_quantum_number("product_of_parities", parity_int, parity_int)
         if parity_under_inversion is not None:
-            creator.restrict_parity_under_inversion(parity_to_int(parity_under_inversion))
+            parity_int = parity_to_int(parity_under_inversion)
+            creator.restrict_quantum_number("parity_under_inversion", parity_int, parity_int)
         if parity_under_permutation is not None:
-            creator.restrict_parity_under_permutation(parity_to_int(parity_under_permutation))
+            parity_int = parity_to_int(parity_under_permutation)
+            creator.restrict_quantum_number("parity_under_permutation", parity_int, parity_int)
         if energy is not None:
             min_energy_au = QuantityScalar.convert_user_to_au(energy[0], energy_unit, "energy")
             max_energy_au = QuantityScalar.convert_user_to_au(energy[1], energy_unit, "energy")
@@ -146,6 +157,8 @@ class BasisPair(BasisBase[KetPair, StatePair]):
         number_of_kets: int | None = None,
         *,
         warn_number_of_kets: bool = True,
+        product_of_parities: Parity | None = None,
+        symmetrize: bool | None = None,
     ) -> Self:
         """Create a BasisPair from one or more pairs of kets with optional energy/m windows.
 
@@ -169,13 +182,11 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             delta_m: Half-width of the total magnetic quantum number window
                 ``m = m1 + m2``. Default None means no m restriction.
             parity_under_inversion: Restrict to pair states with this parity under inversion.
-                Default None means no inversion symmetrization.
-                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
-                only defined for two identical atoms.
+                Default None means no restriction.
+                Requires the pair states to be symmetrized, see ``symmetrize``.
             parity_under_permutation: Restrict to pair states with this parity under permutation.
-                Default None means no permutation symmetrization.
-                Requires the same SystemAtom to be passed for both atoms, since symmetrization is
-                only defined for two identical atoms.
+                Default None means no restriction.
+                Requires the pair states to be symmetrized, see ``symmetrize``.
             delta_energy: Half-width of the energy window. Mutually exclusive with
                 ``number_of_kets``. Default None means no energy restriction.
             delta_energy_unit: Unit for ``delta_energy`` and the pair energies
@@ -185,6 +196,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
                 reference ket pairs. Mutually exclusive with ``delta_energy``.
                 Default None means no count restriction.
             warn_number_of_kets: Don't warn about the possible issues with using number_of_kets.
+            product_of_parities: Restrict to pair states with this product of the parities of the two atoms.
+                Default None means no restriction.
+            symmetrize: Whether to symmetrize the pair states under the permutation of the atoms,
+                see :class:`BasisPair`. Default None, i.e. symmetrize whenever possible.
 
         Returns:
             A new :class:`BasisPair` whose energy (and optionally m) range is
@@ -237,8 +252,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             m=m_range,
             parity_under_inversion=parity_under_inversion,
             parity_under_permutation=parity_under_permutation,
+            product_of_parities=product_of_parities,
             energy=energy_range,
             energy_unit=delta_energy_unit,
+            symmetrize=symmetrize,
         )
         if number_of_kets is None or number_of_kets >= basis_pair.number_of_kets:
             return basis_pair
@@ -256,8 +273,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             m=m_range,
             parity_under_inversion=parity_under_inversion,
             parity_under_permutation=parity_under_permutation,
+            product_of_parities=product_of_parities,
             energy=(min_energy_au - delta_energy, max_energy_au + delta_energy),
             energy_unit="hartree",
+            symmetrize=symmetrize,
         )
 
     @classmethod
@@ -377,7 +396,10 @@ class BasisPair(BasisBase[KetPair, StatePair]):
             if isinstance(other, BasisPair):
                 other_cpp = other._cpp
             elif is_basis_atom_tuple(other):
-                other_cpp = self._cpp_creator(*(basis._cpp for basis in other)).create()
+                # The symmetrization is disabled so that the pair states are the product states
+                other_cpp = (
+                    self._cpp_creator(*(basis._cpp for basis in other)).set_symmetrization_enabled(False).create()
+                )
             else:
                 raise TypeError(f"Unknown type: {type(other)=}")
 

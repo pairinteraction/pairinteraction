@@ -124,6 +124,9 @@ def test_get_methods(basis: BasisPair, basis2: BasisPair, other_key: str) -> Non
 
     amplitudes = basis.get_amplitudes(other)
     assert amplitudes.shape == _get_expected_shape(other, basis)
+    if other_key.startswith("basis_atom_tuple"):
+        # The tuple of one-atom bases represents product states, even for identical one-atom bases
+        np.testing.assert_allclose(np.abs(amplitudes.data), 1)
 
     overlaps = basis.get_overlaps(other)
     assert overlaps.shape == _get_expected_shape(other, basis)
@@ -190,7 +193,7 @@ def test_error_handling(basis: BasisPair) -> None:
         basis.get_matrix_elements("not a ket", ("energy", "energy"), (0, 0))  # type: ignore [arg-type]
 
 
-@pytest.mark.parametrize("restriction", ["parity_under_inversion", "parity_under_permutation"])
+@pytest.mark.parametrize("restriction", ["product_of_parities", "parity_under_inversion", "parity_under_permutation"])
 def test_symmetrization_is_complete(
     pi_module: PairinteractionModule, system_atom: SystemAtom, restriction: str
 ) -> None:
@@ -199,7 +202,7 @@ def test_symmetrization_is_complete(
     Summing the number of states over the even and odd sector reproduces the number of states of
     the unsymmetrized basis, i.e. symmetrization neither loses nor duplicates states.
     """
-    canonical = pi_module.BasisPair([system_atom, system_atom])
+    canonical = pi_module.BasisPair([system_atom, system_atom], symmetrize=False)
     sectors = [pi_module.BasisPair([system_atom, system_atom], **{restriction: parity}) for parity in ["even", "odd"]]  # type: ignore [arg-type]
 
     assert sum(sector.number_of_states for sector in sectors) == canonical.number_of_states
@@ -210,16 +213,26 @@ def test_symmetrization_is_complete(
 def test_symmetrization_requires_same_system(
     pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom, restriction: str
 ) -> None:
-    """A parity restriction requires the identical SystemAtom object for both atoms.
+    """A parity restriction requires the symmetrization, i.e. the identical SystemAtom object for both atoms.
 
     Two distinct SystemAtom objects represent different atoms, so symmetrization is rejected
-    (mirrors the C++ guard in BasisPairCreator::create).
+    by BasisPairCreator::create.
     """
-    with pytest.raises(ValueError, match="same SystemAtom"):
+    with pytest.raises(ValueError, match="not well-defined"):
         pi_module.BasisPair([system_atom, system_atom2], **{restriction: "odd"})  # type: ignore [arg-type]
+    with pytest.raises(ValueError, match="not well-defined"):
+        pi_module.BasisPair([system_atom, system_atom], **{restriction: "odd"}, symmetrize=False)  # type: ignore [arg-type]
 
     # Without a parity restriction, two different systems remain allowed.
     basis = pi_module.BasisPair([system_atom, system_atom2])
+    assert basis.number_of_states > 0
+
+
+def test_product_of_parities_does_not_require_same_system(
+    pi_module: PairinteractionModule, system_atom: SystemAtom, system_atom2: SystemAtom
+) -> None:
+    """The product of parities is well-defined without symmetrization."""
+    basis = pi_module.BasisPair([system_atom, system_atom2], product_of_parities="odd")
     assert basis.number_of_states > 0
 
 

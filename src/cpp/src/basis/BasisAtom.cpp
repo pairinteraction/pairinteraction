@@ -33,6 +33,20 @@ BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&
 }
 
 template <typename Scalar>
+BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
+                             Database &database,
+                             Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+                             std::vector<real_t> &&energy_of_states,
+                             quantum_numbers_t &&quantum_numbers_of_states)
+    : Basis<BasisAtom<Scalar>>(std::move(kets), std::move(coefficients),
+                               std::move(energy_of_states), std::move(quantum_numbers_of_states)),
+      canonical_basis_id(std::move(canonical_basis_id)), database(database) {
+    for (size_t i = 0; i < this->kets.size(); ++i) {
+        ket_id_to_ket_index[this->kets[i]->get_id_in_database()] = i;
+    }
+}
+
+template <typename Scalar>
 Database &BasisAtom<Scalar>::get_database() const {
     return database;
 }
