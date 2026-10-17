@@ -187,6 +187,13 @@ DOCTEST_TEST_CASE("ion ion pair interaction") {
         double energy = system_pair.get_matrix().coeff(0, 0) - 2 * ket_ion->get_energy();
         DOCTEST_CHECK(energy == doctest::Approx(1 / distance).epsilon(1e-6));
     }
+
+    // Ensure that a zero distance, a distance whose norm underflows to zero, and NaN are rejected
+    SystemPair<double> system_pair(basis_pair);
+    DOCTEST_CHECK_THROWS_AS(system_pair.set_distance_vector({0, 0, 0}), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(system_pair.set_distance_vector({0, 0, 1e-200}), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(system_pair.set_distance_vector({0, 0, std::nan("")}),
+                            std::invalid_argument);
 }
 
 #ifdef WITH_LAPACKE

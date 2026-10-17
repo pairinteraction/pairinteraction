@@ -450,6 +450,12 @@ DOCTEST_TEST_CASE("atom ion interaction") {
     system2.diagonalize(diagonalizer, min_energy, max_energy, 1e-6);
     auto energies2 = system2.get_eigenenergies();
 
+    // Ensure that a zero distance, a distance whose norm underflows to zero, and NaN are rejected
+    DOCTEST_CHECK_THROWS_AS(system2.set_ion_distance_vector({0, 0, 0}), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(system2.set_ion_distance_vector({0, 0, 1e-200}), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(system2.set_ion_distance_vector({0, 0, std::nan("")}),
+                            std::invalid_argument);
+
     // Ensure that the quadrupole order has a significant effect
     size_t num_energies = std::min(energies2.size(), energies3.size());
     for (size_t i = 0; i < num_energies; ++i) {
