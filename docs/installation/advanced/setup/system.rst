@@ -20,9 +20,12 @@ Build tools
     - `Visual Studio`_ or MinGW_ as a compiler. We recommend `Visual Studio`_ and will use it in further descriptions.
 
 You can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most C++ dependencies.
-Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`github workflow
-<tree/master/.github/workflows/cpp-backend.yml>` and :github:`actions folder <tree/master/.github/actions>` of the
-PairInteraction repository.
+
+`Intel oneAPI TBB`_ and `Intel oneAPI MKL`_ are *not* part of the VCPKG configuration file. They are obtained from the
+``tbb-devel`` and ``mkl-devel`` Python packages that are listed in :github:`.build_requirements.txt
+<tree/master/.build_requirements.txt>`, see the :ref:`Python <python_setup>` setup instructions. The build system
+discovers them by querying a Python interpreter, so the Python environment into which you installed the build
+requirements has to be activated when running CMake.
 
 In addition, you need to adjust your path environment variable if you want to use certain tools from the command line.
 In order to smoothly run all the commands described on this page, add the following paths to your path environment
