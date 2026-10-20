@@ -1,0 +1,6 @@
+﻿get\_effective\_hamiltonian\_from\_system
+=========================================
+
+.. currentmodule:: pairinteraction.perturbative
+
+.. autofunction:: get_effective_hamiltonian_from_system
