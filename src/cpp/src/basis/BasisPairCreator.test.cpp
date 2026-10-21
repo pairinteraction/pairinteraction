@@ -422,7 +422,7 @@ struct SymmetrizedBasisPairFixture {
         // symmetrization to compare against a manual symmetrization.
         canonical_basis = BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
                               .create()
-                              ->canonicalized();
+                              ->get_canonicalized_copy();
     }
 };
 } // namespace

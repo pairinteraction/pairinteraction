@@ -90,7 +90,8 @@ class StatePair(StateBase[KetPair]):
 
         basis_atoms_cpp = [self._cpp.get_basis1(), self._cpp.get_basis2()]
         basis_atoms = [
-            basis_atom_class._from_cpp_object(basis_atom_cpp.canonicalized()) for basis_atom_cpp in basis_atoms_cpp
+            basis_atom_class._from_cpp_object(basis_atom_cpp.get_canonicalized_copy())
+            for basis_atom_cpp in basis_atoms_cpp
         ]
         system_atoms = [system_atom_class(basis_atom) for basis_atom in basis_atoms]
 
