@@ -472,7 +472,7 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
 
     // The electric field conserves the quantum number m, thus the Hamiltonian can be
     // block-diagonalized by m if the basis is sorted by m
-    auto sorted_basis = basis->sorted(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+    auto sorted_basis = basis->get_sorted_copy(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
     auto system = SystemAtom<double>(sorted_basis);
     system.set_electric_field({0, 0, 0.0001});
 
@@ -519,7 +519,7 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
         auto sorter = system.get_sorter(labels);
         Eigen::SparseMatrix<double, Eigen::RowMajor> matrix;
         matrix = system.get_matrix().twistedBy(sorter.inverse());
-        return std::make_pair(matrix, system.get_basis()->sorted(sorter));
+        return std::make_pair(matrix, system.get_basis()->get_sorted_copy(sorter));
     };
 
     // The first label is the primary sorting criterion, the following labels only break ties

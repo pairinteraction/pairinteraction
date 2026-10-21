@@ -437,7 +437,7 @@ bool Basis<Derived>::is_canonical() const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::sorted(
+std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
     const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
     // Create a copy of the current object
     auto result = std::make_shared<Derived>(derived());
