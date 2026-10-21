@@ -57,8 +57,6 @@ public:
 
     static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
-              Database &database);
     BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
               std::string &&canonical_basis_id, Database &database,
               Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,

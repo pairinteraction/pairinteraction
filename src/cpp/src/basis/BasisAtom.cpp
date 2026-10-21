@@ -23,16 +23,6 @@ const std::map<SorterType, std::string> BasisAtom<Scalar>::sorter_type_to_quantu
 };
 
 template <typename Scalar>
-BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
-                             Database &database)
-    : Basis<BasisAtom<Scalar>>(std::move(kets)), canonical_basis_id(std::move(canonical_basis_id)),
-      database(database) {
-    for (size_t i = 0; i < this->kets.size(); ++i) {
-        ket_id_to_ket_index[this->kets[i]->get_id_in_database()] = i;
-    }
-}
-
-template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
                              std::string &&canonical_basis_id, Database &database,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,

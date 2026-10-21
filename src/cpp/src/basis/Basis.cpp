@@ -74,16 +74,6 @@ void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_la
 }
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets)
-    : kets(std::move(kets)), coefficients(static_cast<Eigen::Index>(this->kets.size()),
-                                          static_cast<Eigen::Index>(this->kets.size())) {
-    if (this->kets.empty()) {
-        throw std::invalid_argument("The basis must contain at least one element.");
-    }
-    make_canonical();
-}
-
-template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
                       std::vector<real_t> &&energy_of_states,
@@ -127,34 +117,32 @@ void Basis<Derived>::check_states() const {
 }
 
 template <typename Derived>
-void Basis<Derived>::make_canonical() {
+typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const ketvec_t &kets) {
+    StatesData states;
     auto n = static_cast<Eigen::Index>(kets.size());
-    if (coefficients.rows() != n || coefficients.cols() != n) {
-        throw std::invalid_argument("The coefficient matrix must be of shape n x n, where n is "
-                                    "the number of kets.");
-    }
 
     // Make the i-th state equal to the i-th ket
-    coefficients.setIdentity();
+    states.coefficients.resize(n, n);
+    states.coefficients.setIdentity();
 
     // Assign each state the quantum numbers of the ket it is equal to
     for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
-        std::vector<real_t> quantum_numbers;
+        auto &quantum_numbers = states.quantum_numbers_of_states[name];
         quantum_numbers.reserve(kets.size());
         for (const auto &ket : kets) {
             quantum_numbers.push_back(ket->has_quantum_number(name)
                                           ? static_cast<real_t>(ket->get_quantum_number(name))
                                           : std::numeric_limits<real_t>::max());
         }
-        quantum_numbers_of_states[name] = std::move(quantum_numbers);
     }
 
     // Assign each state the energy of the ket it is equal to
-    energy_of_states.clear();
-    energy_of_states.reserve(kets.size());
+    states.energy_of_states.reserve(kets.size());
     for (const auto &ket : kets) {
-        energy_of_states.push_back(static_cast<real_t>(ket->get_energy()));
+        states.energy_of_states.push_back(static_cast<real_t>(ket->get_energy()));
     }
+
+    return states;
 }
 
 template <typename Derived>
@@ -403,11 +391,9 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_canonicalized_copy() const {
-    auto result = std::make_shared<Derived>(derived());
-    size_t n = kets.size();
-    result->coefficients.resize(n, n);
-    result->make_canonical();
-    return result;
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] = get_canonical_states(kets);
+    return derived().get_modified_copy(std::move(coefficients), std::move(energy_of_states),
+                                       std::move(quantum_numbers_of_states));
 }
 
 template <typename Derived>
