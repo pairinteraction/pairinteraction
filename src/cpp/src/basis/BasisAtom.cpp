@@ -33,17 +33,25 @@ BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&
 }
 
 template <typename Scalar>
-BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
-                             Database &database,
+BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
+                             std::string &&canonical_basis_id, Database &database,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
                              std::vector<real_t> &&energy_of_states,
                              quantum_numbers_t &&quantum_numbers_of_states)
     : Basis<BasisAtom<Scalar>>(std::move(kets), std::move(coefficients),
                                std::move(energy_of_states), std::move(quantum_numbers_of_states)),
-      canonical_basis_id(std::move(canonical_basis_id)), database(database) {
-    for (size_t i = 0; i < this->kets.size(); ++i) {
-        ket_id_to_ket_index[this->kets[i]->get_id_in_database()] = i;
-    }
+      canonical_basis_id(std::move(canonical_basis_id)), database(database),
+      ket_id_to_ket_index(std::move(ket_id_to_ket_index)) {}
+
+template <typename Scalar>
+std::shared_ptr<const BasisAtom<Scalar>>
+BasisAtom<Scalar>::get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
+                                     std::vector<real_t> energy_of_states,
+                                     quantum_numbers_t quantum_numbers_of_states) const {
+    return std::make_shared<const Type>(
+        Private(), ketvec_t(this->kets), map_size_t(ket_id_to_ket_index),
+        std::string(canonical_basis_id), database, std::move(coefficients),
+        std::move(energy_of_states), std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>

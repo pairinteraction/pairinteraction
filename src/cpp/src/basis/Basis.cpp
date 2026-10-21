@@ -16,6 +16,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -238,17 +239,21 @@ std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
                                                                    size_t state_index) const {
+    // A quantum number by which the states are not labeled is not well-defined, just like one whose
+    // value is the maximum
     auto it = quantum_numbers_of_states.find(name);
-    if (it == quantum_numbers_of_states.end()) {
-        throw std::invalid_argument("The states are not labeled by the quantum number " + name +
-                                    ".");
-    }
-    real_t quantum_number = it->second.at(state_index);
-    if (quantum_number == std::numeric_limits<real_t>::max()) {
+    if (it == quantum_numbers_of_states.end() ||
+        it->second.at(state_index) == std::numeric_limits<real_t>::max()) {
+        if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
+                         Derived::sorter_type_to_quantum_number_name.end(),
+                         [&name](const auto &entry) { return entry.second == name; })) {
+            throw std::invalid_argument("The states cannot be labeled by the quantum number " +
+                                        name + ".");
+        }
         throw std::invalid_argument("The state does not have a well-defined quantum number " +
                                     name + ".");
     }
-    return quantum_number;
+    return it->second[state_index];
 }
 
 template <typename Derived>
@@ -258,6 +263,12 @@ typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t state_index) c
         throw std::invalid_argument("The state does not have a well-defined energy.");
     }
     return energy;
+}
+
+template <typename Derived>
+const typename Basis<Derived>::quantum_numbers_t &
+Basis<Derived>::get_quantum_numbers_of_states() const {
+    return quantum_numbers_of_states;
 }
 
 template <typename Derived>
