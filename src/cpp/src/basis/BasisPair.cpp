@@ -34,17 +34,6 @@ BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
                              map_range_t &&state_index1_to_state_index_range2,
                              map_indices_t &&state_indices_to_ket_index,
                              std::shared_ptr<const BasisAtom<Scalar>> basis1,
-                             std::shared_ptr<const BasisAtom<Scalar>> basis2)
-    : Basis<BasisPair<Scalar>>(std::move(kets)),
-      state_index1_to_state_index_range2(std::move(state_index1_to_state_index_range2)),
-      state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
-      basis2(std::move(basis2)) {}
-
-template <typename Scalar>
-BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
-                             map_range_t &&state_index1_to_state_index_range2,
-                             map_indices_t &&state_indices_to_ket_index,
-                             std::shared_ptr<const BasisAtom<Scalar>> basis1,
                              std::shared_ptr<const BasisAtom<Scalar>> basis2,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
                              std::vector<real_t> &&energy_of_states,
@@ -149,8 +138,13 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
         }
     }
 
+    // The merged basis is canonical, i.e., the i-th state is the i-th ket
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] =
+        this->get_canonical_states(merged_kets);
     return std::make_shared<const Type>(Private(), std::move(merged_kets), std::move(merged_ranges),
-                                        std::move(merged_state_indices), basis1, basis2);
+                                        std::move(merged_state_indices), basis1, basis2,
+                                        std::move(coefficients), std::move(energy_of_states),
+                                        std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>
