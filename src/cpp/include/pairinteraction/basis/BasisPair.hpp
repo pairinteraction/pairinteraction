@@ -81,6 +81,13 @@ public:
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
     int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
     std::shared_ptr<const Type> merge(std::shared_ptr<const Type> other) const override;
+    // Create a copy of the basis that has the same kets but new states. Quantum numbers that are
+    // not given are not well-defined, and so are quantum numbers and energies whose value is the
+    // maximum.
+    std::shared_ptr<const Type>
+    get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
+                      std::vector<real_t> energy_of_states,
+                      quantum_numbers_t quantum_numbers_of_states) const;
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
