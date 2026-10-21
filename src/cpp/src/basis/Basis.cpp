@@ -252,18 +252,16 @@ Basis<Derived>::get_quantum_numbers_of_states() const {
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) const {
-    // Create a copy of the current object
-    auto restricted = std::make_shared<Derived>(derived());
-
-    // Restrict the copy to the single requested state
-    restricted->coefficients = restricted->coefficients.col(state_index);
-
-    for (auto &[name, quantum_numbers] : restricted->quantum_numbers_of_states) {
-        quantum_numbers = {quantum_numbers_of_states.at(name)[state_index]};
+    // Create a basis that consists of the single requested state, without copying the other states
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients_of_state =
+        coefficients.col(static_cast<Eigen::Index>(state_index));
+    quantum_numbers_t quantum_numbers_of_state;
+    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
+        quantum_numbers_of_state[name] = {quantum_numbers[state_index]};
     }
-    restricted->energy_of_states = {energy_of_states.at(state_index)};
-
-    return restricted;
+    return derived().get_modified_copy(std::move(coefficients_of_state),
+                                       {energy_of_states.at(state_index)},
+                                       std::move(quantum_numbers_of_state));
 }
 
 template <typename Derived>
