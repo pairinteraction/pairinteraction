@@ -20,7 +20,9 @@
 #include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
+#include <limits>
 #include <stdexcept>
+#include <vector>
 
 namespace pairinteraction {
 
@@ -126,7 +128,9 @@ DOCTEST_TEST_CASE("construct an atomic Hamiltonian in a non-canonical atomic bas
     transformation.coeffRef(1, 1) = -inverse_sqrt_two;
     transformation.makeCompressed();
 
-    auto transformed_basis = basis->transformed(transformation);
+    auto transformed_basis = basis->get_modified_copy(
+        basis->get_coefficients() * transformation,
+        std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()), {});
     SystemAtom<double> transformed_system(transformed_basis);
     transformed_system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 

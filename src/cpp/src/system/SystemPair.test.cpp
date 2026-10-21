@@ -22,7 +22,9 @@
 #include <cmath>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
+#include <limits>
 #include <numbers>
+#include <vector>
 
 namespace pairinteraction {
 
@@ -165,7 +167,10 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
     transformation.coeffRef(1, 1) = -inverse_sqrt_two;
     transformation.makeCompressed();
 
-    auto transformed_pair_basis = pair_basis->transformed(transformation);
+    auto transformed_pair_basis = pair_basis->get_modified_copy(
+        pair_basis->get_coefficients() * transformation,
+        std::vector<double>(pair_basis->get_number_of_states(), std::numeric_limits<double>::max()),
+        {});
     SystemPair<double> transformed_system(transformed_pair_basis);
     transformed_system.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
 

@@ -45,11 +45,12 @@ get_dominant_ket(const std::shared_ptr<const BasisAtom<Scalar>> &basis, size_t s
     return basis->get_ket(static_cast<size_t>(ket_index));
 }
 
+// The coefficients of the symmetrized states with respect to the kets of the given basis
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
-                         std::optional<int> parity_under_inversion,
-                         std::optional<int> parity_under_permutation) {
+build_manually_symmetrized_coefficients(const std::shared_ptr<const BasisPair<Scalar>> &basis,
+                                        std::optional<int> parity_under_inversion,
+                                        std::optional<int> parity_under_permutation) {
     using real_t = typename BasisPair<Scalar>::real_t;
 
     const auto basis1 = basis->get_basis1();
@@ -104,10 +105,10 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
         }
     }
 
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> transformation(
-        static_cast<Eigen::Index>(basis->get_number_of_states()), state_index);
-    transformation.setFromTriplets(triplets.begin(), triplets.end());
-    return transformation;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients(
+        static_cast<Eigen::Index>(basis->get_number_of_kets()), state_index);
+    coefficients.setFromTriplets(triplets.begin(), triplets.end());
+    return coefficients;
 }
 
 template <typename Scalar>
@@ -433,8 +434,13 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
                 .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
+        auto symmetrized_coefficients =
+            build_manually_symmetrized_coefficients(canonical_basis, std::nullopt, -1);
+        auto expected_basis = canonical_basis->get_modified_copy(
+            symmetrized_coefficients,
+            std::vector<double>(static_cast<size_t>(symmetrized_coefficients.cols()),
+                                std::numeric_limits<double>::max()),
+            {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -459,8 +465,13 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
                 .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
+        auto symmetrized_coefficients =
+            build_manually_symmetrized_coefficients(canonical_basis, -1, std::nullopt);
+        auto expected_basis = canonical_basis->get_modified_copy(
+            symmetrized_coefficients,
+            std::vector<double>(static_cast<size_t>(symmetrized_coefficients.cols()),
+                                std::numeric_limits<double>::max()),
+            {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
