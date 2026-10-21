@@ -58,7 +58,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
              })
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
-        .def("sorted", &Basis<T>::sorted)
+        .def("get_sorted_copy", &Basis<T>::get_sorted_copy)
         .def("canonicalized", &Basis<T>::canonicalized)
         .def("is_canonical", &Basis<T>::is_canonical)
         .def("merge", &Basis<T>::merge);
