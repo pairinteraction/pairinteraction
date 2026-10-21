@@ -50,7 +50,7 @@ def test_hartree_to_inverse_cm(ureg: UnitRegistry) -> None:
 
 def test_electric_field_to_atomic_units(ureg: UnitRegistry) -> None:
     """Test conversion from V/cm to atomic units of electric field."""
-    one_v_per_cm: PintFloat = 1 * ureg.volt / ureg.centimeter
+    one_v_per_cm: PintFloat = ureg.Quantity(1, "volt / centimeter")
     one_v_per_cm_in_atomic_units = one_v_per_cm.to_base_units()
     assert pytest.approx(one_v_per_cm_in_atomic_units.magnitude, rel=1e-12) == VOLT_PER_CM_IN_ATOMIC_UNITS  # NOSONAR
 
