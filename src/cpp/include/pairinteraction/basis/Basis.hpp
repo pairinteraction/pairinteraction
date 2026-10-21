@@ -91,7 +91,7 @@ public:
     void get_indices_of_blocks_without_checks(const std::set<SorterType> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
-    std::shared_ptr<const Derived> canonicalized() const;
+    std::shared_ptr<const Derived> get_canonicalized_copy() const;
     bool is_canonical() const;
     virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>

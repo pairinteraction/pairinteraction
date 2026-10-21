@@ -402,7 +402,7 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
+std::shared_ptr<const Derived> Basis<Derived>::get_canonicalized_copy() const {
     auto result = std::make_shared<Derived>(derived());
     size_t n = kets.size();
     result->coefficients.resize(n, n);
