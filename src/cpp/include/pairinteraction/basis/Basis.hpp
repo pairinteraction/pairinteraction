@@ -64,8 +64,6 @@ public:
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
-    std::shared_ptr<const Derived>
-    copy_with_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) const;
 
     class Iterator {
     public:

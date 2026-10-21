@@ -22,6 +22,7 @@
 #include <array>
 #include <cmath>
 #include <doctest/doctest.h>
+#include <limits>
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -725,7 +726,10 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
     }
 
     DOCTEST_SUBCASE("the states must have well-defined energies for an energy restriction") {
-        auto basis_without_energies = basis->copy_with_coefficients(basis->get_coefficients());
+        auto basis_without_energies = basis->get_modified_copy(
+            basis->get_coefficients(),
+            std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
+            basis->get_quantum_numbers_of_states());
         DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies)
                                          .restrict_energy(min_energy, max_energy)
                                          .create(),

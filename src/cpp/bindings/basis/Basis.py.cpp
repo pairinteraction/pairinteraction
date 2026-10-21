@@ -13,12 +13,15 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 
+#include <limits>
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/vector.h>
+#include <vector>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
@@ -39,7 +42,21 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_quantum_number", &Basis<T>::get_quantum_number)
         .def("get_energy", &Basis<T>::get_energy)
         .def("get_coefficients", &Basis<T>::get_coefficients)
-        .def("copy_with_coefficients", &Basis<T>::copy_with_coefficients)
+        .def("get_modified_copy",
+             [](const Basis<T> &self,
+                Eigen::SparseMatrix<typename Basis<T>::scalar_t, Eigen::RowMajor> coefficients,
+                std::vector<typename Basis<T>::real_t> energy_of_states,
+                typename Basis<T>::quantum_numbers_t quantum_numbers_of_states) {
+                 // An empty list of energies marks the energies of the new states as not
+                 // well-defined, so that Python does not need to know the marker value
+                 if (energy_of_states.empty()) {
+                     energy_of_states.assign(static_cast<size_t>(coefficients.cols()),
+                                             std::numeric_limits<typename Basis<T>::real_t>::max());
+                 }
+                 return static_cast<const T &>(self).get_modified_copy(
+                     std::move(coefficients), std::move(energy_of_states),
+                     std::move(quantum_numbers_of_states));
+             })
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
         .def("transformed",
