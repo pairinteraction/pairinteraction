@@ -138,7 +138,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def canonicalized(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
-        return type(self)._from_cpp_object(self._cpp.canonicalized(), *self._from_cpp_object_additional_args())
+        return type(self)._from_cpp_object(self._cpp.get_canonicalized_copy(), *self._from_cpp_object_additional_args())
 
     @property
     def is_canonical(self) -> bool:
