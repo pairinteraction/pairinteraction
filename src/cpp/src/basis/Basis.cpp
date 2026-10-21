@@ -113,6 +113,20 @@ void Basis<Derived>::check_states() const {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
         }
+
+        // The quantum numbers are (half-)integers, so that doubling them yields the exact integers
+        // by which the states are sorted and block-diagonalized. The maximum marks a quantum number
+        // that is not well-defined for the state.
+        for (real_t quantum_number : quantum_numbers) {
+            if (quantum_number == std::numeric_limits<real_t>::max()) {
+                continue;
+            }
+            real_t doubled = 2 * quantum_number;
+            if (!std::isfinite(doubled) || doubled != std::round(doubled)) {
+                throw std::invalid_argument("The quantum number " + name +
+                                            " must be an integer or a half-integer.");
+            }
+        }
     }
 }
 
