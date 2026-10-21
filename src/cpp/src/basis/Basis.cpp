@@ -27,6 +27,19 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisAtom;
 
+namespace {
+// The states can only be labeled by quantum numbers by which they can be sorted
+template <typename Derived>
+void check_quantum_number_name(const std::string &name) {
+    if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
+                     Derived::sorter_type_to_quantum_number_name.end(),
+                     [&name](const auto &entry) { return entry.second == name; })) {
+        throw std::invalid_argument("The states cannot be labeled by the quantum number " + name +
+                                    ".");
+    }
+}
+} // namespace
+
 template <typename Derived>
 void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_labels) const {
     // Currently, since states in a basis dont store the energy, they cannot be sorted by energy.
@@ -100,15 +113,9 @@ void Basis<Derived>::check_states() const {
         throw std::invalid_argument("The number of energies must match the number of states.");
     }
 
-    // The states can only be labeled by quantum numbers by which they can be sorted. Quantum
-    // numbers that are not given are not well-defined.
+    // Quantum numbers that are not given are not well-defined
     for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
-                         Derived::sorter_type_to_quantum_number_name.end(),
-                         [&name = name](const auto &entry) { return entry.second == name; })) {
-            throw std::invalid_argument("The states cannot be labeled by the quantum number " +
-                                        name + ".");
-        }
+        check_quantum_number_name<Derived>(name);
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
@@ -221,12 +228,7 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::st
     auto it = quantum_numbers_of_states.find(name);
     if (it == quantum_numbers_of_states.end() ||
         it->second.at(state_index) == std::numeric_limits<real_t>::max()) {
-        if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
-                         Derived::sorter_type_to_quantum_number_name.end(),
-                         [&name](const auto &entry) { return entry.second == name; })) {
-            throw std::invalid_argument("The states cannot be labeled by the quantum number " +
-                                        name + ".");
-        }
+        check_quantum_number_name<Derived>(name);
         throw std::invalid_argument("The state does not have a well-defined quantum number " +
                                     name + ".");
     }
