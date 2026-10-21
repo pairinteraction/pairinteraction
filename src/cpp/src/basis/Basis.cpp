@@ -212,31 +212,6 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) const {
-    if (values.rows() != coefficients.rows()) {
-        throw std::invalid_argument("Incompatible number of rows.");
-    }
-    if (values.cols() != coefficients.cols()) {
-        throw std::invalid_argument("Incompatible number of columns.");
-    }
-
-    // Create a copy of the current object and update the coefficients of the copy
-    auto result = std::make_shared<Derived>(derived());
-
-    result->coefficients = values;
-
-    for (auto &[name, quantum_numbers] : result->quantum_numbers_of_states) {
-        std::fill(quantum_numbers.begin(), quantum_numbers.end(),
-                  std::numeric_limits<real_t>::max());
-    }
-    std::fill(result->energy_of_states.begin(), result->energy_of_states.end(),
-              std::numeric_limits<real_t>::max());
-
-    return result;
-}
-
-template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
                                                                    size_t state_index) const {
     // A quantum number by which the states are not labeled is not well-defined, just like one whose

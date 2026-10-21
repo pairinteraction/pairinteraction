@@ -105,7 +105,7 @@ class StateAtom(StateBase[KetAtom]):
 
             cpp_basis = get_cpp_basis_atom_from_kets(kets, real=is_real)
         else:
-            cpp_basis = basis._cpp.canonicalized()
+            cpp_basis = basis._cpp
 
         cpp_ket_to_index = {cpp_ket: i for i, cpp_ket in enumerate(cpp_basis.get_kets())}
         basis_coeffs = np.zeros((len(cpp_ket_to_index), 1), dtype=coeffs.dtype)
@@ -114,8 +114,7 @@ class StateAtom(StateBase[KetAtom]):
                 raise ValueError(f"The ket {ket} is not part of the given basis.")
             basis_coeffs[cpp_ket_to_index[ket._cpp], 0] = coeff
 
-        state_cpp = cpp_basis.get_state(0)  # single-state basis, i.e. shape (n_kets, 1)
-        self._cpp = state_cpp.copy_with_coefficients(csr_matrix(basis_coeffs))
+        self._cpp = cpp_basis.get_modified_copy(csr_matrix(basis_coeffs), [], {})
 
     @staticmethod
     def _unpack_deprecated_args(
@@ -154,9 +153,7 @@ class StateAtom(StateBase[KetAtom]):
         coeffs1 = self._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
         coeffs2 = other._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
         coeffs = coeffs1 + coeffs2
-        new_cpp = merged_cpp.get_state(0)  # single-state basis, i.e. shape (n_kets, 1)
-
-        new_cpp = new_cpp.copy_with_coefficients(coeffs)
+        new_cpp = merged_cpp.get_modified_copy(coeffs, [], {})
         return type(self)._from_cpp_object(new_cpp)
 
     def __sub__(self, other: Self | KetAtom) -> Self:
@@ -173,7 +170,7 @@ class StateAtom(StateBase[KetAtom]):
         if not isinstance(factor, (int, float, complex)):
             raise TypeError(f"Cannot multiply {type(self)} with {type(factor)}.")
         coeffs = factor * self._cpp.get_coefficients()  # type: ignore [operator]
-        new_cpp = self._cpp.copy_with_coefficients(coeffs)
+        new_cpp = self._cpp.get_modified_copy(coeffs, [], {})
         return type(self)._from_cpp_object(new_cpp)
 
     def __truediv__(self, factor: complex) -> Self:
@@ -189,7 +186,7 @@ class StateAtom(StateBase[KetAtom]):
     def normalize(self) -> Self:
         """Normalize the coefficients of the state."""
         coeffs: Any = self._cpp.get_coefficients()
-        self._cpp = self._cpp.copy_with_coefficients(coeffs / self.norm)
+        self._cpp = self._cpp.get_modified_copy(coeffs / self.norm, [], {})
         return self
 
     def is_normalized(self, tol: float = 1e-10) -> bool:
