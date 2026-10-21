@@ -200,7 +200,7 @@ void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen:
     if (!hamiltonian_requires_construction) {
         matrix = matrix.twistedBy(sorter.inverse());
     }
-    basis = basis->sorted(sorter);
+    basis = basis->get_sorted_copy(sorter);
 }
 
 template <typename Derived>

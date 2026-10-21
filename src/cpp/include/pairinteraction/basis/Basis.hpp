@@ -95,7 +95,7 @@ public:
     bool is_canonical() const;
     virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
-    sorted(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
+    get_sorted_copy(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 
 protected:
     Basis(ketvec_t &&kets);
