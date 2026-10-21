@@ -14,6 +14,7 @@
 
 #include <cmath>
 #include <doctest/doctest.h>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -148,13 +149,17 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
     }
     identity_with_zeros.makeCompressed();
     DOCTEST_CHECK(identity_with_zeros.nonZeros() > dim);
-    DOCTEST_CHECK(basis->copy_with_coefficients(identity_with_zeros)->is_canonical());
+    std::vector<double> undefined_energies(basis->get_number_of_states(),
+                                           std::numeric_limits<double>::max());
+    DOCTEST_CHECK(
+        basis->get_modified_copy(identity_with_zeros, undefined_energies, {})->is_canonical());
 
     // A basis whose states are a non-trivial superposition of kets is not canonical
     Eigen::SparseMatrix<double, Eigen::RowMajor> non_identity(dim, dim);
     non_identity.setIdentity();
     non_identity.coeffRef(0, 0) = 0.5;
-    DOCTEST_CHECK_FALSE(basis->copy_with_coefficients(non_identity)->is_canonical());
+    DOCTEST_CHECK_FALSE(
+        basis->get_modified_copy(non_identity, undefined_energies, {})->is_canonical());
 
     // Sorting the basis makes it non-canonical
     auto sorted = basis->sorted(basis->get_sorter({SorterType::PARITY}));
@@ -195,7 +200,9 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     auto dim = static_cast<long>(basis->get_number_of_states());
     Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
     identity.setIdentity();
-    auto unlabeled = basis->copy_with_coefficients(identity);
+    auto unlabeled = basis->get_modified_copy(
+        identity,
+        std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()), {});
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::PARITY}),
                             std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_F}),
@@ -437,8 +444,11 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     }
     DOCTEST_CHECK_THROWS_AS(basis->transformed(identity, {energies[0]}), std::invalid_argument);
 
-    // Arbitrary coefficients do not have a well-defined energy
-    auto copied = basis->copy_with_coefficients(basis->get_coefficients());
+    // Energies whose value is the maximum are not well-defined
+    auto copied = basis->get_modified_copy(
+        basis->get_coefficients(),
+        std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
+        basis->get_quantum_numbers_of_states());
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->has_energy());
 }
