@@ -77,7 +77,7 @@ public:
     int get_ket_index_from_id(size_t ket_id) const;
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type, int q) const;
+    get_matrix_elements(const std::shared_ptr<const Type> &other, OperatorType type, int q) const;
 
 private:
     std::string canonical_basis_id;

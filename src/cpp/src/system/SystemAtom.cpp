@@ -101,9 +101,9 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::set_ion_interaction_order(int value) {
 
 template <typename Scalar>
 SystemAtom<Scalar> &SystemAtom<Scalar>::set_green_tensor_interpolator(
-    const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator) {
     this->hamiltonian_requires_construction = true;
-    this->green_tensor_interpolator = green_tensor_interpolator;
+    this->green_tensor_interpolator = std::move(green_tensor_interpolator);
     return *this;
 }
 
@@ -115,7 +115,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     };
     // Helper function for constructing matrices of spherical harmonics operators in the
     // canonical basis. The full Hamiltonian is transformed into the actual basis at the end.
-    auto get_matrices = [](auto basis, OperatorType type, std::initializer_list<int> m,
+    auto get_matrices = [](const auto &basis, OperatorType type, std::initializer_list<int> m,
                            bool conjugate) {
         std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrices;
         matrices.reserve(m.size());

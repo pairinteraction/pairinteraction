@@ -86,7 +86,7 @@ public:
                       quantum_numbers_t quantum_numbers_of_states) const;
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
+    get_matrix_elements(const std::shared_ptr<const Type> &final_state, OperatorType type1,
                         OperatorType type2, int q1, int q2) const;
 
 private:
