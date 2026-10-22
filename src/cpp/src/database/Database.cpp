@@ -742,8 +742,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_canonical_basis(
-    std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
-    std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type, int q) {
+    const std::shared_ptr<const BasisAtom<Scalar>> &initial_basis,
+    const std::shared_ptr<const BasisAtom<Scalar>> &final_basis, OperatorType type, int q) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using cached_matrix_ptr_t = std::shared_ptr<const cached_matrix_t>;
 
@@ -1038,8 +1038,8 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
         const std::vector<size_t> &additional_ket_ids);                                            \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
-        std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
-        std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
+        const std::shared_ptr<const BasisAtom<SCALAR>> &initial_basis,                             \
+        const std::shared_ptr<const BasisAtom<SCALAR>> &final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_GETTERS(double)
