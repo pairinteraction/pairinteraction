@@ -149,8 +149,9 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final_state, OperatorType type1,
-                                       OperatorType type2, int q1, int q2) const {
+BasisPair<Scalar>::get_matrix_elements(const std::shared_ptr<const Type> &final_state,
+                                       OperatorType type1, OperatorType type2, int q1,
+                                       int q2) const {
     auto initial1 = this->get_basis1();
     auto initial2 = this->get_basis2();
     auto final1 = final_state->get_basis1();

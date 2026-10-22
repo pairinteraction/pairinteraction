@@ -97,7 +97,7 @@ BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type,
+BasisAtom<Scalar>::get_matrix_elements(const std::shared_ptr<const Type> &other, OperatorType type,
                                        int q) const {
     auto matrix_elements = this->get_database().get_matrix_elements_in_canonical_basis(
         this->shared_from_this(), other, type, q);
