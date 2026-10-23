@@ -44,11 +44,12 @@ get_dominant_ket(const std::shared_ptr<const BasisAtom<Scalar>> &basis, size_t s
     return basis->get_ket(static_cast<size_t>(ket_index));
 }
 
+// The coefficients of the symmetrized states with respect to the kets of the given basis
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
-                         std::optional<int> parity_under_inversion,
-                         std::optional<int> parity_under_permutation) {
+build_manually_symmetrized_coefficients(const std::shared_ptr<const BasisPair<Scalar>> &basis,
+                                        std::optional<int> parity_under_inversion,
+                                        std::optional<int> parity_under_permutation) {
     using real_t = typename BasisPair<Scalar>::real_t;
 
     const auto basis1 = basis->get_basis1();
@@ -103,10 +104,10 @@ build_manual_symmetrizer(const std::shared_ptr<const BasisPair<Scalar>> &basis,
         }
     }
 
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> transformation(
-        static_cast<Eigen::Index>(basis->get_number_of_states()), state_index);
-    transformation.setFromTriplets(triplets.begin(), triplets.end());
-    return transformation;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients(
+        static_cast<Eigen::Index>(basis->get_number_of_kets()), state_index);
+    coefficients.setFromTriplets(triplets.begin(), triplets.end());
+    return coefficients;
 }
 
 template <typename Scalar>
@@ -420,7 +421,7 @@ struct SymmetrizedBasisPairFixture {
         // symmetrization to compare against a manual symmetrization.
         canonical_basis = BasisPairCreator<double>(system.get_eigenbasis(), system.get_eigenbasis())
                               .create()
-                              ->canonicalized();
+                              ->get_canonicalized_copy();
     }
 };
 } // namespace
@@ -432,8 +433,10 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
                 .restrict_quantum_number("parity_under_permutation", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, std::nullopt, -1));
+        auto symmetrized_coefficients =
+            build_manually_symmetrized_coefficients(canonical_basis, std::nullopt, -1);
+        auto expected_basis =
+            canonical_basis->get_modified_copy(symmetrized_coefficients, std::nullopt, {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -458,8 +461,10 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
                 .restrict_quantum_number("parity_under_inversion", -1, -1)
                 .create();
 
-        auto expected_basis = canonical_basis->transformed(
-            build_manual_symmetrizer(canonical_basis, -1, std::nullopt));
+        auto symmetrized_coefficients =
+            build_manually_symmetrized_coefficients(canonical_basis, -1, std::nullopt);
+        auto expected_basis =
+            canonical_basis->get_modified_copy(symmetrized_coefficients, std::nullopt, {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -725,7 +730,8 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
     }
 
     DOCTEST_SUBCASE("the states must have well-defined energies for an energy restriction") {
-        auto basis_without_energies = basis->copy_with_coefficients(basis->get_coefficients());
+        auto basis_without_energies = basis->get_modified_copy(
+            basis->get_coefficients(), std::nullopt, basis->get_quantum_numbers_of_states());
         DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies)
                                          .restrict_energy(min_energy, max_energy)
                                          .create(),
@@ -737,10 +743,14 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
         DOCTEST_CHECK(pair_basis->get_number_of_states() ==
                       basis->get_number_of_states() * basis->get_number_of_states());
         DOCTEST_CHECK_FALSE(pair_basis->has_energy());
+        DOCTEST_CHECK_FALSE(pair_basis->get_ket(0)->has_energy());
+        DOCTEST_CHECK_THROWS_AS(pair_basis->get_ket(0)->get_energy(), std::invalid_argument);
+        DOCTEST_CHECK_FALSE(pair_basis->get_canonicalized_copy()->has_energy());
     }
 
     DOCTEST_SUBCASE("the states must be sorted by energy for an energy restriction") {
-        auto basis_sorted_by_m = basis->sorted(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+        auto basis_sorted_by_m =
+            basis->get_sorted_copy(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
         DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis_sorted_by_m, basis)
                                          .restrict_energy(min_energy, max_energy)
                                          .create(),

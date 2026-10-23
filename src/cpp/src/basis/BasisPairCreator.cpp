@@ -13,6 +13,7 @@
 #include <cmath>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -68,12 +69,12 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     set_task_status("Constructing pair basis...");
 
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-    static constexpr real_t unknown = std::numeric_limits<real_t>::max();
+    // The pair states have a well-defined energy if the states of both atoms have one
+    const bool has_energy = basis1->has_energy() && basis2->has_energy();
 
     // Sorting is required for the binary search of the energetically allowed range
     if (range_energy.is_finite() &&
-        (!basis1->has_energy() || !basis2->has_energy() || !basis1->is_sorted_by_energy() ||
-         !basis2->is_sorted_by_energy())) {
+        (!has_energy || !basis1->is_sorted_by_energy() || !basis2->is_sorted_by_energy())) {
         throw std::invalid_argument(
             "The energy can only be restricted if the states of the BasisAtom have well-defined "
             "energies and are sorted by energy. Consider using the eigenbasis of a diagonalized "
@@ -117,7 +118,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     state_index1_to_state_index_range2.reserve(basis1->get_number_of_states());
     typename basis_t::map_indices_t state_indices_to_ket_index;
 
-    auto add_ket = [&](size_t first_index, size_t second_index, real_t energy,
+    auto add_ket = [&](size_t first_index, size_t second_index, std::optional<real_t> energy,
                        const quantum_numbers_of_state_t &quantum_numbers) {
         auto ket_index = static_cast<Eigen::Index>(kets.size());
         state_indices_to_ket_index.try_emplace(std::vector<size_t>{first_index, second_index},
@@ -163,11 +164,14 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Add the state that is the superposition of the given kets (row index and coefficient). It
     // shares the energy of the kets.
     auto add_state = [&](std::initializer_list<std::pair<Eigen::Index, Scalar>> components,
-                         real_t energy, const quantum_numbers_of_state_t &quantum_numbers) {
+                         std::optional<real_t> energy,
+                         const quantum_numbers_of_state_t &quantum_numbers) {
         for (const auto &[row_index, coefficient] : components) {
             triplets.emplace_back(row_index, num_states, coefficient);
         }
-        energy_of_states.push_back(energy);
+        if (energy.has_value()) {
+            energy_of_states.push_back(*energy);
+        }
         for (const auto &[name, value] : quantum_numbers) {
             quantum_numbers_of_states[name].push_back(static_cast<real_t>(value));
         }
@@ -178,16 +182,20 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Construct the kets and the states
     // ---------------------------------------------------------------------------------------------
 
-    // States without a well-defined energy are marked by the maximum value
-    auto get_energies = [](const auto &basis) {
-        std::vector<real_t> energies(basis->get_number_of_states(), unknown);
-        if (basis->has_energy()) {
-            for (size_t state_index = 0; state_index < energies.size(); ++state_index) {
-                energies[state_index] = basis->get_energy(state_index);
+    // The energies of the one-atom states are only needed if the pair states have energies
+    auto get_energies = [&](const auto &basis) {
+        std::vector<real_t> energies;
+        if (has_energy) {
+            energies.reserve(basis->get_number_of_states());
+            for (size_t state_index = 0; state_index < basis->get_number_of_states();
+                 ++state_index) {
+                energies.push_back(basis->get_energy(state_index));
             }
         }
         return energies;
     };
+    const size_t number_of_states1 = basis1->get_number_of_states();
+    const size_t number_of_states2 = basis2->get_number_of_states();
     const std::vector<real_t> eigenenergies1 = get_energies(basis1);
     const std::vector<real_t> eigenenergies2 = get_energies(basis2);
     const real_t *eigenenergies2_begin = eigenenergies2.data();
@@ -195,12 +203,12 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     const auto inverse_sqrt_two = static_cast<Scalar>(1 / std::sqrt(2.0));
 
-    for (size_t idx1 = 0; idx1 < eigenenergies1.size(); ++idx1) {
+    for (size_t idx1 = 0; idx1 < number_of_states1; ++idx1) {
         set_task_status("Constructing pair basis...");
 
         // Get the range of the second index for which the pair energy is allowed.
         size_t min = 0;
-        size_t max = eigenenergies2.size();
+        size_t max = number_of_states2;
         if (range_energy.is_finite()) {
             const real_t energy1 = eigenenergies1[idx1];
             min = std::distance(
@@ -222,10 +230,9 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         }
 
         for (size_t idx2 = min; idx2 < max; ++idx2) {
-            const real_t energy =
-                (eigenenergies1[idx1] == unknown || eigenenergies2[idx2] == unknown)
-                ? unknown
-                : eigenenergies1[idx1] + eigenenergies2[idx2];
+            const std::optional<real_t> energy = has_energy
+                ? std::optional<real_t>(eigenenergies1[idx1] + eigenenergies2[idx2])
+                : std::nullopt;
 
             // Get the quantum numbers of the ket. They are symmetric under the exchange of the
             // atoms, so that all checks below are symmetric, too.
@@ -292,7 +299,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     return std::make_shared<const basis_t>(
         typename basis_t::Private(), std::move(kets), std::move(state_index1_to_state_index_range2),
         std::move(state_indices_to_ket_index), basis1, basis2, std::move(coefficients),
-        std::move(energy_of_states), std::move(quantum_numbers_of_states));
+        has_energy ? typename basis_t::energies_t(std::move(energy_of_states)) : std::nullopt,
+        std::move(quantum_numbers_of_states));
 }
 
 // Explicit instantiations

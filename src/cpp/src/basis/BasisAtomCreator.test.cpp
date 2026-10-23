@@ -14,7 +14,10 @@
 
 #include <cmath>
 #include <doctest/doctest.h>
+#include <limits>
+#include <optional>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace pairinteraction {
@@ -87,7 +90,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 
     // Sort the basis by parity and the m quantum number
     auto sorter = basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M});
-    auto basis = basis_unsorted->sorted(sorter);
+    auto basis = basis_unsorted->get_sorted_copy(sorter);
 
     // Check if the basis is properly sorted
     double parity = -1;
@@ -116,14 +119,6 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
         DOCTEST_CHECK(block.start == expected_start[idx]);
         idx++;
     }
-
-    // Transforming by the identity matrix leaves the coefficients unchanged
-    size_t dim = basis->get_number_of_states();
-    Eigen::SparseMatrix<double, Eigen::RowMajor> matrix(static_cast<long>(dim),
-                                                        static_cast<long>(dim));
-    matrix.setIdentity();
-    auto transformed = basis->transformed(matrix);
-    DOCTEST_CHECK(transformed->get_coefficients().isApprox(basis->get_coefficients()));
 }
 
 DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity matrix") {
@@ -148,16 +143,16 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
     }
     identity_with_zeros.makeCompressed();
     DOCTEST_CHECK(identity_with_zeros.nonZeros() > dim);
-    DOCTEST_CHECK(basis->copy_with_coefficients(identity_with_zeros)->is_canonical());
+    DOCTEST_CHECK(basis->get_modified_copy(identity_with_zeros, std::nullopt, {})->is_canonical());
 
     // A basis whose states are a non-trivial superposition of kets is not canonical
     Eigen::SparseMatrix<double, Eigen::RowMajor> non_identity(dim, dim);
     non_identity.setIdentity();
     non_identity.coeffRef(0, 0) = 0.5;
-    DOCTEST_CHECK_FALSE(basis->copy_with_coefficients(non_identity)->is_canonical());
+    DOCTEST_CHECK_FALSE(basis->get_modified_copy(non_identity, std::nullopt, {})->is_canonical());
 
     // Sorting the basis makes it non-canonical
-    auto sorted = basis->sorted(basis->get_sorter({SorterType::PARITY}));
+    auto sorted = basis->get_sorted_copy(basis->get_sorter({SorterType::PARITY}));
     DOCTEST_CHECK_FALSE(sorted->is_canonical());
 }
 
@@ -176,7 +171,7 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
         basis_unsorted->get_indices_of_blocks({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}),
         std::invalid_argument);
 
-    auto basis = basis_unsorted->sorted(
+    auto basis = basis_unsorted->get_sorted_copy(
         basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}));
 
     // After sorting, the states of equal parity and m are contiguous ...
@@ -195,7 +190,7 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     auto dim = static_cast<long>(basis->get_number_of_states());
     Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
     identity.setIdentity();
-    auto unlabeled = basis->copy_with_coefficients(identity);
+    auto unlabeled = basis->get_modified_copy(identity, std::nullopt, {});
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::PARITY}),
                             std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_F}),
@@ -298,98 +293,6 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     }
 }
 
-DOCTEST_TEST_CASE("conserved quantum numbers are detected despite non-normalized coefficients") {
-    // The diagonalizers prune small entries of the eigenvectors so that the columns of the
-    // resulting transformation matrix are normalized only up to a defect of the order of rtol^2.
-    // The detection of conserved quantum numbers must not be spoiled by this defect. Otherwise,
-    // the detection would fail for a large rtol or a low floating point precision.
-    Database &database = Database::get_global_instance();
-    auto unsorted_basis = BasisAtomCreator<double>(database)
-                              .set_species("Rb")
-                              .restrict_quantum_number("n", 60, 60)
-                              .restrict_quantum_number("l", 0, 3)
-                              .create();
-    auto basis = unsorted_basis->sorted(unsorted_basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
-    DOCTEST_REQUIRE(basis->has_quantum_number("m"));
-
-    auto dim = static_cast<Eigen::Index>(basis->get_number_of_states());
-    constexpr double defect = 1e-2; // the squared norm of each column is 1 - defect
-    const double scale = std::sqrt(1 - defect);
-    const double sqrt_half = std::sqrt(0.5);
-
-    // Superimpose pairs of states that have the same m, mimicking eigenvectors that are confined
-    // to a block of constant m, and scale the columns so that they are not exactly normalized
-    std::vector<Eigen::Triplet<double>> triplets;
-    for (Eigen::Index i = 0; i < dim;) {
-        auto idx = static_cast<size_t>(i);
-        if (i + 1 < dim &&
-            basis->get_quantum_number("m", idx) == basis->get_quantum_number("m", idx + 1)) {
-            triplets.emplace_back(i, i, scale * sqrt_half);
-            triplets.emplace_back(i + 1, i, scale * sqrt_half);
-            triplets.emplace_back(i, i + 1, scale * sqrt_half);
-            triplets.emplace_back(i + 1, i + 1, -scale * sqrt_half);
-            i += 2;
-        } else {
-            triplets.emplace_back(i, i, scale);
-            i += 1;
-        }
-    }
-    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation(dim, dim);
-    transformation.setFromTriplets(triplets.begin(), triplets.end());
-
-    // Because the transformation does not mix different m, m is still well-defined
-    auto transformed = basis->transformed(transformation);
-    DOCTEST_CHECK(transformed->has_quantum_number("m"));
-    for (size_t i = 0; i < transformed->get_number_of_states(); ++i) {
-        DOCTEST_CHECK(transformed->get_quantum_number("m", i) == basis->get_quantum_number("m", i));
-    }
-
-    // If, in contrast, states of different m are superimposed, m is not well-defined anymore
-    Eigen::Index other = 0;
-    while (other < dim &&
-           basis->get_quantum_number("m", 0) ==
-               basis->get_quantum_number("m", static_cast<size_t>(other))) {
-        ++other;
-    }
-    DOCTEST_REQUIRE(other < dim);
-    triplets.clear();
-    for (Eigen::Index i = 0; i < dim; ++i) {
-        if (i != 0 && i != other) {
-            triplets.emplace_back(i, i, scale);
-        }
-    }
-    triplets.emplace_back(0, 0, scale * sqrt_half);
-    triplets.emplace_back(other, 0, scale * sqrt_half);
-    triplets.emplace_back(0, other, scale * sqrt_half);
-    triplets.emplace_back(other, other, -scale * sqrt_half);
-    Eigen::SparseMatrix<double, Eigen::RowMajor> mixing_transformation(dim, dim);
-    mixing_transformation.setFromTriplets(triplets.begin(), triplets.end());
-
-    auto mixed = basis->transformed(mixing_transformation);
-    DOCTEST_CHECK_FALSE(mixed->has_quantum_number("m"));
-    DOCTEST_CHECK_THROWS_AS(mixed->get_quantum_number("m", 0), std::invalid_argument);
-
-    // An explicitly stored zero that couples a state to a state without a well-defined m must not
-    // spoil the m of the state
-    Eigen::Index target = 0;
-    while (target == 0 || target == other) {
-        ++target;
-    }
-    DOCTEST_REQUIRE(target < dim);
-    triplets.clear();
-    for (Eigen::Index i = 0; i < dim; ++i) {
-        triplets.emplace_back(i, i, 1);
-    }
-    triplets.emplace_back(0, target, 0);
-    Eigen::SparseMatrix<double, Eigen::RowMajor> transformation_with_zero(dim, dim);
-    transformation_with_zero.setFromTriplets(triplets.begin(), triplets.end());
-    DOCTEST_REQUIRE(transformation_with_zero.nonZeros() == dim + 1);
-
-    auto transformed_with_zero = mixed->transformed(transformation_with_zero);
-    DOCTEST_CHECK(transformed_with_zero->get_quantum_number("m", static_cast<size_t>(target)) ==
-                  basis->get_quantum_number("m", static_cast<size_t>(target)));
-}
-
 DOCTEST_TEST_CASE("energies of the states of a basis") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>(database)
@@ -409,7 +312,7 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
 
     // Sorting permutes the energies along with the states
     auto sorter = basis->get_sorter({SorterType::QUANTUM_NUMBER_M});
-    auto sorted = basis->sorted(sorter);
+    auto sorted = basis->get_sorted_copy(sorter);
     DOCTEST_CHECK(sorted->has_energy());
     DOCTEST_CHECK_FALSE(sorted->is_sorted_by_energy());
     for (Eigen::Index i = 0; i < dim; ++i) {
@@ -417,30 +320,71 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
                       basis->get_energy(static_cast<size_t>(sorter.indices()[i])));
     }
 
-    // In general, transformed states do not have well-defined energies
-    Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
-    identity.setIdentity();
-    auto transformed = basis->transformed(identity);
-    DOCTEST_CHECK_FALSE(transformed->has_energy());
-    DOCTEST_CHECK_FALSE(transformed->is_sorted_by_energy());
-    DOCTEST_CHECK_THROWS_AS(transformed->get_energy(0), std::invalid_argument);
-
-    // Unless the energies of the transformed states are explicitly specified
+    // A modified copy of a basis has the explicitly specified energies
     std::vector<double> energies(basis->get_number_of_states());
     for (size_t i = 0; i < energies.size(); ++i) {
         energies[i] = basis->get_energy(i);
     }
-    auto transformed_with_energies = basis->transformed(identity, energies);
-    DOCTEST_CHECK(transformed_with_energies->is_sorted_by_energy());
+    auto with_energies = basis->get_modified_copy(basis->get_coefficients(), energies,
+                                                  basis->get_quantum_numbers_of_states());
+    DOCTEST_CHECK(with_energies->is_sorted_by_energy());
     for (size_t i = 0; i < energies.size(); ++i) {
-        DOCTEST_CHECK(transformed_with_energies->get_energy(i) == energies[i]);
+        DOCTEST_CHECK(with_energies->get_energy(i) == energies[i]);
     }
-    DOCTEST_CHECK_THROWS_AS(basis->transformed(identity, {energies[0]}), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(),
+                                                     std::vector<double>{energies[0]},
+                                                     basis->get_quantum_numbers_of_states()),
+                            std::invalid_argument);
 
-    // Arbitrary coefficients do not have a well-defined energy
-    auto copied = basis->copy_with_coefficients(basis->get_coefficients());
+    // Energies that are not given are not well-defined
+    auto copied = basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                           basis->get_quantum_numbers_of_states());
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->has_energy());
+    DOCTEST_CHECK_FALSE(copied->is_sorted_by_energy());
+    DOCTEST_CHECK_FALSE(copied->get_state(0)->has_energy());
+
+    // Energies that are given must be finite
+    energies[0] = std::numeric_limits<double>::quiet_NaN();
+    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), energies,
+                                                     basis->get_quantum_numbers_of_states()),
+                            std::invalid_argument);
+}
+
+DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers") {
+    Database &database = Database::get_global_instance();
+    auto basis = BasisAtomCreator<double>(database)
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 60)
+                     .restrict_quantum_number("l", 0, 1)
+                     .create();
+
+    auto with_m = [&](double first_m) {
+        auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
+        quantum_numbers_of_states.at("m")[0] = first_m;
+        return basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                        std::move(quantum_numbers_of_states));
+    };
+
+    // Integers and half-integers are allowed
+    DOCTEST_CHECK_NOTHROW(with_m(-1.5));
+    DOCTEST_CHECK_NOTHROW(with_m(2));
+
+    // Other values cannot be doubled to an exact integer. In particular, there is no value that
+    // marks a quantum number as not well-defined for a single state.
+    DOCTEST_CHECK_THROWS_AS(with_m(0.3), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(0.5 + 1e-12), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::quiet_NaN()),
+                            std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::infinity()), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::max()), std::invalid_argument);
+
+    // A quantum number must be given for all states
+    auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
+    quantum_numbers_of_states.at("m").pop_back();
+    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                                     std::move(quantum_numbers_of_states)),
+                            std::invalid_argument);
 }
 
 } // namespace pairinteraction

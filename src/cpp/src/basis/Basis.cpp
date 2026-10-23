@@ -16,6 +16,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <map>
 #include <set>
 #include <string>
@@ -25,6 +26,19 @@ namespace pairinteraction {
 
 template <typename Scalar>
 class BasisAtom;
+
+namespace {
+// The states can only be labeled by quantum numbers by which they can be sorted
+template <typename Derived>
+void check_quantum_number_name(const std::string &name) {
+    if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
+                     Derived::sorter_type_to_quantum_number_name.end(),
+                     [&name](const auto &entry) { return entry.second == name; })) {
+        throw std::invalid_argument("The states cannot be labeled by the quantum number " + name +
+                                    ".");
+    }
+}
+} // namespace
 
 template <typename Derived>
 void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_labels) const {
@@ -73,20 +87,9 @@ void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_la
 }
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets)
-    : kets(std::move(kets)), coefficients(static_cast<Eigen::Index>(this->kets.size()),
-                                          static_cast<Eigen::Index>(this->kets.size())) {
-    if (this->kets.empty()) {
-        throw std::invalid_argument("The basis must contain at least one element.");
-    }
-    make_canonical();
-}
-
-template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
-                      std::vector<real_t> &&energy_of_states,
-                      quantum_numbers_t &&quantum_numbers_of_states)
+                      energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states)
     : kets(std::move(kets)), coefficients(std::move(coefficients)),
       quantum_numbers_of_states(std::move(quantum_numbers_of_states)),
       energy_of_states(std::move(energy_of_states)) {
@@ -105,77 +108,86 @@ void Basis<Derived>::check_states() const {
             "The number of rows of the coefficient matrix must match the number of kets.");
     }
 
-    if (energy_of_states.size() != num_states) {
-        throw std::invalid_argument("The number of energies must match the number of states.");
+    // The energy is either given for all states or not well-defined for the basis
+    if (energy_of_states.has_value()) {
+        if (energy_of_states->size() != num_states) {
+            throw std::invalid_argument("The number of energies must match the number of states.");
+        }
+        if (!std::ranges::all_of(*energy_of_states,
+                                 [](real_t energy) { return std::isfinite(energy); })) {
+            throw std::invalid_argument("The energies of the states must be finite.");
+        }
     }
 
-    // The states can only be labeled by quantum numbers by which they can be sorted. Quantum
-    // numbers that are not given are not well-defined.
+    // A quantum number is either given for all states or not well-defined for the basis
     for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
-                         Derived::sorter_type_to_quantum_number_name.end(),
-                         [&name = name](const auto &entry) { return entry.second == name; })) {
-            throw std::invalid_argument("The states cannot be labeled by the quantum number " +
-                                        name + ".");
-        }
+        check_quantum_number_name<Derived>(name);
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
         }
+
+        // The quantum numbers are (half-)integers, so that doubling them yields the exact integers
+        // by which the states are sorted and block-diagonalized
+        for (real_t quantum_number : quantum_numbers) {
+            real_t doubled = 2 * quantum_number;
+            if (!std::isfinite(doubled) || doubled != std::round(doubled)) {
+                throw std::invalid_argument("The quantum number " + name +
+                                            " must be an integer or a half-integer.");
+            }
+        }
     }
 }
 
 template <typename Derived>
-void Basis<Derived>::make_canonical() {
+typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const ketvec_t &kets) {
+    StatesData states;
     auto n = static_cast<Eigen::Index>(kets.size());
-    if (coefficients.rows() != n || coefficients.cols() != n) {
-        throw std::invalid_argument("The coefficient matrix must be of shape n x n, where n is "
-                                    "the number of kets.");
-    }
 
     // Make the i-th state equal to the i-th ket
-    coefficients.setIdentity();
+    states.coefficients.resize(n, n);
+    states.coefficients.setIdentity();
 
-    // Assign each state the quantum numbers of the ket it is equal to
+    // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
+    // assigned if all kets have it.
     for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
-        std::vector<real_t> quantum_numbers;
+        if (!std::ranges::all_of(
+                kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
+            continue;
+        }
+        auto &quantum_numbers = states.quantum_numbers_of_states[name];
         quantum_numbers.reserve(kets.size());
         for (const auto &ket : kets) {
-            quantum_numbers.push_back(ket->has_quantum_number(name)
-                                          ? static_cast<real_t>(ket->get_quantum_number(name))
-                                          : std::numeric_limits<real_t>::max());
+            quantum_numbers.push_back(static_cast<real_t>(ket->get_quantum_number(name)));
         }
-        quantum_numbers_of_states[name] = std::move(quantum_numbers);
     }
 
-    // Assign each state the energy of the ket it is equal to
-    energy_of_states.clear();
-    energy_of_states.reserve(kets.size());
-    for (const auto &ket : kets) {
-        energy_of_states.push_back(static_cast<real_t>(ket->get_energy()));
+    // Assign each state the energy of the ket it is equal to. The energy is only assigned if all
+    // kets have it.
+    if (std::ranges::all_of(kets, [](const auto &ket) { return ket->has_energy(); })) {
+        auto &energies = states.energy_of_states.emplace();
+        energies.reserve(kets.size());
+        for (const auto &ket : kets) {
+            energies.push_back(static_cast<real_t>(ket->get_energy()));
+        }
     }
+
+    return states;
 }
 
 template <typename Derived>
 bool Basis<Derived>::has_quantum_number(const std::string &name) const {
-    auto it = quantum_numbers_of_states.find(name);
-    if (it == quantum_numbers_of_states.end()) {
-        return false;
-    }
-    return std::none_of(it->second.begin(), it->second.end(), [](real_t quantum_number) {
-        return quantum_number == std::numeric_limits<real_t>::max();
-    });
+    return quantum_numbers_of_states.contains(name);
 }
 
 template <typename Derived>
 bool Basis<Derived>::has_energy() const {
-    return std::none_of(energy_of_states.begin(), energy_of_states.end(),
-                        [](real_t energy) { return energy == std::numeric_limits<real_t>::max(); });
+    return energy_of_states.has_value();
 }
 
 template <typename Derived>
 bool Basis<Derived>::is_sorted_by_energy() const {
-    return has_energy() && std::is_sorted(energy_of_states.begin(), energy_of_states.end());
+    return has_energy() && std::ranges::is_sorted(*energy_of_states);
 }
 
 template <typename Derived>
@@ -211,69 +223,47 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::copy_with_coefficients(
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) const {
-    if (values.rows() != coefficients.rows()) {
-        throw std::invalid_argument("Incompatible number of rows.");
-    }
-    if (values.cols() != coefficients.cols()) {
-        throw std::invalid_argument("Incompatible number of columns.");
-    }
-
-    // Create a copy of the current object and update the coefficients of the copy
-    auto result = std::make_shared<Derived>(derived());
-
-    result->coefficients = values;
-
-    for (auto &[name, quantum_numbers] : result->quantum_numbers_of_states) {
-        std::fill(quantum_numbers.begin(), quantum_numbers.end(),
-                  std::numeric_limits<real_t>::max());
-    }
-    std::fill(result->energy_of_states.begin(), result->energy_of_states.end(),
-              std::numeric_limits<real_t>::max());
-
-    return result;
-}
-
-template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
                                                                    size_t state_index) const {
+    // A quantum number by which the states are not labeled is not well-defined
     auto it = quantum_numbers_of_states.find(name);
     if (it == quantum_numbers_of_states.end()) {
-        throw std::invalid_argument("The states are not labeled by the quantum number " + name +
-                                    ".");
-    }
-    real_t quantum_number = it->second.at(state_index);
-    if (quantum_number == std::numeric_limits<real_t>::max()) {
+        check_quantum_number_name<Derived>(name);
         throw std::invalid_argument("The state does not have a well-defined quantum number " +
                                     name + ".");
     }
-    return quantum_number;
+    return it->second.at(state_index);
 }
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t state_index) const {
-    real_t energy = energy_of_states.at(state_index);
-    if (energy == std::numeric_limits<real_t>::max()) {
+    if (!has_energy()) {
         throw std::invalid_argument("The state does not have a well-defined energy.");
     }
-    return energy;
+    return energy_of_states->at(state_index);
+}
+
+template <typename Derived>
+const typename Basis<Derived>::quantum_numbers_t &
+Basis<Derived>::get_quantum_numbers_of_states() const {
+    return quantum_numbers_of_states;
 }
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) const {
-    // Create a copy of the current object
-    auto restricted = std::make_shared<Derived>(derived());
-
-    // Restrict the copy to the single requested state
-    restricted->coefficients = restricted->coefficients.col(state_index);
-
-    for (auto &[name, quantum_numbers] : restricted->quantum_numbers_of_states) {
-        quantum_numbers = {quantum_numbers_of_states.at(name)[state_index]};
+    // Create a basis that consists of the single requested state, without copying the other states
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients_of_state =
+        coefficients.col(static_cast<Eigen::Index>(state_index));
+    quantum_numbers_t quantum_numbers_of_state;
+    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
+        quantum_numbers_of_state[name] = {quantum_numbers[state_index]};
     }
-    restricted->energy_of_states = {energy_of_states.at(state_index)};
-
-    return restricted;
+    energies_t energy_of_state;
+    if (has_energy()) {
+        energy_of_state.emplace({energy_of_states->at(state_index)});
+    }
+    return derived().get_modified_copy(std::move(coefficients_of_state), std::move(energy_of_state),
+                                       std::move(quantum_numbers_of_state));
 }
 
 template <typename Derived>
@@ -416,12 +406,10 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::canonicalized() const {
-    auto result = std::make_shared<Derived>(derived());
-    size_t n = kets.size();
-    result->coefficients.resize(n, n);
-    result->make_canonical();
-    return result;
+std::shared_ptr<const Derived> Basis<Derived>::get_canonicalized_copy() const {
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] = get_canonical_states(kets);
+    return derived().get_modified_copy(std::move(coefficients), std::move(energy_of_states),
+                                       std::move(quantum_numbers_of_states));
 }
 
 template <typename Derived>
@@ -451,7 +439,7 @@ bool Basis<Derived>::is_canonical() const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::sorted(
+std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
     const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
     // Create a copy of the current object
     auto result = std::make_shared<Derived>(derived());
@@ -472,75 +460,14 @@ std::shared_ptr<const Derived> Basis<Derived>::sorted(
             sorted_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];
         }
     }
-    result->energy_of_states.resize(sorter.size());
-    for (int i = 0; i < sorter.size(); ++i) {
-        result->energy_of_states[i] = energy_of_states[sorter.indices()[i]];
-    }
-
-    return result;
-}
-
-template <typename Derived>
-std::shared_ptr<const Derived>
-Basis<Derived>::transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
-                            const std::vector<real_t> &energy_of_transformed_states) const {
-    if (!energy_of_transformed_states.empty() &&
-        energy_of_transformed_states.size() != static_cast<size_t>(transformation.cols())) {
-        throw std::invalid_argument(
-            "The number of energies must match the number of transformed states.");
-    }
-
-    const real_t numerical_precision =
-        100 * std::sqrt(coefficients.rows()) * std::numeric_limits<real_t>::epsilon();
-
-    // Create a copy of the current object
-    auto transformed = std::make_shared<Derived>(derived());
-
-    if (coefficients.cols() == 0) {
-        return transformed;
-    }
-
-    // Apply the transformation
-    set_task_status("Applying basis transformation...");
-    transformed->coefficients = coefficients * transformation;
-
-    Eigen::SparseMatrix<real_t> probs = transformation.cwiseAbs2().transpose();
-    // Drop explicitly stored zeros
-    probs.prune(
-        [](Eigen::Index /*row*/, Eigen::Index /*col*/, const real_t &value) { return value != 0; });
-    Eigen::VectorX<real_t> norm = probs * Eigen::VectorX<real_t>::Ones(probs.cols());
-
-    set_task_status("Updating transformed quantum numbers...");
-    for (auto &[name, transformed_quantum_numbers] : transformed->quantum_numbers_of_states) {
-        const auto &quantum_numbers = quantum_numbers_of_states.at(name);
-        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(
-            quantum_numbers.data(), static_cast<Eigen::Index>(quantum_numbers.size()));
-        Eigen::VectorX<real_t> val = probs * map;
-        Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        transformed_quantum_numbers.resize(probs.rows());
-
-        for (size_t i = 0; i < transformed_quantum_numbers.size(); ++i) {
-            const real_t mean = val[i] / norm[i];
-            const real_t mean_sq = sq[i] / norm[i];
-            const real_t variance = std::abs(mean_sq - mean * mean);
-            if (variance < numerical_precision * std::max(static_cast<real_t>(1), mean_sq)) {
-                transformed_quantum_numbers[i] = std::round(mean * 2) / 2;
-            } else {
-                transformed_quantum_numbers[i] = std::numeric_limits<real_t>::max();
-            }
+    if (has_energy()) {
+        auto &sorted_energies = *result->energy_of_states;
+        for (int i = 0; i < sorter.size(); ++i) {
+            sorted_energies[i] = (*energy_of_states)[sorter.indices()[i]];
         }
     }
 
-    // The transformed states only have well-defined energies if they are explicitly specified,
-    // e.g., as eigenenergies
-    if (energy_of_transformed_states.empty()) {
-        transformed->energy_of_states.assign(static_cast<size_t>(transformation.cols()),
-                                             std::numeric_limits<real_t>::max());
-    } else {
-        transformed->energy_of_states = energy_of_transformed_states;
-    }
-
-    return transformed;
+    return result;
 }
 
 // Explicit instantiations

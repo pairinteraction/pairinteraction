@@ -38,7 +38,7 @@ System<Derived>::System(std::shared_ptr<const basis_t> basis)
              static_cast<Eigen::Index>(this->basis->get_number_of_states())) {
     // The unperturbed Hamiltonian is constructed from the energies of the kets
     for (const auto &ket : this->basis->get_kets()) {
-        if (static_cast<real_t>(ket->get_energy()) == std::numeric_limits<real_t>::max()) {
+        if (!ket->has_energy()) {
             throw std::invalid_argument("The kets of the basis do not have a well-defined energy.");
         }
     }
@@ -200,7 +200,7 @@ void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen:
     if (!hamiltonian_requires_construction) {
         matrix = matrix.twistedBy(sorter.inverse());
     }
-    basis = basis->sorted(sorter);
+    basis = basis->get_sorted_copy(sorter);
 }
 
 template <typename Derived>
@@ -337,15 +337,34 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         eigenvectors = eigenvectors * phase_matrix;
     }
 
-    // Store the diagonalized hamiltonian and assign the eigenenergies to the eigenstates
-    matrix = eigenenergies;
+    // Assign the eigenenergies to the eigenstates
     std::vector<real_t> energy_of_eigenstates;
-    energy_of_eigenstates.reserve(num_cols);
+    energy_of_eigenstates.reserve(static_cast<size_t>(num_cols));
     for (const auto &eigenenergies_block : eigenenergies_blocks) {
         energy_of_eigenstates.insert(energy_of_eigenstates.end(), eigenenergies_block.data(),
                                      eigenenergies_block.data() + eigenenergies_block.size());
     }
-    basis = basis->transformed(eigenvectors, energy_of_eigenstates);
+
+    // Assign the quantum numbers to the eigenstates, only the quantum numbers by which the
+    // Hamiltonian is block-diagonal are well-defined and shared by all eigenstates of a block
+    typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
+    for (const auto &label : blockdiagonalizing_labels) {
+        const std::string &name = basis_t::sorter_type_to_quantum_number_name.at(label);
+        auto &quantum_numbers = quantum_numbers_of_eigenstates[name];
+        quantum_numbers.reserve(static_cast<size_t>(num_cols));
+        for (size_t idx = 0; idx < blocks.size(); ++idx) {
+            quantum_numbers.insert(quantum_numbers.end(),
+                                   static_cast<size_t>(eigenvectors_blocks[idx].cols()),
+                                   basis->get_quantum_number(name, blocks[idx].start));
+        }
+    }
+
+    // Store the diagonalized hamiltonian and the eigenbasis
+    set_task_status("Constructing eigenbasis...");
+    matrix = eigenenergies;
+    basis = basis->get_modified_copy(basis->get_coefficients() * eigenvectors,
+                                     std::move(energy_of_eigenstates),
+                                     std::move(quantum_numbers_of_eigenstates));
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
@@ -375,10 +394,10 @@ bool System<Derived>::is_diagonal() const {
         // The states of the basis are eigenstates, so assign them the diagonal entries of the
         // Hamiltonian as energies
         Eigen::VectorX<real_t> diagonal = matrix.diagonal().real();
-        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> identity(matrix.rows(), matrix.cols());
-        identity.setIdentity();
-        basis = basis->transformed(
-            identity, std::vector<real_t>(diagonal.data(), diagonal.data() + diagonal.size()));
+        basis = basis->get_modified_copy(
+            basis->get_coefficients(),
+            std::vector<real_t>(diagonal.data(), diagonal.data() + diagonal.size()),
+            basis->get_quantum_numbers_of_states());
 
         hamiltonian_is_diagonal = true;
     }

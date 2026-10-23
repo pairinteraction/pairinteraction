@@ -4,6 +4,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -20,7 +21,9 @@ namespace pairinteraction {
  * Instead, a factory class should be provided that is a friend of the derived class and can create
  * instances of it.
  *
- * The ket stores the quantum numbers that are available for it in a map.
+ * The ket stores the quantum numbers that are available for it in a map. Its energy is optional
+ * because a pair ket only has a well-defined energy if the one-atom states it is composed of have
+ * one.
  */
 
 class Ket {
@@ -28,12 +31,13 @@ public:
     Ket() = delete;
     virtual ~Ket() = default;
 
+    bool has_energy() const;
     double get_energy() const;
     bool has_quantum_number(const std::string &name) const;
     double get_quantum_number(const std::string &name) const;
 
 protected:
-    Ket(double energy, std::unordered_map<std::string, double> quantum_numbers);
+    Ket(std::optional<double> energy, std::unordered_map<std::string, double> quantum_numbers);
 
     bool operator==(const Ket &other) const;
 
@@ -41,7 +45,7 @@ protected:
         std::size_t operator()(const Ket &k) const;
     };
 
-    double energy;
+    std::optional<double> energy;
     std::unordered_map<std::string, double> quantum_numbers;
 };
 } // namespace pairinteraction

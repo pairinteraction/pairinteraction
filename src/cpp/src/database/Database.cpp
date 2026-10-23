@@ -26,6 +26,7 @@
 #include <fmt/ranges.h>
 #include <fstream>
 #include <iterator>
+#include <limits>
 #include <nlohmann/json.hpp>
 #include <oneapi/tbb.h>
 #include <spdlog/spdlog.h>
@@ -699,6 +700,8 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
 
     std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
+    typename BasisAtom<Scalar>::map_size_t ket_id_to_ket_index;
+    ket_id_to_ket_index.reserve(result->RowCount());
     double last_energy = std::numeric_limits<double>::lowest();
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
@@ -721,21 +724,26 @@ Database::get_basis(const std::string &species, const AtomDescriptionByRanges &d
             last_energy = energy;
 
             // Append a new state
+            ket_id_to_ket_index[id] = kets.size();
             kets.push_back(std::make_shared<const KetAtom>(
                 typename KetAtom::Private(), energy, species, std::move(quantum_numbers.values),
                 std::move(quantum_numbers.stds), *this, id));
         }
     }
 
-    return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private(),
-                                                     std::move(kets), std::move(canonical_basis_id),
-                                                     *this);
+    // The basis is canonical, i.e., the i-th state is the i-th ket
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] =
+        BasisAtom<Scalar>::get_canonical_states(kets);
+    return std::make_shared<const BasisAtom<Scalar>>(
+        typename BasisAtom<Scalar>::Private(), std::move(kets), std::move(ket_id_to_ket_index),
+        std::move(canonical_basis_id), *this, std::move(coefficients), std::move(energy_of_states),
+        std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_matrix_elements_in_canonical_basis(
-    std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
-    std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type, int q) {
+    const std::shared_ptr<const BasisAtom<Scalar>> &initial_basis,
+    const std::shared_ptr<const BasisAtom<Scalar>> &final_basis, OperatorType type, int q) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using cached_matrix_ptr_t = std::shared_ptr<const cached_matrix_t>;
 
@@ -1030,8 +1038,8 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
         const std::vector<size_t> &additional_ket_ids);                                            \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                          \
     Database::get_matrix_elements_in_canonical_basis<SCALAR>(                                      \
-        std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
-        std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
+        const std::shared_ptr<const BasisAtom<SCALAR>> &initial_basis,                             \
+        const std::shared_ptr<const BasisAtom<SCALAR>> &final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_GETTERS(double)

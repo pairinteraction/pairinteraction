@@ -16,9 +16,12 @@
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/unordered_map.h>
 #include <nanobind/stl/vector.h>
+#include <vector>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
@@ -26,7 +29,6 @@ using namespace pairinteraction;
 template <typename T>
 static void declare_basis(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "Basis" + type_name;
-    using scalar_t = typename Basis<T>::scalar_t;
     nb::class_<Basis<T>, SorterBuilderInterface> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_kets", &Basis<T>::get_kets)
         .def("get_ket", &Basis<T>::get_ket)
@@ -39,16 +41,19 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_quantum_number", &Basis<T>::get_quantum_number)
         .def("get_energy", &Basis<T>::get_energy)
         .def("get_coefficients", &Basis<T>::get_coefficients)
-        .def("copy_with_coefficients", &Basis<T>::copy_with_coefficients)
+        .def("get_modified_copy",
+             [](const Basis<T> &self,
+                Eigen::SparseMatrix<typename Basis<T>::scalar_t, Eigen::RowMajor> coefficients,
+                typename Basis<T>::energies_t energy_of_states,
+                typename Basis<T>::quantum_numbers_t quantum_numbers_of_states) {
+                 return static_cast<const T &>(self).get_modified_copy(
+                     std::move(coefficients), std::move(energy_of_states),
+                     std::move(quantum_numbers_of_states));
+             })
         .def("get_sorter", &Basis<T>::get_sorter)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
-        .def("transformed",
-             [](const Basis<T> &self,
-                const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation) {
-                 return self.transformed(transformation);
-             })
-        .def("sorted", &Basis<T>::sorted)
-        .def("canonicalized", &Basis<T>::canonicalized)
+        .def("get_sorted_copy", &Basis<T>::get_sorted_copy)
+        .def("get_canonicalized_copy", &Basis<T>::get_canonicalized_copy)
         .def("is_canonical", &Basis<T>::is_canonical)
         .def("merge", &Basis<T>::merge);
 }

@@ -50,7 +50,7 @@ public:
     Type &set_ion_charge(real_t charge);
     Type &set_ion_interaction_order(int value);
     Type &set_green_tensor_interpolator(
-        const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator);
+        std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator);
 
 private:
     std::array<real_t, 3> electric_field{0, 0, 0};

@@ -9,6 +9,7 @@
 #include <complex>
 #include <initializer_list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -41,7 +42,7 @@ class KetPair : public Ket {
 public:
     KetPair(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
-            real_t energy, std::unordered_map<std::string, double> quantum_numbers);
+            std::optional<real_t> energy, std::unordered_map<std::string, double> quantum_numbers);
 
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
 

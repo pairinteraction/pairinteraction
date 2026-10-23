@@ -53,29 +53,37 @@ public:
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
     using quantum_numbers_t = typename Basis<Type>::quantum_numbers_t;
+    using energies_t = typename Basis<Type>::energies_t;
+    using map_size_t = std::unordered_map<size_t, size_t>;
 
     static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
-              Database &database);
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&canonical_basis_id,
-              Database &database, Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
-              std::vector<real_t> &&energy_of_states,
-              quantum_numbers_t &&quantum_numbers_of_states);
+    BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
+              std::string &&canonical_basis_id, Database &database,
+              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
+              energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
     Database &get_database() const;
     const std::string &get_species() const;
     const std::string &get_canonical_basis_id() const;
     std::shared_ptr<const Type> merge(std::shared_ptr<const Type> other) const override;
+    // Create a copy of the basis that has the same kets but new states. Quantum numbers that are
+    // not given are not well-defined, and so are quantum numbers and energies whose value is the
+    // maximum.
+    std::shared_ptr<const Type>
+    get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
+                      energies_t energy_of_states,
+                      quantum_numbers_t quantum_numbers_of_states) const;
 
     int get_ket_index_from_id(size_t ket_id) const;
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type, int q) const;
+    get_matrix_elements(const std::shared_ptr<const Type> &other, OperatorType type, int q) const;
 
 private:
     std::string canonical_basis_id;
     Database &database;
-    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
+    // ket id in database -> ket index
+    map_size_t ket_id_to_ket_index;
 };
 
 extern template class BasisAtom<double>;

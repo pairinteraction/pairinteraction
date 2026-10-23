@@ -23,6 +23,8 @@
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
 #include <numbers>
+#include <optional>
+#include <vector>
 
 namespace pairinteraction {
 
@@ -83,8 +85,8 @@ DOCTEST_TEST_CASE("block-diagonalize a pair Hamiltonian by parities") {
                              .create();
 
     // The pair states can be sorted by the product of parities, but not by the parity of an atom
-    auto sorted_basis =
-        product_basis->sorted(product_basis->get_sorter({SorterType::PRODUCT_OF_PARITIES}));
+    auto sorted_basis = product_basis->get_sorted_copy(
+        product_basis->get_sorter({SorterType::PRODUCT_OF_PARITIES}));
     DOCTEST_CHECK(sorted_basis->get_indices_of_blocks({SorterType::PRODUCT_OF_PARITIES}).size() ==
                   2);
     DOCTEST_CHECK_THROWS_AS(product_basis->get_sorter({SorterType::PARITY}), std::invalid_argument);
@@ -165,7 +167,8 @@ DOCTEST_TEST_CASE("construct a pair Hamiltonian in a non-canonical pair basis") 
     transformation.coeffRef(1, 1) = -inverse_sqrt_two;
     transformation.makeCompressed();
 
-    auto transformed_pair_basis = pair_basis->transformed(transformation);
+    auto transformed_pair_basis = pair_basis->get_modified_copy(
+        pair_basis->get_coefficients() * transformation, std::nullopt, {});
     SystemPair<double> transformed_system(transformed_pair_basis);
     transformed_system.set_distance_vector({0, 0, 3 * UM_IN_ATOMIC_UNITS});
 

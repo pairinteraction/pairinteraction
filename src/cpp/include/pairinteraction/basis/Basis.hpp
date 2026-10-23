@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -28,7 +29,9 @@ enum class SorterType : unsigned char;
  * coefficients. The rows of the coefficient matrix correspond to indices of ket states and
  * the columns to indices of basis vectors.
  * The states are assigned quantum numbers. Similar to a ket, the parity is treated like a
- * normal quantum number.
+ * normal quantum number. A quantum number is either well-defined for all states, in which case
+ * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
+ * either well-defined for all states or for none of them.
  * By which quantum numbers the states can be sorted is defined by the derived class, which has to
  * provide a static sorter_type_to_quantum_number_name member that maps sorter types to names.
  * Using CRPT, it is a base class for specific basis implementations. Its
@@ -47,6 +50,7 @@ public:
     using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
     using quantum_numbers_t = std::unordered_map<std::string, std::vector<real_t>>;
+    using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
     virtual ~Basis() = default;
@@ -60,11 +64,10 @@ public:
     size_t get_number_of_kets() const;
     real_t get_quantum_number(const std::string &name, size_t state_index) const;
     real_t get_energy(size_t state_index) const;
+    const quantum_numbers_t &get_quantum_numbers_of_states() const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
-    std::shared_ptr<const Derived>
-    copy_with_coefficients(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &values) const;
 
     class Iterator {
     public:
@@ -92,30 +95,34 @@ public:
     void get_indices_of_blocks_without_checks(const std::set<SorterType> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
-    std::shared_ptr<const Derived> canonicalized() const;
+    std::shared_ptr<const Derived> get_canonicalized_copy() const;
     bool is_canonical() const;
     virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
-    transformed(const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &transformation,
-                const std::vector<real_t> &energy_of_transformed_states = {}) const;
-    std::shared_ptr<const Derived>
-    sorted(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
+    get_sorted_copy(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 
 protected:
-    Basis(ketvec_t &&kets);
     Basis(ketvec_t &&kets, Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
-          std::vector<real_t> &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
+          energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
+
+    // The states of a canonical basis, i.e., the i-th state is the i-th ket
+    struct StatesData {
+        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
+        energies_t energy_of_states;
+        quantum_numbers_t quantum_numbers_of_states;
+    };
+    static StatesData get_canonical_states(const ketvec_t &kets);
+
     ketvec_t kets;
 
 private:
     const Derived &derived() const;
-    void make_canonical();
     void check_states() const;
     const std::vector<real_t> &get_quantum_numbers_of_states(SorterType label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 
     quantum_numbers_t quantum_numbers_of_states;
-    std::vector<real_t> energy_of_states;
+    energies_t energy_of_states;
 };
 } // namespace pairinteraction

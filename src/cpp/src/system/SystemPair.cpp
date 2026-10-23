@@ -225,7 +225,7 @@ construct_operator_matrices(const GreenTensorInterpolator<Scalar> &green_tensor_
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
                             const std::shared_ptr<const BasisAtom<Scalar>> &basis2) {
     // Helper function for constructing matrices of spherical harmonics operators
-    auto get_matrices = [](auto basis, OperatorType type, std::initializer_list<int> m,
+    auto get_matrices = [](const auto &basis, OperatorType type, std::initializer_list<int> m,
                            bool conjugate) {
         std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrices;
         matrices.reserve(m.size());
@@ -317,7 +317,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<rea
 
 template <typename Scalar>
 SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
-    const std::shared_ptr<const GreenTensorInterpolator<Scalar>> &green_tensor_interpolator) {
+    std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator) {
     this->hamiltonian_requires_construction = true;
 
     if (std::isfinite(distance_vector[0]) && std::isfinite(distance_vector[1]) &&
@@ -326,7 +326,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
             "Cannot set green tensor interpolator if a finite distance vector is set.");
     }
 
-    this->green_tensor_interpolator = green_tensor_interpolator;
+    this->green_tensor_interpolator = std::move(green_tensor_interpolator);
 
     return *this;
 }

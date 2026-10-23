@@ -6,11 +6,20 @@
 #include "pairinteraction/ket/QuantumNumberNotAvailableError.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
+#include <stdexcept>
+
 namespace pairinteraction {
-Ket::Ket(double energy, std::unordered_map<std::string, double> quantum_numbers)
+Ket::Ket(std::optional<double> energy, std::unordered_map<std::string, double> quantum_numbers)
     : energy(energy), quantum_numbers(std::move(quantum_numbers)) {}
 
-double Ket::get_energy() const { return energy; }
+bool Ket::has_energy() const { return energy.has_value(); }
+
+double Ket::get_energy() const {
+    if (!energy.has_value()) {
+        throw std::invalid_argument("The ket does not have a well-defined energy.");
+    }
+    return *energy;
+}
 
 bool Ket::has_quantum_number(const std::string &name) const {
     return quantum_numbers.contains(name);
