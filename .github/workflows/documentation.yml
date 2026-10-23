@@ -49,7 +49,7 @@ jobs:
       uses: ./.github/actions/setup-uv-all-deps
     - name: Setup 2nd virtual environment for other PairInteraction versions
       run: |
-        uv venv tmp_venv --python=python3.11
+        uv venv tmp_venv --python=3.11
         uv pip install --python tmp_venv/bin/python pip
         uv pip install --python .venv/bin/python pip
     - name: Build documentation
@@ -78,9 +78,9 @@ jobs:
     - name: Generate Code Coverage HTML report
       working-directory: build/
       run: |
-        lcov --directory . --capture --output-file coverage.info;
-        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' '*/.venv/*' '*/.local/*' --output-file coverage.info;
-        genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75
+        lcov --directory . --capture --output-file coverage.info --ignore-errors inconsistent;
+        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' '*/.venv/*' '*/.local/*' --output-file coverage.info --ignore-errors inconsistent,unused;
+        genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75 --ignore-errors inconsistent
     - name: Generate Code Coverage Badge
       working-directory: build/
       run: |
@@ -115,7 +115,7 @@ jobs:
       run: |  # sed is a workaround, since genhtml does not support "FN:" lines with end column information
         uv run --no-project coverage lcov -o coverage-orig.info
         sed -E 's/^(FN:)([0-9]+),([0-9]+),(.*)/\1\2,\4/' coverage-orig.info > coverage.info
-        genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75
+        genhtml coverage.info --output-directory docs/coverage/ --rc genhtml_med_limit=50 --rc genhtml_hi_limit=75 --ignore-errors inconsistent
     - name: Generate Code Coverage Badge
       run: |
         uv pip install genbadge[all]
