@@ -10,7 +10,7 @@ RUN apt-get update \
     lcov \
     doxygen pandoc \
     ca-certificates \
-    libgl1 \
+    libgl1 libegl1 libfontconfig1 libdbus-1-3 libglib2.0-0t64 libxkbcommon0 \
     libgraphviz-dev \
     libxkbcommon-x11-0 freeglut3-dev \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
