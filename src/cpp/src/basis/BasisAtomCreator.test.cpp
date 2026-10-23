@@ -366,17 +366,28 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
             std::move(quantum_numbers_of_states));
     };
 
-    // Integers, half-integers, and quantum numbers that are not well-defined are allowed
+    // Integers and half-integers are allowed
     DOCTEST_CHECK_NOTHROW(with_m(-1.5));
     DOCTEST_CHECK_NOTHROW(with_m(2));
-    DOCTEST_CHECK_FALSE(with_m(std::numeric_limits<double>::max())->has_quantum_number("m"));
 
-    // Other values cannot be doubled to an exact integer
+    // Other values cannot be doubled to an exact integer. In particular, there is no value that
+    // marks a quantum number as not well-defined for a single state.
     DOCTEST_CHECK_THROWS_AS(with_m(0.3), std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(with_m(0.5 + 1e-12), std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::quiet_NaN()),
                             std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::infinity()), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::max()), std::invalid_argument);
+
+    // A quantum number must be given for all states
+    auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
+    quantum_numbers_of_states.at("m").pop_back();
+    DOCTEST_CHECK_THROWS_AS(
+        basis->get_modified_copy(
+            basis->get_coefficients(),
+            std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
+            std::move(quantum_numbers_of_states)),
+        std::invalid_argument);
 }
 
 } // namespace pairinteraction
