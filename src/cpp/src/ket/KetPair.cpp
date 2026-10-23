@@ -7,14 +7,15 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
+#include <optional>
 #include <string>
 
 namespace pairinteraction {
 template <typename Scalar>
 KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
-    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy,
-    std::unordered_map<std::string, double> quantum_numbers)
+    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
+    std::optional<real_t> energy, std::unordered_map<std::string, double> quantum_numbers)
     : Ket(energy, std::move(quantum_numbers)), atomic_indices(atomic_indices),
       atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_bases.size()) {

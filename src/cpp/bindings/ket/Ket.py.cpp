@@ -26,7 +26,8 @@ using namespace pairinteraction;
 static void declare_ket(nb::module_ &m) {
     std::string pyclass_name = "Ket";
     nb::class_<Ket> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_energy", &Ket::get_energy)
+    pyclass.def("has_energy", &Ket::has_energy)
+        .def("get_energy", &Ket::get_energy)
         .def("has_quantum_number", &Ket::has_quantum_number)
         .def("get_quantum_number", &Ket::get_quantum_number);
 }

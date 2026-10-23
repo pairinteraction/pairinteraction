@@ -743,6 +743,9 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
         DOCTEST_CHECK(pair_basis->get_number_of_states() ==
                       basis->get_number_of_states() * basis->get_number_of_states());
         DOCTEST_CHECK_FALSE(pair_basis->has_energy());
+        DOCTEST_CHECK_FALSE(pair_basis->get_ket(0)->has_energy());
+        DOCTEST_CHECK_THROWS_AS(pair_basis->get_ket(0)->get_energy(), std::invalid_argument);
+        DOCTEST_CHECK_FALSE(pair_basis->get_canonicalized_copy()->has_energy());
     }
 
     DOCTEST_SUBCASE("the states must be sorted by energy for an energy restriction") {
