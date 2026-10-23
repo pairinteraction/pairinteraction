@@ -55,6 +55,7 @@ public:
     using Type = BasisPair<Scalar>;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
     using quantum_numbers_t = typename Basis<Type>::quantum_numbers_t;
+    using energies_t = typename Basis<Type>::energies_t;
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using range_t = Range<size_t>;
@@ -70,8 +71,7 @@ public:
               std::shared_ptr<const BasisAtom<Scalar>> basis1,
               std::shared_ptr<const BasisAtom<Scalar>> basis2,
               Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
-              std::vector<real_t> &&energy_of_states,
-              quantum_numbers_t &&quantum_numbers_of_states);
+              energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
@@ -82,7 +82,7 @@ public:
     // maximum.
     std::shared_ptr<const Type>
     get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
-                      std::vector<real_t> energy_of_states,
+                      energies_t energy_of_states,
                       quantum_numbers_t quantum_numbers_of_states) const;
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>

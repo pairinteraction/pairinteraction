@@ -6,9 +6,14 @@
 #include "pairinteraction/ket/QuantumNumberNotAvailableError.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
+#include <limits>
+
 namespace pairinteraction {
 Ket::Ket(double energy, std::unordered_map<std::string, double> quantum_numbers)
     : energy(energy), quantum_numbers(std::move(quantum_numbers)) {}
+
+// The maximum marks an energy that is not well-defined
+bool Ket::has_energy() const { return energy != std::numeric_limits<double>::max(); }
 
 double Ket::get_energy() const { return energy; }
 
