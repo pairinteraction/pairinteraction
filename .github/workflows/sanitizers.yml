@@ -24,10 +24,14 @@ jobs:
     # produces false positives so we instead use verify_asan_link_order=0 which
     # in turn might miss some actual positives.
     # https://clang.llvm.org/docs/AddressSanitizer.html
+    # If the ASLR entropy of the kernel is too high for ASan, ASan re-executes the tests with ASLR
+    # disabled. The default seccomp profile of Docker forbids this, so we disable it.
+    # https://github.com/actions/runner-images/issues/9491
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      options: --security-opt seccomp=unconfined
     steps:
     - uses: actions/checkout@v7
     - name: Restore Git LFS from cache
