@@ -348,17 +348,14 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // Assign the quantum numbers to the eigenstates, only the quantum numbers by which the
     // Hamiltonian is block-diagonal are well-defined and shared by all eigenstates of a block
     typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
-    for (const auto &[label, name] : basis_t::sorter_type_to_quantum_number_name) {
+    for (const auto &label : blockdiagonalizing_labels) {
+        const std::string &name = basis_t::sorter_type_to_quantum_number_name.at(label);
         auto &quantum_numbers = quantum_numbers_of_eigenstates[name];
         quantum_numbers.reserve(static_cast<size_t>(num_cols));
-        const bool is_blockdiagonalizing_label =
-            std::find(blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end(), label) !=
-            blockdiagonalizing_labels.end();
         for (size_t idx = 0; idx < blocks.size(); ++idx) {
-            quantum_numbers.insert(
-                quantum_numbers.end(), static_cast<size_t>(eigenvectors_blocks[idx].cols()),
-                is_blockdiagonalizing_label ? basis->get_quantum_number(name, blocks[idx].start)
-                                            : std::numeric_limits<real_t>::max());
+            quantum_numbers.insert(quantum_numbers.end(),
+                                   static_cast<size_t>(eigenvectors_blocks[idx].cols()),
+                                   basis->get_quantum_number(name, blocks[idx].start));
         }
     }
 

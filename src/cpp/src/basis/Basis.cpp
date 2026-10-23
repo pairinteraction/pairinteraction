@@ -113,7 +113,7 @@ void Basis<Derived>::check_states() const {
         throw std::invalid_argument("The number of energies must match the number of states.");
     }
 
-    // Quantum numbers that are not given are not well-defined
+    // A quantum number is either given for all states or not well-defined for the basis
     for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
         check_quantum_number_name<Derived>(name);
         if (quantum_numbers.size() != num_states) {
@@ -122,12 +122,8 @@ void Basis<Derived>::check_states() const {
         }
 
         // The quantum numbers are (half-)integers, so that doubling them yields the exact integers
-        // by which the states are sorted and block-diagonalized. The maximum marks a quantum number
-        // that is not well-defined for the state.
+        // by which the states are sorted and block-diagonalized
         for (real_t quantum_number : quantum_numbers) {
-            if (quantum_number == std::numeric_limits<real_t>::max()) {
-                continue;
-            }
             real_t doubled = 2 * quantum_number;
             if (!std::isfinite(doubled) || doubled != std::round(doubled)) {
                 throw std::invalid_argument("The quantum number " + name +
@@ -146,14 +142,18 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
     states.coefficients.resize(n, n);
     states.coefficients.setIdentity();
 
-    // Assign each state the quantum numbers of the ket it is equal to
-    for (const auto &[label, name] : Derived::sorter_type_to_quantum_number_name) {
+    // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
+    // assigned if all kets have it.
+    for (const auto &entry : Derived::sorter_type_to_quantum_number_name) {
+        const std::string &name = entry.second;
+        if (!std::ranges::all_of(
+                kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
+            continue;
+        }
         auto &quantum_numbers = states.quantum_numbers_of_states[name];
         quantum_numbers.reserve(kets.size());
         for (const auto &ket : kets) {
-            quantum_numbers.push_back(ket->has_quantum_number(name)
-                                          ? static_cast<real_t>(ket->get_quantum_number(name))
-                                          : std::numeric_limits<real_t>::max());
+            quantum_numbers.push_back(static_cast<real_t>(ket->get_quantum_number(name)));
         }
     }
 
@@ -168,13 +168,7 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 
 template <typename Derived>
 bool Basis<Derived>::has_quantum_number(const std::string &name) const {
-    auto it = quantum_numbers_of_states.find(name);
-    if (it == quantum_numbers_of_states.end()) {
-        return false;
-    }
-    return std::none_of(it->second.begin(), it->second.end(), [](real_t quantum_number) {
-        return quantum_number == std::numeric_limits<real_t>::max();
-    });
+    return quantum_numbers_of_states.contains(name);
 }
 
 template <typename Derived>
@@ -223,16 +217,14 @@ Basis<Derived>::get_coefficients() const {
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
                                                                    size_t state_index) const {
-    // A quantum number by which the states are not labeled is not well-defined, just like one whose
-    // value is the maximum
+    // A quantum number by which the states are not labeled is not well-defined
     auto it = quantum_numbers_of_states.find(name);
-    if (it == quantum_numbers_of_states.end() ||
-        it->second.at(state_index) == std::numeric_limits<real_t>::max()) {
+    if (it == quantum_numbers_of_states.end()) {
         check_quantum_number_name<Derived>(name);
         throw std::invalid_argument("The state does not have a well-defined quantum number " +
                                     name + ".");
     }
-    return it->second[state_index];
+    return it->second.at(state_index);
 }
 
 template <typename Derived>
