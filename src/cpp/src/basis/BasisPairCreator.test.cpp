@@ -22,7 +22,6 @@
 #include <array>
 #include <cmath>
 #include <doctest/doctest.h>
-#include <limits>
 #include <optional>
 #include <unordered_map>
 #include <utility>
@@ -436,11 +435,8 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
 
         auto symmetrized_coefficients =
             build_manually_symmetrized_coefficients(canonical_basis, std::nullopt, -1);
-        auto expected_basis = canonical_basis->get_modified_copy(
-            symmetrized_coefficients,
-            std::vector<double>(static_cast<size_t>(symmetrized_coefficients.cols()),
-                                std::numeric_limits<double>::max()),
-            {});
+        auto expected_basis =
+            canonical_basis->get_modified_copy(symmetrized_coefficients, std::nullopt, {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -467,11 +463,8 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture, "create a symmetrized Bas
 
         auto symmetrized_coefficients =
             build_manually_symmetrized_coefficients(canonical_basis, -1, std::nullopt);
-        auto expected_basis = canonical_basis->get_modified_copy(
-            symmetrized_coefficients,
-            std::vector<double>(static_cast<size_t>(symmetrized_coefficients.cols()),
-                                std::numeric_limits<double>::max()),
-            {});
+        auto expected_basis =
+            canonical_basis->get_modified_copy(symmetrized_coefficients, std::nullopt, {});
 
         check_same_pair_eigenenergies(symmetrized_basis, expected_basis, diagonalizer);
         DOCTEST_CHECK(symmetrized_basis->get_number_of_states() <
@@ -738,9 +731,7 @@ DOCTEST_TEST_CASE("BasisPairCreator checks the energies of the BasisAtom") {
 
     DOCTEST_SUBCASE("the states must have well-defined energies for an energy restriction") {
         auto basis_without_energies = basis->get_modified_copy(
-            basis->get_coefficients(),
-            std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
-            basis->get_quantum_numbers_of_states());
+            basis->get_coefficients(), std::nullopt, basis->get_quantum_numbers_of_states());
         DOCTEST_CHECK_THROWS_WITH_AS(BasisPairCreator<double>(basis, basis_without_energies)
                                          .restrict_energy(min_energy, max_energy)
                                          .create(),

@@ -28,6 +28,7 @@ public:
     Ket() = delete;
     virtual ~Ket() = default;
 
+    bool has_energy() const;
     double get_energy() const;
     bool has_quantum_number(const std::string &name) const;
     double get_quantum_number(const std::string &name) const;

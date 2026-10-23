@@ -11,6 +11,7 @@
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -29,7 +30,8 @@ enum class SorterType : unsigned char;
  * the columns to indices of basis vectors.
  * The states are assigned quantum numbers. Similar to a ket, the parity is treated like a
  * normal quantum number. A quantum number is either well-defined for all states, in which case
- * each state is assigned a value, or it is not assigned to any state.
+ * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
+ * either well-defined for all states or for none of them.
  * By which quantum numbers the states can be sorted is defined by the derived class, which has to
  * provide a static sorter_type_to_quantum_number_name member that maps sorter types to names.
  * Using CRPT, it is a base class for specific basis implementations. Its
@@ -48,6 +50,7 @@ public:
     using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
     using quantum_numbers_t = std::unordered_map<std::string, std::vector<real_t>>;
+    using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
     virtual ~Basis() = default;
@@ -100,12 +103,12 @@ public:
 
 protected:
     Basis(ketvec_t &&kets, Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
-          std::vector<real_t> &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
+          energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
 
     // The states of a canonical basis, i.e., the i-th state is the i-th ket
     struct StatesData {
         Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
-        std::vector<real_t> energy_of_states;
+        energies_t energy_of_states;
         quantum_numbers_t quantum_numbers_of_states;
     };
     static StatesData get_canonical_states(const ketvec_t &kets);
@@ -120,6 +123,6 @@ private:
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 
     quantum_numbers_t quantum_numbers_of_states;
-    std::vector<real_t> energy_of_states;
+    energies_t energy_of_states;
 };
 } // namespace pairinteraction

@@ -38,7 +38,7 @@ System<Derived>::System(std::shared_ptr<const basis_t> basis)
              static_cast<Eigen::Index>(this->basis->get_number_of_states())) {
     // The unperturbed Hamiltonian is constructed from the energies of the kets
     for (const auto &ket : this->basis->get_kets()) {
-        if (static_cast<real_t>(ket->get_energy()) == std::numeric_limits<real_t>::max()) {
+        if (!ket->has_energy()) {
             throw std::invalid_argument("The kets of the basis do not have a well-defined energy.");
         }
     }
