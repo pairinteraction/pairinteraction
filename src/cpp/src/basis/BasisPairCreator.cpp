@@ -72,7 +72,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     // Sorting is required for the binary search of the energetically allowed range
     if (range_energy.is_finite() &&
-        (!basis1->is_sorted_by_energy() || !basis2->is_sorted_by_energy())) {
+        (!basis1->has_energy() || !basis2->has_energy() || !basis1->is_sorted_by_energy() ||
+         !basis2->is_sorted_by_energy())) {
         throw std::invalid_argument(
             "The energy can only be restricted if the states of the BasisAtom have well-defined "
             "energies and are sorted by energy. Consider using the eigenbasis of a diagonalized "
