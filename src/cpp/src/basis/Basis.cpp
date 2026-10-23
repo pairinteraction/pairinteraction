@@ -89,8 +89,7 @@ void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_la
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
-                      std::vector<real_t> &&energy_of_states,
-                      quantum_numbers_t &&quantum_numbers_of_states)
+                      energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states)
     : kets(std::move(kets)), coefficients(std::move(coefficients)),
       quantum_numbers_of_states(std::move(quantum_numbers_of_states)),
       energy_of_states(std::move(energy_of_states)) {
@@ -104,13 +103,26 @@ template <typename Derived>
 void Basis<Derived>::check_states() const {
     auto num_states = static_cast<size_t>(coefficients.cols());
 
+    // Neither infinite values nor the maximum value are accepted as energies or quantum numbers,
+    // so that no value can be mistaken for marking an energy or quantum number as not well-defined
+    auto is_valid_value = [](real_t value) {
+        return std::isfinite(value) && std::abs(value) < std::numeric_limits<real_t>::max();
+    };
+
     if (static_cast<size_t>(coefficients.rows()) != kets.size()) {
         throw std::invalid_argument(
             "The number of rows of the coefficient matrix must match the number of kets.");
     }
 
-    if (energy_of_states.size() != num_states) {
-        throw std::invalid_argument("The number of energies must match the number of states.");
+    // The energy is either given for all states or not well-defined for the basis
+    if (energy_of_states.has_value()) {
+        if (energy_of_states->size() != num_states) {
+            throw std::invalid_argument("The number of energies must match the number of states.");
+        }
+        if (!std::ranges::all_of(*energy_of_states, is_valid_value)) {
+            throw std::invalid_argument(
+                "The energies of the states must be finite and smaller than the maximum value.");
+        }
     }
 
     // A quantum number is either given for all states or not well-defined for the basis
@@ -125,7 +137,8 @@ void Basis<Derived>::check_states() const {
         // by which the states are sorted and block-diagonalized
         for (real_t quantum_number : quantum_numbers) {
             real_t doubled = 2 * quantum_number;
-            if (!std::isfinite(doubled) || doubled != std::round(doubled)) {
+            if (!is_valid_value(quantum_number) || !std::isfinite(doubled) ||
+                doubled != std::round(doubled)) {
                 throw std::invalid_argument("The quantum number " + name +
                                             " must be an integer or a half-integer.");
             }
@@ -157,10 +170,14 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
         }
     }
 
-    // Assign each state the energy of the ket it is equal to
-    states.energy_of_states.reserve(kets.size());
-    for (const auto &ket : kets) {
-        states.energy_of_states.push_back(static_cast<real_t>(ket->get_energy()));
+    // Assign each state the energy of the ket it is equal to. The energy is only assigned if all
+    // kets have it.
+    if (std::ranges::all_of(kets, [](const auto &ket) { return ket->has_energy(); })) {
+        auto &energies = states.energy_of_states.emplace();
+        energies.reserve(kets.size());
+        for (const auto &ket : kets) {
+            energies.push_back(static_cast<real_t>(ket->get_energy()));
+        }
     }
 
     return states;
@@ -173,13 +190,12 @@ bool Basis<Derived>::has_quantum_number(const std::string &name) const {
 
 template <typename Derived>
 bool Basis<Derived>::has_energy() const {
-    return std::none_of(energy_of_states.begin(), energy_of_states.end(),
-                        [](real_t energy) { return energy == std::numeric_limits<real_t>::max(); });
+    return energy_of_states.has_value();
 }
 
 template <typename Derived>
 bool Basis<Derived>::is_sorted_by_energy() const {
-    return has_energy() && std::is_sorted(energy_of_states.begin(), energy_of_states.end());
+    return has_energy() && std::ranges::is_sorted(*energy_of_states);
 }
 
 template <typename Derived>
@@ -229,11 +245,10 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::st
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t state_index) const {
-    real_t energy = energy_of_states.at(state_index);
-    if (energy == std::numeric_limits<real_t>::max()) {
+    if (!has_energy()) {
         throw std::invalid_argument("The state does not have a well-defined energy.");
     }
-    return energy;
+    return energy_of_states->at(state_index);
 }
 
 template <typename Derived>
@@ -251,8 +266,11 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
         quantum_numbers_of_state[name] = {quantum_numbers[state_index]};
     }
-    return derived().get_modified_copy(std::move(coefficients_of_state),
-                                       {energy_of_states.at(state_index)},
+    energies_t energy_of_state;
+    if (has_energy()) {
+        energy_of_state.emplace({energy_of_states->at(state_index)});
+    }
+    return derived().get_modified_copy(std::move(coefficients_of_state), std::move(energy_of_state),
                                        std::move(quantum_numbers_of_state));
 }
 
@@ -450,9 +468,11 @@ std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
             sorted_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];
         }
     }
-    result->energy_of_states.resize(sorter.size());
-    for (int i = 0; i < sorter.size(); ++i) {
-        result->energy_of_states[i] = energy_of_states[sorter.indices()[i]];
+    if (has_energy()) {
+        auto &sorted_energies = *result->energy_of_states;
+        for (int i = 0; i < sorter.size(); ++i) {
+            sorted_energies[i] = (*energy_of_states)[sorter.indices()[i]];
+        }
     }
 
     return result;

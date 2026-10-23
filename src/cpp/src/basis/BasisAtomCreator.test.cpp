@@ -15,6 +15,7 @@
 #include <cmath>
 #include <doctest/doctest.h>
 #include <limits>
+#include <optional>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -142,17 +143,13 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
     }
     identity_with_zeros.makeCompressed();
     DOCTEST_CHECK(identity_with_zeros.nonZeros() > dim);
-    std::vector<double> undefined_energies(basis->get_number_of_states(),
-                                           std::numeric_limits<double>::max());
-    DOCTEST_CHECK(
-        basis->get_modified_copy(identity_with_zeros, undefined_energies, {})->is_canonical());
+    DOCTEST_CHECK(basis->get_modified_copy(identity_with_zeros, std::nullopt, {})->is_canonical());
 
     // A basis whose states are a non-trivial superposition of kets is not canonical
     Eigen::SparseMatrix<double, Eigen::RowMajor> non_identity(dim, dim);
     non_identity.setIdentity();
     non_identity.coeffRef(0, 0) = 0.5;
-    DOCTEST_CHECK_FALSE(
-        basis->get_modified_copy(non_identity, undefined_energies, {})->is_canonical());
+    DOCTEST_CHECK_FALSE(basis->get_modified_copy(non_identity, std::nullopt, {})->is_canonical());
 
     // Sorting the basis makes it non-canonical
     auto sorted = basis->get_sorted_copy(basis->get_sorter({SorterType::PARITY}));
@@ -193,9 +190,7 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     auto dim = static_cast<long>(basis->get_number_of_states());
     Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
     identity.setIdentity();
-    auto unlabeled = basis->get_modified_copy(
-        identity,
-        std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()), {});
+    auto unlabeled = basis->get_modified_copy(identity, std::nullopt, {});
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::PARITY}),
                             std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_F}),
@@ -336,17 +331,28 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     for (size_t i = 0; i < energies.size(); ++i) {
         DOCTEST_CHECK(with_energies->get_energy(i) == energies[i]);
     }
-    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), {energies[0]},
+    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(),
+                                                     std::vector<double>{energies[0]},
                                                      basis->get_quantum_numbers_of_states()),
                             std::invalid_argument);
 
-    // Energies whose value is the maximum are not well-defined
-    auto copied = basis->get_modified_copy(
-        basis->get_coefficients(),
-        std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
-        basis->get_quantum_numbers_of_states());
+    // Energies that are not given are not well-defined
+    auto copied = basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                           basis->get_quantum_numbers_of_states());
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->has_energy());
+    DOCTEST_CHECK_FALSE(copied->is_sorted_by_energy());
+    DOCTEST_CHECK_FALSE(copied->get_state(0)->has_energy());
+
+    // Energies that are given must be finite and smaller than the maximum value
+    for (double invalid_energy :
+         {std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::infinity(),
+          std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest()}) {
+        energies[0] = invalid_energy;
+        DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), energies,
+                                                         basis->get_quantum_numbers_of_states()),
+                                std::invalid_argument);
+    }
 }
 
 DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers") {
@@ -360,10 +366,8 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
     auto with_m = [&](double first_m) {
         auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
         quantum_numbers_of_states.at("m")[0] = first_m;
-        return basis->get_modified_copy(
-            basis->get_coefficients(),
-            std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
-            std::move(quantum_numbers_of_states));
+        return basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                        std::move(quantum_numbers_of_states));
     };
 
     // Integers and half-integers are allowed
@@ -378,16 +382,14 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
                             std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::infinity()), std::invalid_argument);
     DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::max()), std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(with_m(std::numeric_limits<double>::lowest()), std::invalid_argument);
 
     // A quantum number must be given for all states
     auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
     quantum_numbers_of_states.at("m").pop_back();
-    DOCTEST_CHECK_THROWS_AS(
-        basis->get_modified_copy(
-            basis->get_coefficients(),
-            std::vector<double>(basis->get_number_of_states(), std::numeric_limits<double>::max()),
-            std::move(quantum_numbers_of_states)),
-        std::invalid_argument);
+    DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
+                                                     std::move(quantum_numbers_of_states)),
+                            std::invalid_argument);
 }
 
 } // namespace pairinteraction

@@ -36,7 +36,7 @@ BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
                              std::shared_ptr<const BasisAtom<Scalar>> basis1,
                              std::shared_ptr<const BasisAtom<Scalar>> basis2,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
-                             std::vector<real_t> &&energy_of_states,
+                             energies_t &&energy_of_states,
                              quantum_numbers_t &&quantum_numbers_of_states)
     : Basis<BasisPair<Scalar>>(std::move(kets), std::move(coefficients),
                                std::move(energy_of_states), std::move(quantum_numbers_of_states)),
@@ -47,7 +47,7 @@ BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
 template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>>
 BasisPair<Scalar>::get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
-                                     std::vector<real_t> energy_of_states,
+                                     energies_t energy_of_states,
                                      quantum_numbers_t quantum_numbers_of_states) const {
     return std::make_shared<const Type>(
         Private(), ketvec_t(this->kets), map_range_t(state_index1_to_state_index_range2),
