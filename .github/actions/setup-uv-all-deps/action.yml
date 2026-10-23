@@ -17,6 +17,10 @@ runs:
         cache-dependency-glob: |
           ./pyproject.toml
 
+    - name: Prefer Python installations managed by uv
+      shell: bash
+      run: echo "UV_PYTHON_PREFERENCE=only-managed" >> "$GITHUB_ENV"
+
     - name: Install all Python dependencies into a virtual environment
       shell: bash
       run: uv sync --no-install-project --group dev  # always install all development dependencies, this simplifies caching
