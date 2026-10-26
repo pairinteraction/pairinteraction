@@ -69,6 +69,8 @@ jobs:
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
       run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
+      env:
+        HOMEBREW_DOWNLOAD_CONCURRENCY: 1  # parallel downloads can fail
 
     - name: Install Windows dependencies
       if: runner.os == 'Windows'

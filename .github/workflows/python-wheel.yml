@@ -66,6 +66,8 @@ jobs:
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
       run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
+      env:
+        HOMEBREW_DOWNLOAD_CONCURRENCY: 1  # parallel downloads can fail
 
     - name: Install uv
       uses: astral-sh/setup-uv@v10.3.0
@@ -138,6 +140,8 @@ jobs:
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
       run: brew install --force-bottle spdlog nlohmann-json eigen tbb lapack fmt
+      env:
+        HOMEBREW_DOWNLOAD_CONCURRENCY: 1  # parallel downloads can fail
 
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
