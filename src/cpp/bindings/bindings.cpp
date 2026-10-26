@@ -14,6 +14,7 @@
 #include "./paths.py.hpp"
 #include "./system/System.py.hpp"
 #include "./tools/run_unit_tests.py.hpp"
+#include "./utils/sorting.py.hpp"
 #include "./version.py.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
 
@@ -49,6 +50,9 @@ NB_MODULE(_backend, m) // NOLINT
     bind_operator_type(m);
     bind_sorter_type(m);
     bind_float_type(m);
+
+    // utils
+    bind_sorting(m);
 
     // interfaces
     bind_diagonalizer_interface(m);

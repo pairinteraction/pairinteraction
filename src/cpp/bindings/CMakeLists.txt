@@ -35,6 +35,8 @@ nanobind_add_module(
   system/System.py.cpp
   tools/run_unit_tests.py.hpp
   tools/run_unit_tests.py.cpp
+  utils/sorting.py.hpp
+  utils/sorting.py.cpp
   bindings.cpp
   LoggerBridge.cpp
   LoggerBridge.hpp
