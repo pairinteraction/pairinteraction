@@ -67,8 +67,10 @@ if(WITH_COVERAGE)
       "Debug"
       CACHE STRING "Choose the build type" FORCE)
   add_library(coverage::gcov INTERFACE IMPORTED)
-  target_compile_options(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs
-                                                  -ftest-coverage>)
+  # The counters are updated atomically, otherwise multithreaded code yields wrong (e.g., negative) counts
+  target_compile_options(
+    coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage
+                             -fprofile-update=atomic>)
   target_link_libraries(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:gcov>)
 endif()
 
