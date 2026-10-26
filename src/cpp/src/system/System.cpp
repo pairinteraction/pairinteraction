@@ -49,7 +49,7 @@ void System<Derived>::ensure_hamiltonian_constructed() const {
     if (!hamiltonian_requires_construction) {
         return;
     }
-    construct_hamiltonian();
+    static_cast<const Derived *>(this)->construct_hamiltonian();
     hamiltonian_requires_construction = false;
 }
 

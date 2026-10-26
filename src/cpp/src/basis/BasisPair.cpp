@@ -82,7 +82,7 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t stat
 
 template <typename Scalar>
 std::shared_ptr<const typename BasisPair<Scalar>::Type>
-BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
+BasisPair<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
     if (basis1 != other->basis1 || basis2 != other->basis2) {
         throw std::invalid_argument(
             "Cannot merge two pair bases whose underlying atomic bases are not identical objects. "

@@ -9,7 +9,6 @@
 #include "./enums/OperatorType.py.hpp"
 #include "./enums/SorterType.py.hpp"
 #include "./interfaces/DiagonalizerInterface.py.hpp"
-#include "./interfaces/SorterBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
 #include "./paths.py.hpp"
 #include "./system/System.py.hpp"
@@ -56,7 +55,6 @@ NB_MODULE(_backend, m) // NOLINT
 
     // interfaces
     bind_diagonalizer_interface(m);
-    bind_sorter_builder_interface(m);
 
     // database
     bind_database(m);

@@ -77,7 +77,7 @@ public:
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
     int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
-    std::shared_ptr<const Type> merge(std::shared_ptr<const Type> other) const override;
+    std::shared_ptr<const Type> merge(const std::shared_ptr<const Type> &other) const;
     // Create a copy of the basis that has the same kets but new states. Quantum numbers that are
     // not given are not well-defined for the states, and so is the energy if it is not given.
     // Given energies must be finite and given quantum numbers must be integers or half-integers;

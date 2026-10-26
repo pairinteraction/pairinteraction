@@ -34,6 +34,8 @@ struct traits::CrtpTraits<SystemAtom<Scalar>> {
 
 template <typename Scalar>
 class SystemAtom : public System<SystemAtom<Scalar>> {
+    friend class System<SystemAtom<Scalar>>;
+
 public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
@@ -61,7 +63,7 @@ private:
     int ion_interaction_order{3};
     std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
-    void construct_hamiltonian() const override;
+    void construct_hamiltonian() const;
 };
 
 extern template class SystemAtom<double>;

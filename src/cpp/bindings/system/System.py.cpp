@@ -33,7 +33,7 @@ static void declare_system(nb::module_ &m, const std::string &type_name) {
 
     std::string pyclass_name = "System" + type_name;
 
-    nb::class_<System<T>, SorterBuilderInterface> pyclass(m, pyclass_name.c_str());
+    nb::class_<System<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_basis", &S::get_basis, nb::call_guard<nb::gil_scoped_release>())
         .def("get_eigenbasis", &S::get_eigenbasis, nb::call_guard<nb::gil_scoped_release>())
         .def("get_eigenenergies", &S::get_eigenenergies, nb::call_guard<nb::gil_scoped_release>())

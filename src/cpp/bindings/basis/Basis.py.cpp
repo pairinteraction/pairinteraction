@@ -9,7 +9,6 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/interfaces/SorterBuilderInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 
@@ -29,7 +28,7 @@ using namespace pairinteraction;
 template <typename T>
 static void declare_basis(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "Basis" + type_name;
-    nb::class_<Basis<T>, SorterBuilderInterface> pyclass(m, pyclass_name.c_str());
+    nb::class_<Basis<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_kets", &Basis<T>::get_kets)
         .def("get_ket", &Basis<T>::get_ket)
         .def("get_state", &Basis<T>::get_state)
@@ -55,7 +54,9 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_sorted_copy", &Basis<T>::get_sorted_copy)
         .def("get_canonicalized_copy", &Basis<T>::get_canonicalized_copy)
         .def("is_canonical", &Basis<T>::is_canonical)
-        .def("merge", &Basis<T>::merge);
+        .def("merge", [](const Basis<T> &self, const std::shared_ptr<const T> &other) {
+            return static_cast<const T &>(self).merge(other);
+        });
 }
 
 template <typename T>

@@ -70,7 +70,7 @@ const std::string &BasisAtom<Scalar>::get_canonical_basis_id() const {
 
 template <typename Scalar>
 std::shared_ptr<const typename BasisAtom<Scalar>::Type>
-BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
+BasisAtom<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
     if (&database != &other->database) {
         throw std::invalid_argument("Cannot merge atomic bases from different Database instances.");
     }

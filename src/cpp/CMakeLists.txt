@@ -23,7 +23,6 @@ add_library(
   ./include/pairinteraction/enums/OperatorType.hpp
   ./include/pairinteraction/enums/SorterType.hpp
   ./include/pairinteraction/interfaces/DiagonalizerInterface.hpp
-  ./include/pairinteraction/interfaces/SorterBuilderInterface.hpp
   ./include/pairinteraction/ket/Ket.hpp
   ./include/pairinteraction/ket/KetAtom.hpp
   ./include/pairinteraction/ket/KetAtomCreator.hpp

@@ -66,7 +66,7 @@ public:
     Database &get_database() const;
     const std::string &get_species() const;
     const std::string &get_canonical_basis_id() const;
-    std::shared_ptr<const Type> merge(std::shared_ptr<const Type> other) const override;
+    std::shared_ptr<const Type> merge(const std::shared_ptr<const Type> &other) const;
     // Create a copy of the basis that has the same kets but new states. Quantum numbers that are
     // not given are not well-defined for the states, and so is the energy if it is not given.
     // Given energies must be finite and given quantum numbers must be integers or half-integers;

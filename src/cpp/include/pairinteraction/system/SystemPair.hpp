@@ -41,6 +41,8 @@ struct traits::CrtpTraits<SystemPair<Scalar>> {
 
 template <typename Scalar>
 class SystemPair : public System<SystemPair<Scalar>> {
+    friend class System<SystemPair<Scalar>>;
+
 public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
@@ -60,7 +62,7 @@ private:
     std::array<real_t, 3> distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
     std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
-    void construct_hamiltonian() const override;
+    void construct_hamiltonian() const;
 };
 
 extern template class SystemPair<double>;

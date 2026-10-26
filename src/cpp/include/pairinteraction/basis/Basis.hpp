@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "pairinteraction/interfaces/SorterBuilderInterface.hpp"
+#include "pairinteraction/utils/IndicesOfBlocks.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -43,7 +43,7 @@ enum class SorterType : unsigned char;
  */
 
 template <typename Derived>
-class Basis : public SorterBuilderInterface {
+class Basis {
 public:
     using scalar_t = typename traits::CrtpTraits<Derived>::scalar_t;
     using real_t = typename traits::CrtpTraits<Derived>::real_t;
@@ -53,7 +53,6 @@ public:
     using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
-    virtual ~Basis() = default;
 
     bool has_quantum_number(const std::string &name) const;
     bool has_energy() const;
@@ -84,9 +83,8 @@ public:
     Iterator end() const;
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    get_sorter(const std::vector<SorterType> &labels) const override;
-    std::vector<IndicesOfBlock>
-    get_indices_of_blocks(const std::vector<SorterType> &labels) const override;
+    get_sorter(const std::vector<SorterType> &labels) const;
+    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<SorterType> &labels) const;
 
     void perform_blocks_checks(const std::set<SorterType> &unique_labels) const;
     void get_sorter_without_checks(
@@ -97,7 +95,6 @@ public:
 
     std::shared_ptr<const Derived> get_canonicalized_copy() const;
     bool is_canonical() const;
-    virtual std::shared_ptr<const Derived> merge(std::shared_ptr<const Derived> other) const = 0;
     std::shared_ptr<const Derived>
     get_sorted_copy(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 
