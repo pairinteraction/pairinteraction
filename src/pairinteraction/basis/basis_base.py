@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 import numpy as np
+from typing_extensions import deprecated
 
 from pairinteraction.state.state_base import get_index_with_largest_overlap
 
@@ -121,7 +122,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def get_corresponding_ket_index(self, state: StateType) -> int:
         """Return the index of the ket of the basis with the maximal overlap with the given state."""
-        canonical_basis = self.canonicalized()
+        canonical_basis = self.get_canonicalized_copy()
         overlaps = canonical_basis.get_overlaps(state)
         err_msg = "ket for the given state in the basis"
         return get_index_with_largest_overlap(overlaps, err_msg=err_msg)
@@ -136,9 +137,13 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         err_msg = "state for the given ket in the basis"
         return get_index_with_largest_overlap(overlaps, err_msg=err_msg)
 
-    def canonicalized(self: Self) -> Self:
+    def get_canonicalized_copy(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
         return type(self)._from_cpp_object(self._cpp.get_canonicalized_copy(), *self._from_cpp_object_additional_args())
+
+    @deprecated("canonicalized is deprecated, use get_canonicalized_copy instead.")
+    def canonicalized(self: Self) -> Self:
+        return self.get_canonicalized_copy()
 
     @property
     def is_canonical(self) -> bool:
