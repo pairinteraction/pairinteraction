@@ -30,9 +30,9 @@ const std::map<SorterType, std::string> BasisPair<Scalar>::sorter_type_to_quantu
 };
 
 template <typename Scalar>
-BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
-                             map_range_t &&state_index1_to_state_index_range2,
-                             map_indices_t &&state_indices_to_ket_index,
+BasisPair<Scalar>::BasisPair(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
+                             std::shared_ptr<const map_range_t> state_index1_to_state_index_range2,
+                             std::shared_ptr<const map_indices_t> state_indices_to_ket_index,
                              std::shared_ptr<const BasisAtom<Scalar>> basis1,
                              std::shared_ptr<const BasisAtom<Scalar>> basis2,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
@@ -49,16 +49,16 @@ std::shared_ptr<const BasisPair<Scalar>>
 BasisPair<Scalar>::get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients,
                                      energies_t energy_of_states,
                                      quantum_numbers_t quantum_numbers_of_states) const {
-    return std::make_shared<const Type>(
-        Private(), ketvec_t(this->kets), map_range_t(state_index1_to_state_index_range2),
-        map_indices_t(state_indices_to_ket_index), basis1, basis2, std::move(coefficients),
-        std::move(energy_of_states), std::move(quantum_numbers_of_states));
+    return std::make_shared<const Type>(Private(), this->kets, state_index1_to_state_index_range2,
+                                        state_indices_to_ket_index, basis1, basis2,
+                                        std::move(coefficients), std::move(energy_of_states),
+                                        std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>
 const typename BasisPair<Scalar>::range_t &
 BasisPair<Scalar>::get_index_range(size_t state_index1) const {
-    return state_index1_to_state_index_range2.at(state_index1);
+    return state_index1_to_state_index_range2->at(state_index1);
 }
 
 template <typename Scalar>
@@ -73,10 +73,11 @@ std::shared_ptr<const BasisAtom<Scalar>> BasisPair<Scalar>::get_basis2() const {
 
 template <typename Scalar>
 int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const {
-    if (!state_indices_to_ket_index.contains({state_index1, state_index2})) {
+    auto it = state_indices_to_ket_index->find({state_index1, state_index2});
+    if (it == state_indices_to_ket_index->end()) {
         return -1;
     }
-    return state_indices_to_ket_index.at({state_index1, state_index2});
+    return static_cast<int>(it->second);
 }
 
 template <typename Scalar>
@@ -96,20 +97,20 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
 
     std::map<std::vector<size_t>, std::shared_ptr<const ket_t>> ket_by_state_indices;
     for (const auto &basis : {this, other.get()}) {
-        for (const auto &[state_indices, ket_index] : basis->state_indices_to_ket_index) {
+        for (const auto &[state_indices, ket_index] : *basis->state_indices_to_ket_index) {
             if (!ket_by_state_indices.contains(state_indices)) {
-                ket_by_state_indices.emplace(state_indices, basis->kets.at(ket_index));
+                ket_by_state_indices.emplace(state_indices, basis->get_kets().at(ket_index));
             }
         }
     }
 
-    ketvec_t merged_kets;
-    merged_kets.reserve(ket_by_state_indices.size());
-    map_indices_t merged_state_indices;
-    merged_state_indices.reserve(ket_by_state_indices.size());
+    auto merged_kets = std::make_shared<ketvec_t>();
+    merged_kets->reserve(ket_by_state_indices.size());
+    auto merged_state_indices = std::make_shared<map_indices_t>();
+    merged_state_indices->reserve(ket_by_state_indices.size());
     for (const auto &[state_indices, ket] : ket_by_state_indices) {
-        merged_state_indices.try_emplace(state_indices, merged_kets.size());
-        merged_kets.push_back(ket);
+        merged_state_indices->try_emplace(state_indices, merged_kets->size());
+        merged_kets->push_back(ket);
     }
 
     const size_t number_of_states1 = basis1->get_number_of_states();
@@ -117,7 +118,7 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
     std::vector<size_t> minimum_indices2(number_of_states1, number_of_states2);
     std::vector<size_t> maximum_indices2(number_of_states1, 0);
     std::vector<bool> has_index(number_of_states1, false);
-    for (const auto &[state_indices, ket_index] : merged_state_indices) {
+    for (const auto &[state_indices, ket_index] : *merged_state_indices) {
         static_cast<void>(ket_index);
         const size_t state_index1 = state_indices[0];
         const size_t state_index2 = state_indices[1];
@@ -126,21 +127,21 @@ BasisPair<Scalar>::merge(std::shared_ptr<const Type> other) const {
         has_index[state_index1] = true;
     }
 
-    map_range_t merged_ranges;
-    merged_ranges.reserve(number_of_states1);
+    auto merged_ranges = std::make_shared<map_range_t>();
+    merged_ranges->reserve(number_of_states1);
     for (size_t state_index1 = 0; state_index1 < number_of_states1; ++state_index1) {
         if (has_index[state_index1]) {
-            merged_ranges.try_emplace(
+            merged_ranges->try_emplace(
                 state_index1,
                 range_t(minimum_indices2[state_index1], maximum_indices2[state_index1] + 1));
         } else {
-            merged_ranges.try_emplace(state_index1, range_t(0, 0));
+            merged_ranges->try_emplace(state_index1, range_t(0, 0));
         }
     }
 
     // The merged basis is canonical, i.e., the i-th state is the i-th ket
     auto [coefficients, energy_of_states, quantum_numbers_of_states] =
-        this->get_canonical_states(merged_kets);
+        this->get_canonical_states(*merged_kets);
     return std::make_shared<const Type>(Private(), std::move(merged_kets), std::move(merged_ranges),
                                         std::move(merged_state_indices), basis1, basis2,
                                         std::move(coefficients), std::move(energy_of_states),

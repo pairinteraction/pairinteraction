@@ -58,7 +58,8 @@ public:
 
     static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
+    BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
+              std::shared_ptr<const map_size_t> ket_id_to_ket_index,
               std::string &&canonical_basis_id, Database &database,
               Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
               energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
@@ -83,8 +84,8 @@ public:
 private:
     std::string canonical_basis_id;
     Database &database;
-    // ket id in database -> ket index
-    map_size_t ket_id_to_ket_index;
+    // ket id in database -> ket index, shared like the kets
+    std::shared_ptr<const map_size_t> ket_id_to_ket_index;
 };
 
 extern template class BasisAtom<double>;

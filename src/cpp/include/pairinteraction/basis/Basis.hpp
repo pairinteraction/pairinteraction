@@ -102,7 +102,8 @@ public:
     get_sorted_copy(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
 
 protected:
-    Basis(ketvec_t &&kets, Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
+    Basis(std::shared_ptr<const ketvec_t> kets,
+          Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
           energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states);
 
     // The states of a canonical basis, i.e., the i-th state is the i-th ket
@@ -113,7 +114,8 @@ protected:
     };
     static StatesData get_canonical_states(const ketvec_t &kets);
 
-    ketvec_t kets;
+    // The kets are immutable and thus shared between copies of the basis that differ in the states
+    std::shared_ptr<const ketvec_t> kets;
 
 private:
     const Derived &derived() const;

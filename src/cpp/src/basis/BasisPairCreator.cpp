@@ -113,17 +113,17 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     using quantum_numbers_of_state_t = std::unordered_map<std::string, double>;
 
-    ketvec_t kets;
-    typename basis_t::map_range_t state_index1_to_state_index_range2;
-    state_index1_to_state_index_range2.reserve(basis1->get_number_of_states());
-    typename basis_t::map_indices_t state_indices_to_ket_index;
+    auto kets = std::make_shared<ketvec_t>();
+    auto state_index1_to_state_index_range2 = std::make_shared<typename basis_t::map_range_t>();
+    state_index1_to_state_index_range2->reserve(basis1->get_number_of_states());
+    auto state_indices_to_ket_index = std::make_shared<typename basis_t::map_indices_t>();
 
     auto add_ket = [&](size_t first_index, size_t second_index, std::optional<real_t> energy,
                        const quantum_numbers_of_state_t &quantum_numbers) {
-        auto ket_index = static_cast<Eigen::Index>(kets.size());
-        state_indices_to_ket_index.try_emplace(std::vector<size_t>{first_index, second_index},
-                                               kets.size());
-        kets.emplace_back(std::make_shared<ket_t>(
+        auto ket_index = static_cast<Eigen::Index>(kets->size());
+        state_indices_to_ket_index->try_emplace(std::vector<size_t>{first_index, second_index},
+                                                kets->size());
+        kets->emplace_back(std::make_shared<ket_t>(
             typename ket_t::Private(), std::initializer_list<size_t>{first_index, second_index},
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2}, energy,
             quantum_numbers));
@@ -222,7 +222,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                     return energy1 + energy2 <= range_energy.max();
                 }));
         }
-        state_index1_to_state_index_range2.try_emplace(idx1, typename basis_t::range_t(min, max));
+        state_index1_to_state_index_range2->try_emplace(idx1, typename basis_t::range_t(min, max));
 
         // If symmetrizing, the kets |a, b> and |b, a> are handled together for a <= b
         if (symmetrization_enabled) {
@@ -290,10 +290,10 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             }
         }
     }
-    kets.shrink_to_fit();
+    kets->shrink_to_fit();
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients(
-        static_cast<Eigen::Index>(kets.size()), num_states);
+        static_cast<Eigen::Index>(kets->size()), num_states);
     coefficients.setFromTriplets(triplets.begin(), triplets.end());
 
     return std::make_shared<const basis_t>(

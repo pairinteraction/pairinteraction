@@ -66,8 +66,9 @@ public:
 
     static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
 
-    BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&state_index1_to_state_index_range2,
-              map_indices_t &&state_indices_to_ket_index,
+    BasisPair(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
+              std::shared_ptr<const map_range_t> state_index1_to_state_index_range2,
+              std::shared_ptr<const map_indices_t> state_indices_to_ket_index,
               std::shared_ptr<const BasisAtom<Scalar>> basis1,
               std::shared_ptr<const BasisAtom<Scalar>> basis2,
               Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
@@ -91,10 +92,11 @@ public:
                         OperatorType type2, int q1, int q2) const;
 
 private:
+    // The following maps refer to the kets and are thus shared like them
     // state index 1 -> (min state index 2, max state index 2)
-    map_range_t state_index1_to_state_index_range2;
+    std::shared_ptr<const map_range_t> state_index1_to_state_index_range2;
     // (state atom index 1, state atom index 2) -> ket pair index
-    map_indices_t state_indices_to_ket_index;
+    std::shared_ptr<const map_indices_t> state_indices_to_ket_index;
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };

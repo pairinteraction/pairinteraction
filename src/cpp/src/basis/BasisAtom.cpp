@@ -23,7 +23,8 @@ const std::map<SorterType, std::string> BasisAtom<Scalar>::sorter_type_to_quantu
 };
 
 template <typename Scalar>
-BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, map_size_t &&ket_id_to_ket_index,
+BasisAtom<Scalar>::BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
+                             std::shared_ptr<const map_size_t> ket_id_to_ket_index,
                              std::string &&canonical_basis_id, Database &database,
                              Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&coefficients,
                              energies_t &&energy_of_states,
@@ -39,9 +40,8 @@ BasisAtom<Scalar>::get_modified_copy(Eigen::SparseMatrix<Scalar, Eigen::RowMajor
                                      energies_t energy_of_states,
                                      quantum_numbers_t quantum_numbers_of_states) const {
     return std::make_shared<const Type>(
-        Private(), ketvec_t(this->kets), map_size_t(ket_id_to_ket_index),
-        std::string(canonical_basis_id), database, std::move(coefficients),
-        std::move(energy_of_states), std::move(quantum_numbers_of_states));
+        Private(), this->kets, ket_id_to_ket_index, std::string(canonical_basis_id), database,
+        std::move(coefficients), std::move(energy_of_states), std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>
@@ -51,15 +51,16 @@ Database &BasisAtom<Scalar>::get_database() const {
 
 template <typename Scalar>
 const std::string &BasisAtom<Scalar>::get_species() const {
-    return this->kets[0]->get_species();
+    return this->get_kets()[0]->get_species();
 }
 
 template <typename Scalar>
 int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
-    if (!ket_id_to_ket_index.contains(ket_id)) {
+    auto it = ket_id_to_ket_index->find(ket_id);
+    if (it == ket_id_to_ket_index->end()) {
         return -1;
     }
-    return ket_id_to_ket_index.at(ket_id);
+    return static_cast<int>(it->second);
 }
 
 template <typename Scalar>
@@ -84,9 +85,9 @@ BasisAtom<Scalar>::merge(std::shared_ptr<const Type> other) const {
 
     BasisAtomCreator<Scalar> creator(database);
     std::unordered_set<size_t> ket_ids;
-    ket_ids.reserve(this->kets.size() + other->kets.size());
+    ket_ids.reserve(this->get_number_of_kets() + other->get_number_of_kets());
     for (const auto &basis : {this, other.get()}) {
-        for (const auto &ket : basis->kets) {
+        for (const auto &ket : basis->get_kets()) {
             if (ket_ids.insert(ket->get_id_in_database()).second) {
                 creator.add_ket(ket);
             }

@@ -87,13 +87,13 @@ void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_la
 }
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets,
+Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
                       energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states)
     : kets(std::move(kets)), coefficients(std::move(coefficients)),
       quantum_numbers_of_states(std::move(quantum_numbers_of_states)),
       energy_of_states(std::move(energy_of_states)) {
-    if (this->kets.empty()) {
+    if (this->kets->empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
     check_states();
@@ -109,7 +109,7 @@ void Basis<Derived>::check_states() const {
         return std::isfinite(value) && std::abs(value) < std::numeric_limits<real_t>::max();
     };
 
-    if (static_cast<size_t>(coefficients.rows()) != kets.size()) {
+    if (static_cast<size_t>(coefficients.rows()) != kets->size()) {
         throw std::invalid_argument(
             "The number of rows of the coefficient matrix must match the number of kets.");
     }
@@ -221,7 +221,7 @@ Basis<Derived>::get_quantum_numbers_of_states(SorterType label) const {
 
 template <typename Derived>
 const typename Basis<Derived>::ketvec_t &Basis<Derived>::get_kets() const {
-    return kets;
+    return *kets;
 }
 
 template <typename Derived>
@@ -259,7 +259,8 @@ Basis<Derived>::get_quantum_numbers_of_states() const {
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) const {
-    // Create a basis that consists of the single requested state, without copying the other states
+    // Create a basis that consists of the single requested state, without copying the other states.
+    // The kets are shared with this basis.
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients_of_state =
         coefficients.col(static_cast<Eigen::Index>(state_index));
     quantum_numbers_t quantum_numbers_of_state;
@@ -277,17 +278,17 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
 template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
 Basis<Derived>::get_ket(size_t ket_index) const {
-    return kets[ket_index];
+    return (*kets)[ket_index];
 }
 
 template <typename Derived>
 typename Basis<Derived>::Iterator Basis<Derived>::begin() const {
-    return kets.begin();
+    return kets->begin();
 }
 
 template <typename Derived>
 typename Basis<Derived>::Iterator Basis<Derived>::end() const {
-    return kets.end();
+    return kets->end();
 }
 
 template <typename Derived>
@@ -415,7 +416,7 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 
 template <typename Derived>
 std::shared_ptr<const Derived> Basis<Derived>::get_canonicalized_copy() const {
-    auto [coefficients, energy_of_states, quantum_numbers_of_states] = get_canonical_states(kets);
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] = get_canonical_states(*kets);
     return derived().get_modified_copy(std::move(coefficients), std::move(energy_of_states),
                                        std::move(quantum_numbers_of_states));
 }

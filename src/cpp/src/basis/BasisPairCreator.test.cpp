@@ -207,6 +207,19 @@ DOCTEST_TEST_CASE("create a BasisPair") {
         DOCTEST_CHECK(atomic_states[0]->get_number_of_states() == 1);
         DOCTEST_CHECK(atomic_states[0]->get_number_of_kets() == basis->get_number_of_kets());
     }
+
+    DOCTEST_SUBCASE("a single state shares the kets with the basis") {
+        auto state = basis_pair_a->get_state(0);
+        DOCTEST_CHECK(&state->get_kets() == &basis_pair_a->get_kets());
+        for (size_t ket_index = 0; ket_index < basis_pair_a->get_number_of_kets(); ++ket_index) {
+            DOCTEST_CHECK(
+                state->get_coefficients().coeff(static_cast<Eigen::Index>(ket_index), 0) ==
+                basis_pair_a->get_coefficients().coeff(static_cast<Eigen::Index>(ket_index), 0));
+        }
+        size_t index2 = basis_pair_a->get_index_range(0).min();
+        DOCTEST_CHECK(state->get_ket_index_from_tuple(0, index2) ==
+                      basis_pair_a->get_ket_index_from_tuple(0, index2));
+    }
 }
 
 DOCTEST_TEST_CASE("merge rejects differently transformed atomic bases") {
