@@ -44,6 +44,7 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         if self.number_of_kets == 0:
             raise ValueError("Cannot create a basis with zero kets.")
         self._kets_cache: dict[int, KetType] = {}
+        self._canonicalized_copy_cache: Self | None = None
 
     @classmethod
     def _from_cpp_object(cls: type[Self], cpp_obj: UnionCPPBasis, *args: Any, **kwargs: Any) -> Self:
@@ -139,7 +140,12 @@ class BasisBase(ABC, Generic[KetType, StateType]):
 
     def get_canonicalized_copy(self: Self) -> Self:
         """Return the canonical basis with identity coefficients."""
-        return type(self)._from_cpp_object(self._cpp.get_canonicalized_copy(), *self._from_cpp_object_additional_args())
+        # the canonicalized copy only depends on the kets, which never change, so it can be cached
+        if self._canonicalized_copy_cache is None:
+            self._canonicalized_copy_cache = type(self)._from_cpp_object(
+                self._cpp.get_canonicalized_copy(), *self._from_cpp_object_additional_args()
+            )
+        return self._canonicalized_copy_cache
 
     @deprecated("canonicalized is deprecated, use get_canonicalized_copy instead.")
     def canonicalized(self: Self) -> Self:
