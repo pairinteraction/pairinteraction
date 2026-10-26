@@ -1,0 +1,253 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction/system/system_atom.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction/system">src/pairinteraction/system</a> - system_atom.py<span style="font-size: 80%;"> (source / <a href="system_atom.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">79.3&nbsp;%</td>
+            <td class="headerCovTableEntry">58</td>
+            <td class="headerCovTableEntry">46</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">80.0&nbsp;%</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">8</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">           1 : import logging</span></span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING, overload</span></span>
+<span id="L7"><span class="lineNum">       7</span>              : </span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : import numpy as np</span></span>
+<span id="L9"><span class="lineNum">       9</span>              : </span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">           1 : from pairinteraction import _backend</span></span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           1 : from pairinteraction.basis import BasisAtom, BasisAtomReal</span></span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">           1 : from pairinteraction.system.system_base import SystemBase</span></span>
+<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">           1 : from pairinteraction.units import QuantityScalar</span></span>
+<span id="L14"><span class="lineNum">      14</span>              : </span>
+<span id="L15"><span class="lineNum">      15</span>              : if TYPE_CHECKING:</span>
+<span id="L16"><span class="lineNum">      16</span>              :     from typing_extensions import Self</span>
+<span id="L17"><span class="lineNum">      17</span>              : </span>
+<span id="L18"><span class="lineNum">      18</span>              :     from pairinteraction.green_tensor import GreenTensorBase</span>
+<span id="L19"><span class="lineNum">      19</span>              :     from pairinteraction.ket import KetAtom</span>
+<span id="L20"><span class="lineNum">      20</span>              :     from pairinteraction.units import ArrayLike, PintArrayLike, PintFloat</span>
+<span id="L21"><span class="lineNum">      21</span>              : </span>
+<span id="L22"><span class="lineNum">      22</span>              : </span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">           1 : logger = logging.getLogger(__name__)</span></span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaGNC">           1 : class SystemAtom(SystemBase[BasisAtom]):</span></span>
+<span id="L27"><span class="lineNum">      27</span>              :     &quot;&quot;&quot;System of a single atom.</span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              :     Use the given BasisAtom object to create the system object.</span>
+<span id="L30"><span class="lineNum">      30</span>              :     You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.</span>
+<span id="L31"><span class="lineNum">      31</span>              : </span>
+<span id="L32"><span class="lineNum">      32</span>              :     Examples:</span>
+<span id="L33"><span class="lineNum">      33</span>              :         &gt;&gt;&gt; import pairinteraction as pi</span>
+<span id="L34"><span class="lineNum">      34</span>              :         &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, m=0.5)</span>
+<span id="L35"><span class="lineNum">      35</span>              :         &gt;&gt;&gt; basis = pi.BasisAtom(&quot;Rb&quot;, n=(58, 63), l=(0, 3))</span>
+<span id="L36"><span class="lineNum">      36</span>              :         &gt;&gt;&gt; system = pi.SystemAtom(basis)</span>
+<span id="L37"><span class="lineNum">      37</span>              :         &gt;&gt;&gt; system.set_magnetic_field([0, 0, 1], unit=&quot;gauss&quot;).set_electric_field([0.1, 0, 0.1], unit=&quot;V/cm&quot;)</span>
+<span id="L38"><span class="lineNum">      38</span>              :         SystemAtom(BasisAtom('Rb', n=(58, 63), l=(0, 3)), is_diagonal=False)</span>
+<span id="L39"><span class="lineNum">      39</span>              :         &gt;&gt;&gt; system.diagonalize()</span>
+<span id="L40"><span class="lineNum">      40</span>              :         SystemAtom(BasisAtom(|Rb:58,S_1/2,-1/2⟩ ... |Rb:63,F_5/2,5/2⟩), is_diagonal=True)</span>
+<span id="L41"><span class="lineNum">      41</span>              :         &gt;&gt;&gt; eigenenergies = system.get_eigenenergies(unit=&quot;GHz&quot;)</span>
+<span id="L42"><span class="lineNum">      42</span>              :         &gt;&gt;&gt; print(f&quot;{eigenenergies[0] - ket.get_energy(unit='GHz'):.5f}&quot;)</span>
+<span id="L43"><span class="lineNum">      43</span>              :         -75.51823</span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span>              :     &quot;&quot;&quot;</span>
+<span id="L46"><span class="lineNum">      46</span>              : </span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           1 :     _cpp: _backend.SystemAtomComplex</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 :     _cpp_type = _backend.SystemAtomComplex</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 :     _basis_class = BasisAtom</span></span>
+<span id="L50"><span class="lineNum">      50</span>              : </span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           1 :     def __init__(self, basis: BasisAtom) -&gt; None:</span></span>
+<span id="L52"><span class="lineNum">      52</span>              :         &quot;&quot;&quot;Create a system object for a single atom.</span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span>              :         Args:</span>
+<span id="L55"><span class="lineNum">      55</span>              :             basis: The :class:`pairinteraction.BasisAtom` object that describes the basis of the system.</span>
+<span id="L56"><span class="lineNum">      56</span>              : </span>
+<span id="L57"><span class="lineNum">      57</span>              :         &quot;&quot;&quot;</span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :         self._cpp = self._cpp_type(basis._cpp)</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           1 :         self._basis = basis</span></span>
+<span id="L60"><span class="lineNum">      60</span>              : </span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           1 :     def set_electric_field(</span></span>
+<span id="L62"><span class="lineNum">      62</span>              :         self: Self,</span>
+<span id="L63"><span class="lineNum">      63</span>              :         electric_field: PintArrayLike | ArrayLike,</span>
+<span id="L64"><span class="lineNum">      64</span>              :         unit: str | None = None,</span>
+<span id="L65"><span class="lineNum">      65</span>              :     ) -&gt; Self:</span>
+<span id="L66"><span class="lineNum">      66</span>              :         &quot;&quot;&quot;Set the electric field for the system.</span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span>              :         Args:</span>
+<span id="L69"><span class="lineNum">      69</span>              :             electric_field: The electric field to set for the system.</span>
+<span id="L70"><span class="lineNum">      70</span>              :             unit: The unit of the electric field, e.g. &quot;V/cm&quot;.</span>
+<span id="L71"><span class="lineNum">      71</span>              :                 Default None expects a `pint.Quantity`.</span>
+<span id="L72"><span class="lineNum">      72</span>              : </span>
+<span id="L73"><span class="lineNum">      73</span>              :         &quot;&quot;&quot;</span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           1 :         electric_field_au = [QuantityScalar.convert_user_to_au(v, unit, &quot;electric_field&quot;) for v in electric_field]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :         self._cpp.set_electric_field(electric_field_au)</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L77"><span class="lineNum">      77</span>              : </span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           1 :     def set_magnetic_field(</span></span>
+<span id="L79"><span class="lineNum">      79</span>              :         self: Self,</span>
+<span id="L80"><span class="lineNum">      80</span>              :         magnetic_field: PintArrayLike | ArrayLike,</span>
+<span id="L81"><span class="lineNum">      81</span>              :         unit: str | None = None,</span>
+<span id="L82"><span class="lineNum">      82</span>              :     ) -&gt; Self:</span>
+<span id="L83"><span class="lineNum">      83</span>              :         &quot;&quot;&quot;Set the magnetic field for the system.</span>
+<span id="L84"><span class="lineNum">      84</span>              : </span>
+<span id="L85"><span class="lineNum">      85</span>              :         Args:</span>
+<span id="L86"><span class="lineNum">      86</span>              :             magnetic_field: The magnetic field to set for the system.</span>
+<span id="L87"><span class="lineNum">      87</span>              :             unit: The unit of the magnetic field, e.g. &quot;gauss&quot;.</span>
+<span id="L88"><span class="lineNum">      88</span>              :                 Default None expects a `pint.Quantity`.</span>
+<span id="L89"><span class="lineNum">      89</span>              : </span>
+<span id="L90"><span class="lineNum">      90</span>              :         &quot;&quot;&quot;</span>
+<span id="L91"><span class="lineNum">      91</span> <span class="tlaGNC">           1 :         magnetic_field_au = [QuantityScalar.convert_user_to_au(v, unit, &quot;magnetic_field&quot;) for v in magnetic_field]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span></span>
+<span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           1 :         self._cpp.set_magnetic_field(magnetic_field_au)</span></span>
+<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L94"><span class="lineNum">      94</span>              : </span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">           1 :     def set_diamagnetism_enabled(self: Self, enable: bool = True) -&gt; Self:</span></span>
+<span id="L96"><span class="lineNum">      96</span>              :         &quot;&quot;&quot;Enable or disable diamagnetism for the system.</span>
+<span id="L97"><span class="lineNum">      97</span>              : </span>
+<span id="L98"><span class="lineNum">      98</span>              :         Args:</span>
+<span id="L99"><span class="lineNum">      99</span>              :             enable: Whether to enable or disable diamagnetism.</span>
+<span id="L100"><span class="lineNum">     100</span>              : </span>
+<span id="L101"><span class="lineNum">     101</span>              :         &quot;&quot;&quot;</span>
+<span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           1 :         self._cpp.set_diamagnetism_enabled(enable)</span></span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L104"><span class="lineNum">     104</span>              : </span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaGNC">           1 :     def set_distance_to_ion(</span></span>
+<span id="L106"><span class="lineNum">     106</span>              :         self: Self, distance: float | PintFloat, angle_degree: float = 0, unit: str | None = None</span>
+<span id="L107"><span class="lineNum">     107</span>              :     ) -&gt; Self:</span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaUNC">           0 :         distance_vector = [np.sin(np.deg2rad(angle_degree)) * distance, 0, np.cos(np.deg2rad(angle_degree)) * distance]</span></span>
+<span id="L109"><span class="lineNum">     109</span> <span class="tlaUNC">           0 :         return self.set_ion_distance_vector(distance_vector, unit)</span></span>
+<span id="L110"><span class="lineNum">     110</span>              : </span>
+<span id="L111"><span class="lineNum">     111</span> <span class="tlaGNC">           1 :     def set_ion_distance_vector(</span></span>
+<span id="L112"><span class="lineNum">     112</span>              :         self: Self,</span>
+<span id="L113"><span class="lineNum">     113</span>              :         distance: PintArrayLike | ArrayLike,</span>
+<span id="L114"><span class="lineNum">     114</span>              :         unit: str | None = None,</span>
+<span id="L115"><span class="lineNum">     115</span>              :     ) -&gt; Self:</span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           1 :         distance_au = [QuantityScalar.convert_user_to_au(v, unit, &quot;distance&quot;) for v in distance]  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span></span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">           1 :         self._cpp.set_ion_distance_vector(distance_au)</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L119"><span class="lineNum">     119</span>              : </span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">           1 :     def set_ion_charge(self: Self, charge: float | PintFloat, unit: str | None = None) -&gt; Self:</span></span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           1 :         charge_au = QuantityScalar.convert_user_to_au(charge, unit, &quot;charge&quot;)</span></span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :         self._cpp.set_ion_charge(charge_au)</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L124"><span class="lineNum">     124</span>              : </span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           1 :     def set_ion_interaction_order(self: Self, order: int) -&gt; Self:</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           1 :         self._cpp.set_ion_interaction_order(order)</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">           1 :         return self</span></span>
+<span id="L128"><span class="lineNum">     128</span>              : </span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">           1 :     def set_green_tensor(self, green_tensor: GreenTensorBase) -&gt; Self:</span></span>
+<span id="L130"><span class="lineNum">     130</span>              :         &quot;&quot;&quot;Set the Green tensor for the single atom system.</span>
+<span id="L131"><span class="lineNum">     131</span>              : </span>
+<span id="L132"><span class="lineNum">     132</span>              :         This will add self interaction terms to the Hamiltonian of the single atom system</span>
+<span id="L133"><span class="lineNum">     133</span>              :         based on the provided Green tensor.</span>
+<span id="L134"><span class="lineNum">     134</span>              :         This can be used to e.g. include the effect of a nearby surface on the energy levels of the atom.</span>
+<span id="L135"><span class="lineNum">     135</span>              : </span>
+<span id="L136"><span class="lineNum">     136</span>              :         Args:</span>
+<span id="L137"><span class="lineNum">     137</span>              :             green_tensor: The Green tensor to set for the system.</span>
+<span id="L138"><span class="lineNum">     138</span>              : </span>
+<span id="L139"><span class="lineNum">     139</span>              :         &quot;&quot;&quot;</span>
+<span id="L140"><span class="lineNum">     140</span> <span class="tlaUNC">           0 :         if not green_tensor.static_limit:</span></span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaUNC">           0 :             raise ValueError(&quot;Setting a Green tensor that is not in the static limit is currently not supported.&quot;)</span></span>
+<span id="L142"><span class="lineNum">     142</span>              : </span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaUNC">           0 :         if not np.allclose(</span></span>
+<span id="L144"><span class="lineNum">     144</span>              :             green_tensor.pos1_au,</span>
+<span id="L145"><span class="lineNum">     145</span>              :             green_tensor.pos2_au,</span>
+<span id="L146"><span class="lineNum">     146</span>              :             rtol=0,</span>
+<span id="L147"><span class="lineNum">     147</span>              :             atol=1e-12,</span>
+<span id="L148"><span class="lineNum">     148</span>              :         ):</span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaUNC">           0 :             raise ValueError(</span></span>
+<span id="L150"><span class="lineNum">     150</span>              :                 &quot;You can only set a Green tensor for the single atom system, where the positions are identical.&quot;</span>
+<span id="L151"><span class="lineNum">     151</span>              :             )</span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaUNC">           0 :         if not green_tensor.without_vacuum_contribution:</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaUNC">           0 :             raise ValueError(</span></span>
+<span id="L154"><span class="lineNum">     154</span>              :                 &quot;The Green tensor for the single atom system needs to be provided without the vacuum contribution, &quot;</span>
+<span id="L155"><span class="lineNum">     155</span>              :                 &quot;i.e., without_vacuum_contribution has to be set to True when creating the Green tensor.&quot;</span>
+<span id="L156"><span class="lineNum">     156</span>              :             )</span>
+<span id="L157"><span class="lineNum">     157</span>              : </span>
+<span id="L158"><span class="lineNum">     158</span> <span class="tlaUNC">           0 :         use_real = isinstance(self, SystemAtomReal)</span></span>
+<span id="L159"><span class="lineNum">     159</span>              : </span>
+<span id="L160"><span class="lineNum">     160</span> <span class="tlaUNC">           0 :         gti = green_tensor.get_interpolator(use_real=use_real)</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaUNC">           0 :         self._cpp.set_green_tensor_interpolator(gti._cpp)</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaUNC">           0 :         return self</span></span>
+<span id="L163"><span class="lineNum">     163</span>              : </span>
+<span id="L164"><span class="lineNum">     164</span>              :     @overload  # type: ignore [override]</span>
+<span id="L165"><span class="lineNum">     165</span>              :     def get_corresponding_energy(self: Self, ket: KetAtom, unit: None = None) -&gt; PintFloat: ...</span>
+<span id="L166"><span class="lineNum">     166</span>              : </span>
+<span id="L167"><span class="lineNum">     167</span>              :     @overload</span>
+<span id="L168"><span class="lineNum">     168</span>              :     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str) -&gt; float: ...</span>
+<span id="L169"><span class="lineNum">     169</span>              : </span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">           1 :     def get_corresponding_energy(self: Self, ket: KetAtom, unit: str | None = None) -&gt; float | PintFloat:</span></span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           1 :         return super().get_corresponding_energy(ket, unit)</span></span>
+<span id="L172"><span class="lineNum">     172</span>              : </span>
+<span id="L173"><span class="lineNum">     173</span>              : </span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           1 : class SystemAtomReal(SystemAtom):</span></span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">           1 :     _cpp: _backend.SystemAtomReal  # type: ignore [assignment]</span></span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">           1 :     _cpp_type = _backend.SystemAtomReal  # type: ignore [assignment]</span></span>
+<span id="L177"><span class="lineNum">     177</span> <span class="tlaGNC">           1 :     _basis_class = BasisAtomReal</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

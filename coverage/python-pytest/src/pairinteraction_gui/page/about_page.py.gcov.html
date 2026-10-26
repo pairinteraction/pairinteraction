@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction_gui/page/about_page.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction_gui/page">src/pairinteraction_gui/page</a> - about_page.py<span style="font-size: 80%;"> (source / <a href="about_page.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">17.9&nbsp;%</td>
+            <td class="headerCovTableEntry">56</td>
+            <td class="headerCovTableEntry">10</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span> <span class="tlaGNC">           1 : from pathlib import Path</span></span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : from PySide6.QtCore import Qt</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           1 : from PySide6.QtGui import QFont, QPixmap</span></span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : from PySide6.QtWidgets import QFrame, QLabel, QScrollArea, QVBoxLayout, QWidget</span></span>
+<span id="L9"><span class="lineNum">       9</span>              : </span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">           1 : from pairinteraction_gui.page.base_page import BasePage</span></span>
+<span id="L11"><span class="lineNum">      11</span>              : </span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">           1 : images_dir = Path(__file__).parent.parent / &quot;images&quot;</span></span>
+<span id="L13"><span class="lineNum">      13</span>              : </span>
+<span id="L14"><span class="lineNum">      14</span>              : </span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">           1 : class AboutPage(BasePage):</span></span>
+<span id="L16"><span class="lineNum">      16</span>              :     &quot;&quot;&quot;Page for displaying information about PairInteraction and the PairInteraction gui.&quot;&quot;&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>              : </span>
+<span id="L18"><span class="lineNum">      18</span> <span class="tlaGNC">           1 :     title = &quot;About&quot;</span></span>
+<span id="L19"><span class="lineNum">      19</span> <span class="tlaGNC">           1 :     tooltip = &quot;Learn more about PairInteraction&quot;</span></span>
+<span id="L20"><span class="lineNum">      20</span>              :     # icon_path = Path(__file__).parent.parent / &quot;icons&quot; / &quot;about.svg&quot;</span>
+<span id="L21"><span class="lineNum">      21</span>              : </span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           1 :     def setupWidget(self) -&gt; None:</span></span>
+<span id="L23"><span class="lineNum">      23</span>              :         &quot;&quot;&quot;Set up the about page with application information.&quot;&quot;&quot;</span>
+<span id="L24"><span class="lineNum">      24</span>              :         # Create a scroll area to handle content that might overflow</span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaUNC">           0 :         scroll = QScrollArea()</span></span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaUNC">           0 :         scroll.setWidgetResizable(True)</span></span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaUNC">           0 :         scroll.setFrameShape(QFrame.Shape.NoFrame)</span></span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              :         # Create a container widget for the scroll area</span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaUNC">           0 :         container = QWidget()</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaUNC">           0 :         layout = QVBoxLayout(container)</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaUNC">           0 :         layout.setAlignment(Qt.AlignmentFlag.AlignTop)</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaUNC">           0 :         layout.setSpacing(30)</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaUNC">           0 :         layout.setContentsMargins(40, 40, 40, 40)</span></span>
+<span id="L35"><span class="lineNum">      35</span>              : </span>
+<span id="L36"><span class="lineNum">      36</span>              :         # Title with modern styling</span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaUNC">           0 :         title = QLabel(&quot;PairInteraction&quot;)</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaUNC">           0 :         title_font = QFont()</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaUNC">           0 :         title_font.setPointSize(32)</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaUNC">           0 :         title_font.setBold(True)</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaUNC">           0 :         title.setFont(title_font)</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaUNC">           0 :         title.setAlignment(Qt.AlignmentFlag.AlignCenter)</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaUNC">           0 :         layout.addWidget(title)</span></span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span>              :         # Description with better formatting</span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaUNC">           0 :         desc = QLabel(</span></span>
+<span id="L47"><span class="lineNum">      47</span>              :             &quot;&lt;p style='font-size: 14px; line-height: 1.5;'&gt;&quot;</span>
+<span id="L48"><span class="lineNum">      48</span>              :             &quot;The PairInteraction software calculates properties of Rydberg atoms. &quot;</span>
+<span id="L49"><span class="lineNum">      49</span>              :             &quot;It consists of a Python library and this graphical user interface for obtaining &quot;</span>
+<span id="L50"><span class="lineNum">      50</span>              :             &quot;single-atom properties and calculating pair potentials, making use of a &quot;</span>
+<span id="L51"><span class="lineNum">      51</span>              :             &quot;high-performance C++ backend.&quot;</span>
+<span id="L52"><span class="lineNum">      52</span>              :             &quot;&lt;/p&gt;&quot;</span>
+<span id="L53"><span class="lineNum">      53</span>              :         )</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaUNC">           0 :         desc.setWordWrap(True)</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaUNC">           0 :         desc.setTextFormat(Qt.TextFormat.RichText)</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaUNC">           0 :         layout.addWidget(desc)</span></span>
+<span id="L57"><span class="lineNum">      57</span>              : </span>
+<span id="L58"><span class="lineNum">      58</span>              :         # Features with improved styling</span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaUNC">           0 :         features = QLabel(</span></span>
+<span id="L60"><span class="lineNum">      60</span>              :             &quot;&lt;div style='font-size: 14px; line-height: 1.6;'&gt;&quot;</span>
+<span id="L61"><span class="lineNum">      61</span>              :             &quot;&lt;b&gt;Key Features:&lt;/b&gt;&lt;br&gt;&quot;</span>
+<span id="L62"><span class="lineNum">      62</span>              :             &quot;• Optimized construction and diagonalization of Hamiltonians&lt;br&gt;&quot;</span>
+<span id="L63"><span class="lineNum">      63</span>              :             &quot;• Support for single-channel quantum defect theory (SQDT)&lt;br&gt;&quot;</span>
+<span id="L64"><span class="lineNum">      64</span>              :             &quot;• Support for multi-channel quantum defect theory (MQDT)&lt;br&gt;&quot;</span>
+<span id="L65"><span class="lineNum">      65</span>              :             &quot;• Electric and magnetic fields in arbitrary directions&lt;br&gt;&quot;</span>
+<span id="L66"><span class="lineNum">      66</span>              :             &quot;• Support for diamagnetism&quot;</span>
+<span id="L67"><span class="lineNum">      67</span>              :             &quot;&lt;/div&gt;&quot;</span>
+<span id="L68"><span class="lineNum">      68</span>              :         )</span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 :         features.setWordWrap(True)</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaUNC">           0 :         features.setTextFormat(Qt.TextFormat.RichText)</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaUNC">           0 :         layout.addWidget(features)</span></span>
+<span id="L72"><span class="lineNum">      72</span>              : </span>
+<span id="L73"><span class="lineNum">      73</span>              :         # Benchmark image</span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaUNC">           0 :         image_label = QLabel()</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaUNC">           0 :         pixmap = QPixmap(images_dir / &quot;0845d67063_1.4.2-cp313-win_amd-ryzen-7-5700g-with-radeon-graphics_reps4.png&quot;)</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaUNC">           0 :         scaled_pixmap = pixmap.scaled(</span></span>
+<span id="L77"><span class="lineNum">      77</span>              :             800, 400, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation</span>
+<span id="L78"><span class="lineNum">      78</span>              :         )</span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaUNC">           0 :         image_label.setPixmap(scaled_pixmap)</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaUNC">           0 :         image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)</span></span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaUNC">           0 :         layout.addWidget(image_label)</span></span>
+<span id="L82"><span class="lineNum">      82</span>              : </span>
+<span id="L83"><span class="lineNum">      83</span>              :         # Image caption</span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaUNC">           0 :         caption = QLabel(</span></span>
+<span id="L85"><span class="lineNum">      85</span>              :             &quot;&lt;p style='font-size: 12px; color: #666; text-align: center;'&gt;&quot;</span>
+<span id="L86"><span class="lineNum">      86</span>              :             &quot;Figure: Benchmarking the construction and diagonalization of a Hamiltonian of a pair of Rb 60S atoms &quot;</span>
+<span id="L87"><span class="lineNum">      87</span>              :             &quot;for 100 different internuclear distances on an AMD Ryzen 7 5700G CPU using Windows 11. &quot;</span>
+<span id="L88"><span class="lineNum">      88</span>              :             &quot;The Hilbert space comprises pair states that differ at most by 4 in n, l and 25GHz in energy. &quot;</span>
+<span id="L89"><span class="lineNum">      89</span>              :             &quot;When supported, symmetries were used to reduce the Hilbert space size. &quot;</span>
+<span id="L90"><span class="lineNum">      90</span>              :             &quot;See the &lt;a href='https://github.com/pairinteraction/pairinteraction/tree/master/tools/benchmarking' &quot;</span>
+<span id="L91"><span class="lineNum">      91</span>              :             &quot;style='color: #007bff;'&gt;benchmarking tool&lt;/a&gt;.&quot;</span>
+<span id="L92"><span class="lineNum">      92</span>              :             &quot;&lt;/p&gt;&quot;</span>
+<span id="L93"><span class="lineNum">      93</span>              :         )</span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaUNC">           0 :         caption.setWordWrap(True)</span></span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaUNC">           0 :         caption.setTextFormat(Qt.TextFormat.RichText)</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaUNC">           0 :         caption.setAlignment(Qt.AlignmentFlag.AlignCenter)</span></span>
+<span id="L97"><span class="lineNum">      97</span> <span class="tlaUNC">           0 :         caption.setOpenExternalLinks(True)</span></span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaUNC">           0 :         layout.addWidget(caption)</span></span>
+<span id="L99"><span class="lineNum">      99</span>              : </span>
+<span id="L100"><span class="lineNum">     100</span>              :         # Citation with better styling</span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaUNC">           0 :         citation = QLabel(</span></span>
+<span id="L102"><span class="lineNum">     102</span>              :             &quot;&lt;div style='font-size: 14px; line-height: 1.5; margin: 20px 0;'&gt;&quot;</span>
+<span id="L103"><span class="lineNum">     103</span>              :             &quot;&lt;b&gt;Please Cite:&lt;/b&gt;&lt;br&gt;&quot;</span>
+<span id="L104"><span class="lineNum">     104</span>              :             &quot;Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, &quot;</span>
+<span id="L105"><span class="lineNum">     105</span>              :             &quot;Hans Peter Büchler, Sebastian Hofferberth, &quot;</span>
+<span id="L106"><span class="lineNum">     106</span>              :             &quot;&lt;i&gt;Tutorial: Calculation of Rydberg interaction potentials&lt;/i&gt;, &quot;</span>
+<span id="L107"><span class="lineNum">     107</span>              :             &quot;J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)&quot;</span>
+<span id="L108"><span class="lineNum">     108</span>              :             &quot;&lt;/div&gt;&quot;</span>
+<span id="L109"><span class="lineNum">     109</span>              :         )</span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaUNC">           0 :         citation.setWordWrap(True)</span></span>
+<span id="L111"><span class="lineNum">     111</span> <span class="tlaUNC">           0 :         citation.setTextFormat(Qt.TextFormat.RichText)</span></span>
+<span id="L112"><span class="lineNum">     112</span> <span class="tlaUNC">           0 :         citation.setOpenExternalLinks(True)</span></span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaUNC">           0 :         layout.addWidget(citation)</span></span>
+<span id="L114"><span class="lineNum">     114</span>              : </span>
+<span id="L115"><span class="lineNum">     115</span>              :         # Links with improved styling</span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaUNC">           0 :         links = QLabel(</span></span>
+<span id="L117"><span class="lineNum">     117</span>              :             &quot;&lt;div style='font-size: 14px; line-height: 1.5;'&gt;&quot;</span>
+<span id="L118"><span class="lineNum">     118</span>              :             &quot;&lt;b&gt;Links:&lt;/b&gt;&lt;br&gt;&quot;</span>
+<span id="L119"><span class="lineNum">     119</span>              :             &quot;• &lt;a href='https://github.com/pairinteraction/pairinteraction' &quot;</span>
+<span id="L120"><span class="lineNum">     120</span>              :             &quot;style='color: #007bff;'&gt;GitHub Repository&lt;/a&gt;&lt;br&gt;&quot;</span>
+<span id="L121"><span class="lineNum">     121</span>              :             &quot;• &lt;a href='https://arxiv.org/abs/1612.08053' style='color: #007bff;'&gt;arXiv:1612.08053&lt;/a&gt;&lt;br&gt;&quot;</span>
+<span id="L122"><span class="lineNum">     122</span>              :             &quot;• &lt;a href='https://www.gnu.org/licenses/lgpl-3.0.html' style='color: #007bff;'&gt;License: LGPL v3&lt;/a&gt;&quot;</span>
+<span id="L123"><span class="lineNum">     123</span>              :             &quot;&lt;/div&gt;&quot;</span>
+<span id="L124"><span class="lineNum">     124</span>              :         )</span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaUNC">           0 :         links.setTextFormat(Qt.TextFormat.RichText)</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaUNC">           0 :         links.setOpenExternalLinks(True)</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaUNC">           0 :         layout.addWidget(links)</span></span>
+<span id="L128"><span class="lineNum">     128</span>              : </span>
+<span id="L129"><span class="lineNum">     129</span>              :         # Set the container as the scroll area widget</span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaUNC">           0 :         scroll.setWidget(container)</span></span>
+<span id="L131"><span class="lineNum">     131</span>              : </span>
+<span id="L132"><span class="lineNum">     132</span>              :         # Add the scroll area to the main layout</span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaUNC">           0 :         self.layout().addWidget(scroll)</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

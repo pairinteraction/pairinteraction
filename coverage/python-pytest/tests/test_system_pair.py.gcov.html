@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - tests/test_system_pair.py</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory tests">tests</a> - test_system_pair.py<span style="font-size: 80%;"> (source / <a href="test_system_pair.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">31</td>
+            <td class="headerCovTableEntry">31</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+          </tr>
+                  <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2026 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : import logging</span></span>
+<span id="L7"><span class="lineNum">       7</span>              : </span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : import numpy as np</span></span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">           1 : import pytest</span></span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span>              : </span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">           1 : def test_real_system_pair_distance_vector_with_y_component_raises() -&gt; None:</span></span>
+<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">           1 :     import pairinteraction.real as pi_real</span></span>
+<span id="L14"><span class="lineNum">      14</span>              : </span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">           1 :     ket = pi_real.KetAtom(&quot;Rb&quot;, n=60, l=0, j=0.5, m=0.5)</span></span>
+<span id="L16"><span class="lineNum">      16</span> <span class="tlaGNC">           1 :     basis = pi_real.BasisAtom(&quot;Rb&quot;, n=(0, 0), additional_kets=[ket])</span></span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">           1 :     system = pi_real.SystemAtom(basis)</span></span>
+<span id="L18"><span class="lineNum">      18</span> <span class="tlaGNC">           1 :     basis_pair = pi_real.BasisPair((system, system))</span></span>
+<span id="L19"><span class="lineNum">      19</span>              : </span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">           1 :     with pytest.raises(ValueError, match=&quot;y-component&quot;):</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">           1 :         pi_real.SystemPair(basis_pair).set_distance_vector([0, 1, 0], unit=&quot;micrometer&quot;)</span></span>
+<span id="L22"><span class="lineNum">      22</span>              : </span>
+<span id="L23"><span class="lineNum">      23</span>              : </span>
+<span id="L24"><span class="lineNum">      24</span> <span class="tlaGNC">           1 : def test_get_corresponding_energy_symmetrized(caplog: pytest.LogCaptureFixture) -&gt; None:</span></span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           1 :     import pairinteraction as pi</span></span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">           1 :     ket_a = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, j=0.5, m=0.5)</span></span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           1 :     ket_b = pi.KetAtom(&quot;Rb&quot;, n=61, l=0, j=0.5, m=0.5)</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           1 :     basis_atom = pi.BasisAtom(&quot;Rb&quot;, n=(58, 63), l=(0, 2), m=(-1.5, 1.5))</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">           1 :     system_atom = pi.SystemAtom(basis_atom).diagonalize(diagonalizer=&quot;eigen&quot;)</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">           1 :     pair_energy = sum(system_atom.get_corresponding_energy(ket, &quot;GHz&quot;) for ket in (ket_a, ket_b))</span></span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           1 :     basis_pair = pi.BasisPair(</span></span>
+<span id="L33"><span class="lineNum">      33</span>              :         [system_atom, system_atom], m=(1, 1), energy=(pair_energy - 3, pair_energy + 3), energy_unit=&quot;GHz&quot;</span>
+<span id="L34"><span class="lineNum">      34</span>              :     )</span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">           1 :     assert np.allclose(np.sort(basis_pair.get_overlaps((ket_a, ket_b)))[-2:], 0.5)</span></span>
+<span id="L36"><span class="lineNum">      36</span>              : </span>
+<span id="L37"><span class="lineNum">      37</span>              :     # Without interaction, the ket is distributed over two degenerate states, so the energy is still unique</span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           1 :     system_pair = pi.SystemPair(basis_pair).diagonalize(diagonalizer=&quot;eigen&quot;)</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :     with caplog.at_level(logging.WARNING):</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           1 :         energy = system_pair.get_corresponding_energy((ket_a, ket_b), &quot;GHz&quot;)</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           1 :     assert &quot;Cannot find the uniquely corresponding&quot; not in caplog.text</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :     assert np.isclose(energy, pair_energy, rtol=1e-14)</span></span>
+<span id="L43"><span class="lineNum">      43</span>              : </span>
+<span id="L44"><span class="lineNum">      44</span>              :     # With interaction, the symmetric and antisymmetric states have different energies</span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           1 :     caplog.clear()</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           1 :     system_pair = pi.SystemPair(basis_pair).set_distance(5, unit=&quot;micrometer&quot;).diagonalize(diagonalizer=&quot;eigen&quot;)</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           1 :     with caplog.at_level(logging.WARNING):</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 :         system_pair.get_corresponding_energy((ket_a, ket_b), &quot;GHz&quot;)</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 :     assert &quot;Cannot find the uniquely corresponding energy&quot; in caplog.text</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

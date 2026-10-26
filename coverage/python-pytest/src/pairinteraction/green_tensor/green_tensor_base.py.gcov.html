@@ -1,0 +1,301 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction/green_tensor/green_tensor_base.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction/green_tensor">src/pairinteraction/green_tensor</a> - green_tensor_base.py<span style="font-size: 80%;"> (source / <a href="green_tensor_base.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">81.8&nbsp;%</td>
+            <td class="headerCovTableEntry">55</td>
+            <td class="headerCovTableEntry">45</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">5</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : from abc import ABC, abstractmethod</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING, overload</span></span>
+<span id="L8"><span class="lineNum">       8</span>              : </span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">           1 : import numpy as np</span></span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           1 : from pairinteraction.units import QuantityArray, QuantityScalar, ureg</span></span>
+<span id="L12"><span class="lineNum">      12</span>              : </span>
+<span id="L13"><span class="lineNum">      13</span>              : if TYPE_CHECKING:</span>
+<span id="L14"><span class="lineNum">      14</span>              :     from collections.abc import Callable, Collection</span>
+<span id="L15"><span class="lineNum">      15</span>              : </span>
+<span id="L16"><span class="lineNum">      16</span>              :     from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator</span>
+<span id="L17"><span class="lineNum">      17</span>              :     from pairinteraction.units import (</span>
+<span id="L18"><span class="lineNum">      18</span>              :         ArrayLike,</span>
+<span id="L19"><span class="lineNum">      19</span>              :         Dimension,</span>
+<span id="L20"><span class="lineNum">      20</span>              :         NDArray,</span>
+<span id="L21"><span class="lineNum">      21</span>              :         PintArray,  # needed for sphinx to recognize PintArrayLike</span>
+<span id="L22"><span class="lineNum">      22</span>              :         PintArrayLike,</span>
+<span id="L23"><span class="lineNum">      23</span>              :         PintFloat,</span>
+<span id="L24"><span class="lineNum">      24</span>              :     )</span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">           1 : class GreenTensorBase(ABC):</span></span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           1 :     epsilon: complex | Callable[[PintFloat], complex]</span></span>
+<span id="L29"><span class="lineNum">      29</span>              : </span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">           1 :     def __init__(</span></span>
+<span id="L31"><span class="lineNum">      31</span>              :         self,</span>
+<span id="L32"><span class="lineNum">      32</span>              :         pos1: ArrayLike | PintArrayLike,</span>
+<span id="L33"><span class="lineNum">      33</span>              :         pos2: ArrayLike | PintArrayLike,</span>
+<span id="L34"><span class="lineNum">      34</span>              :         unit: str | None = None,</span>
+<span id="L35"><span class="lineNum">      35</span>              :         static_limit: bool = True,</span>
+<span id="L36"><span class="lineNum">      36</span>              :         interaction_order: int = 3,</span>
+<span id="L37"><span class="lineNum">      37</span>              :         *,</span>
+<span id="L38"><span class="lineNum">      38</span>              :         without_vacuum_contribution: bool = False,</span>
+<span id="L39"><span class="lineNum">      39</span>              :     ) -&gt; None:</span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           1 :         self.pos1_au = np.array([QuantityScalar.convert_user_to_au(v, unit, &quot;distance&quot;) for v in pos1])  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           1 :         self.pos2_au = np.array([QuantityScalar.convert_user_to_au(v, unit, &quot;distance&quot;) for v in pos2])  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 :         self.static_limit = static_limit</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           1 :         self.without_vacuum_contribution = without_vacuum_contribution</span></span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           1 :         self.interaction_order = interaction_order</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           1 :         if interaction_order != 3:</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaUNC">           0 :             raise NotImplementedError(</span></span>
+<span id="L48"><span class="lineNum">      48</span>              :                 &quot;Only interaction order 3 (dipole-dipole) is currently implemented for custom Green tensors.&quot;</span>
+<span id="L49"><span class="lineNum">      49</span>              :             )</span>
+<span id="L50"><span class="lineNum">      50</span>              : </span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           1 :         self.epsilon = 1.0</span></span>
+<span id="L52"><span class="lineNum">      52</span>              : </span>
+<span id="L53"><span class="lineNum">      53</span>              :     @overload</span>
+<span id="L54"><span class="lineNum">      54</span>              :     def get(</span>
+<span id="L55"><span class="lineNum">      55</span>              :         self,</span>
+<span id="L56"><span class="lineNum">      56</span>              :         kappa1: int,</span>
+<span id="L57"><span class="lineNum">      57</span>              :         kappa2: int,</span>
+<span id="L58"><span class="lineNum">      58</span>              :         transition_energy: float | PintFloat,</span>
+<span id="L59"><span class="lineNum">      59</span>              :         transition_energy_unit: str | None = None,</span>
+<span id="L60"><span class="lineNum">      60</span>              :         unit: None = None,</span>
+<span id="L61"><span class="lineNum">      61</span>              :         *,</span>
+<span id="L62"><span class="lineNum">      62</span>              :         scaled: bool = False,</span>
+<span id="L63"><span class="lineNum">      63</span>              :     ) -&gt; PintArray: ...</span>
+<span id="L64"><span class="lineNum">      64</span>              : </span>
+<span id="L65"><span class="lineNum">      65</span>              :     @overload</span>
+<span id="L66"><span class="lineNum">      66</span>              :     def get(</span>
+<span id="L67"><span class="lineNum">      67</span>              :         self,</span>
+<span id="L68"><span class="lineNum">      68</span>              :         kappa1: int,</span>
+<span id="L69"><span class="lineNum">      69</span>              :         kappa2: int,</span>
+<span id="L70"><span class="lineNum">      70</span>              :         transition_energy: float,</span>
+<span id="L71"><span class="lineNum">      71</span>              :         transition_energy_unit: str,</span>
+<span id="L72"><span class="lineNum">      72</span>              :         unit: str,</span>
+<span id="L73"><span class="lineNum">      73</span>              :         *,</span>
+<span id="L74"><span class="lineNum">      74</span>              :         scaled: bool = False,</span>
+<span id="L75"><span class="lineNum">      75</span>              :     ) -&gt; NDArray: ...</span>
+<span id="L76"><span class="lineNum">      76</span>              : </span>
+<span id="L77"><span class="lineNum">      77</span>              :     @overload</span>
+<span id="L78"><span class="lineNum">      78</span>              :     def get(</span>
+<span id="L79"><span class="lineNum">      79</span>              :         self,</span>
+<span id="L80"><span class="lineNum">      80</span>              :         kappa1: int,</span>
+<span id="L81"><span class="lineNum">      81</span>              :         kappa2: int,</span>
+<span id="L82"><span class="lineNum">      82</span>              :         transition_energy: PintFloat,</span>
+<span id="L83"><span class="lineNum">      83</span>              :         *,</span>
+<span id="L84"><span class="lineNum">      84</span>              :         unit: str,</span>
+<span id="L85"><span class="lineNum">      85</span>              :         scaled: bool = False,</span>
+<span id="L86"><span class="lineNum">      86</span>              :     ) -&gt; NDArray: ...</span>
+<span id="L87"><span class="lineNum">      87</span>              : </span>
+<span id="L88"><span class="lineNum">      88</span> <span class="tlaGNC">           1 :     def get(</span></span>
+<span id="L89"><span class="lineNum">      89</span>              :         self,</span>
+<span id="L90"><span class="lineNum">      90</span>              :         kappa1: int,</span>
+<span id="L91"><span class="lineNum">      91</span>              :         kappa2: int,</span>
+<span id="L92"><span class="lineNum">      92</span>              :         transition_energy: float | PintFloat,</span>
+<span id="L93"><span class="lineNum">      93</span>              :         transition_energy_unit: str | None = None,</span>
+<span id="L94"><span class="lineNum">      94</span>              :         unit: str | None = None,</span>
+<span id="L95"><span class="lineNum">      95</span>              :         *,</span>
+<span id="L96"><span class="lineNum">      96</span>              :         scaled: bool = False,</span>
+<span id="L97"><span class="lineNum">      97</span>              :     ) -&gt; PintArray | NDArray:</span>
+<span id="L98"><span class="lineNum">      98</span>              :         &quot;&quot;&quot;Calculate the Green tensor in cartesian coordinates for the given ranks kappa1, kappa2 and frequency omega.</span>
+<span id="L99"><span class="lineNum">      99</span>              : </span>
+<span id="L100"><span class="lineNum">     100</span>              :         kappa = 1 corresponds to dipole operator with the cartesian basis: [x, y, z]</span>
+<span id="L101"><span class="lineNum">     101</span>              : </span>
+<span id="L102"><span class="lineNum">     102</span>              :         Args:</span>
+<span id="L103"><span class="lineNum">     103</span>              :             kappa1: The rank of the first multipole operator.</span>
+<span id="L104"><span class="lineNum">     104</span>              :             kappa2: The rank of the second multipole operator.</span>
+<span id="L105"><span class="lineNum">     105</span>              :             transition_energy: The transition energy at which to evaluate the Green tensor.</span>
+<span id="L106"><span class="lineNum">     106</span>              :                 Only needed if the Green tensor is frequency dependent.</span>
+<span id="L107"><span class="lineNum">     107</span>              :             transition_energy_unit: The unit of the transition energy.</span>
+<span id="L108"><span class="lineNum">     108</span>              :                 Default None, which means that the transition energy must be given as pint object.</span>
+<span id="L109"><span class="lineNum">     109</span>              :             unit: The unit to which to convert the result.</span>
+<span id="L110"><span class="lineNum">     110</span>              :                 Default None, which means that the result is returned as pint object.</span>
+<span id="L111"><span class="lineNum">     111</span>              :             scaled: If True, the Green tensor is returned with the prefactor for the interaction</span>
+<span id="L112"><span class="lineNum">     112</span>              :                 already included (the unit has to be adopted accordingly).</span>
+<span id="L113"><span class="lineNum">     113</span>              :                 Default False, which means that the bare Green tensor is returned.</span>
+<span id="L114"><span class="lineNum">     114</span>              : </span>
+<span id="L115"><span class="lineNum">     115</span>              :         Returns:</span>
+<span id="L116"><span class="lineNum">     116</span>              :             The Green tensor as a 2D array in cartesian coordinates.</span>
+<span id="L117"><span class="lineNum">     117</span>              : </span>
+<span id="L118"><span class="lineNum">     118</span>              :         &quot;&quot;&quot;</span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :         omega_au = QuantityScalar.convert_user_to_au(transition_energy, transition_energy_unit, &quot;energy&quot;)</span></span>
+<span id="L120"><span class="lineNum">     120</span> <span class="tlaGNC">           1 :         omega_for_calculation = 0 if self.static_limit else omega_au</span></span>
+<span id="L121"><span class="lineNum">     121</span>              : </span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">           1 :         scaled_gt_au = self._get_scaled_au(kappa1, kappa2, omega_for_calculation)</span></span>
+<span id="L123"><span class="lineNum">     123</span>              : </span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">           1 :         prefactor = 1 if scaled else self._get_prefactor_au(kappa1, kappa2, omega_au)</span></span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           1 :         dimension = self._get_dimension(kappa1, kappa2, scaled)</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           1 :         return QuantityArray.convert_au_to_user(scaled_gt_au / prefactor, dimension, unit)</span></span>
+<span id="L127"><span class="lineNum">     127</span>              : </span>
+<span id="L128"><span class="lineNum">     128</span>              :     @abstractmethod</span>
+<span id="L129"><span class="lineNum">     129</span>              :     def _get_scaled_au(self, kappa1: int, kappa2: int, transition_energy_au: float) -&gt; NDArray: ...</span>
+<span id="L130"><span class="lineNum">     130</span>              : </span>
+<span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">           1 :     @staticmethod</span></span>
+<span id="L132"><span class="lineNum">     132</span> <span class="tlaGNC">           1 :     def _get_prefactor_au(kappa1: int, kappa2: int, transition_energy_au: float) -&gt; float:</span></span>
+<span id="L133"><span class="lineNum">     133</span>              :         r&quot;&quot;&quot;Get the prefactor to get the interaction strength from the Green tensor.</span>
+<span id="L134"><span class="lineNum">     134</span>              : </span>
+<span id="L135"><span class="lineNum">     135</span>              :         The interaction between two dipole moments is given as (see e.g. https://arxiv.org/pdf/2303.13564)</span>
+<span id="L136"><span class="lineNum">     136</span>              :         .. math::</span>
+<span id="L137"><span class="lineNum">     137</span>              :             V_{\alpha\beta} = \frac{\omega^2}{\hbar \epsilon_0 c^2}</span>
+<span id="L138"><span class="lineNum">     138</span>              :                 d_\alpha^T \mathrm{Re}\{G(r_\alpha, r_\beta, \omega)\} d_\beta</span>
+<span id="L139"><span class="lineNum">     139</span>              : </span>
+<span id="L140"><span class="lineNum">     140</span>              :         This functions returns the prefactor</span>
+<span id="L141"><span class="lineNum">     141</span>              :         .. math::</span>
+<span id="L142"><span class="lineNum">     142</span>              :             \frac{\omega^2}{\hbar \epsilon_0 c^2}</span>
+<span id="L143"><span class="lineNum">     143</span>              : </span>
+<span id="L144"><span class="lineNum">     144</span>              :         In C++ we use the convention that the Green tensor already contains this prefactor.</span>
+<span id="L145"><span class="lineNum">     145</span>              : </span>
+<span id="L146"><span class="lineNum">     146</span>              :         Args:</span>
+<span id="L147"><span class="lineNum">     147</span>              :             kappa1: The rank of the first multipole operator.</span>
+<span id="L148"><span class="lineNum">     148</span>              :             kappa2: The rank of the second multipole operator.</span>
+<span id="L149"><span class="lineNum">     149</span>              :             transition_energy_au: The transition energy at which to evaluate the Green tensor in atomic units (hartree).</span>
+<span id="L150"><span class="lineNum">     150</span>              : </span>
+<span id="L151"><span class="lineNum">     151</span>              :         &quot;&quot;&quot;</span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           1 :         if kappa1 == 1 and kappa2 == 1:</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :             speed_of_light_au: float = ureg.Quantity(1, &quot;speed_of_light&quot;).to_base_units().m</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :             prefactor = (transition_energy_au / speed_of_light_au) ** 2</span></span>
+<span id="L155"><span class="lineNum">     155</span> <span class="tlaGNC">           1 :             prefactor /= 1 / (4 * np.pi)  # hbar = 1, epsilon_0 = 1 / (4*np.pi) in atomic units</span></span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">           1 :             prefactor *= -1  # minus sign from H = - \hbar \sum V_{\alpha\beta} ...</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">           1 :             return -prefactor</span></span>
+<span id="L158"><span class="lineNum">     158</span> <span class="tlaUNC">           0 :         raise NotImplementedError(&quot;Only dipole-dipole Green tensor prefactor is currently implemented.&quot;)</span></span>
+<span id="L159"><span class="lineNum">     159</span>              : </span>
+<span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">           1 :     @staticmethod</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :     def _get_dimension(kappa1: int, kappa2: int, scaled: bool) -&gt; list[Dimension]:</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">           1 :         dimension_00: Dimension = &quot;scaled_green_tensor_00&quot; if scaled else &quot;green_tensor_00&quot;</span></span>
+<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">           1 :         dimension: list[Dimension] = [dimension_00] + [&quot;inverse_distance&quot;] * (kappa1 + kappa2)</span></span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">           1 :         return dimension</span></span>
+<span id="L165"><span class="lineNum">     165</span>              : </span>
+<span id="L166"><span class="lineNum">     166</span>              :     @overload</span>
+<span id="L167"><span class="lineNum">     167</span>              :     def get_interpolator(self, *, use_real: bool) -&gt; GreenTensorInterpolator: ...</span>
+<span id="L168"><span class="lineNum">     168</span>              : </span>
+<span id="L169"><span class="lineNum">     169</span>              :     @overload</span>
+<span id="L170"><span class="lineNum">     170</span>              :     def get_interpolator(</span>
+<span id="L171"><span class="lineNum">     171</span>              :         self,</span>
+<span id="L172"><span class="lineNum">     172</span>              :         transition_energies: Collection[PintFloat] | PintArray,</span>
+<span id="L173"><span class="lineNum">     173</span>              :         transition_energies_unit: None = None,</span>
+<span id="L174"><span class="lineNum">     174</span>              :         *,</span>
+<span id="L175"><span class="lineNum">     175</span>              :         use_real: bool,</span>
+<span id="L176"><span class="lineNum">     176</span>              :     ) -&gt; GreenTensorInterpolator: ...</span>
+<span id="L177"><span class="lineNum">     177</span>              : </span>
+<span id="L178"><span class="lineNum">     178</span>              :     @overload</span>
+<span id="L179"><span class="lineNum">     179</span>              :     def get_interpolator(</span>
+<span id="L180"><span class="lineNum">     180</span>              :         self, transition_energies: Collection[float] | NDArray, transition_energies_unit: str, *, use_real: bool</span>
+<span id="L181"><span class="lineNum">     181</span>              :     ) -&gt; GreenTensorInterpolator: ...</span>
+<span id="L182"><span class="lineNum">     182</span>              : </span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">           1 :     def get_interpolator(</span></span>
+<span id="L184"><span class="lineNum">     184</span>              :         self,</span>
+<span id="L185"><span class="lineNum">     185</span>              :         transition_energies: Collection[PintFloat] | PintArray | Collection[float] | NDArray | None = None,</span>
+<span id="L186"><span class="lineNum">     186</span>              :         transition_energies_unit: str | None = None,</span>
+<span id="L187"><span class="lineNum">     187</span>              :         *,</span>
+<span id="L188"><span class="lineNum">     188</span>              :         use_real: bool,</span>
+<span id="L189"><span class="lineNum">     189</span>              :     ) -&gt; GreenTensorInterpolator:</span>
+<span id="L190"><span class="lineNum">     190</span>              :         &quot;&quot;&quot;Get a GreenTensorInterpolator from this Green tensor.</span>
+<span id="L191"><span class="lineNum">     191</span>              : </span>
+<span id="L192"><span class="lineNum">     192</span>              :         The GreenTensorInterpolator can be used for the interaction of a SystemPair.</span>
+<span id="L193"><span class="lineNum">     193</span>              : </span>
+<span id="L194"><span class="lineNum">     194</span>              :         Returns:</span>
+<span id="L195"><span class="lineNum">     195</span>              :             A GreenTensorInterpolator that interpolates the Green tensor at given frequency points.</span>
+<span id="L196"><span class="lineNum">     196</span>              : </span>
+<span id="L197"><span class="lineNum">     197</span>              :         &quot;&quot;&quot;</span>
+<span id="L198"><span class="lineNum">     198</span>              :         GTIClass: type[GreenTensorInterpolator]  # noqa: N806</span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">           1 :         if use_real:</span></span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">           1 :             from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolatorReal as GTIClass</span></span>
+<span id="L201"><span class="lineNum">     201</span>              :         else:</span>
+<span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC">           1 :             from pairinteraction.green_tensor.green_tensor_interpolator import GreenTensorInterpolator as GTIClass</span></span>
+<span id="L203"><span class="lineNum">     203</span>              : </span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">           1 :         if self.static_limit and not (transition_energies is None and transition_energies_unit is None):</span></span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaUNC">           0 :             raise ValueError(&quot;You must not specify a frequency range when static limit is set.&quot;)</span></span>
+<span id="L206"><span class="lineNum">     206</span>              : </span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">           1 :         if self.static_limit:</span></span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">           1 :             gti = GTIClass()</span></span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           1 :             scaled_gt_au = self.get(1, 1, 0, scaled=True)</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">           1 :             gti.set_constant(1, 1, scaled_gt_au)</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">           1 :             return gti</span></span>
+<span id="L212"><span class="lineNum">     212</span>              : </span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaUNC">           0 :         if transition_energies is not None:</span></span>
+<span id="L214"><span class="lineNum">     214</span> <span class="tlaUNC">           0 :             omegas_pint = [</span></span>
+<span id="L215"><span class="lineNum">     215</span>              :                 QuantityScalar.convert_user_to_pint(omega, transition_energies_unit, &quot;energy&quot;)  # type: ignore [arg-type] # pint mistypes Quantity.__iter__</span>
+<span id="L216"><span class="lineNum">     216</span>              :                 for omega in transition_energies</span>
+<span id="L217"><span class="lineNum">     217</span>              :             ]</span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaUNC">           0 :             gti = GTIClass()</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaUNC">           0 :             scaled_gt_list = [self.get(1, 1, omega, scaled=True) for omega in omegas_pint]</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaUNC">           0 :             gti.set_list(1, 1, scaled_gt_list, omegas_pint, scaled=True)</span></span>
+<span id="L221"><span class="lineNum">     221</span> <span class="tlaUNC">           0 :             return gti</span></span>
+<span id="L222"><span class="lineNum">     222</span>              : </span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaUNC">           0 :         raise ValueError(</span></span>
+<span id="L224"><span class="lineNum">     224</span>              :             &quot;You must either specify transition_energies or set static_limit to True to get an interpolator object.&quot;</span>
+<span id="L225"><span class="lineNum">     225</span>              :         )</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

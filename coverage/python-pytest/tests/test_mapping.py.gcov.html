@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - tests/test_mapping.py</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory tests">tests</a> - test_mapping.py<span style="font-size: 80%;"> (source / <a href="test_mapping.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntry">18</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">1</td>
+            <td class="headerCovTableEntry">1</td>
+          </tr>
+                  <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING</span></span>
+<span id="L7"><span class="lineNum">       7</span>              : </span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : import numpy as np</span></span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">           1 : from scipy.optimize import linear_sum_assignment</span></span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span>              : if TYPE_CHECKING:</span>
+<span id="L12"><span class="lineNum">      12</span>              :     from pairinteraction.units import NDArray</span>
+<span id="L13"><span class="lineNum">      13</span>              : </span>
+<span id="L14"><span class="lineNum">      14</span>              :     from .utils import PairinteractionModule</span>
+<span id="L15"><span class="lineNum">      15</span>              : </span>
+<span id="L16"><span class="lineNum">      16</span>              : </span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">           1 : def test_mapping(pi_module: PairinteractionModule) -&gt; None:</span></span>
+<span id="L18"><span class="lineNum">      18</span>              :     &quot;&quot;&quot;Test generation of a mapping.&quot;&quot;&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>              :     # Get the eigenbasis of the Hamiltonian describing an atom in an electric field</span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">           1 :     basis = pi_module.BasisAtom(&quot;Rb&quot;, n=(58, 62), l=(0, 2))</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">           1 :     system = pi_module.SystemAtom(basis).set_electric_field([0, 0, 2.5], unit=&quot;V/cm&quot;)</span></span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           1 :     system.diagonalize(diagonalizer=&quot;eigen&quot;)</span></span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">           1 :     eigenbasis = system.get_eigenbasis()</span></span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           1 :     assert eigenbasis.number_of_states == eigenbasis.number_of_kets</span></span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              :     # Obtain the mapping</span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">           1 :     state_indices = [eigenbasis.get_corresponding_state_index(ket) for ket in eigenbasis.kets]</span></span>
+<span id="L29"><span class="lineNum">      29</span>              : </span>
+<span id="L30"><span class="lineNum">      30</span>              :     # Calculate the mapping from the coefficient matrix using scipy</span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaGNC">           1 :     coefficient_matrix = np.square(np.abs(eigenbasis.get_coefficients().todense()))</span></span>
+<span id="L32"><span class="lineNum">      32</span>              :     rows: NDArray</span>
+<span id="L33"><span class="lineNum">      33</span>              :     cols: NDArray</span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           1 :     rows, cols = linear_sum_assignment(-coefficient_matrix)</span></span>
+<span id="L35"><span class="lineNum">      35</span>              : </span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">           1 :     sorter = np.argsort(rows)</span></span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">           1 :     rows = rows[sorter]</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           1 :     cols = cols[sorter]</span></span>
+<span id="L39"><span class="lineNum">      39</span>              : </span>
+<span id="L40"><span class="lineNum">      40</span>              :     # Because we have chosen the electric field to be weak enough to avoid strong mixing of states,</span>
+<span id="L41"><span class="lineNum">      41</span>              :     # the mapping obtained by PairInteraction's heuristic should be the same as the optimal mapping</span>
+<span id="L42"><span class="lineNum">      42</span>              :     # obtained by scipy's linear_sum_assignment</span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           1 :     np.testing.assert_array_equal(rows, np.arange(eigenbasis.number_of_kets))</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           1 :     np.testing.assert_array_equal(cols, state_indices)  # TODO</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

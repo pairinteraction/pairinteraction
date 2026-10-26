@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction/perturbative/c6.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction/perturbative">src/pairinteraction/perturbative</a> - c6.py<span style="font-size: 80%;"> (source / <a href="c6.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">94.4&nbsp;%</td>
+            <td class="headerCovTableEntry">18</td>
+            <td class="headerCovTableEntry">17</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">2</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING, overload</span></span>
+<span id="L6"><span class="lineNum">       6</span>              : </span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           1 : from pairinteraction.perturbative.effective_system_pair import EffectiveSystemPair, EffectiveSystemPairReal</span></span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : from pairinteraction.units import QuantityScalar</span></span>
+<span id="L9"><span class="lineNum">       9</span>              : </span>
+<span id="L10"><span class="lineNum">      10</span>              : if TYPE_CHECKING:</span>
+<span id="L11"><span class="lineNum">      11</span>              :     from pairinteraction.ket import KetAtom</span>
+<span id="L12"><span class="lineNum">      12</span>              :     from pairinteraction.units import PintFloat</span>
+<span id="L13"><span class="lineNum">      13</span>              : </span>
+<span id="L14"><span class="lineNum">      14</span>              : </span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">           1 : class C6(EffectiveSystemPair):</span></span>
+<span id="L16"><span class="lineNum">      16</span>              :     &quot;&quot;&quot;Class for calculating the C6 coefficient for a two-atom state ``|ket1, ket2&gt;``.</span>
+<span id="L17"><span class="lineNum">      17</span>              : </span>
+<span id="L18"><span class="lineNum">      18</span>              :     Given two `KetAtom` objects ket1 and ket2,</span>
+<span id="L19"><span class="lineNum">      19</span>              :     this class computes the C6 coefficient for the pair state ``|ket1, ket2&gt;``.</span>
+<span id="L20"><span class="lineNum">      20</span>              :     This class also allows to set magnetic and electric fields similar to the `SystemAtom` class,</span>
+<span id="L21"><span class="lineNum">      21</span>              :     as well as the angle between the two atoms like in the `SystemPair` class.</span>
+<span id="L22"><span class="lineNum">      22</span>              : </span>
+<span id="L23"><span class="lineNum">      23</span>              :     Note, that ket1 and ket2 must be either the same state or states of different species.</span>
+<span id="L24"><span class="lineNum">      24</span>              :     If you want to calculate the C6 coefficient for two different states of the same species,</span>
+<span id="L25"><span class="lineNum">      25</span>              :     we recommend using the `EffectiveSystemPair` class with the ket_tuples subspace [(ket1, ket2), (ket2, ket1)].</span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              : </span>
+<span id="L28"><span class="lineNum">      28</span>              : </span>
+<span id="L29"><span class="lineNum">      29</span>              :     Examples:</span>
+<span id="L30"><span class="lineNum">      30</span>              :         &gt;&gt;&gt; import pairinteraction as pi</span>
+<span id="L31"><span class="lineNum">      31</span>              :         &gt;&gt;&gt; ket = pi.KetAtom(&quot;Rb&quot;, n=60, l=0, j=0.5, m=0.5)</span>
+<span id="L32"><span class="lineNum">      32</span>              :         &gt;&gt;&gt; c6_obj = pi.C6(ket, ket)</span>
+<span id="L33"><span class="lineNum">      33</span>              :         &gt;&gt;&gt; c6 = c6_obj.get(unit=&quot;planck_constant * GHz * micrometer^6&quot;)</span>
+<span id="L34"><span class="lineNum">      34</span>              :         &gt;&gt;&gt; print(f&quot;{c6:.1f}&quot;)</span>
+<span id="L35"><span class="lineNum">      35</span>              :         -138.9</span>
+<span id="L36"><span class="lineNum">      36</span>              : </span>
+<span id="L37"><span class="lineNum">      37</span>              :     &quot;&quot;&quot;</span>
+<span id="L38"><span class="lineNum">      38</span>              : </span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 :     def __init__(self, ket1: KetAtom, ket2: KetAtom) -&gt; None:</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           1 :         if ket1.species == ket2.species and ket1 != ket2:</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaUNC">           0 :             raise ValueError(</span></span>
+<span id="L42"><span class="lineNum">      42</span>              :                 &quot;If you want to calculate 2nd order perturbations of two different states a and b &quot;</span>
+<span id="L43"><span class="lineNum">      43</span>              :                 &quot;(of the same species), &quot;</span>
+<span id="L44"><span class="lineNum">      44</span>              :                 &quot;please use the EffectiveSystemPair([(a,b), (b,a)]) class.&quot;</span>
+<span id="L45"><span class="lineNum">      45</span>              :             )</span>
+<span id="L46"><span class="lineNum">      46</span>              : </span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           1 :         super().__init__([(ket1, ket2)])</span></span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 :         self.set_perturbation_order(2)</span></span>
+<span id="L49"><span class="lineNum">      49</span>              : </span>
+<span id="L50"><span class="lineNum">      50</span>              :         # Set some default distance. The exact value does not matter for the C6 value,</span>
+<span id="L51"><span class="lineNum">      51</span>              :         # but too small distances result in warnings about the basisvec admixtures</span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :         self.set_distance(100, unit=&quot;micrometer&quot;)</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span>              :     @overload</span>
+<span id="L55"><span class="lineNum">      55</span>              :     def get(self, unit: None = None) -&gt; PintFloat: ...</span>
+<span id="L56"><span class="lineNum">      56</span>              : </span>
+<span id="L57"><span class="lineNum">      57</span>              :     @overload</span>
+<span id="L58"><span class="lineNum">      58</span>              :     def get(self, unit: str) -&gt; float: ...</span>
+<span id="L59"><span class="lineNum">      59</span>              : </span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           1 :     def get(self, unit: str | None = None) -&gt; float | PintFloat:</span></span>
+<span id="L61"><span class="lineNum">      61</span>              :         r&quot;&quot;&quot;Get the C6 coefficient of the interaction between the specified ket1 and ket2.</span>
+<span id="L62"><span class="lineNum">      62</span>              : </span>
+<span id="L63"><span class="lineNum">      63</span>              :         The C6 coefficient is defined such that the van der Waals interaction potential is given by</span>
+<span id="L64"><span class="lineNum">      64</span>              :         :math:`V(r) = -C_6/r^6`.</span>
+<span id="L65"><span class="lineNum">      65</span>              :         Note, the entry in the effective Hamiltonian matrix (see :meth:`get_effective_hamiltonian`)</span>
+<span id="L66"><span class="lineNum">      66</span>              :         has the opposite sign as the C6 coefficient.</span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span>              :         Args:</span>
+<span id="L69"><span class="lineNum">      69</span>              :             unit: The unit in which to return the C6 coefficient.</span>
+<span id="L70"><span class="lineNum">      70</span>              :                 If None, returns a pint object.</span>
+<span id="L71"><span class="lineNum">      71</span>              : </span>
+<span id="L72"><span class="lineNum">      72</span>              :         &quot;&quot;&quot;</span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           1 :         h_eff_pint = self.get_effective_hamiltonian(return_order=2)</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           1 :         distance = self.system_pair.get_distance()</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :         c6_pint = -h_eff_pint[0, 0] * distance**6  # type: ignore [index, operator]  # pint does not know it can be indexed</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           1 :         return QuantityScalar.convert_pint_to_user(c6_pint, &quot;c6&quot;, unit)</span></span>
+<span id="L77"><span class="lineNum">      77</span>              : </span>
+<span id="L78"><span class="lineNum">      78</span>              : </span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           1 : class C6Real(C6, EffectiveSystemPairReal):</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">           1 :     pass</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

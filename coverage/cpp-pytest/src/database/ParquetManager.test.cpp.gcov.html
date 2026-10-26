@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/database/ParquetManager.test.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/database">src/database</a> - ParquetManager.test.cpp<span style="font-size: 80%;"> (source / <a href="ParquetManager.test.cpp.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">88.9&nbsp;%</td>
+            <td class="headerCovTableEntry">126</td>
+            <td class="headerCovTableEntry">112</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:42</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">8</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : // SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span>              : #include &quot;pairinteraction/database/ParquetManager.hpp&quot;</span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span>              : #include &quot;pairinteraction/database/Database.hpp&quot;</span>
+<span id="L7"><span class="lineNum">       7</span>              : #include &quot;pairinteraction/database/GitHubDownloader.hpp&quot;</span>
+<span id="L8"><span class="lineNum">       8</span>              : </span>
+<span id="L9"><span class="lineNum">       9</span>              : #include &lt;doctest/doctest.h&gt;</span>
+<span id="L10"><span class="lineNum">      10</span>              : #include &lt;duckdb.hpp&gt;</span>
+<span id="L11"><span class="lineNum">      11</span>              : #include &lt;filesystem&gt;</span>
+<span id="L12"><span class="lineNum">      12</span>              : #include &lt;fmt/format.h&gt;</span>
+<span id="L13"><span class="lineNum">      13</span>              : #include &lt;fstream&gt;</span>
+<span id="L14"><span class="lineNum">      14</span>              : #include &lt;memory&gt;</span>
+<span id="L15"><span class="lineNum">      15</span>              : #include &lt;miniz.h&gt;</span>
+<span id="L16"><span class="lineNum">      16</span>              : #include &lt;nlohmann/json.hpp&gt;</span>
+<span id="L17"><span class="lineNum">      17</span>              : #include &lt;spdlog/spdlog.h&gt;</span>
+<span id="L18"><span class="lineNum">      18</span>              : </span>
+<span id="L19"><span class="lineNum">      19</span>              : namespace pairinteraction {</span>
+<span id="L20"><span class="lineNum">      20</span>              : class MockDownloader : public GitHubDownloader {</span>
+<span id="L21"><span class="lineNum">      21</span>              : public:</span>
+<span id="L22"><span class="lineNum">      22</span>              :     std::future&lt;GitHubDownloader::Result&gt;</span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">          12 :     download(const std::string &amp;remote_url, const std::string &amp; /*if_none_match*/ = &quot;&quot;,</span></span>
+<span id="L24"><span class="lineNum">      24</span>              :              bool /*use_octet_stream*/ = false) const override {</span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">          12 :         GitHubDownloader::Result result;</span></span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaGNC">          12 :         result.status_code = 200;</span></span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">          12 :         result.rate_limit.remaining = 60;</span></span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">          12 :         result.rate_limit.reset_time = 2147483647;</span></span>
+<span id="L29"><span class="lineNum">      29</span>              : </span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">          12 :         if (remote_url == &quot;/test/repo/path&quot;) {</span></span>
+<span id="L31"><span class="lineNum">      31</span>              :             // This is a repo path request for a single release, return JSON with assets</span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           5 :             result.body = make_release(&quot;2.1&quot;).dump();</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">          11 :         } else if (remote_url == &quot;/test/repo/releases&quot;) {</span></span>
+<span id="L34"><span class="lineNum">      34</span>              :             // This is a repo path request for a list of releases. The latest release only</span>
+<span id="L35"><span class="lineNum">      35</span>              :             // provides tables whose major version differs from COMPATIBLE_DATABASE_VERSION_MAJOR</span>
+<span id="L36"><span class="lineNum">      36</span>              :             // and is thus incompatible, the older ones are compatible. In addition, the oldest</span>
+<span id="L37"><span class="lineNum">      37</span>              :             // release contains an asset that is not provided anymore by newer releases.</span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           2 :             nlohmann::json releases = nlohmann::json::array();</span></span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           8 :             releases.push_back(make_release(&quot;3.0&quot;));</span></span>
+<span id="L40"><span class="lineNum">      40</span> <span class="tlaGNC">           8 :             releases.push_back(make_release(&quot;2.1&quot;));</span></span>
+<span id="L41"><span class="lineNum">      41</span> <span class="tlaGNC">           8 :             releases.push_back(make_release(&quot;2.0&quot;, {&quot;misc&quot;, &quot;retired&quot;}));</span></span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           2 :             result.body = releases.dump();</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">          11 :         } else if (remote_url == &quot;/test/repo/releases_unpublished&quot;) {</span></span>
+<span id="L44"><span class="lineNum">      44</span>              :             // This is a repo path request for a list of releases whose latest entries are a draft</span>
+<span id="L45"><span class="lineNum">      45</span>              :             // and a pre-release. They must be skipped although they provide compatible tables. The</span>
+<span id="L46"><span class="lineNum">      46</span>              :             // draft does not contain any assets at all, as it is the case for drafts on GitHub</span>
+<span id="L47"><span class="lineNum">      47</span>              :             // that have not been populated yet.</span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">           1 :             nlohmann::json draft;</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 :             draft[&quot;draft&quot;] = true;</span></span>
+<span id="L50"><span class="lineNum">      50</span>              : </span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           4 :             nlohmann::json prerelease = make_release(&quot;2.4&quot;);</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :             prerelease[&quot;prerelease&quot;] = true;</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           1 :             nlohmann::json releases = nlohmann::json::array();</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 :             releases.push_back(draft);</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 :             releases.push_back(prerelease);</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           4 :             releases.push_back(make_release(&quot;2.1&quot;));</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :             result.body = releases.dump();</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           9 :         } else if (remote_url == &quot;/test/repo/releases_invalid&quot;) {</span></span>
+<span id="L60"><span class="lineNum">      60</span>              :             // This is a repo path request whose response is not valid JSON</span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">           1 :             result.body = &quot;not a json&quot;;</span></span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           7 :         } else if (remote_url == &quot;/rate_limit&quot;) {</span></span>
+<span id="L63"><span class="lineNum">      63</span>              :             // This is the rate limit request</span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           4 :             result.body = &quot;&quot;;</span></span>
+<span id="L65"><span class="lineNum">      65</span>              :         } else {</span>
+<span id="L66"><span class="lineNum">      66</span>              :             // This is the file download request</span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           6 :             std::string content = &quot;updated_file_content&quot;;</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">           3 :             std::string filename = &quot;misc_v2.1/wigner.parquet&quot;;</span></span>
+<span id="L69"><span class="lineNum">      69</span>              : </span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           3 :             mz_zip_archive zip_archive{};</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           3 :             size_t zip_size = 0;</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           3 :             void *zip_data = nullptr;</span></span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           3 :             mz_zip_writer_init_heap(&amp;zip_archive, 0, 0);</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           3 :             mz_zip_writer_add_mem(&amp;zip_archive, filename.c_str(), content.data(), content.size(),</span></span>
+<span id="L76"><span class="lineNum">      76</span>              :                                   MZ_BEST_SPEED);</span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">           3 :             mz_zip_writer_finalize_heap_archive(&amp;zip_archive, &amp;zip_data, &amp;zip_size);</span></span>
+<span id="L78"><span class="lineNum">      78</span>              : </span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           3 :             result.body = std::string(static_cast&lt;char *&gt;(zip_data), zip_size);</span></span>
+<span id="L80"><span class="lineNum">      80</span>              : </span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">           3 :             mz_free(zip_data);</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           3 :             mz_zip_writer_end(&amp;zip_archive);</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">           3 :         }</span></span>
+<span id="L84"><span class="lineNum">      84</span>              : </span>
+<span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">          36 :         return std::async(std::launch::deferred, [result]() { return result; });</span></span>
+<span id="L86"><span class="lineNum">      86</span> <span class="tlaGNC">          12 :     }</span></span>
+<span id="L87"><span class="lineNum">      87</span>              : </span>
+<span id="L88"><span class="lineNum">      88</span>              : private:</span>
+<span id="L89"><span class="lineNum">      89</span>              :     // Construct a release that provides the tables of the given version for the given assets</span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           9 :     static nlohmann::json make_release(const std::string &amp;version,</span></span>
+<span id="L91"><span class="lineNum">      91</span>              :                                        const std::vector&lt;std::string&gt; &amp;keys = {&quot;misc&quot;}) {</span>
+<span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           9 :         nlohmann::json assets = nlohmann::json::array();</span></span>
+<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">          20 :         for (const auto &amp;key : keys) {</span></span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">          11 :             nlohmann::json asset;</span></span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">          22 :             asset[&quot;name&quot;] = fmt::format(&quot;{}_v{}.zip&quot;, key, version);</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">          22 :             asset[&quot;url&quot;] = fmt::format(&quot;https://api.github.com/test/path/{}_v{}.zip&quot;, key, version);</span></span>
+<span id="L97"><span class="lineNum">      97</span> <span class="tlaGNC">          11 :             assets.push_back(asset);</span></span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">          11 :         }</span></span>
+<span id="L99"><span class="lineNum">      99</span>              : </span>
+<span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           9 :         nlohmann::json release;</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaGNC">           9 :         release[&quot;assets&quot;] = assets;</span></span>
+<span id="L102"><span class="lineNum">     102</span> <span class="tlaGNC">           9 :         return release;</span></span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaGNC">           9 :     }</span></span>
+<span id="L104"><span class="lineNum">     104</span>              : };</span>
+<span id="L105"><span class="lineNum">     105</span>              : </span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaGNC">           6 : TEST_CASE(&quot;ParquetManager functionality with mocked downloader&quot;) {</span></span>
+<span id="L107"><span class="lineNum">     107</span> <span class="tlaGNC">           6 :     MockDownloader downloader;</span></span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaGNC">           6 :     auto test_dir = std::filesystem::temp_directory_path() / &quot;pairinteraction_test_db&quot;;</span></span>
+<span id="L109"><span class="lineNum">     109</span> <span class="tlaGNC">           6 :     duckdb::DuckDB db(nullptr);</span></span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">           6 :     duckdb::Connection con(db);</span></span>
+<span id="L111"><span class="lineNum">     111</span>              : </span>
+<span id="L112"><span class="lineNum">     112</span>              :     // Create a manager for the given repository paths and scan the local and remote tables</span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaGNC">           6 :     auto make_manager = [&amp;](std::vector&lt;std::string&gt; repo_paths) {</span></span>
+<span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">           6 :         auto manager = std::make_unique&lt;ParquetManager&gt;(test_dir, downloader, std::move(repo_paths),</span></span>
+<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">           6 :                                                         con, false);</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           6 :         manager-&gt;scan_local();</span></span>
+<span id="L117"><span class="lineNum">     117</span> <span class="tlaGNC">           6 :         manager-&gt;scan_remote();</span></span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           6 :         return manager;</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaUNC">           0 :     };</span></span>
+<span id="L120"><span class="lineNum">     120</span>              : </span>
+<span id="L121"><span class="lineNum">     121</span>              :     // Construct the path to the wigner table of the misc asset of the given version</span>
+<span id="L122"><span class="lineNum">     122</span> <span class="tlaGNC">          19 :     auto wigner_path = [&amp;](const std::string &amp;version) {</span></span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">          38 :         return (test_dir / &quot;tables&quot; / fmt::format(&quot;misc_v{}&quot;, version) / &quot;wigner.parquet&quot;).string();</span></span>
+<span id="L124"><span class="lineNum">     124</span> <span class="tlaGNC">           6 :     };</span></span>
+<span id="L125"><span class="lineNum">     125</span>              : </span>
+<span id="L126"><span class="lineNum">     126</span>              :     // Create a local wigner table of the misc asset of the given version</span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">          13 :     auto add_local_table = [&amp;](const std::string &amp;version) {</span></span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">          26 :         std::filesystem::create_directories(test_dir / &quot;tables&quot; / fmt::format(&quot;misc_v{}&quot;, version));</span></span>
+<span id="L129"><span class="lineNum">     129</span> <span class="tlaGNC">          13 :         std::ofstream(wigner_path(version)).close();</span></span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">          19 :     };</span></span>
+<span id="L131"><span class="lineNum">     131</span>              : </span>
+<span id="L132"><span class="lineNum">     132</span>              :     // Provide a compatible version and an incompatible version with a higher minor version</span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">          12 :     add_local_table(&quot;2.0&quot;);</span></span>
+<span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">           6 :     add_local_table(&quot;1.4&quot;);</span></span>
+<span id="L135"><span class="lineNum">     135</span>              : </span>
+<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check missing table&quot;) {</span></span>
+<span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">           1 :         auto manager = make_manager({});</span></span>
+<span id="L138"><span class="lineNum">     138</span>              : </span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           5 :         CHECK_THROWS_WITH_AS(manager-&gt;get_path(&quot;misc&quot;, &quot;missing_table&quot;),</span></span>
+<span id="L140"><span class="lineNum">     140</span>              :                              &quot;No table 'missing_table.parquet' found for species 'misc'. The &quot;</span>
+<span id="L141"><span class="lineNum">     141</span>              :                              &quot;tables for the species are incomplete.&quot;,</span>
+<span id="L142"><span class="lineNum">     142</span>              :                              std::runtime_error);</span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L144"><span class="lineNum">     144</span>              : </span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check version parsing&quot;) {</span></span>
+<span id="L146"><span class="lineNum">     146</span>              :         // Provide a second compatible version in addition</span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">           1 :         add_local_table(&quot;2.2&quot;);</span></span>
+<span id="L148"><span class="lineNum">     148</span>              : </span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">           1 :         auto manager = make_manager({});</span></span>
+<span id="L150"><span class="lineNum">     150</span>              : </span>
+<span id="L151"><span class="lineNum">     151</span>              :         // The newest compatible version must be used, neither the oldest compatible version nor</span>
+<span id="L152"><span class="lineNum">     152</span>              :         // the incompatible version with the highest minor version</span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           5 :         CHECK(manager-&gt;get_path(&quot;misc&quot;, &quot;wigner&quot;) == wigner_path(&quot;2.2&quot;));</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L155"><span class="lineNum">     155</span>              : </span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check update table&quot;) {</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">           3 :         auto manager = make_manager({&quot;/test/repo/path&quot;});</span></span>
+<span id="L158"><span class="lineNum">     158</span>              : </span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">           6 :         CHECK(manager-&gt;get_path(&quot;misc&quot;, &quot;wigner&quot;) == wigner_path(&quot;2.1&quot;));</span></span>
+<span id="L160"><span class="lineNum">     160</span>              : </span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :         std::ifstream in(wigner_path(&quot;2.1&quot;), std::ios::binary);</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">           1 :         std::stringstream buffer;</span></span>
+<span id="L163"><span class="lineNum">     163</span> <span class="tlaGNC">           1 :         buffer &lt;&lt; in.rdbuf();</span></span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">           1 :         CHECK(buffer.str() == &quot;updated_file_content&quot;);</span></span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L166"><span class="lineNum">     166</span>              : </span>
+<span id="L167"><span class="lineNum">     167</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check update table if the latest release is incompatible&quot;) {</span></span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">           3 :         auto manager = make_manager({&quot;/test/repo/releases&quot;});</span></span>
+<span id="L169"><span class="lineNum">     169</span>              : </span>
+<span id="L170"><span class="lineNum">     170</span>              :         // The latest compatible release must be used, not the latest release</span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           5 :         CHECK(manager-&gt;get_path(&quot;misc&quot;, &quot;wigner&quot;) == wigner_path(&quot;2.1&quot;));</span></span>
+<span id="L172"><span class="lineNum">     172</span>              : </span>
+<span id="L173"><span class="lineNum">     173</span>              :         // Assets that are only provided by older releases must not be used</span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           5 :         CHECK_THROWS_WITH_AS(</span></span>
+<span id="L175"><span class="lineNum">     175</span>              :             manager-&gt;get_path(&quot;retired&quot;, &quot;wigner&quot;),</span>
+<span id="L176"><span class="lineNum">     176</span>              :             &quot;No tables found for species 'retired'. Check the spelling of the species.&quot;,</span>
+<span id="L177"><span class="lineNum">     177</span>              :             std::runtime_error);</span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L179"><span class="lineNum">     179</span>              : </span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check invalid response of a repository&quot;) {</span></span>
+<span id="L181"><span class="lineNum">     181</span>              :         // If one repository returns an invalid response, the download of database tables must be</span>
+<span id="L182"><span class="lineNum">     182</span>              :         // disabled altogether so that the local tables are used instead of silently providing an</span>
+<span id="L183"><span class="lineNum">     183</span>              :         // incomplete set of tables</span>
+<span id="L184"><span class="lineNum">     184</span>              :         // The invalid response is expected here, so its error message is not logged</span>
+<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">           1 :         auto log_level = spdlog::default_logger()-&gt;level();</span></span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">           1 :         spdlog::default_logger()-&gt;set_level(spdlog::level::off);</span></span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">           2 :         auto manager = make_manager({&quot;/test/repo/releases&quot;, &quot;/test/repo/releases_invalid&quot;});</span></span>
+<span id="L188"><span class="lineNum">     188</span> <span class="tlaGNC">           1 :         spdlog::default_logger()-&gt;set_level(log_level);</span></span>
+<span id="L189"><span class="lineNum">     189</span>              : </span>
+<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">           5 :         CHECK(manager-&gt;get_path(&quot;misc&quot;, &quot;wigner&quot;) == wigner_path(&quot;2.0&quot;));</span></span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L192"><span class="lineNum">     192</span>              : </span>
+<span id="L193"><span class="lineNum">     193</span> <span class="tlaGNC">           6 :     SUBCASE(&quot;Check update table if the latest releases are unpublished&quot;) {</span></span>
+<span id="L194"><span class="lineNum">     194</span> <span class="tlaGNC">           3 :         auto manager = make_manager({&quot;/test/repo/releases_unpublished&quot;});</span></span>
+<span id="L195"><span class="lineNum">     195</span>              : </span>
+<span id="L196"><span class="lineNum">     196</span>              :         // The latest published release must be used, neither the draft nor the pre-release</span>
+<span id="L197"><span class="lineNum">     197</span> <span class="tlaGNC">           5 :         CHECK(manager-&gt;get_path(&quot;misc&quot;, &quot;wigner&quot;) == wigner_path(&quot;2.1&quot;));</span></span>
+<span id="L198"><span class="lineNum">     198</span> <span class="tlaGNC">           7 :     }</span></span>
+<span id="L199"><span class="lineNum">     199</span>              : </span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">           6 :     std::filesystem::remove_all(test_dir);</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           6 : }</span></span>
+<span id="L202"><span class="lineNum">     202</span>              : </span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">           1 : DOCTEST_TEST_CASE(&quot;ParquetManager functionality with GitHub downloader&quot;) {</span></span>
+<span id="L204"><span class="lineNum">     204</span> <span class="tlaGNC">           1 :     if (!Database::get_global_instance().get_download_missing()) {</span></span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">           1 :         DOCTEST_MESSAGE(&quot;Skipping test because download_missing is false.&quot;);</span></span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           1 :         return;</span></span>
+<span id="L207"><span class="lineNum">     207</span>              :     }</span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaUNC">           0 :     GitHubDownloader downloader;</span></span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaUNC">           0 :     duckdb::DuckDB db(nullptr);</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaUNC">           0 :     duckdb::Connection con(db);</span></span>
+<span id="L211"><span class="lineNum">     211</span>              : </span>
+<span id="L212"><span class="lineNum">     212</span>              :     std::vector&lt;std::string&gt; repo_paths = {</span>
+<span id="L213"><span class="lineNum">     213</span>              :         &quot;/repos/pairinteraction/database-sqdt/releases?per_page=100&quot;,</span>
+<span id="L214"><span class="lineNum">     214</span> <span class="tlaUNC">           0 :         &quot;/repos/pairinteraction/database-mqdt/releases?per_page=100&quot;};</span></span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaUNC">           0 :     ParquetManager manager(Database::get_global_instance().get_database_dir(), downloader,</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaUNC">           0 :                            repo_paths, con, Database::get_global_instance().get_use_cache());</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaUNC">           0 :     manager.scan_local();</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaUNC">           0 :     manager.scan_remote();</span></span>
+<span id="L219"><span class="lineNum">     219</span>              : </span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaUNC">           0 :     std::string info = manager.get_versions_info();</span></span>
+<span id="L221"><span class="lineNum">     221</span>              : </span>
+<span id="L222"><span class="lineNum">     222</span>              :     // Check that all species are present</span>
+<span id="L223"><span class="lineNum">     223</span>              :     std::vector&lt;std::string&gt; should_contain = {</span>
+<span id="L224"><span class="lineNum">     224</span>              :         &quot;Cs&quot;,        &quot;K&quot;,         &quot;Li&quot;,         &quot;Na&quot;,         &quot;Rb&quot;,         &quot;Sr87_mqdt&quot;,</span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaUNC">           0 :         &quot;Sr88_sqdt&quot;, &quot;Sr88_mqdt&quot;, &quot;Yb171_mqdt&quot;, &quot;Yb173_mqdt&quot;, &quot;Yb174_mqdt&quot;, &quot;misc&quot;};</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaUNC">           0 :     for (const auto &amp;substr : should_contain) {</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaUNC">           0 :         DOCTEST_CHECK(info.find(substr) != std::string::npos);</span></span>
+<span id="L228"><span class="lineNum">     228</span>              :     }</span>
+<span id="L229"><span class="lineNum">     229</span> <span class="tlaUNC">           0 : }</span></span>
+<span id="L230"><span class="lineNum">     230</span>              : </span>
+<span id="L231"><span class="lineNum">     231</span>              : } // namespace pairinteraction</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

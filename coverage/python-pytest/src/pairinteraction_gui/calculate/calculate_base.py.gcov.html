@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction_gui/calculate/calculate_base.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction_gui/calculate">src/pairinteraction_gui/calculate</a> - calculate_base.py<span style="font-size: 80%;"> (source / <a href="calculate_base.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">92.7&nbsp;%</td>
+            <td class="headerCovTableEntry">137</td>
+            <td class="headerCovTableEntry">127</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">90.0&nbsp;%</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntry">18</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">           1 : import logging</span></span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : from abc import ABC</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING, Any, Generic, TypeVar</span></span>
+<span id="L8"><span class="lineNum">       8</span>              : </span>
+<span id="L9"><span class="lineNum">       9</span> <span class="tlaGNC">           1 : from attr import dataclass</span></span>
+<span id="L10"><span class="lineNum">      10</span>              : </span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           1 : import pairinteraction as pi</span></span>
+<span id="L12"><span class="lineNum">      12</span>              : </span>
+<span id="L13"><span class="lineNum">      13</span>              : if TYPE_CHECKING:</span>
+<span id="L14"><span class="lineNum">      14</span>              :     from collections.abc import Mapping, Sequence</span>
+<span id="L15"><span class="lineNum">      15</span>              : </span>
+<span id="L16"><span class="lineNum">      16</span>              :     from typing_extensions import Self</span>
+<span id="L17"><span class="lineNum">      17</span>              : </span>
+<span id="L18"><span class="lineNum">      18</span>              :     from pairinteraction.system import SystemBase</span>
+<span id="L19"><span class="lineNum">      19</span>              :     from pairinteraction.units import NDArray</span>
+<span id="L20"><span class="lineNum">      20</span>              :     from pairinteraction_gui.config.basis_config import QuantumNumberRestrictions</span>
+<span id="L21"><span class="lineNum">      21</span>              :     from pairinteraction_gui.config.ket_config import QuantumNumbers</span>
+<span id="L22"><span class="lineNum">      22</span>              :     from pairinteraction_gui.config.system_config import RangesKeys</span>
+<span id="L23"><span class="lineNum">      23</span>              :     from pairinteraction_gui.page import OneAtomPage, TwoAtomsPage</span>
+<span id="L24"><span class="lineNum">      24</span>              : </span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           1 : logger = logging.getLogger(__name__)</span></span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span> <span class="tlaGNC">           1 : UnitFromRangeKey: dict[RangesKeys, str] = {</span></span>
+<span id="L28"><span class="lineNum">      28</span>              :     &quot;Ex&quot;: &quot;V/cm&quot;,</span>
+<span id="L29"><span class="lineNum">      29</span>              :     &quot;Ey&quot;: &quot;V/cm&quot;,</span>
+<span id="L30"><span class="lineNum">      30</span>              :     &quot;Ez&quot;: &quot;V/cm&quot;,</span>
+<span id="L31"><span class="lineNum">      31</span>              :     &quot;Bx&quot;: &quot;Gauss&quot;,</span>
+<span id="L32"><span class="lineNum">      32</span>              :     &quot;By&quot;: &quot;Gauss&quot;,</span>
+<span id="L33"><span class="lineNum">      33</span>              :     &quot;Bz&quot;: &quot;Gauss&quot;,</span>
+<span id="L34"><span class="lineNum">      34</span>              :     &quot;Distance&quot;: r&quot;$\mu$m&quot;,</span>
+<span id="L35"><span class="lineNum">      35</span>              :     &quot;Angle&quot;: r&quot;$^\circ$&quot;,</span>
+<span id="L36"><span class="lineNum">      36</span>              : }</span>
+<span id="L37"><span class="lineNum">      37</span>              : </span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">           1 : VariableNameFromRangeKey: dict[RangesKeys, str] = {</span></span>
+<span id="L39"><span class="lineNum">      39</span>              :     &quot;Ex&quot;: &quot;efield_x&quot;,</span>
+<span id="L40"><span class="lineNum">      40</span>              :     &quot;Ey&quot;: &quot;efield_y&quot;,</span>
+<span id="L41"><span class="lineNum">      41</span>              :     &quot;Ez&quot;: &quot;efield_z&quot;,</span>
+<span id="L42"><span class="lineNum">      42</span>              :     &quot;Bx&quot;: &quot;bfield_x&quot;,</span>
+<span id="L43"><span class="lineNum">      43</span>              :     &quot;By&quot;: &quot;bfield_y&quot;,</span>
+<span id="L44"><span class="lineNum">      44</span>              :     &quot;Bz&quot;: &quot;bfield_z&quot;,</span>
+<span id="L45"><span class="lineNum">      45</span>              :     &quot;Distance&quot;: &quot;distance&quot;,</span>
+<span id="L46"><span class="lineNum">      46</span>              :     &quot;Angle&quot;: &quot;angle&quot;,</span>
+<span id="L47"><span class="lineNum">      47</span>              : }</span>
+<span id="L48"><span class="lineNum">      48</span>              : </span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 : PageType = TypeVar(&quot;PageType&quot;, &quot;OneAtomPage&quot;, &quot;TwoAtomsPage&quot;)</span></span>
+<span id="L50"><span class="lineNum">      50</span>              : </span>
+<span id="L51"><span class="lineNum">      51</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 : @dataclass</span></span>
+<span id="L53"><span class="lineNum">      53</span> <span class="tlaGNC">           1 : class Parameters(ABC, Generic[PageType]):</span></span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           1 :     species: tuple[str, ...]</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 :     quantum_numbers: tuple[QuantumNumbers, ...]</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">           1 :     quantum_number_restrictions: tuple[QuantumNumberRestrictions, ...]</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           1 :     ranges: dict[RangesKeys, list[float]]</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :     diamagnetism_enabled: bool</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           1 :     diagonalize_kwargs: dict[str, str]</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           1 :     diagonalize_relative_energy_range: tuple[float, float] | None</span></span>
+<span id="L61"><span class="lineNum">      61</span>              : </span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           1 :     def __post_init__(self) -&gt; None:</span></span>
+<span id="L63"><span class="lineNum">      63</span>              :         &quot;&quot;&quot;Post-initialization processing.&quot;&quot;&quot;</span>
+<span id="L64"><span class="lineNum">      64</span>              :         # Check if all ranges have the same number of steps</span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaUNC">           0 :         if not all(len(v) == self.steps for v in self.ranges.values()):</span></span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaUNC">           0 :             raise ValueError(&quot;All ranges must have the same number of steps&quot;)</span></span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span>              :         # Check if all tuples have the same length</span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 :         if not all(</span></span>
+<span id="L70"><span class="lineNum">      70</span>              :             len(tup) == self.n_atoms for tup in [self.species, self.quantum_numbers, self.quantum_number_restrictions]</span>
+<span id="L71"><span class="lineNum">      71</span>              :         ):</span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaUNC">           0 :             raise ValueError(&quot;All tuples must have the same length as the number of atoms&quot;)</span></span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">           1 :     @classmethod</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :     def from_page(cls, page: PageType) -&gt; Self:</span></span>
+<span id="L76"><span class="lineNum">      76</span>              :         &quot;&quot;&quot;Create Parameters object from page.&quot;&quot;&quot;</span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaGNC">           1 :         n_atoms = page.ket_config.n_atoms</span></span>
+<span id="L78"><span class="lineNum">      78</span>              : </span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           1 :         species = tuple(page.ket_config.get_species(atom) for atom in range(n_atoms))</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">           1 :         quantum_numbers = tuple(page.ket_config.get_quantum_numbers(atom) for atom in range(n_atoms))</span></span>
+<span id="L81"><span class="lineNum">      81</span>              : </span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           1 :         quantum_number_restrictions = tuple(</span></span>
+<span id="L83"><span class="lineNum">      83</span>              :             page.basis_config.get_quantum_number_restrictions(atom) for atom in range(n_atoms)</span>
+<span id="L84"><span class="lineNum">      84</span>              :         )</span>
+<span id="L85"><span class="lineNum">      85</span>              : </span>
+<span id="L86"><span class="lineNum">      86</span> <span class="tlaGNC">           1 :         ranges = page.system_config.get_ranges_dict()</span></span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">           1 :         diamagnetism_enabled = page.system_config.diamagnetism.isChecked()</span></span>
+<span id="L88"><span class="lineNum">      88</span>              : </span>
+<span id="L89"><span class="lineNum">      89</span> <span class="tlaGNC">           1 :         diagonalize_kwargs = {}</span></span>
+<span id="L90"><span class="lineNum">      90</span> <span class="tlaGNC">           1 :         if page.calculation_config.fast_mode.isChecked():</span></span>
+<span id="L91"><span class="lineNum">      91</span> <span class="tlaGNC">           1 :             diagonalize_kwargs[&quot;diagonalizer&quot;] = &quot;lapacke_evr&quot;</span></span>
+<span id="L92"><span class="lineNum">      92</span> <span class="tlaGNC">           1 :             diagonalize_kwargs[&quot;float_type&quot;] = &quot;float32&quot;</span></span>
+<span id="L93"><span class="lineNum">      93</span>              : </span>
+<span id="L94"><span class="lineNum">      94</span> <span class="tlaGNC">           1 :         diagonalize_relative_energy_range = None</span></span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">           1 :         if page.calculation_config.energy_range.isChecked():</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaGNC">           1 :             diagonalize_relative_energy_range = page.calculation_config.energy_range.values()</span></span>
+<span id="L97"><span class="lineNum">      97</span>              : </span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaGNC">           1 :         return cls(</span></span>
+<span id="L99"><span class="lineNum">      99</span>              :             species,</span>
+<span id="L100"><span class="lineNum">     100</span>              :             quantum_numbers,</span>
+<span id="L101"><span class="lineNum">     101</span>              :             quantum_number_restrictions,</span>
+<span id="L102"><span class="lineNum">     102</span>              :             ranges,</span>
+<span id="L103"><span class="lineNum">     103</span>              :             diamagnetism_enabled,</span>
+<span id="L104"><span class="lineNum">     104</span>              :             diagonalize_kwargs,</span>
+<span id="L105"><span class="lineNum">     105</span>              :             diagonalize_relative_energy_range,</span>
+<span id="L106"><span class="lineNum">     106</span>              :         )</span>
+<span id="L107"><span class="lineNum">     107</span>              : </span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaGNC">           1 :     @property</span></span>
+<span id="L109"><span class="lineNum">     109</span> <span class="tlaGNC">           1 :     def is_real(self) -&gt; bool:</span></span>
+<span id="L110"><span class="lineNum">     110</span>              :         &quot;&quot;&quot;Check if the parameters are real.&quot;&quot;&quot;</span>
+<span id="L111"><span class="lineNum">     111</span> <span class="tlaGNC">           1 :         return all(e == 0 for e in self.ranges.get(&quot;Ey&quot;, [0])) and all(b == 0 for b in self.ranges.get(&quot;By&quot;, [0]))</span></span>
+<span id="L112"><span class="lineNum">     112</span>              : </span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaGNC">           1 :     @property</span></span>
+<span id="L114"><span class="lineNum">     114</span> <span class="tlaGNC">           1 :     def steps(self) -&gt; int:</span></span>
+<span id="L115"><span class="lineNum">     115</span>              :         &quot;&quot;&quot;Return the number of steps.&quot;&quot;&quot;</span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           1 :         return len(next(iter(self.ranges.values())))</span></span>
+<span id="L117"><span class="lineNum">     117</span>              : </span>
+<span id="L118"><span class="lineNum">     118</span> <span class="tlaGNC">           1 :     @property</span></span>
+<span id="L119"><span class="lineNum">     119</span> <span class="tlaGNC">           1 :     def n_atoms(self) -&gt; int:</span></span>
+<span id="L120"><span class="lineNum">     120</span>              :         &quot;&quot;&quot;Return the number of atoms.&quot;&quot;&quot;</span>
+<span id="L121"><span class="lineNum">     121</span> <span class="tlaGNC">           1 :         return len(self.species)</span></span>
+<span id="L122"><span class="lineNum">     122</span>              : </span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           1 :     def get_efield(self, step: int) -&gt; list[float]:</span></span>
+<span id="L124"><span class="lineNum">     124</span>              :         &quot;&quot;&quot;Return the electric field for the given step.&quot;&quot;&quot;</span>
+<span id="L125"><span class="lineNum">     125</span> <span class="tlaGNC">           1 :         efield_keys: list[RangesKeys] = [&quot;Ex&quot;, &quot;Ey&quot;, &quot;Ez&quot;]</span></span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           1 :         return [self.ranges[key][step] if key in self.ranges else 0 for key in efield_keys]</span></span>
+<span id="L127"><span class="lineNum">     127</span>              : </span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">           1 :     def get_bfield(self, step: int) -&gt; list[float]:</span></span>
+<span id="L129"><span class="lineNum">     129</span>              :         &quot;&quot;&quot;Return the magnetic field for the given step.&quot;&quot;&quot;</span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">           1 :         bfield_keys: list[RangesKeys] = [&quot;Bx&quot;, &quot;By&quot;, &quot;Bz&quot;]</span></span>
+<span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">           1 :         return [self.ranges[key][step] if key in self.ranges else 0 for key in bfield_keys]</span></span>
+<span id="L132"><span class="lineNum">     132</span>              : </span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">           1 :     def get_species(self, atom: int | None = None) -&gt; str:</span></span>
+<span id="L134"><span class="lineNum">     134</span>              :         &quot;&quot;&quot;Return the species for the given ket.&quot;&quot;&quot;</span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           1 :         return self.species[self._check_atom(atom)]</span></span>
+<span id="L136"><span class="lineNum">     136</span>              : </span>
+<span id="L137"><span class="lineNum">     137</span> <span class="tlaGNC">           1 :     def get_quantum_numbers(self, atom: int | None = None) -&gt; QuantumNumbers:</span></span>
+<span id="L138"><span class="lineNum">     138</span>              :         &quot;&quot;&quot;Return the quantum numbers for the given ket.&quot;&quot;&quot;</span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           1 :         return self.quantum_numbers[self._check_atom(atom)]</span></span>
+<span id="L140"><span class="lineNum">     140</span>              : </span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">           1 :     def get_ket_atom(self, atom: int | None = None) -&gt; pi.KetAtom:</span></span>
+<span id="L142"><span class="lineNum">     142</span>              :         &quot;&quot;&quot;Return the ket atom for the given atom index.&quot;&quot;&quot;</span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaUNC">           0 :         return pi.KetAtom(self.get_species(atom), **self.get_quantum_numbers(atom))</span></span>
+<span id="L144"><span class="lineNum">     144</span>              : </span>
+<span id="L145"><span class="lineNum">     145</span> <span class="tlaGNC">           1 :     def get_quantum_number_restrictions(self, atom: int | None = None) -&gt; QuantumNumberRestrictions:</span></span>
+<span id="L146"><span class="lineNum">     146</span>              :         &quot;&quot;&quot;Return the quantum number restrictions.&quot;&quot;&quot;</span>
+<span id="L147"><span class="lineNum">     147</span> <span class="tlaGNC">           1 :         return self.quantum_number_restrictions[self._check_atom(atom)]</span></span>
+<span id="L148"><span class="lineNum">     148</span>              : </span>
+<span id="L149"><span class="lineNum">     149</span> <span class="tlaGNC">           1 :     def _check_atom(self, atom: int | None = None) -&gt; int:</span></span>
+<span id="L150"><span class="lineNum">     150</span>              :         &quot;&quot;&quot;Check if the atom is valid.&quot;&quot;&quot;</span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">           1 :         if atom is not None:</span></span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           1 :             return atom</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :         if self.n_atoms == 1:</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :             return 0</span></span>
+<span id="L155"><span class="lineNum">     155</span> <span class="tlaUNC">           0 :         raise ValueError(&quot;Atom index is required for multiple atoms&quot;)</span></span>
+<span id="L156"><span class="lineNum">     156</span>              : </span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">           1 :     def get_diagonalize_energy_range_kwargs(self, energy_of_interest: float) -&gt; dict[str, Any]:</span></span>
+<span id="L158"><span class="lineNum">     158</span>              :         &quot;&quot;&quot;Return the kwargs for the diagonalization energy range.&quot;&quot;&quot;</span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">           1 :         if self.diagonalize_relative_energy_range is None:</span></span>
+<span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">           1 :             return {}</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :         kwargs: dict[str, Any] = {&quot;energy_range_unit&quot;: &quot;GHz&quot;}</span></span>
+<span id="L162"><span class="lineNum">     162</span> <span class="tlaGNC">           1 :         kwargs[&quot;energy_range&quot;] = (</span></span>
+<span id="L163"><span class="lineNum">     163</span>              :             energy_of_interest + self.diagonalize_relative_energy_range[0],</span>
+<span id="L164"><span class="lineNum">     164</span>              :             energy_of_interest + self.diagonalize_relative_energy_range[1],</span>
+<span id="L165"><span class="lineNum">     165</span>              :         )</span>
+<span id="L166"><span class="lineNum">     166</span> <span class="tlaGNC">           1 :         return kwargs</span></span>
+<span id="L167"><span class="lineNum">     167</span>              : </span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">           1 :     def get_x_values(self) -&gt; list[float]:</span></span>
+<span id="L169"><span class="lineNum">     169</span>              :         &quot;&quot;&quot;Return the x values for the plot.&quot;&quot;&quot;</span>
+<span id="L170"><span class="lineNum">     170</span> <span class="tlaGNC">           1 :         max_key = self._get_ranges_max_diff_key()</span></span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           1 :         return self.ranges[max_key]</span></span>
+<span id="L172"><span class="lineNum">     172</span>              : </span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">           1 :     def get_x_label(self) -&gt; str:</span></span>
+<span id="L174"><span class="lineNum">     174</span>              :         &quot;&quot;&quot;Return the x values for the plot.&quot;&quot;&quot;</span>
+<span id="L175"><span class="lineNum">     175</span> <span class="tlaGNC">           1 :         max_key = self._get_ranges_max_diff_key()</span></span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaGNC">           1 :         x_label = f&quot;{max_key} ({UnitFromRangeKey[max_key]})&quot;</span></span>
+<span id="L177"><span class="lineNum">     177</span>              : </span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">           1 :         non_constant_keys = [key for key, values in self.ranges.items() if key != max_key and values[0] != values[-1]]</span></span>
+<span id="L179"><span class="lineNum">     179</span> <span class="tlaGNC">           1 :         if non_constant_keys:</span></span>
+<span id="L180"><span class="lineNum">     180</span> <span class="tlaUNC">           0 :             x_label += f&quot;  ({', '.join(non_constant_keys)} did also change)&quot;</span></span>
+<span id="L181"><span class="lineNum">     181</span>              : </span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">           1 :         return x_label</span></span>
+<span id="L183"><span class="lineNum">     183</span>              : </span>
+<span id="L184"><span class="lineNum">     184</span> <span class="tlaGNC">           1 :     def _get_ranges_max_diff_key(self) -&gt; RangesKeys:</span></span>
+<span id="L185"><span class="lineNum">     185</span>              :         &quot;&quot;&quot;Return the key with the maximum difference in the ranges.&quot;&quot;&quot;</span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">           1 :         range_diffs: dict[RangesKeys, float] = {key: abs(r[-1] - r[0]) for key, r in self.ranges.items()}</span></span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">           1 :         return max(range_diffs, key=lambda x: range_diffs.get(x, -1))</span></span>
+<span id="L188"><span class="lineNum">     188</span>              : </span>
+<span id="L189"><span class="lineNum">     189</span> <span class="tlaGNC">           1 :     def to_replacement_dict(self) -&gt; dict[str, str]:</span></span>
+<span id="L190"><span class="lineNum">     190</span>              :         &quot;&quot;&quot;Return a dictionary with the parameters for replacement.&quot;&quot;&quot;</span>
+<span id="L191"><span class="lineNum">     191</span> <span class="tlaGNC">           1 :         max_key = self._get_ranges_max_diff_key()</span></span>
+<span id="L192"><span class="lineNum">     192</span> <span class="tlaGNC">           1 :         replacements: dict[str, str] = {</span></span>
+<span id="L193"><span class="lineNum">     193</span>              :             &quot;$PI_DTYPE&quot;: &quot;real&quot; if self.is_real else &quot;complex&quot;,</span>
+<span id="L194"><span class="lineNum">     194</span>              :             &quot;$X_VARIABLE_NAME&quot;: VariableNameFromRangeKey[max_key],</span>
+<span id="L195"><span class="lineNum">     195</span>              :             &quot;$X_LABEL&quot;: as_string(self.get_x_label(), raw_string=True),</span>
+<span id="L196"><span class="lineNum">     196</span>              :             &quot;$DIAMAGNETISM_ENABLED&quot;: str(self.diamagnetism_enabled),</span>
+<span id="L197"><span class="lineNum">     197</span>              :         }</span>
+<span id="L198"><span class="lineNum">     198</span>              : </span>
+<span id="L199"><span class="lineNum">     199</span> <span class="tlaGNC">           1 :         for atom in range(self.n_atoms):</span></span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">           1 :             replacements[f&quot;$SPECIES_{atom}&quot;] = as_string(self.get_species(atom))</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           1 :             replacements[f&quot;$QUANTUM_NUMBERS_{atom}&quot;] = dict_to_repl(self.get_quantum_numbers(atom))</span></span>
+<span id="L202"><span class="lineNum">     202</span> <span class="tlaGNC">           1 :             replacements[f&quot;$QUANTUM_NUMBERS_RESTRICTIONS_{atom}&quot;] = dict_to_repl(</span></span>
+<span id="L203"><span class="lineNum">     203</span>              :                 self.get_quantum_number_restrictions(atom)</span>
+<span id="L204"><span class="lineNum">     204</span>              :             )</span>
+<span id="L205"><span class="lineNum">     205</span>              : </span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           1 :         replacements[&quot;$STEPS&quot;] = str(self.steps)</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">           1 :         for key, values in self.ranges.items():</span></span>
+<span id="L208"><span class="lineNum">     208</span> <span class="tlaGNC">           1 :             replacements[f&quot;${key.upper()}_MIN&quot;] = str(values[0])</span></span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           1 :             replacements[f&quot;${key.upper()}_MAX&quot;] = str(values[-1])</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">           1 :             if values[0] == values[-1]:</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">           1 :                 replacements[f&quot;${key.upper()}_VALUE&quot;] = str(values[0])</span></span>
+<span id="L212"><span class="lineNum">     212</span>              : </span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">           1 :         replacements[&quot;$DIAGONALIZE_KWARGS&quot;] = dict_to_repl(self.diagonalize_kwargs)</span></span>
+<span id="L214"><span class="lineNum">     214</span>              : </span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">           1 :         if self.diagonalize_relative_energy_range is None:</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaUNC">           0 :             replacements[&quot;$DIAGONALIZE_ENERGY_RANGE_KWARGS&quot;] = &quot;&quot;</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">           1 :         elif self.n_atoms == 1:</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">           1 :             r_energy = self.diagonalize_relative_energy_range</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">           1 :             replacements[&quot;$DIAGONALIZE_ENERGY_RANGE_KWARGS&quot;] = (</span></span>
+<span id="L220"><span class="lineNum">     220</span>              :                 f', energy_range=(ket_energy + {r_energy[0]}, ket_energy - {-r_energy[1]}), energy_range_unit=&quot;GHz&quot;'</span>
+<span id="L221"><span class="lineNum">     221</span>              :             )</span>
+<span id="L222"><span class="lineNum">     222</span> <span class="tlaGNC">           1 :         elif self.n_atoms == 2:</span></span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">           1 :             r_energy = self.diagonalize_relative_energy_range</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaGNC">           1 :             replacements[&quot;$DIAGONALIZE_ENERGY_RANGE_KWARGS&quot;] = (</span></span>
+<span id="L225"><span class="lineNum">     225</span>              :                 f', energy_range=(pair_energy + {r_energy[0]}, pair_energy - {-r_energy[1]}), energy_range_unit=&quot;GHz&quot;'</span>
+<span id="L226"><span class="lineNum">     226</span>              :             )</span>
+<span id="L227"><span class="lineNum">     227</span>              :         else:</span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaUNC">           0 :             raise RuntimeError(&quot;Energy range kwargs not implemented for more than two atoms&quot;)</span></span>
+<span id="L229"><span class="lineNum">     229</span>              : </span>
+<span id="L230"><span class="lineNum">     230</span> <span class="tlaGNC">           1 :         return replacements</span></span>
+<span id="L231"><span class="lineNum">     231</span>              : </span>
+<span id="L232"><span class="lineNum">     232</span>              : </span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaGNC">           1 : @dataclass</span></span>
+<span id="L234"><span class="lineNum">     234</span> <span class="tlaGNC">           1 : class Results(ABC):</span></span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaGNC">           1 :     energies: list[NDArray]</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaGNC">           1 :     energy_offset: float</span></span>
+<span id="L237"><span class="lineNum">     237</span> <span class="tlaGNC">           1 :     ket_overlaps: list[NDArray]</span></span>
+<span id="L238"><span class="lineNum">     238</span> <span class="tlaGNC">           1 :     systems: list[SystemBase[Any]]</span></span>
+<span id="L239"><span class="lineNum">     239</span>              : </span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaGNC">           1 :     @classmethod</span></span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaGNC">           1 :     def from_calculate(</span></span>
+<span id="L242"><span class="lineNum">     242</span>              :         cls,</span>
+<span id="L243"><span class="lineNum">     243</span>              :         parameters: Parameters[Any],</span>
+<span id="L244"><span class="lineNum">     244</span>              :         system_list: Sequence[SystemBase[Any]],</span>
+<span id="L245"><span class="lineNum">     245</span>              :         ket: pi.KetAtom | tuple[pi.KetAtom, ...],</span>
+<span id="L246"><span class="lineNum">     246</span>              :         energy_offset: float,</span>
+<span id="L247"><span class="lineNum">     247</span>              :     ) -&gt; Self:</span>
+<span id="L248"><span class="lineNum">     248</span>              :         &quot;&quot;&quot;Create Results object from ket, basis, and diagonalized systems.&quot;&quot;&quot;</span>
+<span id="L249"><span class="lineNum">     249</span> <span class="tlaGNC">           1 :         energies = [system.get_eigenenergies(&quot;GHz&quot;) - energy_offset for system in system_list]</span></span>
+<span id="L250"><span class="lineNum">     250</span>              : </span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaGNC">           1 :         ket_overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in system_list]</span></span>
+<span id="L252"><span class="lineNum">     252</span>              : </span>
+<span id="L253"><span class="lineNum">     253</span> <span class="tlaGNC">           1 :         return cls(energies, energy_offset, ket_overlaps, list(system_list))</span></span>
+<span id="L254"><span class="lineNum">     254</span>              : </span>
+<span id="L255"><span class="lineNum">     255</span>              : </span>
+<span id="L256"><span class="lineNum">     256</span> <span class="tlaGNC">           1 : def as_string(value: str, *, raw_string: bool = False) -&gt; str:</span></span>
+<span id="L257"><span class="lineNum">     257</span> <span class="tlaGNC">           1 :     string = '&quot;' + value + '&quot;'</span></span>
+<span id="L258"><span class="lineNum">     258</span> <span class="tlaGNC">           1 :     if raw_string:</span></span>
+<span id="L259"><span class="lineNum">     259</span> <span class="tlaGNC">           1 :         string = &quot;r&quot; + string</span></span>
+<span id="L260"><span class="lineNum">     260</span> <span class="tlaGNC">           1 :     return string</span></span>
+<span id="L261"><span class="lineNum">     261</span>              : </span>
+<span id="L262"><span class="lineNum">     262</span>              : </span>
+<span id="L263"><span class="lineNum">     263</span> <span class="tlaGNC">           1 : def dict_to_repl(d: Mapping[str, Any]) -&gt; str:</span></span>
+<span id="L264"><span class="lineNum">     264</span>              :     &quot;&quot;&quot;Convert a dictionary to a string for replacement.&quot;&quot;&quot;</span>
+<span id="L265"><span class="lineNum">     265</span> <span class="tlaGNC">           1 :     if not d:</span></span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaUNC">           0 :         return &quot;&quot;</span></span>
+<span id="L267"><span class="lineNum">     267</span> <span class="tlaGNC">           1 :     repl = &quot;&quot;</span></span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">           1 :     for k, v in d.items():</span></span>
+<span id="L269"><span class="lineNum">     269</span> <span class="tlaGNC">           1 :         if isinstance(v, str):</span></span>
+<span id="L270"><span class="lineNum">     270</span> <span class="tlaGNC">           1 :             repl += f&quot;, {k}={as_string(v)}&quot;</span></span>
+<span id="L271"><span class="lineNum">     271</span>              :         else:</span>
+<span id="L272"><span class="lineNum">     272</span> <span class="tlaGNC">           1 :             repl += f&quot;, {k}={v}&quot;</span></span>
+<span id="L273"><span class="lineNum">     273</span> <span class="tlaGNC">           1 :     return repl</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

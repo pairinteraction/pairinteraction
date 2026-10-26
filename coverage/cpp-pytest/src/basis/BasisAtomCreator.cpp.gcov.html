@@ -1,0 +1,166 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/basis/BasisAtomCreator.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/basis">src/basis</a> - BasisAtomCreator.cpp<span style="font-size: 80%;"> (source / <a href="BasisAtomCreator.cpp.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">85.4&nbsp;%</td>
+            <td class="headerCovTableEntry">41</td>
+            <td class="headerCovTableEntry">35</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:42</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">14</td>
+            <td class="headerCovTableEntry">14</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : // SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span>              : #include &quot;pairinteraction/basis/BasisAtomCreator.hpp&quot;</span>
+<span id="L5"><span class="lineNum">       5</span>              : </span>
+<span id="L6"><span class="lineNum">       6</span>              : #include &quot;pairinteraction/database/AtomDescriptionByRanges.hpp&quot;</span>
+<span id="L7"><span class="lineNum">       7</span>              : #include &quot;pairinteraction/database/Database.hpp&quot;</span>
+<span id="L8"><span class="lineNum">       8</span>              : #include &quot;pairinteraction/ket/KetAtom.hpp&quot;</span>
+<span id="L9"><span class="lineNum">       9</span>              : </span>
+<span id="L10"><span class="lineNum">      10</span>              : namespace pairinteraction {</span>
+<span id="L11"><span class="lineNum">      11</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">        1644 : BasisAtomCreator&lt;Scalar&gt;::BasisAtomCreator(Database &amp;database) : database(database) {}</span></span>
+<span id="L13"><span class="lineNum">      13</span>              : </span>
+<span id="L14"><span class="lineNum">      14</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">         427 : BasisAtomCreator&lt;Scalar&gt; &amp;BasisAtomCreator&lt;Scalar&gt;::set_species(const std::string &amp;value) {</span></span>
+<span id="L16"><span class="lineNum">      16</span> <span class="tlaGNC">         427 :     species.emplace(value);</span></span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">         427 :     return *this;</span></span>
+<span id="L18"><span class="lineNum">      18</span>              : }</span>
+<span id="L19"><span class="lineNum">      19</span>              : </span>
+<span id="L20"><span class="lineNum">      20</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">          57 : BasisAtomCreator&lt;Scalar&gt; &amp;BasisAtomCreator&lt;Scalar&gt;::restrict_energy(real_t min, real_t max) {</span></span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">          57 :     range_energy = {min, max};</span></span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">          57 :     return *this;</span></span>
+<span id="L24"><span class="lineNum">      24</span>              : }</span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L27"><span class="lineNum">      27</span>              : BasisAtomCreator&lt;Scalar&gt; &amp;</span>
+<span id="L28"><span class="lineNum">      28</span> <span class="tlaGNC">         947 : BasisAtomCreator&lt;Scalar&gt;::restrict_quantum_number(const std::string &amp;name, real_t min, real_t max) {</span></span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">        1063 :     if ((name == &quot;f&quot; || name == &quot;m&quot;) &amp;&amp;</span></span>
+<span id="L30"><span class="lineNum">      30</span> <span class="tlaGNC">         116 :         (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max))) {</span></span>
+<span id="L31"><span class="lineNum">      31</span> <span class="tlaUNC">           0 :         throw std::invalid_argument(&quot;Quantum number &quot; + name +</span></span>
+<span id="L32"><span class="lineNum">      32</span>              :                                     &quot; must be an integer or half-integer.&quot;);</span>
+<span id="L33"><span class="lineNum">      33</span>              :     }</span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">         947 :     if (name == &quot;parity&quot; &amp;&amp; ((min != 1 &amp;&amp; min != -1) || (max != 1 &amp;&amp; max != -1))) {</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaUNC">           0 :         throw std::invalid_argument(&quot;The parity must be +1 or -1.&quot;);</span></span>
+<span id="L36"><span class="lineNum">      36</span>              :     }</span>
+<span id="L37"><span class="lineNum">      37</span> <span class="tlaGNC">         947 :     quantum_number_ranges[name] = {min, max};</span></span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">         947 :     return *this;</span></span>
+<span id="L39"><span class="lineNum">      39</span>              : }</span>
+<span id="L40"><span class="lineNum">      40</span>              : </span>
+<span id="L41"><span class="lineNum">      41</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L42"><span class="lineNum">      42</span>              : BasisAtomCreator&lt;Scalar&gt; &amp;</span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">         376 : BasisAtomCreator&lt;Scalar&gt;::set_quantum_number_standard_deviation_factor(real_t value) {</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">         376 :     if (value &lt; 0) {</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaUNC">           0 :         throw std::invalid_argument(</span></span>
+<span id="L46"><span class="lineNum">      46</span>              :             &quot;The quantum number standard deviation factor must be non-negative.&quot;);</span>
+<span id="L47"><span class="lineNum">      47</span>              :     }</span>
+<span id="L48"><span class="lineNum">      48</span> <span class="tlaGNC">         376 :     quantum_number_standard_deviation_factor = value;</span></span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">         376 :     return *this;</span></span>
+<span id="L50"><span class="lineNum">      50</span>              : }</span>
+<span id="L51"><span class="lineNum">      51</span>              : </span>
+<span id="L52"><span class="lineNum">      52</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L53"><span class="lineNum">      53</span>              : BasisAtomCreator&lt;Scalar&gt; &amp;</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">        2182 : BasisAtomCreator&lt;Scalar&gt;::add_ket(const std::shared_ptr&lt;const ket_t&gt; &amp;ket) {</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">        3067 :     if (additional_ket_species.has_value() &amp;&amp;</span></span>
+<span id="L56"><span class="lineNum">      56</span> <span class="tlaGNC">         885 :         additional_ket_species.value() != ket-&gt;get_species()) {</span></span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaUNC">           0 :         throw std::invalid_argument(&quot;Species mismatch.&quot;);</span></span>
+<span id="L58"><span class="lineNum">      58</span>              :     }</span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">        2182 :     additional_ket_species.emplace(ket-&gt;get_species());</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">        2182 :     additional_ket_ids.push_back(ket-&gt;get_id_in_database());</span></span>
+<span id="L61"><span class="lineNum">      61</span> <span class="tlaGNC">        2182 :     return *this;</span></span>
+<span id="L62"><span class="lineNum">      62</span>              : }</span>
+<span id="L63"><span class="lineNum">      63</span>              : </span>
+<span id="L64"><span class="lineNum">      64</span>              : template &lt;typename Scalar&gt;</span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">        1640 : std::shared_ptr&lt;const BasisAtom&lt;Scalar&gt;&gt; BasisAtomCreator&lt;Scalar&gt;::create() const {</span></span>
+<span id="L66"><span class="lineNum">      66</span>              : </span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">        1720 :     if (species.has_value() &amp;&amp; additional_ket_species.has_value() &amp;&amp;</span></span>
+<span id="L68"><span class="lineNum">      68</span> <span class="tlaGNC">          80 :         species.value() != additional_ket_species.value()) {</span></span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaUNC">           0 :         throw std::invalid_argument(&quot;Species mismatch.&quot;);</span></span>
+<span id="L70"><span class="lineNum">      70</span>              :     }</span>
+<span id="L71"><span class="lineNum">      71</span>              : </span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">        1640 :     std::string extracted_species;</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">        1640 :     if (species.has_value()) {</span></span>
+<span id="L74"><span class="lineNum">      74</span> <span class="tlaGNC">         423 :         extracted_species = species.value();</span></span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">        1217 :     } else if (additional_ket_species.has_value()) {</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">        1217 :         extracted_species = additional_ket_species.value();</span></span>
+<span id="L77"><span class="lineNum">      77</span>              :     } else {</span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaUNC">           0 :         throw std::runtime_error(&quot;Species not set.&quot;);</span></span>
+<span id="L79"><span class="lineNum">      79</span>              :     }</span>
+<span id="L80"><span class="lineNum">      80</span>              : </span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">        1640 :     AtomDescriptionByRanges description{range_energy, quantum_number_ranges,</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">        1640 :                                         quantum_number_standard_deviation_factor};</span></span>
+<span id="L83"><span class="lineNum">      83</span>              : </span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaGNC">        3280 :     return database.get_basis&lt;Scalar&gt;(extracted_species, description, additional_ket_ids);</span></span>
+<span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">        1640 : }</span></span>
+<span id="L86"><span class="lineNum">      86</span>              : </span>
+<span id="L87"><span class="lineNum">      87</span>              : // Explicit instantiations</span>
+<span id="L88"><span class="lineNum">      88</span>              : template class BasisAtomCreator&lt;double&gt;;</span>
+<span id="L89"><span class="lineNum">      89</span>              : template class BasisAtomCreator&lt;std::complex&lt;double&gt;&gt;;</span>
+<span id="L90"><span class="lineNum">      90</span>              : } // namespace pairinteraction</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

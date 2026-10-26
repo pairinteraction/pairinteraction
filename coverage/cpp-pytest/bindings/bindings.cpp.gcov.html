@@ -1,0 +1,158 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - bindings/bindings.cpp</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory bindings">bindings</a> - bindings.cpp<span style="font-size: 80%;"> (source / <a href="bindings.cpp.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntry">27</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:42</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">100.0&nbsp;%</td>
+            <td class="headerCovTableEntry">5</td>
+            <td class="headerCovTableEntry">5</td>
+          </tr>
+                  <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : // SPDX-FileCopyrightText: 2024 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : // SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span>              : </span>
+<span id="L4"><span class="lineNum">       4</span>              : #include &quot;./LoggerBridge.hpp&quot;</span>
+<span id="L5"><span class="lineNum">       5</span>              : #include &quot;./basis/Basis.py.hpp&quot;</span>
+<span id="L6"><span class="lineNum">       6</span>              : #include &quot;./database/Database.py.hpp&quot;</span>
+<span id="L7"><span class="lineNum">       7</span>              : #include &quot;./diagonalize/Diagonalizer.py.hpp&quot;</span>
+<span id="L8"><span class="lineNum">       8</span>              : #include &quot;./enums/FloatType.py.hpp&quot;</span>
+<span id="L9"><span class="lineNum">       9</span>              : #include &quot;./enums/OperatorType.py.hpp&quot;</span>
+<span id="L10"><span class="lineNum">      10</span>              : #include &quot;./enums/SorterType.py.hpp&quot;</span>
+<span id="L11"><span class="lineNum">      11</span>              : #include &quot;./interfaces/DiagonalizerInterface.py.hpp&quot;</span>
+<span id="L12"><span class="lineNum">      12</span>              : #include &quot;./ket/Ket.py.hpp&quot;</span>
+<span id="L13"><span class="lineNum">      13</span>              : #include &quot;./paths.py.hpp&quot;</span>
+<span id="L14"><span class="lineNum">      14</span>              : #include &quot;./system/System.py.hpp&quot;</span>
+<span id="L15"><span class="lineNum">      15</span>              : #include &quot;./tools/run_unit_tests.py.hpp&quot;</span>
+<span id="L16"><span class="lineNum">      16</span>              : #include &quot;./utils/sorting.py.hpp&quot;</span>
+<span id="L17"><span class="lineNum">      17</span>              : #include &quot;./version.py.hpp&quot;</span>
+<span id="L18"><span class="lineNum">      18</span>              : #include &quot;pairinteraction/utils/TaskControl.hpp&quot;</span>
+<span id="L19"><span class="lineNum">      19</span>              : </span>
+<span id="L20"><span class="lineNum">      20</span>              : #include &lt;nanobind/nanobind.h&gt;</span>
+<span id="L21"><span class="lineNum">      21</span>              : #include &lt;nanobind/stl/string.h&gt;</span>
+<span id="L22"><span class="lineNum">      22</span>              : #include &lt;nanobind/stl/vector.h&gt;</span>
+<span id="L23"><span class="lineNum">      23</span>              : </span>
+<span id="L24"><span class="lineNum">      24</span>              : namespace nb = nanobind;</span>
+<span id="L25"><span class="lineNum">      25</span>              : </span>
+<span id="L26"><span class="lineNum">      26</span> <span class="tlaGNC">          10 : NB_MODULE(_backend, m) // NOLINT</span></span>
+<span id="L27"><span class="lineNum">      27</span>              : {</span>
+<span id="L28"><span class="lineNum">      28</span>              :     // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types</span>
+<span id="L29"><span class="lineNum">      29</span> <span class="tlaGNC">           2 :     nb::set_leak_warnings(false);</span></span>
+<span id="L30"><span class="lineNum">      30</span>              : </span>
+<span id="L31"><span class="lineNum">      31</span>              :     // wrap the get_pending_logs method of the logger bridge instance</span>
+<span id="L32"><span class="lineNum">      32</span> <span class="tlaGNC">           2 :     static LoggerBridge bridge;</span></span>
+<span id="L33"><span class="lineNum">      33</span> <span class="tlaGNC">           2 :     nb::class_&lt;LoggerBridge::LogEntry&gt;(m, &quot;LogEntry&quot;)</span></span>
+<span id="L34"><span class="lineNum">      34</span> <span class="tlaGNC">           2 :         .def_ro(&quot;level&quot;, &amp;LoggerBridge::LogEntry::level)</span></span>
+<span id="L35"><span class="lineNum">      35</span> <span class="tlaGNC">        2089 :         .def_prop_ro(&quot;message&quot;, [](const LoggerBridge::LogEntry &amp;e) {</span></span>
+<span id="L36"><span class="lineNum">      36</span> <span class="tlaGNC">        2087 :             return nb::bytes(e.message.data(), e.message.size());</span></span>
+<span id="L37"><span class="lineNum">      37</span>              :         });</span>
+<span id="L38"><span class="lineNum">      38</span> <span class="tlaGNC">     2351844 :     m.def(&quot;get_pending_logs&quot;, []() { return bridge.get_pending_logs(); });</span></span>
+<span id="L39"><span class="lineNum">      39</span>              : </span>
+<span id="L40"><span class="lineNum">      40</span>              :     // wrap task control functions</span>
+<span id="L41"><span class="lineNum">      41</span>              :     static nb::exception&lt;pairinteraction::TaskAbortedError&gt; task_aborted_error(m,</span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           2 :                                                                                &quot;TaskAbortedError&quot;);</span></span>
+<span id="L43"><span class="lineNum">      43</span> <span class="tlaGNC">           2 :     m.def(&quot;request_task_abort&quot;, &amp;pairinteraction::request_task_abort);</span></span>
+<span id="L44"><span class="lineNum">      44</span> <span class="tlaGNC">           2 :     m.def(&quot;reset_task_status&quot;, &amp;pairinteraction::reset_task_status);</span></span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           2 :     m.def(&quot;get_task_info&quot;, &amp;pairinteraction::get_task_info);</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           2 :     m.def(&quot;get_progress_count&quot;, &amp;pairinteraction::get_progress_count);</span></span>
+<span id="L47"><span class="lineNum">      47</span>              : </span>
+<span id="L48"><span class="lineNum">      48</span>              :     // enums</span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           2 :     bind_operator_type(m);</span></span>
+<span id="L50"><span class="lineNum">      50</span> <span class="tlaGNC">           2 :     bind_sorter_type(m);</span></span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           2 :     bind_float_type(m);</span></span>
+<span id="L52"><span class="lineNum">      52</span>              : </span>
+<span id="L53"><span class="lineNum">      53</span>              :     // utils</span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           2 :     bind_sorting(m);</span></span>
+<span id="L55"><span class="lineNum">      55</span>              : </span>
+<span id="L56"><span class="lineNum">      56</span>              :     // interfaces</span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           2 :     bind_diagonalizer_interface(m);</span></span>
+<span id="L58"><span class="lineNum">      58</span>              : </span>
+<span id="L59"><span class="lineNum">      59</span>              :     // database</span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           2 :     bind_database(m);</span></span>
+<span id="L61"><span class="lineNum">      61</span>              : </span>
+<span id="L62"><span class="lineNum">      62</span>              :     // diagonalizer</span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           2 :     bind_diagonalizer(m);</span></span>
+<span id="L64"><span class="lineNum">      64</span>              : </span>
+<span id="L65"><span class="lineNum">      65</span>              :     // ket</span>
+<span id="L66"><span class="lineNum">      66</span> <span class="tlaGNC">           2 :     bind_ket(m);</span></span>
+<span id="L67"><span class="lineNum">      67</span>              : </span>
+<span id="L68"><span class="lineNum">      68</span>              :     // basis</span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           2 :     bind_basis(m);</span></span>
+<span id="L70"><span class="lineNum">      70</span>              : </span>
+<span id="L71"><span class="lineNum">      71</span>              :     // system</span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           2 :     bind_system(m);</span></span>
+<span id="L73"><span class="lineNum">      73</span>              : </span>
+<span id="L74"><span class="lineNum">      74</span>              :     // tools</span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           2 :     bind_run_unit_tests(m);</span></span>
+<span id="L76"><span class="lineNum">      76</span>              : </span>
+<span id="L77"><span class="lineNum">      77</span>              :     // paths</span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaGNC">           2 :     bind_paths(m);</span></span>
+<span id="L79"><span class="lineNum">      79</span>              : </span>
+<span id="L80"><span class="lineNum">      80</span>              :     // version</span>
+<span id="L81"><span class="lineNum">      81</span> <span class="tlaGNC">           2 :     bind_version(m);</span></span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           2 : }</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>

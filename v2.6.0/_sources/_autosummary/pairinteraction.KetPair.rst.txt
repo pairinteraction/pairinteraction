@@ -1,0 +1,26 @@
+﻿KetPair
+=======
+
+.. currentmodule:: pairinteraction
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~KetPair.__init__
+      ~KetPair.get_energy
+      ~KetPair.get_label
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~KetPair.m
+   ~KetPair.state_atoms
+
+
+
+.. autoclass:: pairinteraction.KetPair

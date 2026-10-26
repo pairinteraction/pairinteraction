@@ -1,0 +1,584 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info - src/pairinteraction_gui/plotwidget/plotwidget.py</title>
+  <link rel="stylesheet" type="text/css" href="../../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../../index.html" title="Click to go to top-level">top level</a> - <a href="index.html" title="Click to go to directory src/pairinteraction_gui/plotwidget">src/pairinteraction_gui/plotwidget</a> - plotwidget.py<span style="font-size: 80%;"> (source / <a href="plotwidget.py.func-c.html" title="Click to go to function table">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryMed">67.6&nbsp;%</td>
+            <td class="headerCovTableEntry">309</td>
+            <td class="headerCovTableEntry">209</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2026-10-26 17:05:22</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryHi">75.0&nbsp;%</td>
+            <td class="headerCovTableEntry">24</td>
+            <td class="headerCovTableEntry">18</td>
+          </tr>
+                  <tr><td><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">            Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>              : # SPDX-FileCopyrightText: 2025 PairInteraction Developers</span>
+<span id="L2"><span class="lineNum">       2</span>              : # SPDX-License-Identifier: LGPL-3.0-or-later</span>
+<span id="L3"><span class="lineNum">       3</span> <span class="tlaGNC">           1 : from __future__ import annotations</span></span>
+<span id="L4"><span class="lineNum">       4</span>              : </span>
+<span id="L5"><span class="lineNum">       5</span> <span class="tlaGNC">           1 : import contextlib</span></span>
+<span id="L6"><span class="lineNum">       6</span> <span class="tlaGNC">           1 : import logging</span></span>
+<span id="L7"><span class="lineNum">       7</span> <span class="tlaGNC">           1 : import math</span></span>
+<span id="L8"><span class="lineNum">       8</span> <span class="tlaGNC">           1 : from typing import TYPE_CHECKING, Any</span></span>
+<span id="L9"><span class="lineNum">       9</span>              : </span>
+<span id="L10"><span class="lineNum">      10</span> <span class="tlaGNC">           1 : import numpy as np</span></span>
+<span id="L11"><span class="lineNum">      11</span> <span class="tlaGNC">           1 : from matplotlib.backend_bases import MouseEvent</span></span>
+<span id="L12"><span class="lineNum">      12</span> <span class="tlaGNC">           1 : from matplotlib.cm import ScalarMappable</span></span>
+<span id="L13"><span class="lineNum">      13</span> <span class="tlaGNC">           1 : from matplotlib.collections import LineCollection</span></span>
+<span id="L14"><span class="lineNum">      14</span> <span class="tlaGNC">           1 : from matplotlib.colors import Normalize</span></span>
+<span id="L15"><span class="lineNum">      15</span> <span class="tlaGNC">           1 : from PySide6.QtGui import QPalette</span></span>
+<span id="L16"><span class="lineNum">      16</span> <span class="tlaGNC">           1 : from PySide6.QtWidgets import QHBoxLayout</span></span>
+<span id="L17"><span class="lineNum">      17</span> <span class="tlaGNC">           1 : from scipy.optimize import curve_fit</span></span>
+<span id="L18"><span class="lineNum">      18</span>              : </span>
+<span id="L19"><span class="lineNum">      19</span> <span class="tlaGNC">           1 : from pairinteraction.state.state_atom import StateAtom</span></span>
+<span id="L20"><span class="lineNum">      20</span> <span class="tlaGNC">           1 : from pairinteraction.visualization.colormaps import alphamagma</span></span>
+<span id="L21"><span class="lineNum">      21</span> <span class="tlaGNC">           1 : from pairinteraction_gui.plotwidget.canvas import MatplotlibCanvas</span></span>
+<span id="L22"><span class="lineNum">      22</span> <span class="tlaGNC">           1 : from pairinteraction_gui.plotwidget.navigation_toolbar import CustomNavigationToolbar</span></span>
+<span id="L23"><span class="lineNum">      23</span> <span class="tlaGNC">           1 : from pairinteraction_gui.qobjects import WidgetV</span></span>
+<span id="L24"><span class="lineNum">      24</span> <span class="tlaGNC">           1 : from pairinteraction_gui.qobjects.events import show_status_tip</span></span>
+<span id="L25"><span class="lineNum">      25</span> <span class="tlaGNC">           1 : from pairinteraction_gui.theme import theme_manager</span></span>
+<span id="L26"><span class="lineNum">      26</span>              : </span>
+<span id="L27"><span class="lineNum">      27</span>              : if TYPE_CHECKING:</span>
+<span id="L28"><span class="lineNum">      28</span>              :     from collections.abc import Callable, Sequence</span>
+<span id="L29"><span class="lineNum">      29</span>              :     from typing import Concatenate</span>
+<span id="L30"><span class="lineNum">      30</span>              : </span>
+<span id="L31"><span class="lineNum">      31</span>              :     import matplotlib as mpl</span>
+<span id="L32"><span class="lineNum">      32</span>              :     from numpy.typing import NDArray</span>
+<span id="L33"><span class="lineNum">      33</span>              : </span>
+<span id="L34"><span class="lineNum">      34</span>              :     from pairinteraction.state import StateBase</span>
+<span id="L35"><span class="lineNum">      35</span>              :     from pairinteraction_gui.calculate.calculate_base import Parameters, Results</span>
+<span id="L36"><span class="lineNum">      36</span>              :     from pairinteraction_gui.calculate.calculate_lifetimes import KetData, ParametersLifetimes, ResultsLifetimes</span>
+<span id="L37"><span class="lineNum">      37</span>              :     from pairinteraction_gui.page import SimulationPage</span>
+<span id="L38"><span class="lineNum">      38</span>              : </span>
+<span id="L39"><span class="lineNum">      39</span> <span class="tlaGNC">           1 : logger = logging.getLogger(__name__)</span></span>
+<span id="L40"><span class="lineNum">      40</span>              : </span>
+<span id="L41"><span class="lineNum">      41</span>              : </span>
+<span id="L42"><span class="lineNum">      42</span> <span class="tlaGNC">           1 : class PlotWidget(WidgetV):</span></span>
+<span id="L43"><span class="lineNum">      43</span>              :     &quot;&quot;&quot;Widget for displaying plots with controls.&quot;&quot;&quot;</span>
+<span id="L44"><span class="lineNum">      44</span>              : </span>
+<span id="L45"><span class="lineNum">      45</span> <span class="tlaGNC">           1 :     margin = (0, 0, 0, 0)</span></span>
+<span id="L46"><span class="lineNum">      46</span> <span class="tlaGNC">           1 :     spacing = 15</span></span>
+<span id="L47"><span class="lineNum">      47</span> <span class="tlaGNC">           1 :     _annotations: dict[Any, mpl.text.Annotation]</span></span>
+<span id="L48"><span class="lineNum">      48</span>              : </span>
+<span id="L49"><span class="lineNum">      49</span> <span class="tlaGNC">           1 :     def __init__(self, parent: SimulationPage) -&gt; None:</span></span>
+<span id="L50"><span class="lineNum">      50</span>              :         &quot;&quot;&quot;Initialize the base section.&quot;&quot;&quot;</span>
+<span id="L51"><span class="lineNum">      51</span> <span class="tlaGNC">           1 :         self.page = parent</span></span>
+<span id="L52"><span class="lineNum">      52</span> <span class="tlaGNC">           1 :         super().__init__(parent)</span></span>
+<span id="L53"><span class="lineNum">      53</span>              : </span>
+<span id="L54"><span class="lineNum">      54</span> <span class="tlaGNC">           1 :         self._annotations = {}</span></span>
+<span id="L55"><span class="lineNum">      55</span> <span class="tlaGNC">           1 :         self._click_cids: list[int] = []</span></span>
+<span id="L56"><span class="lineNum">      56</span>              : </span>
+<span id="L57"><span class="lineNum">      57</span> <span class="tlaGNC">           1 :     def setupWidget(self) -&gt; None:</span></span>
+<span id="L58"><span class="lineNum">      58</span> <span class="tlaGNC">           1 :         self.canvas = MatplotlibCanvas(self)</span></span>
+<span id="L59"><span class="lineNum">      59</span> <span class="tlaGNC">           1 :         self.navigation_toolbar = CustomNavigationToolbar(self.canvas, self)</span></span>
+<span id="L60"><span class="lineNum">      60</span> <span class="tlaGNC">           1 :         self.navigation_toolbar.setObjectName(&quot;PlotNavigationToolBar&quot;)</span></span>
+<span id="L61"><span class="lineNum">      61</span>              : </span>
+<span id="L62"><span class="lineNum">      62</span> <span class="tlaGNC">           1 :         top_layout = QHBoxLayout()</span></span>
+<span id="L63"><span class="lineNum">      63</span> <span class="tlaGNC">           1 :         top_layout.addStretch(1)</span></span>
+<span id="L64"><span class="lineNum">      64</span> <span class="tlaGNC">           1 :         top_layout.addWidget(self.navigation_toolbar)</span></span>
+<span id="L65"><span class="lineNum">      65</span> <span class="tlaGNC">           1 :         self.layout().addLayout(top_layout)</span></span>
+<span id="L66"><span class="lineNum">      66</span>              : </span>
+<span id="L67"><span class="lineNum">      67</span> <span class="tlaGNC">           1 :         self.layout().addWidget(self.canvas, stretch=1)</span></span>
+<span id="L68"><span class="lineNum">      68</span>              : </span>
+<span id="L69"><span class="lineNum">      69</span> <span class="tlaGNC">           1 :     def clear(self) -&gt; None:</span></span>
+<span id="L70"><span class="lineNum">      70</span> <span class="tlaGNC">           1 :         self.canvas.ax.clear()</span></span>
+<span id="L71"><span class="lineNum">      71</span> <span class="tlaGNC">           1 :         self.canvas.draw_idle()</span></span>
+<span id="L72"><span class="lineNum">      72</span> <span class="tlaGNC">           1 :         self.clear_annotations()</span></span>
+<span id="L73"><span class="lineNum">      73</span> <span class="tlaGNC">           1 :         self.disconnect_click()</span></span>
+<span id="L74"><span class="lineNum">      74</span>              : </span>
+<span id="L75"><span class="lineNum">      75</span> <span class="tlaGNC">           1 :     def clear_annotations(self) -&gt; None:</span></span>
+<span id="L76"><span class="lineNum">      76</span> <span class="tlaGNC">           1 :         for ann in self._annotations.values():</span></span>
+<span id="L77"><span class="lineNum">      77</span> <span class="tlaUNC">           0 :             with contextlib.suppress(NotImplementedError):</span></span>
+<span id="L78"><span class="lineNum">      78</span> <span class="tlaUNC">           0 :                 ann.remove()  # artist may already be gone if ax.clear() was called</span></span>
+<span id="L79"><span class="lineNum">      79</span> <span class="tlaGNC">           1 :         self._annotations.clear()</span></span>
+<span id="L80"><span class="lineNum">      80</span> <span class="tlaGNC">           1 :         self.canvas.draw_idle()</span></span>
+<span id="L81"><span class="lineNum">      81</span>              : </span>
+<span id="L82"><span class="lineNum">      82</span> <span class="tlaGNC">           1 :     def disconnect_click(self) -&gt; None:</span></span>
+<span id="L83"><span class="lineNum">      83</span> <span class="tlaGNC">           1 :         for cid in self._click_cids:</span></span>
+<span id="L84"><span class="lineNum">      84</span> <span class="tlaUNC">           0 :             self.canvas.mpl_disconnect(cid)</span></span>
+<span id="L85"><span class="lineNum">      85</span> <span class="tlaGNC">           1 :         self._click_cids = []</span></span>
+<span id="L86"><span class="lineNum">      86</span>              : </span>
+<span id="L87"><span class="lineNum">      87</span> <span class="tlaGNC">           1 :     def connect_click(self, on_click: Callable[[mpl.backend_bases.MouseEvent], None]) -&gt; None:</span></span>
+<span id="L88"><span class="lineNum">      88</span>              :         &quot;&quot;&quot;Connect a click handler that fires on mouse release, but only for genuine clicks.&quot;&quot;&quot;</span>
+<span id="L89"><span class="lineNum">      89</span>              :         # Maximum distance (in pixels) the mouse may travel between press and release</span>
+<span id="L90"><span class="lineNum">      90</span>              :         # for the event to still count as a click rather than a drag (e.g. a zoom rectangle or a pan).</span>
+<span id="L91"><span class="lineNum">      91</span> <span class="tlaGNC">           1 :         click_move_threshold = 5</span></span>
+<span id="L92"><span class="lineNum">      92</span>              : </span>
+<span id="L93"><span class="lineNum">      93</span> <span class="tlaGNC">           1 :         press_positions: dict[Any, tuple[float, float]] = {}</span></span>
+<span id="L94"><span class="lineNum">      94</span>              : </span>
+<span id="L95"><span class="lineNum">      95</span> <span class="tlaGNC">           1 :         def on_press(event: mpl.backend_bases.Event) -&gt; None:</span></span>
+<span id="L96"><span class="lineNum">      96</span> <span class="tlaUNC">           0 :             if not isinstance(event, MouseEvent) or event.x is None or event.y is None:</span></span>
+<span id="L97"><span class="lineNum">      97</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L98"><span class="lineNum">      98</span> <span class="tlaUNC">           0 :             press_positions[event.button] = (event.x, event.y)</span></span>
+<span id="L99"><span class="lineNum">      99</span>              : </span>
+<span id="L100"><span class="lineNum">     100</span> <span class="tlaGNC">           1 :         def on_release(event: mpl.backend_bases.Event) -&gt; None:</span></span>
+<span id="L101"><span class="lineNum">     101</span> <span class="tlaUNC">           0 :             if not isinstance(event, MouseEvent):</span></span>
+<span id="L102"><span class="lineNum">     102</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L103"><span class="lineNum">     103</span> <span class="tlaUNC">           0 :             start = press_positions.pop(event.button, None)</span></span>
+<span id="L104"><span class="lineNum">     104</span> <span class="tlaUNC">           0 :             if start is None or event.x is None or event.y is None:</span></span>
+<span id="L105"><span class="lineNum">     105</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L106"><span class="lineNum">     106</span> <span class="tlaUNC">           0 :             if math.hypot(event.x - start[0], event.y - start[1]) &gt; click_move_threshold:</span></span>
+<span id="L107"><span class="lineNum">     107</span> <span class="tlaUNC">           0 :                 return  # this was a drag (e.g. a zoom rectangle), not a click</span></span>
+<span id="L108"><span class="lineNum">     108</span> <span class="tlaUNC">           0 :             on_click(event)</span></span>
+<span id="L109"><span class="lineNum">     109</span>              : </span>
+<span id="L110"><span class="lineNum">     110</span> <span class="tlaGNC">           1 :         def on_figure_leave(_event: mpl.backend_bases.Event) -&gt; None:</span></span>
+<span id="L111"><span class="lineNum">     111</span>              :             # Forget pending presses whose release we will not see, a stale entry would otherwise</span>
+<span id="L112"><span class="lineNum">     112</span>              :             # be used as the starting point of some later, unrelated release.</span>
+<span id="L113"><span class="lineNum">     113</span> <span class="tlaUNC">           0 :             press_positions.clear()</span></span>
+<span id="L114"><span class="lineNum">     114</span>              : </span>
+<span id="L115"><span class="lineNum">     115</span> <span class="tlaGNC">           1 :         self.disconnect_click()</span></span>
+<span id="L116"><span class="lineNum">     116</span> <span class="tlaGNC">           1 :         self._click_cids = [</span></span>
+<span id="L117"><span class="lineNum">     117</span>              :             self.canvas.mpl_connect(&quot;button_press_event&quot;, on_press),</span>
+<span id="L118"><span class="lineNum">     118</span>              :             self.canvas.mpl_connect(&quot;button_release_event&quot;, on_release),</span>
+<span id="L119"><span class="lineNum">     119</span>              :             self.canvas.mpl_connect(&quot;figure_leave_event&quot;, on_figure_leave),</span>
+<span id="L120"><span class="lineNum">     120</span>              :         ]</span>
+<span id="L121"><span class="lineNum">     121</span>              : </span>
+<span id="L122"><span class="lineNum">     122</span>              : </span>
+<span id="L123"><span class="lineNum">     123</span> <span class="tlaGNC">           1 : class PlotEnergies(PlotWidget):</span></span>
+<span id="L124"><span class="lineNum">     124</span>              :     &quot;&quot;&quot;Plotwidget for plotting energy levels.&quot;&quot;&quot;</span>
+<span id="L125"><span class="lineNum">     125</span>              : </span>
+<span id="L126"><span class="lineNum">     126</span> <span class="tlaGNC">           1 :     parameters: Parameters[Any] | None = None</span></span>
+<span id="L127"><span class="lineNum">     127</span> <span class="tlaGNC">           1 :     results: Results | None = None</span></span>
+<span id="L128"><span class="lineNum">     128</span> <span class="tlaGNC">           1 :     _annotations: dict[int, mpl.text.Annotation]</span></span>
+<span id="L129"><span class="lineNum">     129</span>              : </span>
+<span id="L130"><span class="lineNum">     130</span> <span class="tlaGNC">           1 :     def __init__(self, parent: SimulationPage) -&gt; None:</span></span>
+<span id="L131"><span class="lineNum">     131</span> <span class="tlaGNC">           1 :         super().__init__(parent)</span></span>
+<span id="L132"><span class="lineNum">     132</span>              : </span>
+<span id="L133"><span class="lineNum">     133</span> <span class="tlaGNC">           1 :         self.fit_idx = 0</span></span>
+<span id="L134"><span class="lineNum">     134</span> <span class="tlaGNC">           1 :         self.fit_type = &quot;&quot;</span></span>
+<span id="L135"><span class="lineNum">     135</span> <span class="tlaGNC">           1 :         self.fit_data_highlight: mpl.collections.PathCollection | None = None</span></span>
+<span id="L136"><span class="lineNum">     136</span> <span class="tlaGNC">           1 :         self.fit_curve: Sequence[mpl.lines.Line2D] | None = None</span></span>
+<span id="L137"><span class="lineNum">     137</span>              : </span>
+<span id="L138"><span class="lineNum">     138</span> <span class="tlaGNC">           1 :     def setupWidget(self) -&gt; None:</span></span>
+<span id="L139"><span class="lineNum">     139</span> <span class="tlaGNC">           1 :         super().setupWidget()</span></span>
+<span id="L140"><span class="lineNum">     140</span>              : </span>
+<span id="L141"><span class="lineNum">     141</span> <span class="tlaGNC">           1 :         window_color = theme_manager.get_palette().color(QPalette.ColorRole.Window).name()</span></span>
+<span id="L142"><span class="lineNum">     142</span>              : </span>
+<span id="L143"><span class="lineNum">     143</span> <span class="tlaGNC">           1 :         self.canvas.fig.set_facecolor(window_color)</span></span>
+<span id="L144"><span class="lineNum">     144</span> <span class="tlaGNC">           1 :         self.canvas.fig.set_layout_engine(</span></span>
+<span id="L145"><span class="lineNum">     145</span>              :             &quot;constrained&quot;,</span>
+<span id="L146"><span class="lineNum">     146</span>              :             w_pad=0.2,</span>
+<span id="L147"><span class="lineNum">     147</span>              :             h_pad=0.2,</span>
+<span id="L148"><span class="lineNum">     148</span>              :             wspace=0.0,</span>
+<span id="L149"><span class="lineNum">     149</span>              :             hspace=0.0,</span>
+<span id="L150"><span class="lineNum">     150</span>              :         )</span>
+<span id="L151"><span class="lineNum">     151</span> <span class="tlaGNC">           1 :         mappable = ScalarMappable(cmap=alphamagma, norm=Normalize(vmin=0, vmax=1))</span></span>
+<span id="L152"><span class="lineNum">     152</span> <span class="tlaGNC">           1 :         cbar = self.canvas.fig.colorbar(mappable, ax=self.canvas.ax, label=&quot;Overlap with state of interest&quot;, aspect=60)</span></span>
+<span id="L153"><span class="lineNum">     153</span> <span class="tlaGNC">           1 :         cbar.ax.set_zorder(0)</span></span>
+<span id="L154"><span class="lineNum">     154</span> <span class="tlaGNC">           1 :         self.canvas.ax.set_zorder(1)</span></span>
+<span id="L155"><span class="lineNum">     155</span>              : </span>
+<span id="L156"><span class="lineNum">     156</span> <span class="tlaGNC">           1 :     def plot(self, parameters: Parameters[Any], results: Results) -&gt; None:</span></span>
+<span id="L157"><span class="lineNum">     157</span> <span class="tlaGNC">           1 :         self.clear()</span></span>
+<span id="L158"><span class="lineNum">     158</span>              : </span>
+<span id="L159"><span class="lineNum">     159</span> <span class="tlaGNC">           1 :         show_status_tip(self, &quot;Plotting energy curves...&quot;)</span></span>
+<span id="L160"><span class="lineNum">     160</span> <span class="tlaGNC">           1 :         ax = self.canvas.ax</span></span>
+<span id="L161"><span class="lineNum">     161</span> <span class="tlaGNC">           1 :         ax.set_xmargin(0)</span></span>
+<span id="L162"><span class="lineNum">     162</span>              : </span>
+<span id="L163"><span class="lineNum">     163</span>              :         # store data to allow fitting later on</span>
+<span id="L164"><span class="lineNum">     164</span> <span class="tlaGNC">           1 :         self.parameters = parameters</span></span>
+<span id="L165"><span class="lineNum">     165</span> <span class="tlaGNC">           1 :         self.results = results</span></span>
+<span id="L166"><span class="lineNum">     166</span>              : </span>
+<span id="L167"><span class="lineNum">     167</span> <span class="tlaGNC">           1 :         x_values = parameters.get_x_values()</span></span>
+<span id="L168"><span class="lineNum">     168</span> <span class="tlaGNC">           1 :         energies = results.energies</span></span>
+<span id="L169"><span class="lineNum">     169</span> <span class="tlaGNC">           1 :         x_repeated = np.repeat(x_values, [len(es) for es in energies])</span></span>
+<span id="L170"><span class="lineNum">     170</span>              : </span>
+<span id="L171"><span class="lineNum">     171</span> <span class="tlaGNC">           1 :         if len({len(es) for es in energies}) &lt;= 1:  # check if homogeneous shape</span></span>
+<span id="L172"><span class="lineNum">     172</span> <span class="tlaGNC">           1 :             segments = [np.column_stack([x_values, es]) for es in np.transpose(energies)]</span></span>
+<span id="L173"><span class="lineNum">     173</span> <span class="tlaGNC">           1 :             ax.add_collection(LineCollection(segments, colors=&quot;0.75&quot;, linewidths=0.25, zorder=-10))</span></span>
+<span id="L174"><span class="lineNum">     174</span> <span class="tlaGNC">           1 :             ax.autoscale_view()  # add_collection does not rescale the axes on its own</span></span>
+<span id="L175"><span class="lineNum">     175</span>              :         else:  # inhomogeneous shape</span>
+<span id="L176"><span class="lineNum">     176</span> <span class="tlaUNC">           0 :             ax.plot(x_repeated, np.hstack(energies), c=&quot;0.75&quot;, ls=&quot;None&quot;, marker=&quot;.&quot;, zorder=-10)</span></span>
+<span id="L177"><span class="lineNum">     177</span>              : </span>
+<span id="L178"><span class="lineNum">     178</span> <span class="tlaGNC">           1 :         show_status_tip(self, &quot;Plotting overlaps...&quot;)</span></span>
+<span id="L179"><span class="lineNum">     179</span>              : </span>
+<span id="L180"><span class="lineNum">     180</span>              :         # Flatten the arrays for scatter plot</span>
+<span id="L181"><span class="lineNum">     181</span>              :         # (dont use numpy.flatten, etc. to also handle inhomogeneous shapes)</span>
+<span id="L182"><span class="lineNum">     182</span> <span class="tlaGNC">           1 :         energies_flattened = np.hstack(energies)</span></span>
+<span id="L183"><span class="lineNum">     183</span> <span class="tlaGNC">           1 :         overlaps_flattened = np.hstack(results.ket_overlaps)</span></span>
+<span id="L184"><span class="lineNum">     184</span>              : </span>
+<span id="L185"><span class="lineNum">     185</span> <span class="tlaGNC">           1 :         min_overlap = 1e-4</span></span>
+<span id="L186"><span class="lineNum">     186</span> <span class="tlaGNC">           1 :         inds: NDArray[Any] = np.argwhere(overlaps_flattened &gt; min_overlap).ravel()</span></span>
+<span id="L187"><span class="lineNum">     187</span> <span class="tlaGNC">           1 :         inds = inds[np.argsort(overlaps_flattened[inds])]</span></span>
+<span id="L188"><span class="lineNum">     188</span>              : </span>
+<span id="L189"><span class="lineNum">     189</span> <span class="tlaGNC">           1 :         if len(inds) &gt; 0:</span></span>
+<span id="L190"><span class="lineNum">     190</span> <span class="tlaGNC">           1 :             ax.scatter(</span></span>
+<span id="L191"><span class="lineNum">     191</span>              :                 x_repeated[inds],</span>
+<span id="L192"><span class="lineNum">     192</span>              :                 energies_flattened[inds],</span>
+<span id="L193"><span class="lineNum">     193</span>              :                 c=overlaps_flattened[inds],</span>
+<span id="L194"><span class="lineNum">     194</span>              :                 s=15,</span>
+<span id="L195"><span class="lineNum">     195</span>              :                 vmin=0,</span>
+<span id="L196"><span class="lineNum">     196</span>              :                 vmax=1,</span>
+<span id="L197"><span class="lineNum">     197</span>              :                 cmap=alphamagma,</span>
+<span id="L198"><span class="lineNum">     198</span>              :             )</span>
+<span id="L199"><span class="lineNum">     199</span>              : </span>
+<span id="L200"><span class="lineNum">     200</span> <span class="tlaGNC">           1 :         ax.set_xlabel(parameters.get_x_label())</span></span>
+<span id="L201"><span class="lineNum">     201</span> <span class="tlaGNC">           1 :         ax.set_ylabel(&quot;Energy (GHz)&quot;)</span></span>
+<span id="L202"><span class="lineNum">     202</span>              : </span>
+<span id="L203"><span class="lineNum">     203</span> <span class="tlaGNC">           1 :     def setup_annotations(self, parameters: Parameters[Any], results: Results) -&gt; None:</span></span>
+<span id="L204"><span class="lineNum">     204</span>              :         &quot;&quot;&quot;Connect click-based state annotation to the energy plot.&quot;&quot;&quot;</span>
+<span id="L205"><span class="lineNum">     205</span> <span class="tlaGNC">           1 :         energies = results.energies</span></span>
+<span id="L206"><span class="lineNum">     206</span> <span class="tlaGNC">           1 :         overlaps = results.ket_overlaps</span></span>
+<span id="L207"><span class="lineNum">     207</span> <span class="tlaGNC">           1 :         x_values = parameters.get_x_values()</span></span>
+<span id="L208"><span class="lineNum">     208</span>              : </span>
+<span id="L209"><span class="lineNum">     209</span> <span class="tlaGNC">           1 :         self._point_index_map: list[tuple[int, int]] = []</span></span>
+<span id="L210"><span class="lineNum">     210</span> <span class="tlaGNC">           1 :         all_x: list[float] = []</span></span>
+<span id="L211"><span class="lineNum">     211</span> <span class="tlaGNC">           1 :         all_y: list[float] = []</span></span>
+<span id="L212"><span class="lineNum">     212</span> <span class="tlaGNC">           1 :         all_overlaps: list[float] = []</span></span>
+<span id="L213"><span class="lineNum">     213</span> <span class="tlaGNC">           1 :         for idx in range(len(energies)):</span></span>
+<span id="L214"><span class="lineNum">     214</span> <span class="tlaGNC">           1 :             x = x_values[idx]</span></span>
+<span id="L215"><span class="lineNum">     215</span> <span class="tlaGNC">           1 :             for idstate, (energy, overlap) in enumerate(zip(energies[idx], overlaps[idx], strict=True)):</span></span>
+<span id="L216"><span class="lineNum">     216</span> <span class="tlaGNC">           1 :                 all_x.append(x)</span></span>
+<span id="L217"><span class="lineNum">     217</span> <span class="tlaGNC">           1 :                 all_y.append(float(energy))</span></span>
+<span id="L218"><span class="lineNum">     218</span> <span class="tlaGNC">           1 :                 all_overlaps.append(float(overlap))</span></span>
+<span id="L219"><span class="lineNum">     219</span> <span class="tlaGNC">           1 :                 self._point_index_map.append((idx, idstate))</span></span>
+<span id="L220"><span class="lineNum">     220</span> <span class="tlaGNC">           1 :         pts_data = np.column_stack([all_x, all_y]) if all_x else np.empty((0, 2))</span></span>
+<span id="L221"><span class="lineNum">     221</span> <span class="tlaGNC">           1 :         pts_overlaps = np.array(all_overlaps)</span></span>
+<span id="L222"><span class="lineNum">     222</span>              : </span>
+<span id="L223"><span class="lineNum">     223</span> <span class="tlaGNC">           1 :         def on_click(event: mpl.backend_bases.MouseEvent) -&gt; None:</span></span>
+<span id="L224"><span class="lineNum">     224</span> <span class="tlaUNC">           0 :             if event.inaxes is not self.canvas.ax or event.button not in [1, 3] or len(pts_data) == 0:</span></span>
+<span id="L225"><span class="lineNum">     225</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L226"><span class="lineNum">     226</span> <span class="tlaUNC">           0 :             if event.button == 3:  # right click clears annotations</span></span>
+<span id="L227"><span class="lineNum">     227</span> <span class="tlaUNC">           0 :                 self.clear_annotations()</span></span>
+<span id="L228"><span class="lineNum">     228</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L229"><span class="lineNum">     229</span>              : </span>
+<span id="L230"><span class="lineNum">     230</span> <span class="tlaUNC">           0 :             pts_pos = self.canvas.ax.transData.transform(pts_data)</span></span>
+<span id="L231"><span class="lineNum">     231</span> <span class="tlaUNC">           0 :             click_pos = np.array([event.x, event.y])</span></span>
+<span id="L232"><span class="lineNum">     232</span> <span class="tlaUNC">           0 :             dists = np.hypot(pts_pos[:, 0] - click_pos[0], pts_pos[:, 1] - click_pos[1])</span></span>
+<span id="L233"><span class="lineNum">     233</span> <span class="tlaUNC">           0 :             candidates = np.flatnonzero(dists &lt;= 10)  # threshold in pixels</span></span>
+<span id="L234"><span class="lineNum">     234</span> <span class="tlaUNC">           0 :             if len(candidates) == 0:</span></span>
+<span id="L235"><span class="lineNum">     235</span> <span class="tlaUNC">           0 :                 self.clear_annotations()</span></span>
+<span id="L236"><span class="lineNum">     236</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L237"><span class="lineNum">     237</span> <span class="tlaUNC">           0 :             selected = int(candidates[np.argmax(pts_overlaps[candidates])])</span></span>
+<span id="L238"><span class="lineNum">     238</span> <span class="tlaUNC">           0 :             if selected in self._annotations:</span></span>
+<span id="L239"><span class="lineNum">     239</span> <span class="tlaUNC">           0 :                 self._annotations[selected].remove()</span></span>
+<span id="L240"><span class="lineNum">     240</span> <span class="tlaUNC">           0 :                 del self._annotations[selected]</span></span>
+<span id="L241"><span class="lineNum">     241</span> <span class="tlaUNC">           0 :                 self.canvas.draw_idle()</span></span>
+<span id="L242"><span class="lineNum">     242</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L243"><span class="lineNum">     243</span> <span class="tlaUNC">           0 :             idstep, idstate = self._point_index_map[selected]</span></span>
+<span id="L244"><span class="lineNum">     244</span> <span class="tlaUNC">           0 :             state: StateBase[Any] = results.systems[idstep].get_eigenbasis().get_state(idstate)</span></span>
+<span id="L245"><span class="lineNum">     245</span> <span class="tlaUNC">           0 :             label = state.get_label().replace(&quot; + &quot;, &quot;\n + &quot;).replace(&quot; - &quot;, &quot;\n - &quot;)</span></span>
+<span id="L246"><span class="lineNum">     246</span> <span class="tlaUNC">           0 :             xlim = self.canvas.ax.get_xlim()</span></span>
+<span id="L247"><span class="lineNum">     247</span> <span class="tlaUNC">           0 :             ylim = self.canvas.ax.get_ylim()</span></span>
+<span id="L248"><span class="lineNum">     248</span> <span class="tlaUNC">           0 :             x_frac = (pts_data[selected, 0] - xlim[0]) / (xlim[1] - xlim[0])</span></span>
+<span id="L249"><span class="lineNum">     249</span> <span class="tlaUNC">           0 :             y_frac = (pts_data[selected, 1] - ylim[0]) / (ylim[1] - ylim[0])</span></span>
+<span id="L250"><span class="lineNum">     250</span> <span class="tlaUNC">           0 :             x_offset = -100 if isinstance(state, StateAtom) else -250</span></span>
+<span id="L251"><span class="lineNum">     251</span> <span class="tlaUNC">           0 :             x_offset = x_offset if x_frac &gt; 0.5 else 0</span></span>
+<span id="L252"><span class="lineNum">     252</span> <span class="tlaUNC">           0 :             y_offset = 15 + 10 * label.count(&quot;\n&quot;)</span></span>
+<span id="L253"><span class="lineNum">     253</span> <span class="tlaUNC">           0 :             y_offset = -y_offset if y_frac &gt; 0.5 else y_offset</span></span>
+<span id="L254"><span class="lineNum">     254</span> <span class="tlaUNC">           0 :             ann = self.canvas.ax.annotate(</span></span>
+<span id="L255"><span class="lineNum">     255</span>              :                 label,</span>
+<span id="L256"><span class="lineNum">     256</span>              :                 xy=(pts_data[selected, 0], pts_data[selected, 1]),</span>
+<span id="L257"><span class="lineNum">     257</span>              :                 xytext=(x_offset, y_offset),</span>
+<span id="L258"><span class="lineNum">     258</span>              :                 textcoords=&quot;offset points&quot;,</span>
+<span id="L259"><span class="lineNum">     259</span>              :                 va=&quot;center&quot;,</span>
+<span id="L260"><span class="lineNum">     260</span>              :                 bbox={&quot;boxstyle&quot;: &quot;round,pad=0.5&quot;, &quot;fc&quot;: &quot;white&quot;, &quot;alpha&quot;: 0.9, &quot;ec&quot;: &quot;gray&quot;},</span>
+<span id="L261"><span class="lineNum">     261</span>              :                 arrowprops={&quot;arrowstyle&quot;: &quot;-&gt;&quot;, &quot;connectionstyle&quot;: &quot;arc3&quot;, &quot;color&quot;: &quot;gray&quot;},</span>
+<span id="L262"><span class="lineNum">     262</span>              :                 clip_on=False,</span>
+<span id="L263"><span class="lineNum">     263</span>              :             )</span>
+<span id="L264"><span class="lineNum">     264</span> <span class="tlaUNC">           0 :             ann.set_in_layout(False)</span></span>
+<span id="L265"><span class="lineNum">     265</span> <span class="tlaUNC">           0 :             self._annotations[selected] = ann</span></span>
+<span id="L266"><span class="lineNum">     266</span> <span class="tlaUNC">           0 :             self.canvas.draw_idle()</span></span>
+<span id="L267"><span class="lineNum">     267</span>              : </span>
+<span id="L268"><span class="lineNum">     268</span> <span class="tlaGNC">           1 :         self.connect_click(on_click)</span></span>
+<span id="L269"><span class="lineNum">     269</span> <span class="tlaGNC">           1 :         self.navigation_toolbar._home_callbacks = [self.clear_annotations]</span></span>
+<span id="L270"><span class="lineNum">     270</span>              : </span>
+<span id="L271"><span class="lineNum">     271</span> <span class="tlaGNC">           1 :     def fit(self, fit_type: str = &quot;c6&quot;) -&gt; None:  # noqa: PLR0912, PLR0915, C901</span></span>
+<span id="L272"><span class="lineNum">     272</span>              :         &quot;&quot;&quot;Fits a potential curve and displays the fit values.</span>
+<span id="L273"><span class="lineNum">     273</span>              : </span>
+<span id="L274"><span class="lineNum">     274</span>              :         Args:</span>
+<span id="L275"><span class="lineNum">     275</span>              :             fit_type: Type of fit to perform. Options are:</span>
+<span id="L276"><span class="lineNum">     276</span>              :               c6: E = E0 + C6 * r^6</span>
+<span id="L277"><span class="lineNum">     277</span>              :               c3: E = E0 + C3 * r^3</span>
+<span id="L278"><span class="lineNum">     278</span>              :               c3+c6: E = E0 + C3 * r^3 + C6 * r^6</span>
+<span id="L279"><span class="lineNum">     279</span>              : </span>
+<span id="L280"><span class="lineNum">     280</span>              :         Iterative calls will iterate through the potential curves</span>
+<span id="L281"><span class="lineNum">     281</span>              : </span>
+<span id="L282"><span class="lineNum">     282</span>              :         &quot;&quot;&quot;</span>
+<span id="L283"><span class="lineNum">     283</span> <span class="tlaGNC">           1 :         if self.parameters is None or self.results is None:</span></span>
+<span id="L284"><span class="lineNum">     284</span> <span class="tlaUNC">           0 :             logger.warning(&quot;No data to fit.&quot;)</span></span>
+<span id="L285"><span class="lineNum">     285</span> <span class="tlaUNC">           0 :             return</span></span>
+<span id="L286"><span class="lineNum">     286</span>              : </span>
+<span id="L287"><span class="lineNum">     287</span> <span class="tlaGNC">           1 :         energies = self.results.energies</span></span>
+<span id="L288"><span class="lineNum">     288</span> <span class="tlaGNC">           1 :         x_values = np.array(self.parameters.get_x_values())</span></span>
+<span id="L289"><span class="lineNum">     289</span> <span class="tlaGNC">           1 :         overlaps_list = self.results.ket_overlaps</span></span>
+<span id="L290"><span class="lineNum">     290</span>              : </span>
+<span id="L291"><span class="lineNum">     291</span>              :         fit_func: Callable[Concatenate[NDArray[Any], ...], NDArray[Any]]</span>
+<span id="L292"><span class="lineNum">     292</span> <span class="tlaGNC">           1 :         if fit_type == &quot;c6&quot;:</span></span>
+<span id="L293"><span class="lineNum">     293</span> <span class="tlaGNC">           1 :             fit_func = fit_c6</span></span>
+<span id="L294"><span class="lineNum">     294</span> <span class="tlaGNC">           1 :             fitlabel = &quot;E0 = {0:.3f} GHz\nC6 = {1:.3f} GHz*µm^6&quot;</span></span>
+<span id="L295"><span class="lineNum">     295</span> <span class="tlaGNC">           1 :         elif fit_type == &quot;c3&quot;:</span></span>
+<span id="L296"><span class="lineNum">     296</span> <span class="tlaGNC">           1 :             fit_func = fit_c3</span></span>
+<span id="L297"><span class="lineNum">     297</span> <span class="tlaGNC">           1 :             fitlabel = &quot;E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3&quot;</span></span>
+<span id="L298"><span class="lineNum">     298</span> <span class="tlaGNC">           1 :         elif fit_type == &quot;c3+c6&quot;:</span></span>
+<span id="L299"><span class="lineNum">     299</span> <span class="tlaGNC">           1 :             fit_func = fit_c3_c6</span></span>
+<span id="L300"><span class="lineNum">     300</span> <span class="tlaGNC">           1 :             fitlabel = &quot;E0 = {0:.3f} GHz\nC3 = {1:.3f} GHz*µm^3\nC6 = {2:.3f} GHz*µm^6&quot;</span></span>
+<span id="L301"><span class="lineNum">     301</span>              :         else:</span>
+<span id="L302"><span class="lineNum">     302</span> <span class="tlaUNC">           0 :             raise ValueError(f&quot;Unknown fit type: {fit_type}&quot;)</span></span>
+<span id="L303"><span class="lineNum">     303</span>              : </span>
+<span id="L304"><span class="lineNum">     304</span>              :         # increase the selected potential curve by one if we use the same fit type</span>
+<span id="L305"><span class="lineNum">     305</span> <span class="tlaGNC">           1 :         if self.fit_type == fit_type:</span></span>
+<span id="L306"><span class="lineNum">     306</span> <span class="tlaGNC">           1 :             self.fit_idx = (self.fit_idx + 1) % len(energies)</span></span>
+<span id="L307"><span class="lineNum">     307</span>              :         else:</span>
+<span id="L308"><span class="lineNum">     308</span> <span class="tlaGNC">           1 :             self.fit_idx = 1</span></span>
+<span id="L309"><span class="lineNum">     309</span> <span class="tlaGNC">           1 :         self.fit_type = fit_type</span></span>
+<span id="L310"><span class="lineNum">     310</span>              : </span>
+<span id="L311"><span class="lineNum">     311</span>              :         # We want to follow the potential curves. The ordering of energies is just by value, so we</span>
+<span id="L312"><span class="lineNum">     312</span>              :         # need to follow the curve somehow. We go right to left, start at the nth largest value, keep our</span>
+<span id="L313"><span class="lineNum">     313</span>              :         # index as long as the difference in overlap is less than a factor 2 or less than 5% total difference.</span>
+<span id="L314"><span class="lineNum">     314</span>              :         # Otherwise, we search until we find an overlap that is less than a factor 2 different.</span>
+<span id="L315"><span class="lineNum">     315</span>              :         # This is of course a simple heuristic, a more sophisticated approach would do some global optimization</span>
+<span id="L316"><span class="lineNum">     316</span>              :         # of the curves. This approach is simple, fast and robust, but curves may e.g. merge.</span>
+<span id="L317"><span class="lineNum">     317</span>              :         # This does not at all take into account the line shapes of the curves. There is also no trade-off</span>
+<span id="L318"><span class="lineNum">     318</span>              :         # between overlap being close and not doing jumps.</span>
+<span id="L319"><span class="lineNum">     319</span> <span class="tlaGNC">           1 :         idxs = [np.argpartition(overlaps_list[0], -self.fit_idx)[-self.fit_idx]]</span></span>
+<span id="L320"><span class="lineNum">     320</span> <span class="tlaGNC">           1 :         last_overlap = overlaps_list[0][idxs[-1]]</span></span>
+<span id="L321"><span class="lineNum">     321</span> <span class="tlaGNC">           1 :         for overlaps in overlaps_list[1:]:</span></span>
+<span id="L322"><span class="lineNum">     322</span> <span class="tlaGNC">           1 :             idx = idxs[-1]</span></span>
+<span id="L323"><span class="lineNum">     323</span> <span class="tlaGNC">           1 :             overlap = overlaps[idx]</span></span>
+<span id="L324"><span class="lineNum">     324</span> <span class="tlaGNC">           1 :             if 0.5 * last_overlap &lt; overlap &lt; 2 * last_overlap or abs(overlap - last_overlap) &lt; 0.05:</span></span>
+<span id="L325"><span class="lineNum">     325</span>              :                 # we keep the current index</span>
+<span id="L326"><span class="lineNum">     326</span> <span class="tlaGNC">           1 :                 idxs.append(idx)</span></span>
+<span id="L327"><span class="lineNum">     327</span> <span class="tlaGNC">           1 :                 last_overlap = overlap</span></span>
+<span id="L328"><span class="lineNum">     328</span>              :             else:</span>
+<span id="L329"><span class="lineNum">     329</span>              :                 # we search until we find an overlap that is less than a factor 2 different</span>
+<span id="L330"><span class="lineNum">     330</span> <span class="tlaGNC">           1 :                 possible_options = np.argwhere(</span></span>
+<span id="L331"><span class="lineNum">     331</span>              :                     np.logical_and(overlaps &gt; 0.5 * last_overlap, overlaps &lt; 2 * last_overlap)</span>
+<span id="L332"><span class="lineNum">     332</span>              :                 ).flatten()</span>
+<span id="L333"><span class="lineNum">     333</span> <span class="tlaGNC">           1 :                 if len(possible_options) == 0:</span></span>
+<span id="L334"><span class="lineNum">     334</span>              :                     # there is no state in that range - our best bet is to keep the current index</span>
+<span id="L335"><span class="lineNum">     335</span> <span class="tlaGNC">           1 :                     idxs.append(idx)</span></span>
+<span id="L336"><span class="lineNum">     336</span> <span class="tlaGNC">           1 :                     last_overlap = overlap</span></span>
+<span id="L337"><span class="lineNum">     337</span>              :                 else:</span>
+<span id="L338"><span class="lineNum">     338</span>              :                     # we select the closest possible option</span>
+<span id="L339"><span class="lineNum">     339</span> <span class="tlaGNC">           1 :                     best_option = np.argmin(np.abs(possible_options - idx))</span></span>
+<span id="L340"><span class="lineNum">     340</span> <span class="tlaGNC">           1 :                     idxs.append(possible_options[best_option])</span></span>
+<span id="L341"><span class="lineNum">     341</span> <span class="tlaGNC">           1 :                     last_overlap = overlaps[idxs[-1]]</span></span>
+<span id="L342"><span class="lineNum">     342</span>              : </span>
+<span id="L343"><span class="lineNum">     343</span>              :         # this could be a call to np.take_along_axis if the sizes match, but the handling of inhomogeneous shapes</span>
+<span id="L344"><span class="lineNum">     344</span>              :         # in the plot() function makes me worry they won't, so I go for a slower python for loop...</span>
+<span id="L345"><span class="lineNum">     345</span> <span class="tlaGNC">           1 :         energies_fit = np.array([energy[idx] for energy, idx in zip(energies, idxs, strict=True)])</span></span>
+<span id="L346"><span class="lineNum">     346</span>              : </span>
+<span id="L347"><span class="lineNum">     347</span>              :         # stop highlighting the previous fit</span>
+<span id="L348"><span class="lineNum">     348</span> <span class="tlaGNC">           1 :         if self.fit_data_highlight is not None:</span></span>
+<span id="L349"><span class="lineNum">     349</span> <span class="tlaGNC">           1 :             self.fit_data_highlight.remove()</span></span>
+<span id="L350"><span class="lineNum">     350</span> <span class="tlaGNC">           1 :         if self.fit_curve is not None:</span></span>
+<span id="L351"><span class="lineNum">     351</span> <span class="tlaGNC">           1 :             for curve in self.fit_curve:</span></span>
+<span id="L352"><span class="lineNum">     352</span> <span class="tlaGNC">           1 :                 curve.remove()</span></span>
+<span id="L353"><span class="lineNum">     353</span>              : </span>
+<span id="L354"><span class="lineNum">     354</span> <span class="tlaGNC">           1 :         self.fit_data_highlight = self.canvas.ax.scatter(x_values, energies_fit, c=&quot;green&quot;, s=5)</span></span>
+<span id="L355"><span class="lineNum">     355</span>              : </span>
+<span id="L356"><span class="lineNum">     356</span> <span class="tlaGNC">           1 :         try:</span></span>
+<span id="L357"><span class="lineNum">     357</span> <span class="tlaGNC">           1 :             fit_params = curve_fit(fit_func, x_values, energies_fit)[0]</span></span>
+<span id="L358"><span class="lineNum">     358</span> <span class="tlaUNC">           0 :         except (RuntimeError, TypeError):</span></span>
+<span id="L359"><span class="lineNum">     359</span> <span class="tlaUNC">           0 :             logger.warning(&quot;Curve fit failed.&quot;)</span></span>
+<span id="L360"><span class="lineNum">     360</span>              :         else:</span>
+<span id="L361"><span class="lineNum">     361</span> <span class="tlaGNC">           1 :             self.fit_curve = self.canvas.ax.plot(</span></span>
+<span id="L362"><span class="lineNum">     362</span>              :                 x_values,</span>
+<span id="L363"><span class="lineNum">     363</span>              :                 fit_func(x_values, *fit_params),</span>
+<span id="L364"><span class="lineNum">     364</span>              :                 c=&quot;green&quot;,</span>
+<span id="L365"><span class="lineNum">     365</span>              :                 linestyle=&quot;dashed&quot;,</span>
+<span id="L366"><span class="lineNum">     366</span>              :                 lw=2,</span>
+<span id="L367"><span class="lineNum">     367</span>              :                 label=fitlabel.format(*fit_params),</span>
+<span id="L368"><span class="lineNum">     368</span>              :             )</span>
+<span id="L369"><span class="lineNum">     369</span> <span class="tlaGNC">           1 :             self.canvas.ax.legend()</span></span>
+<span id="L370"><span class="lineNum">     370</span>              : </span>
+<span id="L371"><span class="lineNum">     371</span> <span class="tlaGNC">           1 :         self.canvas.draw_idle()</span></span>
+<span id="L372"><span class="lineNum">     372</span>              : </span>
+<span id="L373"><span class="lineNum">     373</span> <span class="tlaGNC">           1 :     def clear(self) -&gt; None:</span></span>
+<span id="L374"><span class="lineNum">     374</span> <span class="tlaGNC">           1 :         super().clear()</span></span>
+<span id="L375"><span class="lineNum">     375</span> <span class="tlaGNC">           1 :         self.reset_fit()</span></span>
+<span id="L376"><span class="lineNum">     376</span>              : </span>
+<span id="L377"><span class="lineNum">     377</span> <span class="tlaGNC">           1 :     def reset_fit(self) -&gt; None:</span></span>
+<span id="L378"><span class="lineNum">     378</span>              :         &quot;&quot;&quot;Clear fit output and reset fit index.&quot;&quot;&quot;</span>
+<span id="L379"><span class="lineNum">     379</span>              :         # restart at first potential curve</span>
+<span id="L380"><span class="lineNum">     380</span> <span class="tlaGNC">           1 :         self.fit_idx = 0</span></span>
+<span id="L381"><span class="lineNum">     381</span>              :         # and also remove any previous highlighting/fit display</span>
+<span id="L382"><span class="lineNum">     382</span> <span class="tlaGNC">           1 :         self.fit_data_highlight = None</span></span>
+<span id="L383"><span class="lineNum">     383</span> <span class="tlaGNC">           1 :         self.fit_curve = None</span></span>
+<span id="L384"><span class="lineNum">     384</span>              : </span>
+<span id="L385"><span class="lineNum">     385</span>              : </span>
+<span id="L386"><span class="lineNum">     386</span> <span class="tlaGNC">           1 : class PlotLifetimes(PlotWidget):</span></span>
+<span id="L387"><span class="lineNum">     387</span>              :     &quot;&quot;&quot;Plotwidget for plotting lifetime/transition rate bar charts.&quot;&quot;&quot;</span>
+<span id="L388"><span class="lineNum">     388</span>              : </span>
+<span id="L389"><span class="lineNum">     389</span> <span class="tlaGNC">           1 :     _annotations: dict[tuple[str, int], mpl.text.Annotation]</span></span>
+<span id="L390"><span class="lineNum">     390</span>              : </span>
+<span id="L391"><span class="lineNum">     391</span> <span class="tlaGNC">           1 :     def setupWidget(self) -&gt; None:</span></span>
+<span id="L392"><span class="lineNum">     392</span> <span class="tlaGNC">           1 :         super().setupWidget()</span></span>
+<span id="L393"><span class="lineNum">     393</span>              : </span>
+<span id="L394"><span class="lineNum">     394</span> <span class="tlaGNC">           1 :         window_color = theme_manager.get_palette().color(QPalette.ColorRole.Window).name()</span></span>
+<span id="L395"><span class="lineNum">     395</span> <span class="tlaGNC">           1 :         self.canvas.fig.set_facecolor(window_color)</span></span>
+<span id="L396"><span class="lineNum">     396</span> <span class="tlaGNC">           1 :         self.canvas.fig.set_layout_engine(</span></span>
+<span id="L397"><span class="lineNum">     397</span>              :             &quot;constrained&quot;,</span>
+<span id="L398"><span class="lineNum">     398</span>              :             w_pad=0.2,</span>
+<span id="L399"><span class="lineNum">     399</span>              :             h_pad=0.2,</span>
+<span id="L400"><span class="lineNum">     400</span>              :             wspace=0.0,</span>
+<span id="L401"><span class="lineNum">     401</span>              :             hspace=0.0,</span>
+<span id="L402"><span class="lineNum">     402</span>              :         )</span>
+<span id="L403"><span class="lineNum">     403</span>              : </span>
+<span id="L404"><span class="lineNum">     404</span> <span class="tlaGNC">           1 :     def plot(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -&gt; None:</span></span>
+<span id="L405"><span class="lineNum">     405</span> <span class="tlaGNC">           1 :         self.clear()</span></span>
+<span id="L406"><span class="lineNum">     406</span> <span class="tlaGNC">           1 :         ax = self.canvas.ax</span></span>
+<span id="L407"><span class="lineNum">     407</span>              : </span>
+<span id="L408"><span class="lineNum">     408</span> <span class="tlaGNC">           1 :         show_status_tip(self, &quot;Preparing transition rates...&quot;)</span></span>
+<span id="L409"><span class="lineNum">     409</span> <span class="tlaGNC">           1 :         labels = [&quot;Spontaneous Decay&quot;, &quot;Black Body Radiation&quot;]</span></span>
+<span id="L410"><span class="lineNum">     410</span> <span class="tlaGNC">           1 :         n_list = list(range(max([s.n for s in results.kets_bbr + results.kets_sp], default=0) + 1))</span></span>
+<span id="L411"><span class="lineNum">     411</span> <span class="tlaGNC">           1 :         sorted_rates: dict[str, dict[int, list[tuple[KetData, float]]]] = {}</span></span>
+<span id="L412"><span class="lineNum">     412</span> <span class="tlaGNC">           1 :         for key, kets, rates in [</span></span>
+<span id="L413"><span class="lineNum">     413</span>              :             (labels[0], results.kets_sp, results.transition_rates_sp),</span>
+<span id="L414"><span class="lineNum">     414</span>              :             (labels[1], results.kets_bbr, results.transition_rates_bbr),</span>
+<span id="L415"><span class="lineNum">     415</span>              :         ]:</span>
+<span id="L416"><span class="lineNum">     416</span> <span class="tlaGNC">           1 :             sorted_rates[key] = {n: [] for n in n_list}</span></span>
+<span id="L417"><span class="lineNum">     417</span> <span class="tlaGNC">           1 :             for i, s in enumerate(kets):</span></span>
+<span id="L418"><span class="lineNum">     418</span> <span class="tlaGNC">           1 :                 sorted_rates[key][s.n].append((s, rates[i]))</span></span>
+<span id="L419"><span class="lineNum">     419</span> <span class="tlaGNC">           1 :         self.sorted_rates = sorted_rates</span></span>
+<span id="L420"><span class="lineNum">     420</span> <span class="tlaGNC">           1 :         rates_summed = {key: [sum(r for _, r in sorted_rates[key][n]) for n in n_list] for key in sorted_rates}</span></span>
+<span id="L421"><span class="lineNum">     421</span>              : </span>
+<span id="L422"><span class="lineNum">     422</span> <span class="tlaGNC">           1 :         show_status_tip(self, &quot;Plotting transition rates...&quot;)</span></span>
+<span id="L423"><span class="lineNum">     423</span> <span class="tlaGNC">           1 :         self.artists: list[mpl.container.BarContainer] = []</span></span>
+<span id="L424"><span class="lineNum">     424</span> <span class="tlaGNC">           1 :         for label, color in zip(labels, [&quot;blue&quot;, &quot;red&quot;], strict=True):</span></span>
+<span id="L425"><span class="lineNum">     425</span> <span class="tlaGNC">           1 :             bar = ax.bar(n_list, rates_summed[label], label=label, color=color, alpha=0.8)</span></span>
+<span id="L426"><span class="lineNum">     426</span> <span class="tlaGNC">           1 :             self.artists.append(bar)</span></span>
+<span id="L427"><span class="lineNum">     427</span> <span class="tlaGNC">           1 :         ax.legend()</span></span>
+<span id="L428"><span class="lineNum">     428</span>              : </span>
+<span id="L429"><span class="lineNum">     429</span> <span class="tlaGNC">           1 :         ax.set_xlabel(&quot;Principal Quantum Number $n$&quot;)</span></span>
+<span id="L430"><span class="lineNum">     430</span> <span class="tlaGNC">           1 :         ax.set_ylabel(r&quot;Transition Rates (1 / ms)&quot;)</span></span>
+<span id="L431"><span class="lineNum">     431</span>              : </span>
+<span id="L432"><span class="lineNum">     432</span> <span class="tlaGNC">           1 :     def setup_annotations(self, parameters: ParametersLifetimes, results: ResultsLifetimes) -&gt; None:  # noqa: C901</span></span>
+<span id="L433"><span class="lineNum">     433</span>              :         &quot;&quot;&quot;Add click-based annotations to the plot.&quot;&quot;&quot;</span>
+<span id="L434"><span class="lineNum">     434</span> <span class="tlaUNC">           0 :         show_status_tip(self, &quot;Adding transition rate annotations...&quot;)</span></span>
+<span id="L435"><span class="lineNum">     435</span>              : </span>
+<span id="L436"><span class="lineNum">     436</span> <span class="tlaUNC">           0 :         self._bar_data: list[tuple[str, int, mpl.patches.Rectangle]] = []</span></span>
+<span id="L437"><span class="lineNum">     437</span> <span class="tlaUNC">           0 :         for container in reversed(self.artists):</span></span>
+<span id="L438"><span class="lineNum">     438</span> <span class="tlaUNC">           0 :             label = container.get_label()</span></span>
+<span id="L439"><span class="lineNum">     439</span> <span class="tlaUNC">           0 :             if label is None:</span></span>
+<span id="L440"><span class="lineNum">     440</span> <span class="tlaUNC">           0 :                 continue</span></span>
+<span id="L441"><span class="lineNum">     441</span> <span class="tlaUNC">           0 :             for rect in container.patches:</span></span>
+<span id="L442"><span class="lineNum">     442</span> <span class="tlaUNC">           0 :                 n = round(rect.get_x() + rect.get_width() / 2)</span></span>
+<span id="L443"><span class="lineNum">     443</span> <span class="tlaUNC">           0 :                 self._bar_data.append((label, n, rect))</span></span>
+<span id="L444"><span class="lineNum">     444</span>              : </span>
+<span id="L445"><span class="lineNum">     445</span> <span class="tlaUNC">           0 :         def on_click(event: mpl.backend_bases.MouseEvent) -&gt; None:</span></span>
+<span id="L446"><span class="lineNum">     446</span> <span class="tlaUNC">           0 :             if event.inaxes is not self.canvas.ax or event.button not in [1, 3]:</span></span>
+<span id="L447"><span class="lineNum">     447</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L448"><span class="lineNum">     448</span> <span class="tlaUNC">           0 :             if event.button == 3:  # right click clears annotations</span></span>
+<span id="L449"><span class="lineNum">     449</span> <span class="tlaUNC">           0 :                 self.clear_annotations()</span></span>
+<span id="L450"><span class="lineNum">     450</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L451"><span class="lineNum">     451</span>              : </span>
+<span id="L452"><span class="lineNum">     452</span> <span class="tlaUNC">           0 :             if event.xdata is None or event.ydata is None:</span></span>
+<span id="L453"><span class="lineNum">     453</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L454"><span class="lineNum">     454</span> <span class="tlaUNC">           0 :             click_coords = np.array([event.xdata, event.ydata])</span></span>
+<span id="L455"><span class="lineNum">     455</span>              : </span>
+<span id="L456"><span class="lineNum">     456</span> <span class="tlaUNC">           0 :             for _label, _n, rect in self._bar_data:</span></span>
+<span id="L457"><span class="lineNum">     457</span> <span class="tlaUNC">           0 :                 x, y = rect.get_x(), rect.get_y()</span></span>
+<span id="L458"><span class="lineNum">     458</span> <span class="tlaUNC">           0 :                 if x &lt;= click_coords[0] &lt;= x + rect.get_width() and y &lt;= click_coords[1] &lt;= y + rect.get_height():</span></span>
+<span id="L459"><span class="lineNum">     459</span> <span class="tlaUNC">           0 :                     label, n = _label, _n</span></span>
+<span id="L460"><span class="lineNum">     460</span> <span class="tlaUNC">           0 :                     break</span></span>
+<span id="L461"><span class="lineNum">     461</span>              :             else:  # no break -&gt; no bar found</span>
+<span id="L462"><span class="lineNum">     462</span> <span class="tlaUNC">           0 :                 self.clear_annotations()</span></span>
+<span id="L463"><span class="lineNum">     463</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L464"><span class="lineNum">     464</span>              : </span>
+<span id="L465"><span class="lineNum">     465</span>              :             # if we click the same bar again, remove the annotation</span>
+<span id="L466"><span class="lineNum">     466</span> <span class="tlaUNC">           0 :             if (label, n) in self._annotations:</span></span>
+<span id="L467"><span class="lineNum">     467</span> <span class="tlaUNC">           0 :                 self._annotations[(label, n)].remove()</span></span>
+<span id="L468"><span class="lineNum">     468</span> <span class="tlaUNC">           0 :                 del self._annotations[(label, n)]</span></span>
+<span id="L469"><span class="lineNum">     469</span> <span class="tlaUNC">           0 :                 self.canvas.draw_idle()</span></span>
+<span id="L470"><span class="lineNum">     470</span> <span class="tlaUNC">           0 :                 return</span></span>
+<span id="L471"><span class="lineNum">     471</span>              : </span>
+<span id="L472"><span class="lineNum">     472</span> <span class="tlaUNC">           0 :             state_text = &quot;\n&quot;.join(f&quot;  - {s}: {r:.5f}/ms&quot; for (s, r) in self.sorted_rates[label][n])</span></span>
+<span id="L473"><span class="lineNum">     473</span> <span class="tlaUNC">           0 :             text = f&quot;{label} to n={n}:\n{state_text}&quot;</span></span>
+<span id="L474"><span class="lineNum">     474</span> <span class="tlaUNC">           0 :             xlim = self.canvas.ax.get_xlim()</span></span>
+<span id="L475"><span class="lineNum">     475</span> <span class="tlaUNC">           0 :             ylim = self.canvas.ax.get_ylim()</span></span>
+<span id="L476"><span class="lineNum">     476</span> <span class="tlaUNC">           0 :             bar_cx = rect.get_x() + rect.get_width() / 2</span></span>
+<span id="L477"><span class="lineNum">     477</span> <span class="tlaUNC">           0 :             bar_top = rect.get_y() + rect.get_height()</span></span>
+<span id="L478"><span class="lineNum">     478</span> <span class="tlaUNC">           0 :             x_frac = (bar_cx - xlim[0]) / (xlim[1] - xlim[0])</span></span>
+<span id="L479"><span class="lineNum">     479</span> <span class="tlaUNC">           0 :             y_frac = (bar_top - ylim[0]) / (ylim[1] - ylim[0])</span></span>
+<span id="L480"><span class="lineNum">     480</span> <span class="tlaUNC">           0 :             x_offset = -200 if x_frac &gt; 0.5 else 25</span></span>
+<span id="L481"><span class="lineNum">     481</span> <span class="tlaUNC">           0 :             y_offset = -50 if y_frac &gt; 0.5 else 50</span></span>
+<span id="L482"><span class="lineNum">     482</span> <span class="tlaUNC">           0 :             ann = self.canvas.ax.annotate(</span></span>
+<span id="L483"><span class="lineNum">     483</span>              :                 text,</span>
+<span id="L484"><span class="lineNum">     484</span>              :                 xy=(bar_cx, bar_top),</span>
+<span id="L485"><span class="lineNum">     485</span>              :                 xytext=(x_offset, y_offset),</span>
+<span id="L486"><span class="lineNum">     486</span>              :                 textcoords=&quot;offset points&quot;,</span>
+<span id="L487"><span class="lineNum">     487</span>              :                 bbox={&quot;boxstyle&quot;: &quot;round,pad=0.5&quot;, &quot;fc&quot;: &quot;white&quot;, &quot;alpha&quot;: 0.9, &quot;ec&quot;: &quot;gray&quot;},</span>
+<span id="L488"><span class="lineNum">     488</span>              :                 arrowprops={&quot;arrowstyle&quot;: &quot;-&gt;&quot;, &quot;connectionstyle&quot;: &quot;arc3&quot;, &quot;color&quot;: &quot;gray&quot;},</span>
+<span id="L489"><span class="lineNum">     489</span>              :                 clip_on=False,</span>
+<span id="L490"><span class="lineNum">     490</span>              :             )</span>
+<span id="L491"><span class="lineNum">     491</span> <span class="tlaUNC">           0 :             ann.set_in_layout(False)</span></span>
+<span id="L492"><span class="lineNum">     492</span> <span class="tlaUNC">           0 :             self._annotations[(label, n)] = ann</span></span>
+<span id="L493"><span class="lineNum">     493</span> <span class="tlaUNC">           0 :             self.canvas.draw_idle()</span></span>
+<span id="L494"><span class="lineNum">     494</span>              : </span>
+<span id="L495"><span class="lineNum">     495</span> <span class="tlaUNC">           0 :         self.connect_click(on_click)</span></span>
+<span id="L496"><span class="lineNum">     496</span> <span class="tlaUNC">           0 :         self.navigation_toolbar._home_callbacks = [self.clear_annotations]</span></span>
+<span id="L497"><span class="lineNum">     497</span>              : </span>
+<span id="L498"><span class="lineNum">     498</span>              : </span>
+<span id="L499"><span class="lineNum">     499</span> <span class="tlaGNC">           1 : def fit_c3(x: NDArray[Any], /, e0: float, c3: float) -&gt; NDArray[Any]:</span></span>
+<span id="L500"><span class="lineNum">     500</span> <span class="tlaGNC">           1 :     return e0 + c3 / x**3</span></span>
+<span id="L501"><span class="lineNum">     501</span>              : </span>
+<span id="L502"><span class="lineNum">     502</span>              : </span>
+<span id="L503"><span class="lineNum">     503</span> <span class="tlaGNC">           1 : def fit_c6(x: NDArray[Any], /, e0: float, c6: float) -&gt; NDArray[Any]:</span></span>
+<span id="L504"><span class="lineNum">     504</span> <span class="tlaGNC">           1 :     return e0 + c6 / x**6</span></span>
+<span id="L505"><span class="lineNum">     505</span>              : </span>
+<span id="L506"><span class="lineNum">     506</span>              : </span>
+<span id="L507"><span class="lineNum">     507</span> <span class="tlaGNC">           1 : def fit_c3_c6(x: NDArray[Any], /, e0: float, c3: float, c6: float) -&gt; NDArray[Any]:</span></span>
+<span id="L508"><span class="lineNum">     508</span> <span class="tlaGNC">           1 :     return e0 + c3 / x**3 + c6 / x**6</span></span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>
