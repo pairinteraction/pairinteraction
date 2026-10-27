@@ -142,18 +142,6 @@ System<Derived>::get_matrix() const {
 }
 
 template <typename Derived>
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    return basis->get_sorter(labels);
-}
-
-template <typename Derived>
-std::vector<IndicesOfBlock>
-System<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
-    return basis->get_indices_of_blocks(unique_labels);
-}
-
-template <typename Derived>
 void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
     set_task_status("Sorting Hamiltonian...");
 
@@ -183,11 +171,12 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        sort(get_sorter({blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
+        sort(basis->get_sorter(
+            {blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
     }
 
     // Get the indices of the blocks
-    auto blocks = get_indices_of_blocks(blockdiagonalizing_labels);
+    auto blocks = basis->get_indices_of_blocks(blockdiagonalizing_labels);
 
     assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
            !blockdiagonalizing_labels.empty());

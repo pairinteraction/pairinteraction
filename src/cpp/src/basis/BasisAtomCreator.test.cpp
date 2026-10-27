@@ -123,6 +123,44 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     }
 }
 
+DOCTEST_TEST_CASE("a basis can be sorted by several labels") {
+    Database &database = Database::get_global_instance();
+    auto basis = BasisAtomCreator<double>(database)
+                     .set_species("Rb")
+                     .restrict_quantum_number("n", 60, 60)
+                     .restrict_quantum_number("l", 0, 1)
+                     .create();
+
+    // The first label is the primary sorting criterion, the following labels only break ties
+    auto sorted_basis = basis->get_sorted_copy(
+        basis->get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}));
+    size_t num_states = sorted_basis->get_number_of_states();
+
+    auto parity = [&](size_t i) { return sorted_basis->get_quantum_number(StateLabel::PARITY, i); };
+    auto quantum_number_m = [&](size_t i) {
+        return sorted_basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i);
+    };
+
+    // The parity is ascending globally, whereas m is only ascending within a block of equal parity
+    bool m_ascending_globally = true;
+    for (size_t i = 1; i < num_states; ++i) {
+        DOCTEST_CHECK(parity(i - 1) <= parity(i));
+        if (parity(i - 1) == parity(i)) {
+            DOCTEST_CHECK(quantum_number_m(i - 1) <= quantum_number_m(i));
+        }
+        if (quantum_number_m(i - 1) > quantum_number_m(i)) {
+            m_ascending_globally = false;
+        }
+    }
+    DOCTEST_CHECK_FALSE(m_ascending_globally);
+
+    // A repeated label cannot influence the order anymore
+    DOCTEST_CHECK(
+        basis->get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M, StateLabel::PARITY})
+            .indices() ==
+        basis->get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}).indices());
+}
+
 DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity matrix") {
     auto &database = Database::get_global_instance();
 
