@@ -35,19 +35,21 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, 
 template <typename Scalar>
 BasisPairCreator<Scalar> &
 BasisPairCreator<Scalar>::restrict_quantum_number(const std::string &name, real_t min, real_t max) {
-    if (name == "m") {
-        if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
-            throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
-        }
-    } else if (name == "product_of_parities" || name == "parity_under_inversion" ||
-               name == "parity_under_permutation") {
+    StateLabel label = get_state_label(name);
+    if (std::ranges::find(basis_t::quantum_number_labels, label) ==
+        basis_t::quantum_number_labels.end()) {
+        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
+    }
+    if (label == StateLabel::PRODUCT_OF_PARITIES || label == StateLabel::PARITY_UNDER_INVERSION ||
+        label == StateLabel::PARITY_UNDER_PERMUTATION) {
         if ((min != 1 && min != -1) || (max != 1 && max != -1)) {
             throw std::invalid_argument("The parity must be +1 or -1.");
         }
-    } else {
-        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
+    } else if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
+        throw std::invalid_argument("The quantum number " + name +
+                                    " must be an integer or half-integer.");
     }
-    quantum_number_ranges[name] = {min, max};
+    quantum_number_ranges[label] = {min, max};
     return *this;
 }
 
@@ -85,21 +87,21 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Determine which quantum numbers of the pair states are well-defined
     // ---------------------------------------------------------------------------------------------
 
-    const bool has_quantum_number_m =
-        basis1->has_quantum_number("m") && basis2->has_quantum_number("m");
-    const bool has_product_of_parities =
-        basis1->has_quantum_number("parity") && basis2->has_quantum_number("parity");
+    const bool has_quantum_number_m = basis1->has_quantum_number(StateLabel::QUANTUM_NUMBER_M) &&
+        basis2->has_quantum_number(StateLabel::QUANTUM_NUMBER_M);
+    const bool has_product_of_parities = basis1->has_quantum_number(StateLabel::PARITY) &&
+        basis2->has_quantum_number(StateLabel::PARITY);
 
-    const std::unordered_map<std::string, bool> is_well_defined{
-        {"m", has_quantum_number_m},
-        {"product_of_parities", has_product_of_parities},
-        {"parity_under_permutation", symmetrization_enabled},
-        {"parity_under_inversion", symmetrization_enabled && has_product_of_parities},
+    const std::unordered_map<StateLabel, bool> is_well_defined{
+        {StateLabel::QUANTUM_NUMBER_M, has_quantum_number_m},
+        {StateLabel::PRODUCT_OF_PARITIES, has_product_of_parities},
+        {StateLabel::PARITY_UNDER_PERMUTATION, symmetrization_enabled},
+        {StateLabel::PARITY_UNDER_INVERSION, symmetrization_enabled && has_product_of_parities},
     };
-    for (const auto &[name, range] : quantum_number_ranges) {
-        if (!is_well_defined.at(name)) {
+    for (const auto &[label, range] : quantum_number_ranges) {
+        if (!is_well_defined.at(label)) {
             throw std::invalid_argument(
-                "The quantum number " + name +
+                "The quantum number " + std::string(get_state_label_name(label)) +
                 " must not be restricted because it is not well-defined. Note that the parities "
                 "under inversion and permutation are only well-defined if the symmetrization is "
                 "enabled. The parity under inversion and the product of parities additionally "
@@ -111,7 +113,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Define helpers for adding kets and states
     // ---------------------------------------------------------------------------------------------
 
-    using quantum_numbers_of_state_t = std::unordered_map<std::string, double>;
+    using quantum_numbers_of_state_t = std::unordered_map<StateLabel, double>;
 
     auto kets = std::make_shared<ketvec_t>();
     auto state_index1_to_state_index_range2 = std::make_shared<typename basis_t::map_range_t>();
@@ -120,13 +122,18 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 
     auto add_ket = [&](size_t first_index, size_t second_index, std::optional<real_t> energy,
                        const quantum_numbers_of_state_t &quantum_numbers) {
+        // The kets refer to their quantum numbers by name
+        std::unordered_map<std::string, double> quantum_numbers_of_ket;
+        for (const auto &[label, value] : quantum_numbers) {
+            quantum_numbers_of_ket.emplace(get_state_label_name(label), value);
+        }
         auto ket_index = static_cast<Eigen::Index>(kets->size());
         state_indices_to_ket_index->try_emplace(std::vector<size_t>{first_index, second_index},
                                                 kets->size());
         kets->emplace_back(std::make_shared<ket_t>(
             typename ket_t::Private(), std::initializer_list<size_t>{first_index, second_index},
             std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2}, energy,
-            quantum_numbers));
+            std::move(quantum_numbers_of_ket)));
         return ket_index;
     };
 
@@ -141,10 +148,10 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // parity under permutation and the product of parities.
     auto get_quantum_numbers_of_state = [&](quantum_numbers_of_state_t quantum_numbers,
                                             int parity_under_permutation) {
-        quantum_numbers["parity_under_permutation"] = parity_under_permutation;
+        quantum_numbers[StateLabel::PARITY_UNDER_PERMUTATION] = parity_under_permutation;
         if (has_product_of_parities) {
-            quantum_numbers["parity_under_inversion"] =
-                parity_under_permutation * quantum_numbers.at("product_of_parities");
+            quantum_numbers[StateLabel::PARITY_UNDER_INVERSION] =
+                parity_under_permutation * quantum_numbers.at(StateLabel::PRODUCT_OF_PARITIES);
         }
         return quantum_numbers;
     };
@@ -152,9 +159,9 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     // Check whether all quantum numbers of a state are within their ranges. Quantum numbers
     // without a restriction are always allowed.
     auto is_allowed_state = [&](const quantum_numbers_of_state_t &quantum_numbers) {
-        return std::ranges::all_of(quantum_numbers, [&](const auto &name_and_value) {
-            const auto &[name, value] = name_and_value;
-            auto it = quantum_number_ranges.find(name);
+        return std::ranges::all_of(quantum_numbers, [&](const auto &label_and_value) {
+            const auto &[label, value] = label_and_value;
+            auto it = quantum_number_ranges.find(label);
             return it == quantum_number_ranges.end() ||
                 (value >= it->second.min() - numerical_precision &&
                  value <= it->second.max() + numerical_precision);
@@ -172,8 +179,8 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
         if (energy.has_value()) {
             energy_of_states.push_back(*energy);
         }
-        for (const auto &[name, value] : quantum_numbers) {
-            quantum_numbers_of_states[name].push_back(static_cast<real_t>(value));
+        for (const auto &[label, value] : quantum_numbers) {
+            quantum_numbers_of_states[label].push_back(static_cast<real_t>(value));
         }
         ++num_states;
     };
@@ -238,13 +245,14 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
             // atoms, so that all checks below are symmetric, too.
             quantum_numbers_of_state_t quantum_numbers;
             if (has_quantum_number_m) {
-                quantum_numbers["m"] =
-                    basis1->get_quantum_number("m", idx1) + basis2->get_quantum_number("m", idx2);
+                quantum_numbers[StateLabel::QUANTUM_NUMBER_M] =
+                    basis1->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, idx1) +
+                    basis2->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, idx2);
             }
             if (has_product_of_parities) {
-                quantum_numbers["product_of_parities"] =
-                    basis1->get_quantum_number("parity", idx1) *
-                    basis2->get_quantum_number("parity", idx2);
+                quantum_numbers[StateLabel::PRODUCT_OF_PARITIES] =
+                    basis1->get_quantum_number(StateLabel::PARITY, idx1) *
+                    basis2->get_quantum_number(StateLabel::PARITY, idx2);
             }
 
             // Without symmetrization, the ket itself is a state of the basis

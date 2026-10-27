@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/IndicesOfBlocks.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -18,8 +19,6 @@
 #include <vector>
 
 namespace pairinteraction {
-enum class SorterType : unsigned char;
-
 /**
  * @class Basis
  *
@@ -32,8 +31,8 @@ enum class SorterType : unsigned char;
  * normal quantum number. A quantum number is either well-defined for all states, in which case
  * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
  * either well-defined for all states or for none of them.
- * By which quantum numbers the states can be sorted is defined by the derived class, which has to
- * provide a static sorter_type_to_quantum_number_name member that maps sorter types to names.
+ * By which quantum numbers the states can be labeled and sorted is defined by the derived class,
+ * which has to provide a static quantum_number_labels member that lists them.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -49,21 +48,22 @@ public:
     using real_t = typename traits::CrtpTraits<Derived>::real_t;
     using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
-    using quantum_numbers_t = std::unordered_map<std::string, std::vector<real_t>>;
+    using quantum_numbers_t = std::unordered_map<StateLabel, std::vector<real_t>>;
     using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
 
-    bool has_quantum_number(const std::string &name) const;
+    bool has_quantum_number(StateLabel label) const;
     bool has_energy() const;
     bool is_sorted_by_energy() const;
 
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
-    real_t get_quantum_number(const std::string &name, size_t state_index) const;
+    real_t get_quantum_number(StateLabel label, size_t state_index) const;
     real_t get_energy(size_t state_index) const;
     const quantum_numbers_t &get_quantum_numbers_of_states() const;
+    const std::vector<real_t> &get_quantum_numbers_of_states(StateLabel label) const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
@@ -83,14 +83,16 @@ public:
     Iterator end() const;
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    get_sorter(const std::vector<SorterType> &labels) const;
-    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<SorterType> &labels) const;
+    get_sorter(const std::vector<StateLabel> &labels) const;
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> get_sorter_by_energy() const;
+    std::vector<IndicesOfBlock>
+    get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const;
 
-    void perform_blocks_checks(const std::set<SorterType> &unique_labels) const;
+    void perform_blocks_checks(const std::set<StateLabel> &unique_labels) const;
     void get_sorter_without_checks(
-        const std::vector<SorterType> &labels,
+        const std::vector<StateLabel> &labels,
         Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
-    void get_indices_of_blocks_without_checks(const std::set<SorterType> &unique_labels,
+    void get_indices_of_blocks_without_checks(const std::set<StateLabel> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<const Derived> get_canonicalized_copy() const;
@@ -117,7 +119,6 @@ protected:
 private:
     const Derived &derived() const;
     void check_states() const;
-    const std::vector<real_t> &get_quantum_numbers_of_states(SorterType label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 

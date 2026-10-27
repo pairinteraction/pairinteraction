@@ -5,7 +5,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/utils/TaskControl.hpp"
@@ -30,24 +30,17 @@ class BasisAtom;
 namespace {
 // The states can only be labeled by quantum numbers by which they can be sorted
 template <typename Derived>
-void check_quantum_number_name(const std::string &name) {
-    if (std::none_of(Derived::sorter_type_to_quantum_number_name.begin(),
-                     Derived::sorter_type_to_quantum_number_name.end(),
-                     [&name](const auto &entry) { return entry.second == name; })) {
-        throw std::invalid_argument("The states cannot be labeled by the quantum number " + name +
-                                    ".");
+void check_quantum_number(StateLabel label) {
+    if (std::ranges::find(Derived::quantum_number_labels, label) ==
+        Derived::quantum_number_labels.end()) {
+        throw std::invalid_argument("The states cannot be labeled by the quantum number " +
+                                    std::string(get_state_label_name(label)) + ".");
     }
 }
 } // namespace
 
 template <typename Derived>
-void Basis<Derived>::perform_blocks_checks(const std::set<SorterType> &unique_labels) const {
-    // Currently, since states in a basis dont store the energy, they cannot be sorted by energy.
-    if (unique_labels.contains(SorterType::ENERGY)) {
-        throw std::invalid_argument("Blocks cannot be obtained by the energy. Note that sorting "
-                                    "a system by the energy is supported nevertheless.");
-    }
-
+void Basis<Derived>::perform_blocks_checks(const std::set<StateLabel> &unique_labels) const {
     // Check if the states are labeled by the requested labels
     std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
     quantum_numbers_of_labels.reserve(unique_labels.size());
@@ -126,8 +119,9 @@ void Basis<Derived>::check_states() const {
     }
 
     // A quantum number is either given for all states or not well-defined for the basis
-    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        check_quantum_number_name<Derived>(name);
+    for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
+        check_quantum_number<Derived>(label);
+        std::string name(get_state_label_name(label));
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
@@ -157,13 +151,13 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 
     // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
     // assigned if all kets have it.
-    for (const auto &entry : Derived::sorter_type_to_quantum_number_name) {
-        const std::string &name = entry.second;
+    for (StateLabel label : Derived::quantum_number_labels) {
+        std::string name(get_state_label_name(label));
         if (!std::ranges::all_of(
                 kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
             continue;
         }
-        auto &quantum_numbers = states.quantum_numbers_of_states[name];
+        auto &quantum_numbers = states.quantum_numbers_of_states[label];
         quantum_numbers.reserve(kets.size());
         for (const auto &ket : kets) {
             quantum_numbers.push_back(static_cast<real_t>(ket->get_quantum_number(name)));
@@ -184,8 +178,8 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 }
 
 template <typename Derived>
-bool Basis<Derived>::has_quantum_number(const std::string &name) const {
-    return quantum_numbers_of_states.contains(name);
+bool Basis<Derived>::has_quantum_number(StateLabel label) const {
+    return quantum_numbers_of_states.contains(label);
 }
 
 template <typename Derived>
@@ -205,18 +199,15 @@ const Derived &Basis<Derived>::derived() const {
 
 template <typename Derived>
 const std::vector<typename Basis<Derived>::real_t> &
-Basis<Derived>::get_quantum_numbers_of_states(SorterType label) const {
-    auto it = Derived::sorter_type_to_quantum_number_name.find(label);
-    if (it == Derived::sorter_type_to_quantum_number_name.end()) {
-        throw std::invalid_argument(
-            "The states of this basis cannot be labeled by the requested sorter type.");
+Basis<Derived>::get_quantum_numbers_of_states(StateLabel label) const {
+    // A quantum number by which the states are not labeled is not well-defined
+    auto it = quantum_numbers_of_states.find(label);
+    if (it == quantum_numbers_of_states.end()) {
+        check_quantum_number<Derived>(label);
+        throw std::invalid_argument("The states do not have a well-defined quantum number " +
+                                    std::string(get_state_label_name(label)) + ".");
     }
-    const std::string &name = it->second;
-    if (!has_quantum_number(name)) {
-        throw std::invalid_argument(
-            "States cannot be labeled and thus not sorted by the quantum number " + name + ".");
-    }
-    return quantum_numbers_of_states.at(name);
+    return it->second;
 }
 
 template <typename Derived>
@@ -231,16 +222,9 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(StateLabel label,
                                                                    size_t state_index) const {
-    // A quantum number by which the states are not labeled is not well-defined
-    auto it = quantum_numbers_of_states.find(name);
-    if (it == quantum_numbers_of_states.end()) {
-        check_quantum_number_name<Derived>(name);
-        throw std::invalid_argument("The state does not have a well-defined quantum number " +
-                                    name + ".");
-    }
-    return it->second.at(state_index);
+    return get_quantum_numbers_of_states(label).at(state_index);
 }
 
 template <typename Derived>
@@ -264,8 +248,8 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients_of_state =
         coefficients.col(static_cast<Eigen::Index>(state_index));
     quantum_numbers_t quantum_numbers_of_state;
-    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        quantum_numbers_of_state[name] = {quantum_numbers[state_index]};
+    for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
+        quantum_numbers_of_state[label] = {quantum_numbers[state_index]};
     }
     energies_t energy_of_state;
     if (has_energy()) {
@@ -322,9 +306,7 @@ size_t Basis<Derived>::get_number_of_kets() const {
 
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-Basis<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
-    // Note that sorting by the energy is rejected by get_sorter_without_checks
-
+Basis<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
     // Initialize the sorter
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
     sorter.setIdentity();
@@ -335,9 +317,31 @@ Basis<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
 }
 
 template <typename Derived>
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+Basis<Derived>::get_sorter_by_energy() const {
+    if (!has_energy()) {
+        throw std::invalid_argument(
+            "The states do not have well-defined energies and thus cannot be sorted by them.");
+    }
+
+    // Initialize the sorter
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
+    sorter.setIdentity();
+
+    int *perm_begin = sorter.indices().data();
+    int *perm_end = perm_begin + coefficients.cols();
+
+    // Sort the vector based on the energies, keeping the order of degenerate states
+    set_task_status("Sorting basis states...");
+    std::stable_sort(perm_begin, perm_end,
+                     [&](int a, int b) { return (*energy_of_states)[a] < (*energy_of_states)[b]; });
+
+    return sorter;
+}
+
+template <typename Derived>
 std::vector<IndicesOfBlock>
-Basis<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) const {
-    std::set<SorterType> unique_labels(labels.begin(), labels.end());
+Basis<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
     perform_blocks_checks(unique_labels);
 
     // Get the blocks
@@ -349,18 +353,9 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) con
 
 template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(
-    const std::vector<SorterType> &labels,
+    const std::vector<StateLabel> &labels,
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    // Currently, since states in a basis dont store the energy, they cannot be sorted by energy.
-    // Checking this upfront also guarantees that only labels that refer to a quantum number are
-    // encountered below.
-    if (std::find(labels.begin(), labels.end(), SorterType::ENERGY) != labels.end()) {
-        throw std::invalid_argument(
-            "States in a basis do not store the energy and thus can not be sorted by it. "
-            "Note that sorting a system by the energy is supported nevertheless.");
-    }
 
     if (coefficients.cols() == 0) {
         return;
@@ -389,7 +384,7 @@ void Basis<Derived>::get_sorter_without_checks(
 
 template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
-    const std::set<SorterType> &unique_labels, IndicesOfBlocksCreator &blocks_creator) const {
+    const std::set<StateLabel> &unique_labels, IndicesOfBlocksCreator &blocks_creator) const {
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     if (coefficients.cols() == 0) {
@@ -462,8 +457,8 @@ std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
     result->coefficients = coefficients * sorter;
 
     set_task_status("Relabeling sorted basis states...");
-    for (auto &[name, sorted_quantum_numbers] : result->quantum_numbers_of_states) {
-        const auto &quantum_numbers = quantum_numbers_of_states.at(name);
+    for (auto &[label, sorted_quantum_numbers] : result->quantum_numbers_of_states) {
+        const auto &quantum_numbers = quantum_numbers_of_states.at(label);
         sorted_quantum_numbers.resize(sorter.size());
         for (int i = 0; i < sorter.size(); ++i) {
             sorted_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];

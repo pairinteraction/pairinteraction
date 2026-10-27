@@ -23,8 +23,8 @@ nanobind_add_module(
   enums/FloatType.py.cpp
   enums/OperatorType.py.hpp
   enums/OperatorType.py.cpp
-  enums/SorterType.py.hpp
-  enums/SorterType.py.cpp
+  enums/StateLabel.py.hpp
+  enums/StateLabel.py.cpp
   interfaces/DiagonalizerInterface.py.hpp
   interfaces/DiagonalizerInterface.py.cpp
   ket/Ket.py.hpp
