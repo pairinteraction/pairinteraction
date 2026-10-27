@@ -99,13 +99,11 @@ void System<Derived>::prune_couplings_between_blocks() const {
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
-    ensure_hamiltonian_constructed();
     return basis;
 }
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_eigenbasis() const {
-    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -114,7 +112,6 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
 
 template <typename Derived>
 Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenergies() const {
-    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -137,18 +134,7 @@ System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
 template <typename Derived>
 std::vector<IndicesOfBlock>
 System<Derived>::get_indices_of_blocks(const std::vector<StateLabel> &labels) const {
-    ensure_hamiltonian_constructed();
-
-    std::set<StateLabel> unique_labels(labels.begin(), labels.end());
-    basis->perform_blocks_checks(unique_labels);
-
-    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(matrix.rows())});
-
-    if (!unique_labels.empty()) {
-        basis->get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
-    }
-
-    return blocks_creator.create();
+    return basis->get_indices_of_blocks(labels);
 }
 
 template <typename Derived>
@@ -168,8 +154,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
                                               bool sort_by_energy) {
     set_task_status("Preparing Hamiltonian...");
 
-    ensure_hamiltonian_constructed();
-
+    // Checking whether the Hamiltonian is diagonal constructs it if necessary
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
             sort(basis->get_sorter_by_energy());
