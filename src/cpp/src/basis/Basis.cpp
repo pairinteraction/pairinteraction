@@ -30,12 +30,11 @@ class BasisAtom;
 namespace {
 // The states can only be labeled by quantum numbers by which they can be sorted
 template <typename Derived>
-void check_quantum_number_name(const std::string &name) {
-    if (std::none_of(Derived::state_label_to_quantum_number_name.begin(),
-                     Derived::state_label_to_quantum_number_name.end(),
-                     [&name](const auto &entry) { return entry.second == name; })) {
-        throw std::invalid_argument("The states cannot be labeled by the quantum number " + name +
-                                    ".");
+void check_quantum_number(StateLabel label) {
+    if (std::ranges::find(Derived::quantum_number_labels, label) ==
+        Derived::quantum_number_labels.end()) {
+        throw std::invalid_argument("The states cannot be labeled by the quantum number " +
+                                    std::string(get_state_label_name(label)) + ".");
     }
 }
 } // namespace
@@ -120,8 +119,9 @@ void Basis<Derived>::check_states() const {
     }
 
     // A quantum number is either given for all states or not well-defined for the basis
-    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        check_quantum_number_name<Derived>(name);
+    for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
+        check_quantum_number<Derived>(label);
+        std::string name(get_state_label_name(label));
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
@@ -151,13 +151,13 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 
     // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
     // assigned if all kets have it.
-    for (const auto &entry : Derived::state_label_to_quantum_number_name) {
-        const std::string &name = entry.second;
+    for (StateLabel label : Derived::quantum_number_labels) {
+        std::string name(get_state_label_name(label));
         if (!std::ranges::all_of(
                 kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
             continue;
         }
-        auto &quantum_numbers = states.quantum_numbers_of_states[name];
+        auto &quantum_numbers = states.quantum_numbers_of_states[label];
         quantum_numbers.reserve(kets.size());
         for (const auto &ket : kets) {
             quantum_numbers.push_back(static_cast<real_t>(ket->get_quantum_number(name)));
@@ -178,8 +178,8 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 }
 
 template <typename Derived>
-bool Basis<Derived>::has_quantum_number(const std::string &name) const {
-    return quantum_numbers_of_states.contains(name);
+bool Basis<Derived>::has_quantum_number(StateLabel label) const {
+    return quantum_numbers_of_states.contains(label);
 }
 
 template <typename Derived>
@@ -200,17 +200,14 @@ const Derived &Basis<Derived>::derived() const {
 template <typename Derived>
 const std::vector<typename Basis<Derived>::real_t> &
 Basis<Derived>::get_quantum_numbers_of_states(StateLabel label) const {
-    auto it = Derived::state_label_to_quantum_number_name.find(label);
-    if (it == Derived::state_label_to_quantum_number_name.end()) {
+    auto it = quantum_numbers_of_states.find(label);
+    if (it == quantum_numbers_of_states.end()) {
+        check_quantum_number<Derived>(label);
         throw std::invalid_argument(
-            "The states of this basis cannot be labeled by the requested state label.");
+            "States cannot be labeled and thus not sorted by the quantum number " +
+            std::string(get_state_label_name(label)) + ".");
     }
-    const std::string &name = it->second;
-    if (!has_quantum_number(name)) {
-        throw std::invalid_argument(
-            "States cannot be labeled and thus not sorted by the quantum number " + name + ".");
-    }
-    return quantum_numbers_of_states.at(name);
+    return it->second;
 }
 
 template <typename Derived>
@@ -225,14 +222,14 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(const std::string &name,
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(StateLabel label,
                                                                    size_t state_index) const {
     // A quantum number by which the states are not labeled is not well-defined
-    auto it = quantum_numbers_of_states.find(name);
+    auto it = quantum_numbers_of_states.find(label);
     if (it == quantum_numbers_of_states.end()) {
-        check_quantum_number_name<Derived>(name);
+        check_quantum_number<Derived>(label);
         throw std::invalid_argument("The state does not have a well-defined quantum number " +
-                                    name + ".");
+                                    std::string(get_state_label_name(label)) + ".");
     }
     return it->second.at(state_index);
 }
@@ -258,8 +255,8 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) con
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients_of_state =
         coefficients.col(static_cast<Eigen::Index>(state_index));
     quantum_numbers_t quantum_numbers_of_state;
-    for (const auto &[name, quantum_numbers] : quantum_numbers_of_states) {
-        quantum_numbers_of_state[name] = {quantum_numbers[state_index]};
+    for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
+        quantum_numbers_of_state[label] = {quantum_numbers[state_index]};
     }
     energies_t energy_of_state;
     if (has_energy()) {
@@ -468,8 +465,8 @@ std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
     result->coefficients = coefficients * sorter;
 
     set_task_status("Relabeling sorted basis states...");
-    for (auto &[name, sorted_quantum_numbers] : result->quantum_numbers_of_states) {
-        const auto &quantum_numbers = quantum_numbers_of_states.at(name);
+    for (auto &[label, sorted_quantum_numbers] : result->quantum_numbers_of_states) {
+        const auto &quantum_numbers = quantum_numbers_of_states.at(label);
         sorted_quantum_numbers.resize(sorter.size());
         for (int i = 0; i < sorter.size(); ++i) {
             sorted_quantum_numbers[i] = quantum_numbers[sorter.indices()[i]];

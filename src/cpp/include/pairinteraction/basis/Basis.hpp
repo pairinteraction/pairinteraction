@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/IndicesOfBlocks.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -18,8 +19,6 @@
 #include <vector>
 
 namespace pairinteraction {
-enum class StateLabel : unsigned char;
-
 /**
  * @class Basis
  *
@@ -32,8 +31,8 @@ enum class StateLabel : unsigned char;
  * normal quantum number. A quantum number is either well-defined for all states, in which case
  * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
  * either well-defined for all states or for none of them.
- * By which quantum numbers the states can be sorted is defined by the derived class, which has to
- * provide a static state_label_to_quantum_number_name member that maps state labels to names.
+ * By which quantum numbers the states can be labeled and sorted is defined by the derived class,
+ * which has to provide a static quantum_number_labels member that lists them.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -49,19 +48,19 @@ public:
     using real_t = typename traits::CrtpTraits<Derived>::real_t;
     using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
-    using quantum_numbers_t = std::unordered_map<std::string, std::vector<real_t>>;
+    using quantum_numbers_t = std::unordered_map<StateLabel, std::vector<real_t>>;
     using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
 
-    bool has_quantum_number(const std::string &name) const;
+    bool has_quantum_number(StateLabel label) const;
     bool has_energy() const;
     bool is_sorted_by_energy() const;
 
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
-    real_t get_quantum_number(const std::string &name, size_t state_index) const;
+    real_t get_quantum_number(StateLabel label, size_t state_index) const;
     real_t get_energy(size_t state_index) const;
     const quantum_numbers_t &get_quantum_numbers_of_states() const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;

@@ -12,6 +12,7 @@ import numpy as np
 from scipy import sparse
 from typing_extensions import deprecated
 
+from pairinteraction._backend import StateLabel
 from pairinteraction.basis import BasisAtom, BasisAtomReal, BasisPair, BasisPairReal
 from pairinteraction.diagonalization import diagonalize
 from pairinteraction.perturbative.perturbation_theory import calculate_perturbative_hamiltonian
@@ -366,7 +367,7 @@ class EffectiveSystemPair:
     @basis_pair.setter
     def basis_pair(self, basis_pair: BasisPair) -> None:
         self._ensure_not_created()
-        if basis_pair._cpp.has_quantum_number("parity_under_permutation"):
+        if basis_pair._cpp.has_quantum_number(StateLabel.PARITY_UNDER_PERMUTATION):
             raise ValueError("The basis_pair must not be symmetrized, create it with BasisPair(..., symmetrize=False).")
         self._user_set_parts.add("basis_pair")
         self._basis_pair = basis_pair

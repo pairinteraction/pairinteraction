@@ -12,6 +12,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -121,12 +122,14 @@ DOCTEST_TEST_CASE("block-diagonalize a pair Hamiltonian by parities") {
 
         // The eigenstates keep the labels of the conserved symmetries
         auto eigenbasis = system_symmetrized.get_eigenbasis();
-        DOCTEST_CHECK_FALSE(eigenbasis->has_quantum_number("m"));
-        DOCTEST_CHECK(eigenbasis->has_quantum_number("parity_under_inversion"));
-        DOCTEST_CHECK(eigenbasis->has_quantum_number("parity_under_permutation") == (order == 3));
-        DOCTEST_CHECK(eigenbasis->has_quantum_number("product_of_parities") == (order == 3));
-        DOCTEST_CHECK(system_product.get_eigenbasis()->has_quantum_number("product_of_parities") ==
+        DOCTEST_CHECK_FALSE(eigenbasis->has_quantum_number(StateLabel::QUANTUM_NUMBER_M));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number(StateLabel::PARITY_UNDER_INVERSION));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number(StateLabel::PARITY_UNDER_PERMUTATION) ==
                       (order == 3));
+        DOCTEST_CHECK(eigenbasis->has_quantum_number(StateLabel::PRODUCT_OF_PARITIES) ==
+                      (order == 3));
+        DOCTEST_CHECK(system_product.get_eigenbasis()->has_quantum_number(
+                          StateLabel::PRODUCT_OF_PARITIES) == (order == 3));
     }
 }
 

@@ -96,15 +96,17 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     double parity = -1;
     auto quantum_number_m = std::numeric_limits<double>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-        DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_quantum_number("parity", i),
-                        ", M = ", basis->get_quantum_number("m", i));
-        DOCTEST_CHECK(basis->get_quantum_number("parity", i) >= parity);
-        if (basis->get_quantum_number("parity", i) != parity) {
-            parity = basis->get_quantum_number("parity", i);
+        DOCTEST_MESSAGE("State ", i,
+                        ": Parity = ", basis->get_quantum_number(StateLabel::PARITY, i),
+                        ", M = ", basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i));
+        DOCTEST_CHECK(basis->get_quantum_number(StateLabel::PARITY, i) >= parity);
+        if (basis->get_quantum_number(StateLabel::PARITY, i) != parity) {
+            parity = basis->get_quantum_number(StateLabel::PARITY, i);
             quantum_number_m = std::numeric_limits<double>::lowest();
         }
-        DOCTEST_CHECK(basis->get_quantum_number("m", i) >= quantum_number_m);
-        quantum_number_m = basis->get_quantum_number("m", i);
+        DOCTEST_CHECK(basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i) >=
+                      quantum_number_m);
+        quantum_number_m = basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i);
     }
 
     // Check that the blocks are correctly determined
@@ -370,7 +372,7 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
 
     auto with_m = [&](double first_m) {
         auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
-        quantum_numbers_of_states.at("m")[0] = first_m;
+        quantum_numbers_of_states.at(StateLabel::QUANTUM_NUMBER_M)[0] = first_m;
         return basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
                                         std::move(quantum_numbers_of_states));
     };
@@ -391,7 +393,7 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
 
     // A quantum number must be given for all states
     auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
-    quantum_numbers_of_states.at("m").pop_back();
+    quantum_numbers_of_states.at(StateLabel::QUANTUM_NUMBER_M).pop_back();
     DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
                                                      std::move(quantum_numbers_of_states)),
                             std::invalid_argument);

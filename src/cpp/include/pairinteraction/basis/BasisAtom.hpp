@@ -7,8 +7,8 @@
 #include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <array>
 #include <complex>
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -56,7 +56,8 @@ public:
     using energies_t = typename Basis<Type>::energies_t;
     using map_size_t = std::unordered_map<size_t, size_t>;
 
-    static const std::map<StateLabel, std::string> state_label_to_quantum_number_name;
+    static constexpr std::array<StateLabel, 3> quantum_number_labels{
+        StateLabel::QUANTUM_NUMBER_F, StateLabel::QUANTUM_NUMBER_M, StateLabel::PARITY};
 
     BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
               std::shared_ptr<const map_size_t> ket_id_to_ket_index,

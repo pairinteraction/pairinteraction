@@ -20,15 +20,6 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-// NOLINTNEXTLINE(cert-err58-cpp)
-const std::map<StateLabel, std::string> BasisPair<Scalar>::state_label_to_quantum_number_name{
-    {StateLabel::QUANTUM_NUMBER_M, "m"},
-    {StateLabel::PRODUCT_OF_PARITIES, "product_of_parities"},
-    {StateLabel::PARITY_UNDER_INVERSION, "parity_under_inversion"},
-    {StateLabel::PARITY_UNDER_PERMUTATION, "parity_under_permutation"},
-};
-
-template <typename Scalar>
 BasisPair<Scalar>::BasisPair(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
                              std::shared_ptr<const map_range_t> state_index1_to_state_index_range2,
                              std::shared_ptr<const map_indices_t> state_indices_to_ket_index,

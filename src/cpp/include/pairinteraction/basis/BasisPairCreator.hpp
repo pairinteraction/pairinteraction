@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
@@ -46,7 +47,7 @@ private:
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
     Range<real_t> range_energy;
-    std::unordered_map<std::string, Range<real_t>> quantum_number_ranges;
+    std::unordered_map<StateLabel, Range<real_t>> quantum_number_ranges;
     bool symmetrization_enabled;
 };
 

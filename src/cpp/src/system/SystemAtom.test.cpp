@@ -505,8 +505,10 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
         system.get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}));
     size_t num_states = sorted_basis->get_number_of_states();
 
-    auto parity = [&](size_t i) { return sorted_basis->get_quantum_number("parity", i); };
-    auto quantum_number_m = [&](size_t i) { return sorted_basis->get_quantum_number("m", i); };
+    auto parity = [&](size_t i) { return sorted_basis->get_quantum_number(StateLabel::PARITY, i); };
+    auto quantum_number_m = [&](size_t i) {
+        return sorted_basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i);
+    };
 
     // The parity is ascending globally, whereas m is only ascending within a block of equal parity
     bool m_ascending_globally = true;

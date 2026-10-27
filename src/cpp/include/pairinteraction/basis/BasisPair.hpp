@@ -13,8 +13,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
+#include <array>
 #include <complex>
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -64,7 +64,9 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    static const std::map<StateLabel, std::string> state_label_to_quantum_number_name;
+    static constexpr std::array<StateLabel, 4> quantum_number_labels{
+        StateLabel::QUANTUM_NUMBER_M, StateLabel::PRODUCT_OF_PARITIES,
+        StateLabel::PARITY_UNDER_INVERSION, StateLabel::PARITY_UNDER_PERMUTATION};
 
     BasisPair(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
               std::shared_ptr<const map_range_t> state_index1_to_state_index_range2,

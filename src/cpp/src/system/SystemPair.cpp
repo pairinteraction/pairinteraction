@@ -354,8 +354,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
-    bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
-    bool sort_by_product_of_parities = this->basis->has_quantum_number("product_of_parities");
+    bool sort_by_quantum_number_m = this->basis->has_quantum_number(StateLabel::QUANTUM_NUMBER_M);
+    bool sort_by_product_of_parities =
+        this->basis->has_quantum_number(StateLabel::PRODUCT_OF_PARITIES);
 
     // The interaction in vacuum is invariant under the inversion of the pair. Because this
     // inversion equals the permutation of the atoms combined with the inversion of each atom, the
@@ -364,9 +365,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // might break both symmetries.
     const bool is_vacuum = !green_tensor_interpolator;
     const bool sort_by_parity_under_inversion =
-        is_vacuum && this->basis->has_quantum_number("parity_under_inversion");
+        is_vacuum && this->basis->has_quantum_number(StateLabel::PARITY_UNDER_INVERSION);
     bool sort_by_parity_under_permutation =
-        is_vacuum && this->basis->has_quantum_number("parity_under_permutation");
+        is_vacuum && this->basis->has_quantum_number(StateLabel::PARITY_UNDER_PERMUTATION);
 
     // Add Rydberg-Rydberg interaction via Green tensor
     // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]
