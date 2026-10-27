@@ -252,18 +252,55 @@ def test_from_kets(pi_module: PairinteractionModule) -> None:
 
 
 def test_merge(pi_module: PairinteractionModule) -> None:
-    basis1 = pi_module.BasisAtom("Rb", n=(60, 60), l=(0, 1), m=(0.5, 0.5))
+    # bases without common kets
+    basis1 = pi_module.BasisAtom("Rb", n=(60, 60), l=(0, 0), m=(0.5, 0.5))
     basis2 = pi_module.BasisAtom("Rb", n=(60, 60), l=(1, 2), m=(0.5, 0.5))
 
     merged = basis1.merge(basis2)
-    expected_kets = set(basis1.kets) | set(basis2.kets)
+    assert set(merged.kets) == set(basis1.kets) | set(basis2.kets)
+    assert merged.number_of_kets == basis1.number_of_kets + basis2.number_of_kets
+    assert merged.number_of_states == basis1.number_of_states + basis2.number_of_states
+    # the states of the first basis come first, followed by the states of the second basis
+    for state, basis_state in zip(merged.states, basis1.states + basis2.states, strict=True):
+        assert pytest.approx(abs(state.get_amplitude(basis_state))) == 1  # NOSONAR
+    # the energies are kept since they are well-defined for both bases
+    energies = [basis._cpp.get_energy(i) for basis in (basis1, basis2) for i in range(basis.number_of_states)]
+    np.testing.assert_allclose([merged._cpp.get_energy(i) for i in range(merged.number_of_states)], energies)
 
-    assert set(merged.kets) == expected_kets
-    assert merged.number_of_kets == len(expected_kets)
-    assert merged.number_of_states == merged.number_of_kets
-    np.testing.assert_allclose(merged.get_coefficients().toarray(), np.eye(merged.number_of_kets))
-    assert basis1.number_of_kets < merged.number_of_kets
-    assert basis2.number_of_kets < merged.number_of_kets
+    # bases with common kets but orthogonal states
+    canonical = pi_module.BasisAtom("Rb", n=(60, 60), l=(0, 1), m=(0.5, 0.5))
+    assert canonical.number_of_kets == 3
+    plus = canonical._from_cpp_object(
+        canonical._cpp.get_modified_copy(csr_matrix(np.array([[1], [1], [0]]) / np.sqrt(2)), None, {})
+    )
+    minus = canonical._from_cpp_object(
+        canonical._cpp.get_modified_copy(csr_matrix(np.array([[1], [-1], [1]]) / np.sqrt(3)), None, {})
+    )
+    merged = plus.merge(minus)
+    assert merged.kets == canonical.kets
+    assert merged.number_of_states == 2
+    np.testing.assert_allclose(
+        merged.get_coefficients().toarray(),
+        np.hstack([plus.get_coefficients().toarray(), minus.get_coefficients().toarray()]),
+    )
 
-    merged_with_self = basis1.merge(basis1)
-    assert merged_with_self.kets == basis1.kets
+    # bases with partly common kets, the states of the second basis exclude the ket overlapping with the first
+    excluded_index = basis2.kets.index(canonical.kets[1])
+    others = basis2._from_cpp_object(
+        basis2._cpp.get_modified_copy(
+            csr_matrix(np.delete(np.eye(basis2.number_of_kets), excluded_index, axis=1)), None, {}
+        )
+    )
+    merged = plus.merge(others)
+    assert set(merged.kets) == set(canonical.kets) | set(basis2.kets)
+    assert merged.number_of_kets == canonical.number_of_kets + basis2.number_of_kets - 2
+    assert merged.number_of_states == 1 + others.number_of_states
+    assert pytest.approx(merged.states[0].get_amplitude(plus.states[0])) == 1  # NOSONAR
+    with pytest.raises(ValueError, match="orthogonal"):
+        plus.merge(basis2)
+
+    # bases whose states are not orthogonal
+    with pytest.raises(ValueError, match="orthogonal"):
+        basis1.merge(basis1)
+    with pytest.raises(ValueError, match="orthogonal"):
+        plus.merge(canonical)

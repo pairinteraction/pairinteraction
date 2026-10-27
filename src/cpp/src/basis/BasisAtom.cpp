@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -77,12 +78,8 @@ BasisAtom<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
     if (get_species() != other->get_species()) {
         throw std::invalid_argument("Cannot merge atomic bases with different species.");
     }
-    if (!this->is_canonical() || !other->is_canonical()) {
-        throw std::invalid_argument(
-            "Cannot merge non-canonical bases (i.e., bases with non-identity coefficients). "
-            "Canonicalize the bases first.");
-    }
 
+    // The database creates the merged kets, sorted by their id in the database
     BasisAtomCreator<Scalar> creator(database);
     std::unordered_set<size_t> ket_ids;
     ket_ids.reserve(this->get_number_of_kets() + other->get_number_of_kets());
@@ -93,7 +90,24 @@ BasisAtom<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
             }
         }
     }
-    return creator.create();
+    auto merged = creator.create();
+
+    auto get_ket_indices = [&](const Type &basis) {
+        std::vector<size_t> ket_indices;
+        ket_indices.reserve(basis.get_number_of_kets());
+        for (const auto &ket : basis.get_kets()) {
+            int ket_index = merged->get_ket_index_from_id(ket->get_id_in_database());
+            if (ket_index < 0) {
+                throw std::runtime_error("The merged basis is missing a ket of the input bases.");
+            }
+            ket_indices.push_back(static_cast<size_t>(ket_index));
+        }
+        return ket_indices;
+    };
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] = this->get_merged_states(
+        *other, get_ket_indices(*this), get_ket_indices(*other), merged->get_number_of_kets());
+    return merged->get_modified_copy(std::move(coefficients), std::move(energy_of_states),
+                                     std::move(quantum_numbers_of_states));
 }
 
 template <typename Scalar>

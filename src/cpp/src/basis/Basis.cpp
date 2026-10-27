@@ -479,6 +479,75 @@ std::shared_ptr<const Derived> Basis<Derived>::get_sorted_copy(
     return result;
 }
 
+template <typename Derived>
+typename Basis<Derived>::StatesData
+Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t> &ket_indices1,
+                                  const std::vector<size_t> &ket_indices2,
+                                  size_t number_of_kets) const {
+    using matrix_t = Eigen::SparseMatrix<scalar_t, Eigen::ColMajor>;
+
+    // States from a diagonalization are only orthogonal up to the tolerance of the diagonalizer
+    constexpr real_t orthogonality_tolerance = 1e-6;
+
+    // Matrix whose i-th column is the unit vector with a one in row indices[i]
+    auto make_index_map_matrix = [](size_t number_of_rows, const std::vector<size_t> &indices) {
+        std::vector<Eigen::Triplet<scalar_t>> triplets;
+        triplets.reserve(indices.size());
+        for (size_t i = 0; i < indices.size(); ++i) {
+            triplets.emplace_back(indices[i], i, 1);
+        }
+        matrix_t matrix(number_of_rows, indices.size());
+        matrix.setFromTriplets(triplets.begin(), triplets.end());
+        return matrix;
+    };
+
+    // Re-express the states of both bases in the merged kets
+    const matrix_t states1 =
+        make_index_map_matrix(number_of_kets, ket_indices1) * this->get_coefficients();
+    const matrix_t states2 =
+        make_index_map_matrix(number_of_kets, ket_indices2) * other.get_coefficients();
+
+    // The states of the two bases must be orthogonal, so that the merged states form a basis. The
+    // product prunes the overlaps of orthogonal states while computing them, so that the possibly
+    // dense matrix of all overlaps is never stored.
+    const matrix_t overlaps =
+        (states1.adjoint() * states2).pruned(static_cast<scalar_t>(orthogonality_tolerance), 1);
+    if (overlaps.nonZeros() > 0) {
+        throw std::invalid_argument(
+            "Cannot merge bases whose states are not orthogonal to each other.");
+    }
+    const size_t number_of_states1 = states1.cols();
+    const size_t number_of_states = number_of_states1 + states2.cols();
+
+    // The states of this basis come first, followed by the states of the other basis
+    matrix_t coefficients(number_of_kets, number_of_states);
+    coefficients.leftCols(number_of_states1) = states1;
+    coefficients.rightCols(states2.cols()) = states2;
+
+    // The energies and quantum numbers are kept if they are well-defined for both bases
+    auto merge_values = [&](const std::vector<real_t> &values1,
+                            const std::vector<real_t> &values2) {
+        std::vector<real_t> values;
+        values.reserve(number_of_states);
+        values.insert(values.end(), values1.begin(), values1.end());
+        values.insert(values.end(), values2.begin(), values2.end());
+        return values;
+    };
+    energies_t energy_of_states;
+    if (this->has_energy() && other.has_energy()) {
+        energy_of_states = merge_values(*this->energy_of_states, *other.energy_of_states);
+    }
+    quantum_numbers_t quantum_numbers_of_states;
+    for (const auto &[name, values1] : this->quantum_numbers_of_states) {
+        auto it = other.quantum_numbers_of_states.find(name);
+        if (it != other.quantum_numbers_of_states.end()) {
+            quantum_numbers_of_states.emplace(name, merge_values(values1, it->second));
+        }
+    }
+
+    return {coefficients, std::move(energy_of_states), std::move(quantum_numbers_of_states)};
+}
+
 // Explicit instantiations
 template class Basis<BasisAtom<double>>;
 template class Basis<BasisAtom<std::complex<double>>>;
