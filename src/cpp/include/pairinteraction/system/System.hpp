@@ -36,7 +36,8 @@ public:
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
     get_sorter(const std::vector<StateLabel> &labels) const;
-    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<StateLabel> &labels) const;
+    std::vector<IndicesOfBlock>
+    get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const;
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  std::optional<real_t> min_eigenenergy = {},

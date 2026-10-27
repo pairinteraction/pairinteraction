@@ -153,8 +153,8 @@ System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
 
 template <typename Derived>
 std::vector<IndicesOfBlock>
-System<Derived>::get_indices_of_blocks(const std::vector<StateLabel> &labels) const {
-    return basis->get_indices_of_blocks(labels);
+System<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
+    return basis->get_indices_of_blocks(unique_labels);
 }
 
 template <typename Derived>
@@ -186,16 +186,15 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenenergies;
 
     // Sort the Hamiltonian according to the block structure
-    const std::vector<StateLabel> labels(blockdiagonalizing_labels.begin(),
-                                         blockdiagonalizing_labels.end());
-    if (!labels.empty()) {
-        sort(get_sorter(labels));
+    if (!blockdiagonalizing_labels.empty()) {
+        sort(get_sorter({blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
     }
 
     // Get the indices of the blocks
-    auto blocks = get_indices_of_blocks(labels);
+    auto blocks = get_indices_of_blocks(blockdiagonalizing_labels);
 
-    assert((labels.empty() && blocks.size() == 1) || !labels.empty());
+    assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
+           !blockdiagonalizing_labels.empty());
 
     SPDLOG_DEBUG("Diagonalizing the Hamiltonian with {} blocks.", blocks.size());
 

@@ -341,8 +341,7 @@ Basis<Derived>::get_sorter_by_energy() const {
 
 template <typename Derived>
 std::vector<IndicesOfBlock>
-Basis<Derived>::get_indices_of_blocks(const std::vector<StateLabel> &labels) const {
-    std::set<StateLabel> unique_labels(labels.begin(), labels.end());
+Basis<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
     perform_blocks_checks(unique_labels);
 
     // Get the blocks
