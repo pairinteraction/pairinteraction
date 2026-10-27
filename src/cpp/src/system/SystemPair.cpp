@@ -354,7 +354,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     this->matrix = utils::get_energies_in_canonical_basis(this->basis);
 
     this->hamiltonian_is_diagonal = false;
-    bool sort_by_quantum_number_f = this->basis->has_quantum_number("f");
     bool sort_by_quantum_number_m = this->basis->has_quantum_number("m");
     bool sort_by_product_of_parities = this->basis->has_quantum_number("product_of_parities");
 
@@ -375,10 +374,9 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // D_2,right uses normal convention.
 
     // Helper function for adding Rydberg-Rydberg interaction.
-    auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_f,
-                            &sort_by_quantum_number_m, &sort_by_product_of_parities,
-                            &sort_by_parity_under_permutation](const auto &op1, const auto &op2,
-                                                               int kappa1, int kappa2) {
+    auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_m,
+                            &sort_by_product_of_parities, &sort_by_parity_under_permutation](
+                               const auto &op1, const auto &op2, int kappa1, int kappa2) {
         const auto &entries = green_tensor_interpolator_ptr->get_spherical_entries(kappa1, kappa2);
 
         for (const auto &entry : entries) {
@@ -403,9 +401,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                                                                    op1[constant_entry.row()],
                                                                    op2[constant_entry.col()]);
 
-            if (kappa1 != 0 || kappa2 != 0) {
-                sort_by_quantum_number_f = false;
-            }
             if (constant_entry.row() != constant_entry.col() + kappa1 - kappa2) {
                 sort_by_quantum_number_m = false;
             }
@@ -449,9 +444,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
-    if (sort_by_quantum_number_f) {
-        this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_F);
-    }
     if (sort_by_quantum_number_m) {
         this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_M);
     }

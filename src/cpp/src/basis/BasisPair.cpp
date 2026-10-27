@@ -22,7 +22,6 @@ namespace pairinteraction {
 template <typename Scalar>
 // NOLINTNEXTLINE(cert-err58-cpp)
 const std::map<SorterType, std::string> BasisPair<Scalar>::sorter_type_to_quantum_number_name{
-    {SorterType::QUANTUM_NUMBER_F, "f"},
     {SorterType::QUANTUM_NUMBER_M, "m"},
     {SorterType::PRODUCT_OF_PARITIES, "product_of_parities"},
     {SorterType::PARITY_UNDER_INVERSION, "parity_under_inversion"},
