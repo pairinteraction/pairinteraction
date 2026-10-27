@@ -10,6 +10,7 @@ import pytest
 from pairinteraction import BasisAtom, BasisPair
 from pairinteraction.ket.ket_pair import is_ket_pair_like
 from pairinteraction.state.state_pair import is_state_pair_like
+from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
     from pairinteraction import KetAtom, SystemAtom
@@ -315,8 +316,16 @@ def test_merge_pair_basis(pi_module: PairinteractionModule, system_atom: SystemA
     assert merged.kets == eigenbasis.kets
     np.testing.assert_allclose(merged.get_coefficients().toarray(), coefficients.toarray())
 
-    # bases whose states are not orthogonal
+    # bases with common states, which are contained only once
+    merged = lower.merge(eigenbasis)
+    assert merged.kets == eigenbasis.kets
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), coefficients.toarray(), atol=1e-12)
+
+    # bases whose states are neither orthogonal nor equal
+    superposition = np.zeros((basis1.number_of_kets, 1))
+    superposition[:2] = 1 / np.sqrt(2)
+    superposition_basis = basis1._from_cpp_object(
+        basis1._cpp.get_modified_copy(csr_matrix(superposition), None, {}), *basis1._from_cpp_object_additional_args()
+    )
     with pytest.raises(ValueError, match="orthogonal"):
-        basis1.merge(basis1)
-    with pytest.raises(ValueError, match="orthogonal"):
-        lower.merge(eigenbasis)
+        superposition_basis.merge(basis1)

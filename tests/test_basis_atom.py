@@ -299,8 +299,14 @@ def test_merge(pi_module: PairinteractionModule) -> None:
     with pytest.raises(ValueError, match="orthogonal"):
         plus.merge(basis2)
 
-    # bases whose states are not orthogonal
-    with pytest.raises(ValueError, match="orthogonal"):
-        basis1.merge(basis1)
+    # bases with common states, which are contained only once
+    merged = basis1.merge(basis1)
+    assert merged.kets == basis1.kets
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), basis1.get_coefficients().toarray())
+
+    # bases whose states are neither orthogonal nor equal, also if they only differ by a factor
     with pytest.raises(ValueError, match="orthogonal"):
         plus.merge(canonical)
+    negated = canonical._from_cpp_object(canonical._cpp.get_modified_copy(-plus.get_coefficients(), None, {}))
+    with pytest.raises(ValueError, match="orthogonal"):
+        plus.merge(negated)

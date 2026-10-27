@@ -159,8 +159,9 @@ class BasisBase(ABC, Generic[KetType, StateType]):
     def merge(self: Self, other: Self) -> Self:
         """Return a basis containing the states from both bases.
 
-        The states of both bases must be orthogonal to each other. The merged basis contains the states of this basis
-        first, followed by the states of the other basis. Its kets are the kets of both bases, each ket only once.
+        Each state of the other basis must be orthogonal to the states of this basis or equal to one of them.
+        The merged basis contains the states of this basis first, followed by the states of the other basis
+        that are not already contained in this basis. Its kets are the kets of both bases, each ket only once.
         The bases must be compatible, i.e. they must share the same species, database, ...
         For BasisPair, both bases must also share the same underlying atomic bases.
         """

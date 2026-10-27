@@ -507,22 +507,34 @@ Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t
     const matrix_t states2 =
         make_index_map_matrix(number_of_kets, ket_indices2) * other.get_coefficients();
 
-    // The states of the two bases must be orthogonal, so that the merged states form a basis. The
-    // product prunes the overlaps of orthogonal states while computing them, so that the possibly
-    // dense matrix of all overlaps is never stored.
+    // Each state of the other basis must either be orthogonal to all states of this basis, or be
+    // equal to a state of this basis, in which case it is not added again. Two states a and b are
+    // equal if <a|b> = <a|a> = <b|b>. The product prunes the overlaps of orthogonal states while
+    // computing them, so that the possibly dense matrix of all overlaps is never stored.
     const matrix_t overlaps =
         (states1.adjoint() * states2).pruned(static_cast<scalar_t>(orthogonality_tolerance), 1);
-    if (overlaps.nonZeros() > 0) {
-        throw std::invalid_argument(
-            "Cannot merge bases whose states are not orthogonal to each other.");
+    std::vector<size_t> kept_states2;
+    for (Eigen::Index col = 0; col < overlaps.outerSize(); ++col) {
+        if (overlaps.col(col).nonZeros() == 0) {
+            kept_states2.push_back(static_cast<size_t>(col));
+        }
+        for (typename matrix_t::InnerIterator it(overlaps, col); it; ++it) {
+            if (std::abs(it.value() - states1.col(it.row()).squaredNorm()) >
+                    orthogonality_tolerance ||
+                std::abs(it.value() - states2.col(col).squaredNorm()) > orthogonality_tolerance) {
+                throw std::invalid_argument("Cannot merge bases whose states are neither "
+                                            "orthogonal nor equal to each other.");
+            }
+        }
     }
     const size_t number_of_states1 = states1.cols();
-    const size_t number_of_states = number_of_states1 + states2.cols();
+    const size_t number_of_states = number_of_states1 + kept_states2.size();
 
-    // The states of this basis come first, followed by the states of the other basis
+    // The states of this basis come first, followed by the kept states of the other basis
     matrix_t coefficients(number_of_kets, number_of_states);
     coefficients.leftCols(number_of_states1) = states1;
-    coefficients.rightCols(states2.cols()) = states2;
+    coefficients.rightCols(kept_states2.size()) =
+        states2 * make_index_map_matrix(states2.cols(), kept_states2);
 
     // The energies and quantum numbers are kept if they are well-defined for both bases
     auto merge_values = [&](const std::vector<real_t> &values1,
@@ -530,7 +542,9 @@ Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t
         std::vector<real_t> values;
         values.reserve(number_of_states);
         values.insert(values.end(), values1.begin(), values1.end());
-        values.insert(values.end(), values2.begin(), values2.end());
+        for (size_t i : kept_states2) {
+            values.push_back(values2[i]);
+        }
         return values;
     };
     energies_t energy_of_states;
