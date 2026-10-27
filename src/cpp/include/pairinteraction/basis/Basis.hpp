@@ -32,7 +32,7 @@ namespace pairinteraction {
  * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
  * either well-defined for all states or for none of them.
  * By which quantum numbers the states can be labeled and sorted is defined by the derived class,
- * which has to provide a static quantum_number_labels member that lists them.
+ * which has to provide a static allowed_state_labels member that lists them.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -52,6 +52,8 @@ public:
     using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
+
+    static void check_state_label(StateLabel label);
 
     bool has_quantum_number(StateLabel label) const;
     bool has_energy() const;

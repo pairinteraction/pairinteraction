@@ -26,18 +26,6 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisAtom;
 
-namespace {
-// The states can only be labeled by quantum numbers by which they can be sorted
-template <typename Derived>
-void check_quantum_number(StateLabel label) {
-    if (std::ranges::find(Derived::quantum_number_labels, label) ==
-        Derived::quantum_number_labels.end()) {
-        throw std::invalid_argument("The states cannot be labeled by the quantum number " +
-                                    std::string(get_state_label_name(label)) + ".");
-    }
-}
-} // namespace
-
 template <typename Derived>
 Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
@@ -49,6 +37,16 @@ Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
         throw std::invalid_argument("The basis must contain at least one element.");
     }
     check_states();
+}
+
+// The states can only be labeled by labels by which they can be sorted
+template <typename Derived>
+void Basis<Derived>::check_state_label(StateLabel label) {
+    if (std::ranges::find(Derived::allowed_state_labels, label) ==
+        Derived::allowed_state_labels.end()) {
+        throw std::invalid_argument("The states cannot be labeled by " +
+                                    std::string(get_state_label_name(label)) + ".");
+    }
 }
 
 template <typename Derived>
@@ -79,7 +77,7 @@ void Basis<Derived>::check_states() const {
 
     // A quantum number is either given for all states or not well-defined for the basis
     for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
-        check_quantum_number<Derived>(label);
+        check_state_label(label);
         std::string name(get_state_label_name(label));
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
@@ -110,7 +108,7 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 
     // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
     // assigned if all kets have it.
-    for (StateLabel label : Derived::quantum_number_labels) {
+    for (StateLabel label : Derived::allowed_state_labels) {
         std::string name(get_state_label_name(label));
         if (!std::ranges::all_of(
                 kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
@@ -162,7 +160,7 @@ Basis<Derived>::get_quantum_numbers_of_states(StateLabel label) const {
     // A quantum number by which the states are not labeled is not well-defined
     auto it = quantum_numbers_of_states.find(label);
     if (it == quantum_numbers_of_states.end()) {
-        check_quantum_number<Derived>(label);
+        check_state_label(label);
         throw std::invalid_argument("The states do not have a well-defined quantum number " +
                                     std::string(get_state_label_name(label)) + ".");
     }

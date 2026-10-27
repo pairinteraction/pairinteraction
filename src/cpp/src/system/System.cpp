@@ -52,7 +52,7 @@ void System<Derived>::construct_hamiltonian() const {
     matrix = utils::get_energies_in_canonical_basis(basis);
     hamiltonian_is_diagonal = false;
     std::set<StateLabel> labels;
-    for (StateLabel label : basis_t::quantum_number_labels) {
+    for (StateLabel label : basis_t::allowed_state_labels) {
         if (basis->has_quantum_number(label)) {
             labels.insert(label);
         }
