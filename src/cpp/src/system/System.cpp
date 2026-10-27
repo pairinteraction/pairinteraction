@@ -14,6 +14,7 @@
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/operator.hpp"
 
 #include <Eigen/SparseCore>
 #include <algorithm>
@@ -26,6 +27,7 @@
 #include <numeric>
 #include <oneapi/tbb.h>
 #include <optional>
+#include <set>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
@@ -45,11 +47,26 @@ System<Derived>::System(std::shared_ptr<const basis_t> basis)
 }
 
 template <typename Derived>
-void System<Derived>::ensure_hamiltonian_constructed() const {
-    if (!hamiltonian_requires_construction) {
-        return;
+void System<Derived>::construct_hamiltonian() const {
+    // Construct the unperturbed Hamiltonian in the canonical basis. It is block-diagonal with
+    // respect to all quantum numbers of the basis.
+    matrix = utils::get_energies_in_canonical_basis(basis);
+    hamiltonian_is_diagonal = false;
+    std::set<StateLabel> labels;
+    for (StateLabel label : basis_t::quantum_number_labels) {
+        if (basis->has_quantum_number(label)) {
+            labels.insert(label);
+        }
     }
-    static_cast<const Derived *>(this)->construct_hamiltonian();
+
+    // Add the terms of the derived system, which erase the labels of the symmetries they break
+    static_cast<const Derived *>(this)->add_terms_to_hamiltonian(labels);
+    blockdiagonalizing_labels = std::move(labels);
+
+    // Transform from the canonical basis into the actual basis
+    matrix = basis->get_coefficients().adjoint() * matrix * basis->get_coefficients();
+
+    prune_couplings_between_blocks();
     hamiltonian_requires_construction = false;
 }
 
@@ -121,7 +138,9 @@ Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenerg
 template <typename Derived>
 const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
 System<Derived>::get_matrix() const {
-    ensure_hamiltonian_constructed();
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+    }
     return matrix;
 }
 
@@ -166,15 +185,16 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenenergies;
 
     // Sort the Hamiltonian according to the block structure
-    if (!blockdiagonalizing_labels.empty()) {
-        sort(get_sorter(blockdiagonalizing_labels));
+    const std::vector<StateLabel> labels(blockdiagonalizing_labels.begin(),
+                                         blockdiagonalizing_labels.end());
+    if (!labels.empty()) {
+        sort(get_sorter(labels));
     }
 
     // Get the indices of the blocks
-    auto blocks = get_indices_of_blocks(blockdiagonalizing_labels);
+    auto blocks = get_indices_of_blocks(labels);
 
-    assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
-           !blockdiagonalizing_labels.empty());
+    assert((labels.empty() && blocks.size() == 1) || !labels.empty());
 
     SPDLOG_DEBUG("Diagonalizing the Hamiltonian with {} blocks.", blocks.size());
 
@@ -318,7 +338,9 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
 template <typename Derived>
 bool System<Derived>::is_diagonal() const {
-    ensure_hamiltonian_constructed();
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+    }
 
     if (!hamiltonian_is_diagonal) {
         real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();

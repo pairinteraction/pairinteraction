@@ -15,7 +15,6 @@
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
-#include "pairinteraction/utils/operator.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 #include "pairinteraction/utils/tensor.hpp"
@@ -332,7 +331,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_green_tensor_interpolator(
 }
 
 template <typename Scalar>
-void SystemPair<Scalar>::construct_hamiltonian() const {
+void SystemPair<Scalar>::add_terms_to_hamiltonian(std::set<StateLabel> &labels) const {
     auto basis1 = this->basis->get_basis1();
     auto basis2 = this->basis->get_basis2();
 
@@ -350,24 +349,15 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     auto op = construct_operator_matrices(*green_tensor_interpolator_ptr, basis1, basis2);
 
-    // Construct the unperturbed Hamiltonian in the canonical pair basis
-    this->matrix = utils::get_energies_in_canonical_basis(this->basis);
-
-    this->hamiltonian_is_diagonal = false;
-    bool sort_by_quantum_number_m = this->basis->has_quantum_number(StateLabel::QUANTUM_NUMBER_M);
-    bool sort_by_product_of_parities =
-        this->basis->has_quantum_number(StateLabel::PRODUCT_OF_PARITIES);
-
     // The interaction in vacuum is invariant under the inversion of the pair. Because this
     // inversion equals the permutation of the atoms combined with the inversion of each atom, the
     // interaction is additionally invariant under the permutation if only multipole operators of
     // the same parity are coupled, see below. A user-defined Green tensor, e.g., of a surface,
     // might break both symmetries.
-    const bool is_vacuum = !green_tensor_interpolator;
-    const bool sort_by_parity_under_inversion =
-        is_vacuum && this->basis->has_quantum_number(StateLabel::PARITY_UNDER_INVERSION);
-    bool sort_by_parity_under_permutation =
-        is_vacuum && this->basis->has_quantum_number(StateLabel::PARITY_UNDER_PERMUTATION);
+    if (green_tensor_interpolator) {
+        labels.erase(StateLabel::PARITY_UNDER_INVERSION);
+        labels.erase(StateLabel::PARITY_UNDER_PERMUTATION);
+    }
 
     // Add Rydberg-Rydberg interaction via Green tensor
     // H_RR = Σ_{ij} D_1,left[i] * G_{ij} * D_2,right[j]
@@ -375,9 +365,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // D_2,right uses normal convention.
 
     // Helper function for adding Rydberg-Rydberg interaction.
-    auto add_interaction = [this, &green_tensor_interpolator_ptr, &sort_by_quantum_number_m,
-                            &sort_by_product_of_parities, &sort_by_parity_under_permutation](
-                               const auto &op1, const auto &op2, int kappa1, int kappa2) {
+    auto add_interaction = [this, &green_tensor_interpolator_ptr,
+                            &labels](const auto &op1, const auto &op2, int kappa1, int kappa2) {
         const auto &entries = green_tensor_interpolator_ptr->get_spherical_entries(kappa1, kappa2);
 
         for (const auto &entry : entries) {
@@ -403,11 +392,11 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                                                                    op2[constant_entry.col()]);
 
             if (constant_entry.row() != constant_entry.col() + kappa1 - kappa2) {
-                sort_by_quantum_number_m = false;
+                labels.erase(StateLabel::QUANTUM_NUMBER_M);
             }
             if ((kappa1 + kappa2) % 2 != 0) {
-                sort_by_product_of_parities = false;
-                sort_by_parity_under_permutation = false;
+                labels.erase(StateLabel::PRODUCT_OF_PARITIES);
+                labels.erase(StateLabel::PARITY_UNDER_PERMUTATION);
             }
         }
     };
@@ -438,27 +427,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 
     // Quadrupole-quadrupole interaction
     add_interaction(op.q1, op.q2, 2, 2);
-
-    // Transform from the canonical basis into the actual basis
-    this->matrix =
-        this->basis->get_coefficients().adjoint() * this->matrix * this->basis->get_coefficients();
-
-    // Store which labels can be used to block-diagonalize the Hamiltonian
-    this->blockdiagonalizing_labels.clear();
-    if (sort_by_quantum_number_m) {
-        this->blockdiagonalizing_labels.push_back(StateLabel::QUANTUM_NUMBER_M);
-    }
-    if (sort_by_product_of_parities) {
-        this->blockdiagonalizing_labels.push_back(StateLabel::PRODUCT_OF_PARITIES);
-    }
-    if (sort_by_parity_under_inversion) {
-        this->blockdiagonalizing_labels.push_back(StateLabel::PARITY_UNDER_INVERSION);
-    }
-    if (sort_by_parity_under_permutation) {
-        this->blockdiagonalizing_labels.push_back(StateLabel::PARITY_UNDER_PERMUTATION);
-    }
-
-    this->prune_couplings_between_blocks();
 }
 
 // Explicit instantiations

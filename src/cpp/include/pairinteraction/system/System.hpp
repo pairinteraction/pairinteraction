@@ -51,12 +51,13 @@ protected:
     mutable Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
     mutable bool hamiltonian_requires_construction{true};
     mutable bool hamiltonian_is_diagonal{false};
-    mutable std::vector<StateLabel> blockdiagonalizing_labels;
-
-    void prune_couplings_between_blocks() const;
+    // The labels of the states that are conserved by the Hamiltonian, so that it is block-diagonal
+    // with respect to them
+    mutable std::set<StateLabel> blockdiagonalizing_labels;
 
 private:
-    void ensure_hamiltonian_constructed() const;
+    void construct_hamiltonian() const;
+    void prune_couplings_between_blocks() const;
     void sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);
 };
 } // namespace pairinteraction
