@@ -39,48 +39,6 @@ void check_quantum_number(StateLabel label) {
 } // namespace
 
 template <typename Derived>
-void Basis<Derived>::perform_blocks_checks(const std::set<StateLabel> &unique_labels) const {
-    // Check if the states are labeled by the requested labels
-    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
-    quantum_numbers_of_labels.reserve(unique_labels.size());
-    for (const auto &label : unique_labels) {
-        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
-    }
-
-    // Check if the states are sorted by the requested labels, i.e., if states that share the same
-    // labels are contiguous. Otherwise, states belonging to the same block would be scattered over
-    // several blocks and couplings between them would be lost.
-    // The quantum numbers are exact (half-)integers, thus they can be compared exactly
-    auto have_same_labels = [&](Eigen::Index a, Eigen::Index b) {
-        return std::ranges::all_of(quantum_numbers_of_labels, [&](const auto *quantum_numbers) {
-            return (*quantum_numbers)[a] == (*quantum_numbers)[b];
-        });
-    };
-    auto has_smaller_labels = [&](Eigen::Index a, Eigen::Index b) {
-        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
-                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
-            }
-        }
-        return false;
-    };
-
-    // Collect the first state of each contiguous block of states that share the same labels
-    std::vector<Eigen::Index> starts_of_blocks;
-    for (Eigen::Index i = 0; i < coefficients.cols(); ++i) {
-        if (i == 0 || !have_same_labels(i - 1, i)) {
-            starts_of_blocks.push_back(i);
-        }
-    }
-
-    // If the states are sorted, no two blocks share the same labels
-    std::ranges::sort(starts_of_blocks, has_smaller_labels);
-    if (std::ranges::adjacent_find(starts_of_blocks, have_same_labels) != starts_of_blocks.end()) {
-        throw std::invalid_argument("The states are not sorted by the requested labels.");
-    }
-}
-
-template <typename Derived>
 Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
                       Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&coefficients,
                       energies_t &&energy_of_states, quantum_numbers_t &&quantum_numbers_of_states)
@@ -308,11 +266,29 @@ size_t Basis<Derived>::get_number_of_kets() const {
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
 Basis<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    // Initialize the sorter
+    // Get the quantum numbers by which the states are sorted, the first label being the primary
+    // criterion
+    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
+    quantum_numbers_of_labels.reserve(labels.size());
+    for (const auto &label : labels) {
+        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
+    }
+
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
     sorter.setIdentity();
 
-    get_sorter_without_checks(labels, sorter);
+    // Sort the states lexicographically by the quantum numbers of the labels. The quantum numbers
+    // are exact (half-)integers, thus they can be compared exactly.
+    set_task_status("Sorting basis states...");
+    int *perm_begin = sorter.indices().data();
+    std::stable_sort(perm_begin, perm_begin + sorter.size(), [&](int a, int b) {
+        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
+                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
+            }
+        }
+        return false; // Elements are equal
+    });
 
     return sorter;
 }
@@ -343,69 +319,45 @@ Basis<Derived>::get_sorter_by_energy() const {
 template <typename Derived>
 std::vector<IndicesOfBlock>
 Basis<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
-    perform_blocks_checks(unique_labels);
-
-    // Get the blocks
-    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(coefficients.cols())});
-    get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
-
-    return blocks_creator.create();
-}
-
-template <typename Derived>
-void Basis<Derived>::get_sorter_without_checks(
-    const std::vector<StateLabel> &labels,
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
-    if (coefficients.cols() == 0) {
-        return;
-    }
-
-    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
-    quantum_numbers_of_labels.reserve(labels.size());
-    for (const auto &label : labels) {
-        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
-    }
-
-    int *perm_begin = sorter.indices().data();
-    int *perm_end = perm_begin + coefficients.cols();
-
-    // Sort the vector based on the requested labels. The quantum numbers are exact (half-)integers,
-    // thus they can be compared exactly.
-    set_task_status("Sorting basis states...");
-    std::stable_sort(perm_begin, perm_end, [&](int a, int b) {
-        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
-                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
-            }
-        }
-        return false; // Elements are equal
-    });
-}
-
-template <typename Derived>
-void Basis<Derived>::get_indices_of_blocks_without_checks(
-    const std::set<StateLabel> &unique_labels, IndicesOfBlocksCreator &blocks_creator) const {
-    if (coefficients.cols() == 0) {
-        return;
-    }
-
+    // Get the quantum numbers by which the states are grouped into blocks. They are exact
+    // (half-)integers, thus they can be compared exactly.
     std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
     quantum_numbers_of_labels.reserve(unique_labels.size());
     for (const auto &label : unique_labels) {
         quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
     }
-
-    // A new block starts whenever a state differs from its predecessor in one of the labels. The
-    // quantum numbers are exact (half-)integers, thus they can be compared exactly.
-    set_task_status("Identifying basis blocks...");
-    for (int i = 1; i < coefficients.cols(); ++i) {
+    auto have_same_labels = [&](size_t a, size_t b) {
+        return std::ranges::all_of(quantum_numbers_of_labels, [&](const auto *quantum_numbers) {
+            return (*quantum_numbers)[a] == (*quantum_numbers)[b];
+        });
+    };
+    auto has_smaller_labels = [&](size_t a, size_t b) {
         for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if ((*quantum_numbers)[i] != (*quantum_numbers)[i - 1]) {
-                blocks_creator.add(i);
-                break;
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
+                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
             }
         }
+        return false;
+    };
+
+    // A block is a contiguous range of states that share the same labels. If the states are sorted
+    // by the labels, no two blocks share the same labels. Otherwise, states that belong to the same
+    // block would be scattered over several blocks and couplings between them would be lost.
+    set_task_status("Identifying basis blocks...");
+    std::vector<IndicesOfBlock> blocks;
+    std::set<size_t, decltype(has_smaller_labels)> starts_of_blocks(has_smaller_labels);
+    for (size_t i = 0; i < get_number_of_states(); ++i) {
+        if (i == 0 || !have_same_labels(i - 1, i)) {
+            if (!starts_of_blocks.insert(i).second) {
+                throw std::invalid_argument("The states are not sorted by the requested labels.");
+            }
+            blocks.emplace_back(i, i + 1);
+        } else {
+            blocks.back().end = i + 1;
+        }
     }
+
+    return blocks;
 }
 
 template <typename Derived>

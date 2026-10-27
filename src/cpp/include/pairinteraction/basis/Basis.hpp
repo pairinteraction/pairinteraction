@@ -88,13 +88,6 @@ public:
     std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const;
 
-    void perform_blocks_checks(const std::set<StateLabel> &unique_labels) const;
-    void get_sorter_without_checks(
-        const std::vector<StateLabel> &labels,
-        Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
-    void get_indices_of_blocks_without_checks(const std::set<StateLabel> &unique_labels,
-                                              IndicesOfBlocksCreator &blocks) const;
-
     std::shared_ptr<const Derived> get_canonicalized_copy() const;
     bool is_canonical() const;
     std::shared_ptr<const Derived>
