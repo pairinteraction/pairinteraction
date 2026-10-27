@@ -35,19 +35,19 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, 
 template <typename Scalar>
 BasisPairCreator<Scalar> &
 BasisPairCreator<Scalar>::restrict_quantum_number(const std::string &name, real_t min, real_t max) {
-    auto label = get_state_label(name);
-    if (label == StateLabel::QUANTUM_NUMBER_M) {
-        if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
-            throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
-        }
-    } else if (label == StateLabel::PRODUCT_OF_PARITIES ||
-               label == StateLabel::PARITY_UNDER_INVERSION ||
-               label == StateLabel::PARITY_UNDER_PERMUTATION) {
+    StateLabel label = get_state_label(name);
+    if (std::ranges::find(basis_t::quantum_number_labels, label) ==
+        basis_t::quantum_number_labels.end()) {
+        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
+    }
+    if (label == StateLabel::PRODUCT_OF_PARITIES || label == StateLabel::PARITY_UNDER_INVERSION ||
+        label == StateLabel::PARITY_UNDER_PERMUTATION) {
         if ((min != 1 && min != -1) || (max != 1 && max != -1)) {
             throw std::invalid_argument("The parity must be +1 or -1.");
         }
-    } else {
-        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
+    } else if (2 * min != std::rint(2 * min) || 2 * max != std::rint(2 * max)) {
+        throw std::invalid_argument("The quantum number " + name +
+                                    " must be an integer or half-integer.");
     }
     quantum_number_ranges[label] = {min, max};
     return *this;

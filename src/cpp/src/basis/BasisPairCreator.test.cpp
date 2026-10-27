@@ -632,6 +632,9 @@ DOCTEST_TEST_CASE_FIXTURE(SymmetrizedBasisPairFixture,
                                 std::invalid_argument);
         DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("parity", 1, 1),
                                 std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("energy", 0, 1),
+                                std::invalid_argument);
+        DOCTEST_CHECK_THROWS_AS(creator.restrict_quantum_number("f", 1, 1), std::invalid_argument);
     }
 
     DOCTEST_SUBCASE("a range comprising both parities does not restrict the parity") {
