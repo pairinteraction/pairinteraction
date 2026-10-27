@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstdint>
 #include <limits>
 #include <map>
 #include <set>
@@ -51,30 +50,32 @@ void Basis<Derived>::perform_blocks_checks(const std::set<StateLabel> &unique_la
     // Check if the states are sorted by the requested labels, i.e., if states that share the same
     // labels are contiguous. Otherwise, states belonging to the same block would be scattered over
     // several blocks and couplings between them would be lost.
-    // The quantum numbers are (half-)integers, thus doubling them yields an exact integer
-    using label_t = std::vector<int64_t>;
-    auto label_of = [&](Eigen::Index i) {
-        label_t label;
-        label.reserve(quantum_numbers_of_labels.size());
+    // The quantum numbers are exact (half-)integers, thus they can be compared exactly
+    auto have_same_labels = [&](Eigen::Index a, Eigen::Index b) {
+        return std::ranges::all_of(quantum_numbers_of_labels, [&](const auto *quantum_numbers) {
+            return (*quantum_numbers)[a] == (*quantum_numbers)[b];
+        });
+    };
+    auto has_smaller_labels = [&](Eigen::Index a, Eigen::Index b) {
         for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            label.push_back(std::llround(2 * (*quantum_numbers)[i]));
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
+                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
+            }
         }
-        return label;
+        return false;
     };
 
-    // Collect the labels of the contiguous blocks of states
-    std::vector<label_t> labels_of_blocks;
+    // Collect the first state of each contiguous block of states that share the same labels
+    std::vector<Eigen::Index> starts_of_blocks;
     for (Eigen::Index i = 0; i < coefficients.cols(); ++i) {
-        label_t label = label_of(i);
-        if (labels_of_blocks.empty() || labels_of_blocks.back() != label) {
-            labels_of_blocks.push_back(label);
+        if (i == 0 || !have_same_labels(i - 1, i)) {
+            starts_of_blocks.push_back(i);
         }
     }
 
     // If the states are sorted, no two blocks share the same labels
-    std::sort(labels_of_blocks.begin(), labels_of_blocks.end());
-    if (std::adjacent_find(labels_of_blocks.begin(), labels_of_blocks.end()) !=
-        labels_of_blocks.end()) {
+    std::ranges::sort(starts_of_blocks, has_smaller_labels);
+    if (std::ranges::adjacent_find(starts_of_blocks, have_same_labels) != starts_of_blocks.end()) {
         throw std::invalid_argument("The states are not sorted by the requested labels.");
     }
 }
@@ -127,8 +128,8 @@ void Basis<Derived>::check_states() const {
                                         " must match the number of states.");
         }
 
-        // The quantum numbers are (half-)integers, so that doubling them yields the exact integers
-        // by which the states are sorted and block-diagonalized
+        // The quantum numbers are exact (half-)integers, so that the states can be sorted and
+        // block-diagonalized by comparing their quantum numbers exactly
         for (real_t quantum_number : quantum_numbers) {
             real_t doubled = 2 * quantum_number;
             if (!is_valid_value(quantum_number) || !std::isfinite(doubled) ||
@@ -355,8 +356,6 @@ template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(
     const std::vector<StateLabel> &labels,
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
     if (coefficients.cols() == 0) {
         return;
     }
@@ -370,11 +369,12 @@ void Basis<Derived>::get_sorter_without_checks(
     int *perm_begin = sorter.indices().data();
     int *perm_end = perm_begin + coefficients.cols();
 
-    // Sort the vector based on the requested labels
+    // Sort the vector based on the requested labels. The quantum numbers are exact (half-)integers,
+    // thus they can be compared exactly.
     set_task_status("Sorting basis states...");
     std::stable_sort(perm_begin, perm_end, [&](int a, int b) {
         for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if (std::abs((*quantum_numbers)[a] - (*quantum_numbers)[b]) > numerical_precision) {
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
                 return (*quantum_numbers)[a] < (*quantum_numbers)[b];
             }
         }
@@ -385,8 +385,6 @@ void Basis<Derived>::get_sorter_without_checks(
 template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
     const std::set<StateLabel> &unique_labels, IndicesOfBlocksCreator &blocks_creator) const {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
     if (coefficients.cols() == 0) {
         return;
     }
@@ -397,11 +395,12 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
         quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
     }
 
-    // A new block starts whenever a state differs from its predecessor in one of the labels
+    // A new block starts whenever a state differs from its predecessor in one of the labels. The
+    // quantum numbers are exact (half-)integers, thus they can be compared exactly.
     set_task_status("Identifying basis blocks...");
     for (int i = 1; i < coefficients.cols(); ++i) {
         for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if (std::abs((*quantum_numbers)[i] - (*quantum_numbers)[i - 1]) > numerical_precision) {
+            if ((*quantum_numbers)[i] != (*quantum_numbers)[i - 1]) {
                 blocks_creator.add(i);
                 break;
             }
