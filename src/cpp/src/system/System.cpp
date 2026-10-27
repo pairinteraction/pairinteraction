@@ -79,9 +79,10 @@ void System<Derived>::prune_couplings_between_blocks() const {
     std::vector<std::vector<int64_t>> labels_of_states;
     labels_of_states.reserve(blockdiagonalizing_labels.size());
     for (const auto &label : blockdiagonalizing_labels) {
-        auto &values = labels_of_states.emplace_back(basis->get_number_of_states());
+        const auto &quantum_numbers = basis->get_quantum_numbers_of_states(label);
+        auto &values = labels_of_states.emplace_back(quantum_numbers.size());
         for (size_t state_index = 0; state_index < values.size(); ++state_index) {
-            values[state_index] = std::llround(2 * basis->get_quantum_number(label, state_index));
+            values[state_index] = std::llround(2 * quantum_numbers[state_index]);
         }
     }
 
@@ -312,12 +313,13 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // Hamiltonian is block-diagonal are well-defined and shared by all eigenstates of a block
     typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
     for (const auto &label : blockdiagonalizing_labels) {
+        const auto &quantum_numbers_of_states = basis->get_quantum_numbers_of_states(label);
         auto &quantum_numbers = quantum_numbers_of_eigenstates[label];
         quantum_numbers.reserve(static_cast<size_t>(num_cols));
         for (size_t idx = 0; idx < blocks.size(); ++idx) {
             quantum_numbers.insert(quantum_numbers.end(),
                                    static_cast<size_t>(eigenvectors_blocks[idx].cols()),
-                                   basis->get_quantum_number(label, blocks[idx].start));
+                                   quantum_numbers_of_states[blocks[idx].start]);
         }
     }
 

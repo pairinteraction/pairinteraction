@@ -63,6 +63,7 @@ public:
     real_t get_quantum_number(StateLabel label, size_t state_index) const;
     real_t get_energy(size_t state_index) const;
     const quantum_numbers_t &get_quantum_numbers_of_states() const;
+    const std::vector<real_t> &get_quantum_numbers_of_states(StateLabel label) const;
     std::shared_ptr<const Derived> get_state(size_t state_index) const;
     std::shared_ptr<const ket_t> get_ket(size_t ket_index) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
@@ -117,7 +118,6 @@ protected:
 private:
     const Derived &derived() const;
     void check_states() const;
-    const std::vector<real_t> &get_quantum_numbers_of_states(StateLabel label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 

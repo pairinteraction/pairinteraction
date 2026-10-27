@@ -200,12 +200,12 @@ const Derived &Basis<Derived>::derived() const {
 template <typename Derived>
 const std::vector<typename Basis<Derived>::real_t> &
 Basis<Derived>::get_quantum_numbers_of_states(StateLabel label) const {
+    // A quantum number by which the states are not labeled is not well-defined
     auto it = quantum_numbers_of_states.find(label);
     if (it == quantum_numbers_of_states.end()) {
         check_quantum_number<Derived>(label);
-        throw std::invalid_argument(
-            "States cannot be labeled and thus not sorted by the quantum number " +
-            std::string(get_state_label_name(label)) + ".");
+        throw std::invalid_argument("The states do not have a well-defined quantum number " +
+                                    std::string(get_state_label_name(label)) + ".");
     }
     return it->second;
 }
@@ -224,14 +224,7 @@ Basis<Derived>::get_coefficients() const {
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number(StateLabel label,
                                                                    size_t state_index) const {
-    // A quantum number by which the states are not labeled is not well-defined
-    auto it = quantum_numbers_of_states.find(label);
-    if (it == quantum_numbers_of_states.end()) {
-        check_quantum_number<Derived>(label);
-        throw std::invalid_argument("The state does not have a well-defined quantum number " +
-                                    std::string(get_state_label_name(label)) + ".");
-    }
-    return it->second.at(state_index);
+    return get_quantum_numbers_of_states(label).at(state_index);
 }
 
 template <typename Derived>
