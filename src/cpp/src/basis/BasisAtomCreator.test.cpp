@@ -320,6 +320,10 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
                       basis->get_energy(static_cast<size_t>(sorter.indices()[i])));
     }
 
+    // Sorting by the energy restores the order of the energies
+    auto resorted = sorted->get_sorted_copy(sorted->get_sorter_by_energy());
+    DOCTEST_CHECK(resorted->is_sorted_by_energy());
+
     // A modified copy of a basis has the explicitly specified energies
     std::vector<double> energies(basis->get_number_of_states());
     for (size_t i = 0; i < energies.size(); ++i) {
@@ -342,6 +346,7 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->has_energy());
     DOCTEST_CHECK_FALSE(copied->is_sorted_by_energy());
+    DOCTEST_CHECK_THROWS_AS(copied->get_sorter_by_energy(), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->get_state(0)->has_energy());
 
     // Energies that are given must be finite and smaller than the maximum value

@@ -486,20 +486,6 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
         expected_start = block.end;
     }
     DOCTEST_CHECK(expected_start == basis->get_number_of_states());
-
-    // Blocks are obtained to diagonalize the Hamiltonian block by block. Because energy blocks
-    // would require an already diagonal Hamiltonian, they cannot be obtained ...
-    DOCTEST_CHECK_THROWS_AS(system.get_indices_of_blocks({StateLabel::ENERGY}),
-                            std::invalid_argument);
-
-    // ... whereas sorting by the energy is supported
-    DOCTEST_CHECK_NOTHROW(system.get_sorter({StateLabel::ENERGY}));
-
-    // A repeated label cannot influence the order anymore and must be ignored instead of
-    // terminating the program
-    DOCTEST_CHECK_NOTHROW(system.get_sorter({StateLabel::ENERGY, StateLabel::ENERGY}));
-    DOCTEST_CHECK_NOTHROW(
-        system.get_sorter({StateLabel::QUANTUM_NUMBER_M, StateLabel::ENERGY, StateLabel::ENERGY}));
 }
 
 DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
@@ -514,90 +500,32 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
     auto system = SystemAtom<double>(basis);
     system.set_electric_field({0, 0, 0.0001});
 
-    // Applies the sorter of the system to its Hamiltonian and basis
-    auto sort = [&](const std::vector<StateLabel> &labels) {
-        auto sorter = system.get_sorter(labels);
-        Eigen::SparseMatrix<double, Eigen::RowMajor> matrix;
-        matrix = system.get_matrix().twistedBy(sorter.inverse());
-        return std::make_pair(matrix, system.get_basis()->get_sorted_copy(sorter));
-    };
-
     // The first label is the primary sorting criterion, the following labels only break ties
-    {
-        auto [matrix, sorted_basis] = sort({StateLabel::QUANTUM_NUMBER_M, StateLabel::ENERGY});
+    auto sorted_basis = system.get_basis()->get_sorted_copy(
+        system.get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}));
+    size_t num_states = sorted_basis->get_number_of_states();
 
-        // Sorting by m first means that states of equal m are contiguous ...
-        auto blocks = sorted_basis->get_indices_of_blocks({StateLabel::QUANTUM_NUMBER_M});
-        DOCTEST_CHECK(blocks.size() > 1);
+    auto parity = [&](size_t i) { return sorted_basis->get_quantum_number("parity", i); };
+    auto quantum_number_m = [&](size_t i) { return sorted_basis->get_quantum_number("m", i); };
 
-        // ... and that within each block, the energies are ascending
-        for (const auto &block : blocks) {
-            for (auto i = static_cast<long>(block.start) + 1; i < static_cast<long>(block.end);
-                 ++i) {
-                DOCTEST_CHECK(matrix.coeff(i - 1, i - 1) <= matrix.coeff(i, i));
-            }
+    // The parity is ascending globally, whereas m is only ascending within a block of equal parity
+    bool m_ascending_globally = true;
+    for (size_t i = 1; i < num_states; ++i) {
+        DOCTEST_CHECK(parity(i - 1) <= parity(i));
+        if (parity(i - 1) == parity(i)) {
+            DOCTEST_CHECK(quantum_number_m(i - 1) <= quantum_number_m(i));
+        }
+        if (quantum_number_m(i - 1) > quantum_number_m(i)) {
+            m_ascending_globally = false;
         }
     }
+    DOCTEST_CHECK_FALSE(m_ascending_globally);
 
-    // If the energy is the first label, the states are sorted by the energy globally
-    {
-        auto [matrix, sorted_basis] = sort({StateLabel::ENERGY, StateLabel::QUANTUM_NUMBER_M});
-
-        for (long i = 1; i < matrix.rows(); ++i) {
-            DOCTEST_CHECK(matrix.coeff(i - 1, i - 1) <= matrix.coeff(i, i));
-        }
-    }
-
-    // If the energy is enclosed by other labels, the labels before the energy take precedence over
-    // the energy and the energy takes precedence over the labels after it
-    {
-        // Older clang versions cannot capture structured bindings in lambdas
-        auto sorted = sort({StateLabel::PARITY, StateLabel::ENERGY, StateLabel::QUANTUM_NUMBER_M});
-        const auto &matrix = sorted.first;
-        const auto &sorted_basis = sorted.second;
-
-        size_t num_states = sorted_basis->get_number_of_states();
-
-        auto parity = [&](size_t i) { return sorted_basis->get_quantum_number("parity", i); };
-        auto energy = [&](size_t i) {
-            return matrix.coeff(static_cast<long>(i), static_cast<long>(i));
-        };
-        auto quantum_number_m = [&](size_t i) { return sorted_basis->get_quantum_number("m", i); };
-
-        // The parity is the primary criterion, thus it is ascending globally ...
-        for (size_t i = 1; i < num_states; ++i) {
-            DOCTEST_CHECK(parity(i - 1) <= parity(i));
-        }
-
-        // ... the energy is only ascending within a block of equal parity ...
-        for (size_t i = 1; i < num_states; ++i) {
-            if (parity(i - 1) == parity(i)) {
-                DOCTEST_CHECK(energy(i - 1) <= energy(i));
-            }
-        }
-
-        // ... and the quantum number m only breaks ties between states of equal parity and energy
-        size_t num_tie_breaks = 0;
-        for (size_t i = 1; i < num_states; ++i) {
-            if (parity(i - 1) == parity(i) && energy(i - 1) == energy(i)) {
-                DOCTEST_CHECK(quantum_number_m(i - 1) <= quantum_number_m(i));
-                ++num_tie_breaks;
-            }
-        }
-
-        // Check that the basis contains degenerate states so that the tie breaking by m above is
-        // not vacuous
-        DOCTEST_CHECK(num_tie_breaks > 0);
-
-        // If m was the primary criterion, m would be ascending globally instead
-        bool m_ascending_globally = true;
-        for (size_t i = 1; i < num_states; ++i) {
-            if (quantum_number_m(i - 1) > quantum_number_m(i)) {
-                m_ascending_globally = false;
-            }
-        }
-        DOCTEST_CHECK_FALSE(m_ascending_globally);
-    }
+    // A repeated label cannot influence the order anymore
+    DOCTEST_CHECK(
+        system.get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M, StateLabel::PARITY})
+            .indices() ==
+        system.get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}).indices());
 }
 
 } // namespace pairinteraction

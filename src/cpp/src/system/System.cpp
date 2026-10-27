@@ -132,48 +132,7 @@ System<Derived>::get_matrix() const {
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
 System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    // The first label is supposed to be the primary sorting criterion.
-    ensure_hamiltonian_constructed();
-
-    // Drop repeated labels. This also ensures that energy occurs at most once.
-    std::vector<StateLabel> unique_labels;
-    unique_labels.reserve(labels.size());
-    for (const auto &label : labels) {
-        if (std::find(unique_labels.begin(), unique_labels.end(), label) == unique_labels.end()) {
-            unique_labels.push_back(label);
-        }
-    }
-
-    auto it = std::find(unique_labels.begin(), unique_labels.end(), StateLabel::ENERGY);
-    std::vector<StateLabel> before_energy(unique_labels.begin(), it);
-    bool contains_energy = (it != unique_labels.end());
-    std::vector<StateLabel> after_energy(contains_energy ? it + 1 : unique_labels.end(),
-                                         unique_labels.end());
-
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(matrix.rows());
-    sorter.setIdentity();
-
-    if (!after_energy.empty()) {
-        basis->get_sorter_without_checks(after_energy, sorter);
-    }
-
-    if (contains_energy) {
-        std::vector<real_t> energies_of_states;
-        energies_of_states.reserve(matrix.rows());
-        for (int i = 0; i < matrix.rows(); ++i) {
-            energies_of_states.push_back(std::real(matrix.coeff(i, i)));
-        }
-
-        std::stable_sort(
-            sorter.indices().data(), sorter.indices().data() + sorter.indices().size(),
-            [&](int i, int j) { return energies_of_states[i] < energies_of_states[j]; });
-    }
-
-    if (!before_energy.empty()) {
-        basis->get_sorter_without_checks(before_energy, sorter);
-    }
-
-    return sorter;
+    return basis->get_sorter(labels);
 }
 
 template <typename Derived>
@@ -214,7 +173,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
-            sort(get_sorter({StateLabel::ENERGY}));
+            sort(basis->get_sorter_by_energy());
         }
         return *this;
     }
@@ -368,7 +327,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
-        sort(get_sorter({StateLabel::ENERGY}));
+        sort(basis->get_sorter_by_energy());
     }
 
     return *this;

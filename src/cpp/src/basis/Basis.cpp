@@ -42,12 +42,6 @@ void check_quantum_number_name(const std::string &name) {
 
 template <typename Derived>
 void Basis<Derived>::perform_blocks_checks(const std::set<StateLabel> &unique_labels) const {
-    // Currently, since states in a basis dont store the energy, they cannot be sorted by energy.
-    if (unique_labels.contains(StateLabel::ENERGY)) {
-        throw std::invalid_argument("Blocks cannot be obtained by the energy. Note that sorting "
-                                    "a system by the energy is supported nevertheless.");
-    }
-
     // Check if the states are labeled by the requested labels
     std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
     quantum_numbers_of_labels.reserve(unique_labels.size());
@@ -323,13 +317,34 @@ size_t Basis<Derived>::get_number_of_kets() const {
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
 Basis<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    // Note that sorting by the energy is rejected by get_sorter_without_checks
-
     // Initialize the sorter
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
     sorter.setIdentity();
 
     get_sorter_without_checks(labels, sorter);
+
+    return sorter;
+}
+
+template <typename Derived>
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+Basis<Derived>::get_sorter_by_energy() const {
+    if (!has_energy()) {
+        throw std::invalid_argument(
+            "The states do not have well-defined energies and thus cannot be sorted by them.");
+    }
+
+    // Initialize the sorter
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
+    sorter.setIdentity();
+
+    int *perm_begin = sorter.indices().data();
+    int *perm_end = perm_begin + coefficients.cols();
+
+    // Sort the vector based on the energies, keeping the order of degenerate states
+    set_task_status("Sorting basis states...");
+    std::stable_sort(perm_begin, perm_end,
+                     [&](int a, int b) { return (*energy_of_states)[a] < (*energy_of_states)[b]; });
 
     return sorter;
 }
@@ -352,15 +367,6 @@ void Basis<Derived>::get_sorter_without_checks(
     const std::vector<StateLabel> &labels,
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    // Currently, since states in a basis dont store the energy, they cannot be sorted by energy.
-    // Checking this upfront also guarantees that only labels that refer to a quantum number are
-    // encountered below.
-    if (std::find(labels.begin(), labels.end(), StateLabel::ENERGY) != labels.end()) {
-        throw std::invalid_argument(
-            "States in a basis do not store the energy and thus can not be sorted by it. "
-            "Note that sorting a system by the energy is supported nevertheless.");
-    }
 
     if (coefficients.cols() == 0) {
         return;

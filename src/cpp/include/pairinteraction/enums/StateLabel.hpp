@@ -4,15 +4,14 @@
 #pragma once
 
 namespace pairinteraction {
-// The quantities by which the states of a basis can be labeled, sorted and, except for the energy,
-// grouped into blocks
+// The quantum numbers by which the states of a basis can be labeled, sorted and grouped into
+// blocks
 enum class StateLabel : unsigned char {
     QUANTUM_NUMBER_F,
     QUANTUM_NUMBER_M,
     PARITY,
     PRODUCT_OF_PARITIES,
     PARITY_UNDER_INVERSION,
-    PARITY_UNDER_PERMUTATION,
-    ENERGY
+    PARITY_UNDER_PERMUTATION
 };
 } // namespace pairinteraction

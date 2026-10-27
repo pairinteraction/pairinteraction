@@ -50,6 +50,7 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
                      std::move(quantum_numbers_of_states));
              })
         .def("get_sorter", &Basis<T>::get_sorter)
+        .def("get_sorter_by_energy", &Basis<T>::get_sorter_by_energy)
         .def("get_indices_of_blocks", &Basis<T>::get_indices_of_blocks)
         .def("get_sorted_copy", &Basis<T>::get_sorted_copy)
         .def("get_canonicalized_copy", &Basis<T>::get_canonicalized_copy)

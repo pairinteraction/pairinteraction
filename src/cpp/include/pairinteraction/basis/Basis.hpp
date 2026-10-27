@@ -84,6 +84,7 @@ public:
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
     get_sorter(const std::vector<StateLabel> &labels) const;
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> get_sorter_by_energy() const;
     std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<StateLabel> &labels) const;
 
     void perform_blocks_checks(const std::set<StateLabel> &unique_labels) const;

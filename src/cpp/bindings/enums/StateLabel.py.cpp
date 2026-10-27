@@ -17,6 +17,5 @@ void bind_state_label(nb::module_ &m) {
         .value("PARITY", StateLabel::PARITY)
         .value("PRODUCT_OF_PARITIES", StateLabel::PRODUCT_OF_PARITIES)
         .value("PARITY_UNDER_INVERSION", StateLabel::PARITY_UNDER_INVERSION)
-        .value("PARITY_UNDER_PERMUTATION", StateLabel::PARITY_UNDER_PERMUTATION)
-        .value("ENERGY", StateLabel::ENERGY);
+        .value("PARITY_UNDER_PERMUTATION", StateLabel::PARITY_UNDER_PERMUTATION);
 }
