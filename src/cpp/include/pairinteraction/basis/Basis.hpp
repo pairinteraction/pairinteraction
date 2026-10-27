@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pairinteraction/enums/StateLabel.hpp"
-#include "pairinteraction/utils/IndicesOfBlocks.hpp"
+#include "pairinteraction/utils/IndicesOfBlock.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"

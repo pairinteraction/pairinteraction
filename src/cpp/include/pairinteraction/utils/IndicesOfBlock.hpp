@@ -7,8 +7,8 @@
 
 namespace pairinteraction {
 struct IndicesOfBlock {
-    IndicesOfBlock(size_t start, size_t end);
-    size_t size() const;
+    IndicesOfBlock(size_t start, size_t end) : start(start), end(end) {}
+    size_t size() const { return end - start; }
     size_t start;
     size_t end;
 };
