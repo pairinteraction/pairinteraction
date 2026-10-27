@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace pairinteraction {
-enum class SorterType : unsigned char;
+enum class StateLabel : unsigned char;
 
 template <typename Scalar>
 class DiagonalizerInterface;
@@ -35,8 +35,8 @@ public:
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    get_sorter(const std::vector<SorterType> &labels) const;
-    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<SorterType> &labels) const;
+    get_sorter(const std::vector<StateLabel> &labels) const;
+    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<StateLabel> &labels) const;
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  std::optional<real_t> min_eigenenergy = {},
@@ -51,7 +51,7 @@ protected:
     mutable Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
     mutable bool hamiltonian_requires_construction{true};
     mutable bool hamiltonian_is_diagonal{false};
-    mutable std::vector<SorterType> blockdiagonalizing_labels;
+    mutable std::vector<StateLabel> blockdiagonalizing_labels;
 
     void prune_couplings_between_blocks() const;
 

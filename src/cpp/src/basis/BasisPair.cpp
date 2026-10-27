@@ -21,11 +21,11 @@
 namespace pairinteraction {
 template <typename Scalar>
 // NOLINTNEXTLINE(cert-err58-cpp)
-const std::map<SorterType, std::string> BasisPair<Scalar>::sorter_type_to_quantum_number_name{
-    {SorterType::QUANTUM_NUMBER_M, "m"},
-    {SorterType::PRODUCT_OF_PARITIES, "product_of_parities"},
-    {SorterType::PARITY_UNDER_INVERSION, "parity_under_inversion"},
-    {SorterType::PARITY_UNDER_PERMUTATION, "parity_under_permutation"},
+const std::map<StateLabel, std::string> BasisPair<Scalar>::state_label_to_quantum_number_name{
+    {StateLabel::QUANTUM_NUMBER_M, "m"},
+    {StateLabel::PRODUCT_OF_PARITIES, "product_of_parities"},
+    {StateLabel::PARITY_UNDER_INVERSION, "parity_under_inversion"},
+    {StateLabel::PARITY_UNDER_PERMUTATION, "parity_under_permutation"},
 };
 
 template <typename Scalar>

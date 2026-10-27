@@ -21,7 +21,7 @@ add_library(
   ./include/pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp
   ./include/pairinteraction/enums/FloatType.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
-  ./include/pairinteraction/enums/SorterType.hpp
+  ./include/pairinteraction/enums/StateLabel.hpp
   ./include/pairinteraction/interfaces/DiagonalizerInterface.hpp
   ./include/pairinteraction/ket/Ket.hpp
   ./include/pairinteraction/ket/KetAtom.hpp

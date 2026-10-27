@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pairinteraction/basis/Basis.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
@@ -56,7 +56,7 @@ public:
     using energies_t = typename Basis<Type>::energies_t;
     using map_size_t = std::unordered_map<size_t, size_t>;
 
-    static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
+    static const std::map<StateLabel, std::string> state_label_to_quantum_number_name;
 
     BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
               std::shared_ptr<const map_size_t> ket_id_to_ket_index,

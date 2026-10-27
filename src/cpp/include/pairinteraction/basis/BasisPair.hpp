@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pairinteraction/basis/Basis.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -64,7 +64,7 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    static const std::map<SorterType, std::string> sorter_type_to_quantum_number_name;
+    static const std::map<StateLabel, std::string> state_label_to_quantum_number_name;
 
     BasisPair(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
               std::shared_ptr<const map_range_t> state_index1_to_state_index_range2,

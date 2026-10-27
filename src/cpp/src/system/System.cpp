@@ -5,7 +5,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
@@ -62,7 +62,7 @@ void System<Derived>::prune_couplings_between_blocks() const {
     std::vector<std::vector<int64_t>> labels_of_states;
     labels_of_states.reserve(blockdiagonalizing_labels.size());
     for (const auto &label : blockdiagonalizing_labels) {
-        const auto &name = basis_t::sorter_type_to_quantum_number_name.at(label);
+        const auto &name = basis_t::state_label_to_quantum_number_name.at(label);
         auto &values = labels_of_states.emplace_back(basis->get_number_of_states());
         for (size_t state_index = 0; state_index < values.size(); ++state_index) {
             values[state_index] = std::llround(2 * basis->get_quantum_number(name, state_index));
@@ -131,12 +131,12 @@ System<Derived>::get_matrix() const {
 
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
-    // The first sorter type in labels is supposed to be the primary sorting criterion.
+System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
+    // The first label is supposed to be the primary sorting criterion.
     ensure_hamiltonian_constructed();
 
-    // Drop repeated sorter types. This also ensures that energy occurs at most once.
-    std::vector<SorterType> unique_labels;
+    // Drop repeated labels. This also ensures that energy occurs at most once.
+    std::vector<StateLabel> unique_labels;
     unique_labels.reserve(labels.size());
     for (const auto &label : labels) {
         if (std::find(unique_labels.begin(), unique_labels.end(), label) == unique_labels.end()) {
@@ -144,10 +144,10 @@ System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
         }
     }
 
-    auto it = std::find(unique_labels.begin(), unique_labels.end(), SorterType::ENERGY);
-    std::vector<SorterType> before_energy(unique_labels.begin(), it);
+    auto it = std::find(unique_labels.begin(), unique_labels.end(), StateLabel::ENERGY);
+    std::vector<StateLabel> before_energy(unique_labels.begin(), it);
     bool contains_energy = (it != unique_labels.end());
-    std::vector<SorterType> after_energy(contains_energy ? it + 1 : unique_labels.end(),
+    std::vector<StateLabel> after_energy(contains_energy ? it + 1 : unique_labels.end(),
                                          unique_labels.end());
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(matrix.rows());
@@ -178,10 +178,10 @@ System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
 
 template <typename Derived>
 std::vector<IndicesOfBlock>
-System<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) const {
+System<Derived>::get_indices_of_blocks(const std::vector<StateLabel> &labels) const {
     ensure_hamiltonian_constructed();
 
-    std::set<SorterType> unique_labels(labels.begin(), labels.end());
+    std::set<StateLabel> unique_labels(labels.begin(), labels.end());
     basis->perform_blocks_checks(unique_labels);
 
     IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(matrix.rows())});
@@ -214,7 +214,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
-            sort(get_sorter({SorterType::ENERGY}));
+            sort(get_sorter({StateLabel::ENERGY}));
         }
         return *this;
     }
@@ -349,7 +349,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // Hamiltonian is block-diagonal are well-defined and shared by all eigenstates of a block
     typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
     for (const auto &label : blockdiagonalizing_labels) {
-        const std::string &name = basis_t::sorter_type_to_quantum_number_name.at(label);
+        const std::string &name = basis_t::state_label_to_quantum_number_name.at(label);
         auto &quantum_numbers = quantum_numbers_of_eigenstates[name];
         quantum_numbers.reserve(static_cast<size_t>(num_cols));
         for (size_t idx = 0; idx < blocks.size(); ++idx) {
@@ -368,7 +368,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
-        sort(get_sorter({SorterType::ENERGY}));
+        sort(get_sorter({StateLabel::ENERGY}));
     }
 
     return *this;

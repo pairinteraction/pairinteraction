@@ -16,10 +16,10 @@
 namespace pairinteraction {
 template <typename Scalar>
 // NOLINTNEXTLINE(cert-err58-cpp)
-const std::map<SorterType, std::string> BasisAtom<Scalar>::sorter_type_to_quantum_number_name{
-    {SorterType::QUANTUM_NUMBER_F, "f"},
-    {SorterType::QUANTUM_NUMBER_M, "m"},
-    {SorterType::PARITY, "parity"},
+const std::map<StateLabel, std::string> BasisAtom<Scalar>::state_label_to_quantum_number_name{
+    {StateLabel::QUANTUM_NUMBER_F, "f"},
+    {StateLabel::QUANTUM_NUMBER_M, "m"},
+    {StateLabel::PARITY, "parity"},
 };
 
 template <typename Scalar>

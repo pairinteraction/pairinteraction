@@ -7,7 +7,7 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/GreenTensorInterpolator.hpp"
@@ -445,16 +445,16 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
     if (sort_by_quantum_number_m) {
-        this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_M);
+        this->blockdiagonalizing_labels.push_back(StateLabel::QUANTUM_NUMBER_M);
     }
     if (sort_by_product_of_parities) {
-        this->blockdiagonalizing_labels.push_back(SorterType::PRODUCT_OF_PARITIES);
+        this->blockdiagonalizing_labels.push_back(StateLabel::PRODUCT_OF_PARITIES);
     }
     if (sort_by_parity_under_inversion) {
-        this->blockdiagonalizing_labels.push_back(SorterType::PARITY_UNDER_INVERSION);
+        this->blockdiagonalizing_labels.push_back(StateLabel::PARITY_UNDER_INVERSION);
     }
     if (sort_by_parity_under_permutation) {
-        this->blockdiagonalizing_labels.push_back(SorterType::PARITY_UNDER_PERMUTATION);
+        this->blockdiagonalizing_labels.push_back(StateLabel::PARITY_UNDER_PERMUTATION);
     }
 
     this->prune_couplings_between_blocks();

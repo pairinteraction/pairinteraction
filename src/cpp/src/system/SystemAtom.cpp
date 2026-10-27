@@ -6,7 +6,7 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/system/GreenTensorInterpolator.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
@@ -354,13 +354,13 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
     if (sort_by_quantum_number_f) {
-        this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_F);
+        this->blockdiagonalizing_labels.push_back(StateLabel::QUANTUM_NUMBER_F);
     }
     if (sort_by_quantum_number_m) {
-        this->blockdiagonalizing_labels.push_back(SorterType::QUANTUM_NUMBER_M);
+        this->blockdiagonalizing_labels.push_back(StateLabel::QUANTUM_NUMBER_M);
     }
     if (sort_by_parity) {
-        this->blockdiagonalizing_labels.push_back(SorterType::PARITY);
+        this->blockdiagonalizing_labels.push_back(StateLabel::PARITY);
     }
 
     this->prune_couplings_between_blocks();

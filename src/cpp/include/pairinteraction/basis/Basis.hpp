@@ -18,7 +18,7 @@
 #include <vector>
 
 namespace pairinteraction {
-enum class SorterType : unsigned char;
+enum class StateLabel : unsigned char;
 
 /**
  * @class Basis
@@ -33,7 +33,7 @@ enum class SorterType : unsigned char;
  * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
  * either well-defined for all states or for none of them.
  * By which quantum numbers the states can be sorted is defined by the derived class, which has to
- * provide a static sorter_type_to_quantum_number_name member that maps sorter types to names.
+ * provide a static state_label_to_quantum_number_name member that maps state labels to names.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -83,14 +83,14 @@ public:
     Iterator end() const;
 
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    get_sorter(const std::vector<SorterType> &labels) const;
-    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<SorterType> &labels) const;
+    get_sorter(const std::vector<StateLabel> &labels) const;
+    std::vector<IndicesOfBlock> get_indices_of_blocks(const std::vector<StateLabel> &labels) const;
 
-    void perform_blocks_checks(const std::set<SorterType> &unique_labels) const;
+    void perform_blocks_checks(const std::set<StateLabel> &unique_labels) const;
     void get_sorter_without_checks(
-        const std::vector<SorterType> &labels,
+        const std::vector<StateLabel> &labels,
         Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
-    void get_indices_of_blocks_without_checks(const std::set<SorterType> &unique_labels,
+    void get_indices_of_blocks_without_checks(const std::set<StateLabel> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<const Derived> get_canonicalized_copy() const;
@@ -117,7 +117,7 @@ protected:
 private:
     const Derived &derived() const;
     void check_states() const;
-    const std::vector<real_t> &get_quantum_numbers_of_states(SorterType label) const;
+    const std::vector<real_t> &get_quantum_numbers_of_states(StateLabel label) const;
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
 

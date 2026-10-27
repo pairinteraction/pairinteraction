@@ -5,4 +5,4 @@
 
 #include <nanobind/nanobind.h>
 
-void bind_sorter_type(nanobind::module_ &m);
+void bind_state_label(nanobind::module_ &m);

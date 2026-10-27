@@ -4,7 +4,9 @@
 #pragma once
 
 namespace pairinteraction {
-enum class SorterType : unsigned char {
+// The quantities by which the states of a basis can be labeled, sorted and, except for the energy,
+// grouped into blocks
+enum class StateLabel : unsigned char {
     QUANTUM_NUMBER_F,
     QUANTUM_NUMBER_M,
     PARITY,

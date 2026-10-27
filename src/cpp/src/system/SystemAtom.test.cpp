@@ -12,7 +12,7 @@
 #include "pairinteraction/diagonalize/DiagonalizerLapackeEvr.hpp"
 #include "pairinteraction/diagonalize/diagonalize.hpp"
 #include "pairinteraction/enums/FloatType.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 
@@ -472,11 +472,11 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
 
     // The electric field conserves the quantum number m, thus the Hamiltonian can be
     // block-diagonalized by m if the basis is sorted by m
-    auto sorted_basis = basis->get_sorted_copy(basis->get_sorter({SorterType::QUANTUM_NUMBER_M}));
+    auto sorted_basis = basis->get_sorted_copy(basis->get_sorter({StateLabel::QUANTUM_NUMBER_M}));
     auto system = SystemAtom<double>(sorted_basis);
     system.set_electric_field({0, 0, 0.0001});
 
-    auto blocks = system.get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M});
+    auto blocks = system.get_indices_of_blocks({StateLabel::QUANTUM_NUMBER_M});
     DOCTEST_CHECK(blocks.size() > 1);
 
     size_t expected_start = 0;
@@ -489,17 +489,17 @@ DOCTEST_TEST_CASE("obtain the blocks of a Hamiltonian") {
 
     // Blocks are obtained to diagonalize the Hamiltonian block by block. Because energy blocks
     // would require an already diagonal Hamiltonian, they cannot be obtained ...
-    DOCTEST_CHECK_THROWS_AS(system.get_indices_of_blocks({SorterType::ENERGY}),
+    DOCTEST_CHECK_THROWS_AS(system.get_indices_of_blocks({StateLabel::ENERGY}),
                             std::invalid_argument);
 
     // ... whereas sorting by the energy is supported
-    DOCTEST_CHECK_NOTHROW(system.get_sorter({SorterType::ENERGY}));
+    DOCTEST_CHECK_NOTHROW(system.get_sorter({StateLabel::ENERGY}));
 
     // A repeated label cannot influence the order anymore and must be ignored instead of
     // terminating the program
-    DOCTEST_CHECK_NOTHROW(system.get_sorter({SorterType::ENERGY, SorterType::ENERGY}));
+    DOCTEST_CHECK_NOTHROW(system.get_sorter({StateLabel::ENERGY, StateLabel::ENERGY}));
     DOCTEST_CHECK_NOTHROW(
-        system.get_sorter({SorterType::QUANTUM_NUMBER_M, SorterType::ENERGY, SorterType::ENERGY}));
+        system.get_sorter({StateLabel::QUANTUM_NUMBER_M, StateLabel::ENERGY, StateLabel::ENERGY}));
 }
 
 DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
@@ -515,7 +515,7 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
     system.set_electric_field({0, 0, 0.0001});
 
     // Applies the sorter of the system to its Hamiltonian and basis
-    auto sort = [&](const std::vector<SorterType> &labels) {
+    auto sort = [&](const std::vector<StateLabel> &labels) {
         auto sorter = system.get_sorter(labels);
         Eigen::SparseMatrix<double, Eigen::RowMajor> matrix;
         matrix = system.get_matrix().twistedBy(sorter.inverse());
@@ -524,10 +524,10 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
 
     // The first label is the primary sorting criterion, the following labels only break ties
     {
-        auto [matrix, sorted_basis] = sort({SorterType::QUANTUM_NUMBER_M, SorterType::ENERGY});
+        auto [matrix, sorted_basis] = sort({StateLabel::QUANTUM_NUMBER_M, StateLabel::ENERGY});
 
         // Sorting by m first means that states of equal m are contiguous ...
-        auto blocks = sorted_basis->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M});
+        auto blocks = sorted_basis->get_indices_of_blocks({StateLabel::QUANTUM_NUMBER_M});
         DOCTEST_CHECK(blocks.size() > 1);
 
         // ... and that within each block, the energies are ascending
@@ -541,7 +541,7 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
 
     // If the energy is the first label, the states are sorted by the energy globally
     {
-        auto [matrix, sorted_basis] = sort({SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M});
+        auto [matrix, sorted_basis] = sort({StateLabel::ENERGY, StateLabel::QUANTUM_NUMBER_M});
 
         for (long i = 1; i < matrix.rows(); ++i) {
             DOCTEST_CHECK(matrix.coeff(i - 1, i - 1) <= matrix.coeff(i, i));
@@ -552,7 +552,7 @@ DOCTEST_TEST_CASE("sort a Hamiltonian by several labels") {
     // the energy and the energy takes precedence over the labels after it
     {
         // Older clang versions cannot capture structured bindings in lambdas
-        auto sorted = sort({SorterType::PARITY, SorterType::ENERGY, SorterType::QUANTUM_NUMBER_M});
+        auto sorted = sort({StateLabel::PARITY, StateLabel::ENERGY, StateLabel::QUANTUM_NUMBER_M});
         const auto &matrix = sorted.first;
         const auto &sorted_basis = sorted.second;
 
