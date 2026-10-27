@@ -489,6 +489,10 @@ Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t
     // States from a diagonalization are only orthogonal up to the tolerance of the diagonalizer
     constexpr real_t orthogonality_tolerance = 1e-6;
 
+    // Energies from a diagonalization are only accurate up to the relative tolerance of the
+    // diagonalizer
+    constexpr real_t relative_energy_tolerance = 1e-6;
+
     // Matrix whose i-th column is the unit vector with a one in row indices[i]
     auto make_index_map_matrix = [](size_t number_of_rows, const std::vector<size_t> &indices) {
         std::vector<Eigen::Triplet<scalar_t>> triplets;
@@ -510,7 +514,8 @@ Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t
     // Each state of the other basis must either be orthogonal to all states of this basis, or be
     // equal to a state of this basis, in which case it is not added again. Two states a and b are
     // equal if <a|b> = <a|a> = <b|b>. The product prunes the overlaps of orthogonal states while
-    // computing them, so that the possibly dense matrix of all overlaps is never stored.
+    // computing them, so that the possibly dense matrix of all overlaps is never stored. Equal
+    // states must also agree in the quantum numbers and energies that both bases define.
     const matrix_t overlaps =
         (states1.adjoint() * states2).pruned(static_cast<scalar_t>(orthogonality_tolerance), 1);
     std::vector<size_t> kept_states2;
@@ -524,6 +529,25 @@ Basis<Derived>::get_merged_states(const Derived &other, const std::vector<size_t
                 std::abs(it.value() - states2.col(col).squaredNorm()) > orthogonality_tolerance) {
                 throw std::invalid_argument("Cannot merge bases whose states are neither "
                                             "orthogonal nor equal to each other.");
+            }
+            const auto row = static_cast<size_t>(it.row());
+            for (const auto &[name, values1] : this->quantum_numbers_of_states) {
+                auto values2 = other.quantum_numbers_of_states.find(name);
+                if (values2 != other.quantum_numbers_of_states.end() &&
+                    values1[row] != values2->second[col]) {
+                    throw std::invalid_argument("Cannot merge bases whose equal states have "
+                                                "different values of the quantum number " +
+                                                name + ".");
+                }
+            }
+            if (this->has_energy() && other.has_energy()) {
+                const real_t energy1 = (*this->energy_of_states)[row];
+                const real_t energy2 = (*other.energy_of_states)[col];
+                if (std::abs(energy1 - energy2) >
+                    relative_energy_tolerance * std::max(std::abs(energy1), std::abs(energy2))) {
+                    throw std::invalid_argument(
+                        "Cannot merge bases whose equal states have different energies.");
+                }
             }
         }
     }

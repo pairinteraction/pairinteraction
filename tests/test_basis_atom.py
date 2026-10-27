@@ -310,3 +310,30 @@ def test_merge(pi_module: PairinteractionModule) -> None:
     negated = canonical._from_cpp_object(canonical._cpp.get_modified_copy(-plus.get_coefficients(), None, {}))
     with pytest.raises(ValueError, match="orthogonal"):
         plus.merge(negated)
+
+
+def test_merge_equal_states_must_agree(pi_module: PairinteractionModule) -> None:
+    basis = pi_module.BasisAtom("Rb", n=(60, 60), l=(1, 2), m=(0.5, 0.5))
+    states = range(basis.number_of_states)
+    energies = [basis._cpp.get_energy(i) for i in states]
+    m = [basis._cpp.get_quantum_number("m", i) for i in states]
+
+    def with_values(energies: list[float] | None, quantum_numbers: dict[str, list[float]]) -> BasisAtom:
+        return basis._from_cpp_object(basis._cpp.get_modified_copy(basis.get_coefficients(), energies, quantum_numbers))
+
+    # equal states must have the same quantum numbers, unless only one basis defines them
+    flipped_m = [-m[0], *m[1:]]
+    with pytest.raises(ValueError, match="quantum number m"):
+        with_values(energies, {"m": m}).merge(with_values(energies, {"m": flipped_m}))
+    merged = with_values(energies, {"m": m}).merge(with_values(energies, {}))
+    assert merged.number_of_states == basis.number_of_states
+
+    # equal states must have the same energies up to a tolerance, unless only one basis defines them
+    shifted_energies = [energies[0] * (1 + 1e-3), *energies[1:]]
+    with pytest.raises(ValueError, match="energies"):
+        with_values(energies, {}).merge(with_values(shifted_energies, {}))
+    slightly_shifted_energies = [energies[0] * (1 + 1e-9), *energies[1:]]
+    merged = with_values(energies, {}).merge(with_values(slightly_shifted_energies, {}))
+    assert merged.number_of_states == basis.number_of_states
+    merged = with_values(energies, {}).merge(with_values(None, {}))
+    assert merged.number_of_states == basis.number_of_states
