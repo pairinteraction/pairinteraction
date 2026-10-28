@@ -3,7 +3,7 @@
 
 #include "./sorting.py.hpp"
 
-#include "pairinteraction/utils/IndicesOfBlocks.hpp"
+#include "pairinteraction/utils/IndicesOfBlock.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/Core>

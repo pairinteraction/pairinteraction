@@ -36,10 +36,7 @@ template <typename Scalar>
 BasisPairCreator<Scalar> &
 BasisPairCreator<Scalar>::restrict_quantum_number(const std::string &name, real_t min, real_t max) {
     StateLabel label = get_state_label(name);
-    if (std::ranges::find(basis_t::quantum_number_labels, label) ==
-        basis_t::quantum_number_labels.end()) {
-        throw std::invalid_argument("The quantum number " + name + " cannot be restricted.");
-    }
+    basis_t::check_state_label(label);
     if (label == StateLabel::PRODUCT_OF_PARITIES || label == StateLabel::PARITY_UNDER_INVERSION ||
         label == StateLabel::PARITY_UNDER_PERMUTATION) {
         if ((min != 1 && min != -1) || (max != 1 && max != -1)) {

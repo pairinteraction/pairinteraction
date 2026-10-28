@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include "pairinteraction/utils/IndicesOfBlocks.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -33,11 +32,6 @@ public:
     Eigen::VectorX<real_t> get_eigenenergies() const;
 
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
-
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    get_sorter(const std::vector<StateLabel> &labels) const;
-    std::vector<IndicesOfBlock>
-    get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const;
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  std::optional<real_t> min_eigenenergy = {},

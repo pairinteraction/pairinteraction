@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <cmath>
 #include <complex>
-#include <cstdint>
 #include <fmt/format.h>
 #include <limits>
 #include <memory>
@@ -53,7 +52,7 @@ void System<Derived>::construct_hamiltonian() const {
     matrix = utils::get_energies_in_canonical_basis(basis);
     hamiltonian_is_diagonal = false;
     std::set<StateLabel> labels;
-    for (StateLabel label : basis_t::quantum_number_labels) {
+    for (StateLabel label : basis_t::allowed_state_labels) {
         if (basis->has_quantum_number(label)) {
             labels.insert(label);
         }
@@ -74,16 +73,12 @@ template <typename Derived>
 void System<Derived>::prune_couplings_between_blocks() const {
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
-    // Get the block-diagonalizing labels of the states. The quantum numbers are (half-)integers,
-    // thus doubling them yields an exact integer.
-    std::vector<std::vector<int64_t>> labels_of_states;
-    labels_of_states.reserve(blockdiagonalizing_labels.size());
+    // Get the block-diagonalizing quantum numbers of the states. They are exact (half-)integers,
+    // thus they can be compared exactly.
+    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
+    quantum_numbers_of_labels.reserve(blockdiagonalizing_labels.size());
     for (const auto &label : blockdiagonalizing_labels) {
-        const auto &quantum_numbers = basis->get_quantum_numbers_of_states(label);
-        auto &values = labels_of_states.emplace_back(quantum_numbers.size());
-        for (size_t state_index = 0; state_index < values.size(); ++state_index) {
-            values[state_index] = std::llround(2 * quantum_numbers[state_index]);
-        }
+        quantum_numbers_of_labels.push_back(&basis->get_quantum_numbers_of_states(label));
     }
 
     // Couplings between states with different labels vanish analytically. However, they can be
@@ -100,8 +95,9 @@ void System<Derived>::prune_couplings_between_blocks() const {
             return false;
         }
         bool is_within_block =
-            std::all_of(labels_of_states.begin(), labels_of_states.end(),
-                        [&](const auto &values) { return values[row] == values[col]; });
+            std::ranges::all_of(quantum_numbers_of_labels, [&](const auto *quantum_numbers) {
+                return (*quantum_numbers)[row] == (*quantum_numbers)[col];
+            });
         if (is_within_block) {
             return true;
         }
@@ -146,18 +142,6 @@ System<Derived>::get_matrix() const {
 }
 
 template <typename Derived>
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    return basis->get_sorter(labels);
-}
-
-template <typename Derived>
-std::vector<IndicesOfBlock>
-System<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
-    return basis->get_indices_of_blocks(unique_labels);
-}
-
-template <typename Derived>
 void System<Derived>::sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
     set_task_status("Sorting Hamiltonian...");
 
@@ -187,11 +171,12 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        sort(get_sorter({blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
+        sort(basis->get_sorter(
+            {blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
     }
 
     // Get the indices of the blocks
-    auto blocks = get_indices_of_blocks(blockdiagonalizing_labels);
+    auto blocks = basis->get_indices_of_blocks(blockdiagonalizing_labels);
 
     assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
            !blockdiagonalizing_labels.empty());
