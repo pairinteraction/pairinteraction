@@ -12,7 +12,9 @@ If you want to build only the C++ part and want to have more control over the bu
 tasks that have been automatically executed by pip_ in the :ref:`automatic build <automatic>`. For this, you have to
 first install the Python build dependencies for your :ref:`Python environment <python_setup>` manually.
 
-If you want to use mkl you should also run ``pip install mkl mkl-devel``.
+The build dependencies include the ``tbb-devel`` and ``mkl-devel`` packages, which provide the Intel oneAPI TBB and MKL
+libraries. CMake discovers these libraries by querying a Python interpreter, so make sure that the Python environment
+into which you installed the build dependencies is activated when running CMake.
 
 You can then build the software with standard CMake commands:
 
