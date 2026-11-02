@@ -1,0 +1,53 @@
+﻿EffectiveSystemPair
+===================
+
+.. currentmodule:: pairinteraction.perturbative
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~EffectiveSystemPair.__init__
+      ~EffectiveSystemPair.check_for_resonances
+      ~EffectiveSystemPair.copy
+      ~EffectiveSystemPair.get_effective_basis
+      ~EffectiveSystemPair.get_effective_basisvectors
+      ~EffectiveSystemPair.get_effective_hamiltonian
+      ~EffectiveSystemPair.get_pair_energies
+      ~EffectiveSystemPair.set_angle
+      ~EffectiveSystemPair.set_delta_l
+      ~EffectiveSystemPair.set_delta_m
+      ~EffectiveSystemPair.set_delta_n
+      ~EffectiveSystemPair.set_diamagnetism_enabled
+      ~EffectiveSystemPair.set_distance
+      ~EffectiveSystemPair.set_distance_vector
+      ~EffectiveSystemPair.set_electric_field
+      ~EffectiveSystemPair.set_interaction_order
+      ~EffectiveSystemPair.set_magnetic_field
+      ~EffectiveSystemPair.set_maximum_number_of_ket_pairs
+      ~EffectiveSystemPair.set_minimum_number_of_ket_pairs
+      ~EffectiveSystemPair.set_perturbation_order
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~EffectiveSystemPair.basis_atoms
+   ~EffectiveSystemPair.basis_pair
+   ~EffectiveSystemPair.diamagnetism_enabled
+   ~EffectiveSystemPair.distance_vector
+   ~EffectiveSystemPair.electric_field
+   ~EffectiveSystemPair.interaction_order
+   ~EffectiveSystemPair.ket_tuples
+   ~EffectiveSystemPair.magnetic_field
+   ~EffectiveSystemPair.model_inds
+   ~EffectiveSystemPair.perturbation_order
+   ~EffectiveSystemPair.system_atoms
+   ~EffectiveSystemPair.system_pair
+
+
+
+.. autoclass:: pairinteraction.perturbative.EffectiveSystemPair

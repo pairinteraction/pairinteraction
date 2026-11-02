@@ -1,0 +1,26 @@
+﻿GreenTensorFreeSpace
+====================
+
+.. currentmodule:: pairinteraction.green_tensor
+
+
+.. rubric:: Class Methods
+
+.. autosummary::
+   
+      ~GreenTensorFreeSpace.__init__
+      ~GreenTensorFreeSpace.get
+      ~GreenTensorFreeSpace.get_interpolator
+      ~GreenTensorFreeSpace.set_relative_permittivity
+
+
+
+.. rubric:: Class Attributes and Properties
+
+.. autosummary::
+
+   ~GreenTensorFreeSpace.epsilon
+
+
+
+.. autoclass:: pairinteraction.green_tensor.GreenTensorFreeSpace
