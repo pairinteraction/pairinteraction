@@ -7,14 +7,12 @@ if(MKL_THREADING STREQUAL "tbb_thread")
   find_package(TBB REQUIRED)
 endif()
 
-find_package(
-  Python3
-  COMPONENTS Interpreter
-  QUIET)
-if(Python3_FOUND)
+# Use the interpreter that the top-level project found via find_package(Python), so that we search the same Python
+# environment
+if(Python_EXECUTABLE)
   execute_process(
     COMMAND
-      ${Python3_EXECUTABLE} -c "import sys
+      "${Python_EXECUTABLE}" -c "import sys
 from importlib.metadata import files, PackageNotFoundError
 try:
     mkl_config_path = next(p for p in files('mkl-devel') if 'MKLConfig.cmake' in p.name).locate().resolve()
@@ -31,13 +29,14 @@ except PackageNotFoundError:
   else()
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 MKL_ROOT)
-    list(GET ONEAPI_PATHS_LIST 1 MKL_DIR)
+    list(GET ONEAPI_PATHS_LIST 1 MKL_CONFIG_FILE)
+    get_filename_component(MKL_DIR "${MKL_CONFIG_FILE}" DIRECTORY)
     message(STATUS "MKL root determined to be: ${MKL_ROOT}")
     message(STATUS "MKL package config directory determined to be: ${MKL_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${MKL_DIR}")
   endif()
 else()
-  message(STATUS "Python3 interpreter not found; skip discovering Intel oneAPI libraries.")
+  message(STATUS "Python_EXECUTABLE is not set; skip discovering Intel oneAPI libraries.")
 endif()
 
 find_package(MKL QUIET CONFIG)

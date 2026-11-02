@@ -3,14 +3,12 @@
 
 include(FindPackageHandleStandardArgs)
 
-find_package(
-  Python3
-  COMPONENTS Interpreter
-  QUIET)
-if(Python3_FOUND)
+# Use the interpreter that the top-level project found via find_package(Python), so that we search the same Python
+# environment
+if(Python_EXECUTABLE)
   execute_process(
     COMMAND
-      ${Python3_EXECUTABLE} -c "import sys
+      "${Python_EXECUTABLE}" -c "import sys
 from importlib.metadata import files, PackageNotFoundError
 try:
     tbb_config_path = next(p for p in files('tbb-devel') if 'TBBConfig.cmake' in p.name).locate().resolve()
@@ -27,13 +25,14 @@ except PackageNotFoundError:
   else()
     string(REPLACE "|" ";" ONEAPI_PATHS_LIST "${ONEAPI_PATHS}")
     list(GET ONEAPI_PATHS_LIST 0 TBB_ROOT)
-    list(GET ONEAPI_PATHS_LIST 1 TBB_DIR)
+    list(GET ONEAPI_PATHS_LIST 1 TBB_CONFIG_FILE)
+    get_filename_component(TBB_DIR "${TBB_CONFIG_FILE}" DIRECTORY)
     message(STATUS "TBB root determined to be: ${TBB_ROOT}")
     message(STATUS "TBB package config directory determined to be: ${TBB_DIR}")
     list(APPEND CMAKE_PREFIX_PATH "${TBB_DIR}")
   endif()
 else()
-  message(STATUS "Python3 interpreter not found; skip discovering Intel oneAPI libraries.")
+  message(STATUS "Python_EXECUTABLE is not set; skip discovering Intel oneAPI libraries.")
 endif()
 
 find_package(TBB REQUIRED CONFIG)
