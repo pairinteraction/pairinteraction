@@ -9,6 +9,7 @@
 #include <array>
 #include <limits>
 #include <memory>
+#include <set>
 #include <vector>
 
 namespace pairinteraction {
@@ -63,7 +64,9 @@ private:
     int ion_interaction_order{3};
     std::shared_ptr<const GreenTensorInterpolator<Scalar>> green_tensor_interpolator;
 
-    void construct_hamiltonian() const;
+    // Add the terms of the Hamiltonian to the unperturbed Hamiltonian in the canonical basis and
+    // erase the labels of the symmetries that the terms break
+    void add_terms_to_hamiltonian(std::set<StateLabel> &labels) const;
 };
 
 extern template class SystemAtom<double>;

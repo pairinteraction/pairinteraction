@@ -5,7 +5,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
@@ -14,6 +14,7 @@
 #include "pairinteraction/utils/TaskControl.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/operator.hpp"
 
 #include <Eigen/SparseCore>
 #include <algorithm>
@@ -26,6 +27,7 @@
 #include <numeric>
 #include <oneapi/tbb.h>
 #include <optional>
+#include <set>
 #include <spdlog/spdlog.h>
 #include <stdexcept>
 #include <vector>
@@ -45,11 +47,26 @@ System<Derived>::System(std::shared_ptr<const basis_t> basis)
 }
 
 template <typename Derived>
-void System<Derived>::ensure_hamiltonian_constructed() const {
-    if (!hamiltonian_requires_construction) {
-        return;
+void System<Derived>::construct_hamiltonian() const {
+    // Construct the unperturbed Hamiltonian in the canonical basis. It is block-diagonal with
+    // respect to all quantum numbers of the basis.
+    matrix = utils::get_energies_in_canonical_basis(basis);
+    hamiltonian_is_diagonal = false;
+    std::set<StateLabel> labels;
+    for (StateLabel label : basis_t::quantum_number_labels) {
+        if (basis->has_quantum_number(label)) {
+            labels.insert(label);
+        }
     }
-    static_cast<const Derived *>(this)->construct_hamiltonian();
+
+    // Add the terms of the derived system, which erase the labels of the symmetries they break
+    static_cast<const Derived *>(this)->add_terms_to_hamiltonian(labels);
+    blockdiagonalizing_labels = std::move(labels);
+
+    // Transform from the canonical basis into the actual basis
+    matrix = basis->get_coefficients().adjoint() * matrix * basis->get_coefficients();
+
+    prune_couplings_between_blocks();
     hamiltonian_requires_construction = false;
 }
 
@@ -62,10 +79,10 @@ void System<Derived>::prune_couplings_between_blocks() const {
     std::vector<std::vector<int64_t>> labels_of_states;
     labels_of_states.reserve(blockdiagonalizing_labels.size());
     for (const auto &label : blockdiagonalizing_labels) {
-        const auto &name = basis_t::sorter_type_to_quantum_number_name.at(label);
-        auto &values = labels_of_states.emplace_back(basis->get_number_of_states());
+        const auto &quantum_numbers = basis->get_quantum_numbers_of_states(label);
+        auto &values = labels_of_states.emplace_back(quantum_numbers.size());
         for (size_t state_index = 0; state_index < values.size(); ++state_index) {
-            values[state_index] = std::llround(2 * basis->get_quantum_number(name, state_index));
+            values[state_index] = std::llround(2 * quantum_numbers[state_index]);
         }
     }
 
@@ -100,13 +117,11 @@ void System<Derived>::prune_couplings_between_blocks() const {
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_basis() const {
-    ensure_hamiltonian_constructed();
     return basis;
 }
 
 template <typename Derived>
 std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_eigenbasis() const {
-    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -115,7 +130,6 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ei
 
 template <typename Derived>
 Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenergies() const {
-    ensure_hamiltonian_constructed();
     if (!this->is_diagonal()) {
         throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
     }
@@ -125,72 +139,22 @@ Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenenerg
 template <typename Derived>
 const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
 System<Derived>::get_matrix() const {
-    ensure_hamiltonian_constructed();
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+    }
     return matrix;
 }
 
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-System<Derived>::get_sorter(const std::vector<SorterType> &labels) const {
-    // The first sorter type in labels is supposed to be the primary sorting criterion.
-    ensure_hamiltonian_constructed();
-
-    // Drop repeated sorter types. This also ensures that energy occurs at most once.
-    std::vector<SorterType> unique_labels;
-    unique_labels.reserve(labels.size());
-    for (const auto &label : labels) {
-        if (std::find(unique_labels.begin(), unique_labels.end(), label) == unique_labels.end()) {
-            unique_labels.push_back(label);
-        }
-    }
-
-    auto it = std::find(unique_labels.begin(), unique_labels.end(), SorterType::ENERGY);
-    std::vector<SorterType> before_energy(unique_labels.begin(), it);
-    bool contains_energy = (it != unique_labels.end());
-    std::vector<SorterType> after_energy(contains_energy ? it + 1 : unique_labels.end(),
-                                         unique_labels.end());
-
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(matrix.rows());
-    sorter.setIdentity();
-
-    if (!after_energy.empty()) {
-        basis->get_sorter_without_checks(after_energy, sorter);
-    }
-
-    if (contains_energy) {
-        std::vector<real_t> energies_of_states;
-        energies_of_states.reserve(matrix.rows());
-        for (int i = 0; i < matrix.rows(); ++i) {
-            energies_of_states.push_back(std::real(matrix.coeff(i, i)));
-        }
-
-        std::stable_sort(
-            sorter.indices().data(), sorter.indices().data() + sorter.indices().size(),
-            [&](int i, int j) { return energies_of_states[i] < energies_of_states[j]; });
-    }
-
-    if (!before_energy.empty()) {
-        basis->get_sorter_without_checks(before_energy, sorter);
-    }
-
-    return sorter;
+System<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
+    return basis->get_sorter(labels);
 }
 
 template <typename Derived>
 std::vector<IndicesOfBlock>
-System<Derived>::get_indices_of_blocks(const std::vector<SorterType> &labels) const {
-    ensure_hamiltonian_constructed();
-
-    std::set<SorterType> unique_labels(labels.begin(), labels.end());
-    basis->perform_blocks_checks(unique_labels);
-
-    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(matrix.rows())});
-
-    if (!unique_labels.empty()) {
-        basis->get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
-    }
-
-    return blocks_creator.create();
+System<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
+    return basis->get_indices_of_blocks(unique_labels);
 }
 
 template <typename Derived>
@@ -210,11 +174,10 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
                                               bool sort_by_energy) {
     set_task_status("Preparing Hamiltonian...");
 
-    ensure_hamiltonian_constructed();
-
+    // Checking whether the Hamiltonian is diagonal constructs it if necessary
     if (this->is_diagonal()) {
         if (sort_by_energy && !basis->is_sorted_by_energy()) {
-            sort(get_sorter({SorterType::ENERGY}));
+            sort(basis->get_sorter_by_energy());
         }
         return *this;
     }
@@ -224,7 +187,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     // Sort the Hamiltonian according to the block structure
     if (!blockdiagonalizing_labels.empty()) {
-        sort(get_sorter(blockdiagonalizing_labels));
+        sort(get_sorter({blockdiagonalizing_labels.begin(), blockdiagonalizing_labels.end()}));
     }
 
     // Get the indices of the blocks
@@ -349,13 +312,13 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // Hamiltonian is block-diagonal are well-defined and shared by all eigenstates of a block
     typename basis_t::quantum_numbers_t quantum_numbers_of_eigenstates;
     for (const auto &label : blockdiagonalizing_labels) {
-        const std::string &name = basis_t::sorter_type_to_quantum_number_name.at(label);
-        auto &quantum_numbers = quantum_numbers_of_eigenstates[name];
+        const auto &quantum_numbers_of_states = basis->get_quantum_numbers_of_states(label);
+        auto &quantum_numbers = quantum_numbers_of_eigenstates[label];
         quantum_numbers.reserve(static_cast<size_t>(num_cols));
         for (size_t idx = 0; idx < blocks.size(); ++idx) {
             quantum_numbers.insert(quantum_numbers.end(),
                                    static_cast<size_t>(eigenvectors_blocks[idx].cols()),
-                                   basis->get_quantum_number(name, blocks[idx].start));
+                                   quantum_numbers_of_states[blocks[idx].start]);
         }
     }
 
@@ -368,7 +331,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     hamiltonian_is_diagonal = true;
     if (sort_by_energy) {
-        sort(get_sorter({SorterType::ENERGY}));
+        sort(basis->get_sorter_by_energy());
     }
 
     return *this;
@@ -376,7 +339,9 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
 template <typename Derived>
 bool System<Derived>::is_diagonal() const {
-    ensure_hamiltonian_constructed();
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+    }
 
     if (!hamiltonian_is_diagonal) {
         real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();

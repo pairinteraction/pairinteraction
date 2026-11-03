@@ -7,7 +7,7 @@
 #include "./diagonalize/Diagonalizer.py.hpp"
 #include "./enums/FloatType.py.hpp"
 #include "./enums/OperatorType.py.hpp"
-#include "./enums/SorterType.py.hpp"
+#include "./enums/StateLabel.py.hpp"
 #include "./interfaces/DiagonalizerInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
 #include "./paths.py.hpp"
@@ -47,7 +47,7 @@ NB_MODULE(_backend, m) // NOLINT
 
     // enums
     bind_operator_type(m);
-    bind_sorter_type(m);
+    bind_state_label(m);
     bind_float_type(m);
 
     // utils

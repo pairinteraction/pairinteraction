@@ -7,7 +7,7 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalize/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
-#include "pairinteraction/enums/SorterType.hpp"
+#include "pairinteraction/enums/StateLabel.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -89,26 +89,28 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
                               .create();
 
     // Sort the basis by parity and the m quantum number
-    auto sorter = basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M});
+    auto sorter = basis_unsorted->get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M});
     auto basis = basis_unsorted->get_sorted_copy(sorter);
 
     // Check if the basis is properly sorted
     double parity = -1;
     auto quantum_number_m = std::numeric_limits<double>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-        DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_quantum_number("parity", i),
-                        ", M = ", basis->get_quantum_number("m", i));
-        DOCTEST_CHECK(basis->get_quantum_number("parity", i) >= parity);
-        if (basis->get_quantum_number("parity", i) != parity) {
-            parity = basis->get_quantum_number("parity", i);
+        DOCTEST_MESSAGE("State ", i,
+                        ": Parity = ", basis->get_quantum_number(StateLabel::PARITY, i),
+                        ", M = ", basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i));
+        DOCTEST_CHECK(basis->get_quantum_number(StateLabel::PARITY, i) >= parity);
+        if (basis->get_quantum_number(StateLabel::PARITY, i) != parity) {
+            parity = basis->get_quantum_number(StateLabel::PARITY, i);
             quantum_number_m = std::numeric_limits<double>::lowest();
         }
-        DOCTEST_CHECK(basis->get_quantum_number("m", i) >= quantum_number_m);
-        quantum_number_m = basis->get_quantum_number("m", i);
+        DOCTEST_CHECK(basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i) >=
+                      quantum_number_m);
+        quantum_number_m = basis->get_quantum_number(StateLabel::QUANTUM_NUMBER_M, i);
     }
 
     // Check that the blocks are correctly determined
-    auto blocks = basis->get_indices_of_blocks({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M});
+    auto blocks = basis->get_indices_of_blocks({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M});
     std::vector<size_t> expected_start = {0, 4, 8, 11};
 
     DOCTEST_CHECK(blocks.size() == expected_start.size());
@@ -152,7 +154,7 @@ DOCTEST_TEST_CASE("a basis is canonical if its coefficients are the identity mat
     DOCTEST_CHECK_FALSE(basis->get_modified_copy(non_identity, std::nullopt, {})->is_canonical());
 
     // Sorting the basis makes it non-canonical
-    auto sorted = basis->get_sorted_copy(basis->get_sorter({SorterType::PARITY}));
+    auto sorted = basis->get_sorted_copy(basis->get_sorter({StateLabel::PARITY}));
     DOCTEST_CHECK_FALSE(sorted->is_canonical());
 }
 
@@ -168,22 +170,22 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     // In the unsorted basis, states that share the same labels are scattered over the basis. They
     // would end up in several blocks and couplings between them would be lost.
     DOCTEST_CHECK_THROWS_AS(
-        basis_unsorted->get_indices_of_blocks({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}),
+        basis_unsorted->get_indices_of_blocks({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}),
         std::invalid_argument);
 
     auto basis = basis_unsorted->get_sorted_copy(
-        basis_unsorted->get_sorter({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}));
+        basis_unsorted->get_sorter({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}));
 
     // After sorting, the states of equal parity and m are contiguous ...
     DOCTEST_CHECK_NOTHROW(
-        basis->get_indices_of_blocks({SorterType::PARITY, SorterType::QUANTUM_NUMBER_M}));
+        basis->get_indices_of_blocks({StateLabel::PARITY, StateLabel::QUANTUM_NUMBER_M}));
 
     // ... and so are the states of equal parity because the parity is the primary criterion
-    DOCTEST_CHECK_NOTHROW(basis->get_indices_of_blocks({SorterType::PARITY}));
+    DOCTEST_CHECK_NOTHROW(basis->get_indices_of_blocks({StateLabel::PARITY}));
 
     // The states of equal m are not contiguous, however, because m only breaks ties between states
     // of equal parity
-    DOCTEST_CHECK_THROWS_AS(basis->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_M}),
+    DOCTEST_CHECK_THROWS_AS(basis->get_indices_of_blocks({StateLabel::QUANTUM_NUMBER_M}),
                             std::invalid_argument);
 
     // If the states are not labeled at all, no blocks can be obtained either
@@ -191,9 +193,9 @@ DOCTEST_TEST_CASE("blocks can only be obtained if the states are sorted") {
     Eigen::SparseMatrix<double, Eigen::RowMajor> identity(dim, dim);
     identity.setIdentity();
     auto unlabeled = basis->get_modified_copy(identity, std::nullopt, {});
-    DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::PARITY}),
+    DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({StateLabel::PARITY}),
                             std::invalid_argument);
-    DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({SorterType::QUANTUM_NUMBER_F}),
+    DOCTEST_CHECK_THROWS_AS(unlabeled->get_indices_of_blocks({StateLabel::QUANTUM_NUMBER_F}),
                             std::invalid_argument);
 }
 
@@ -311,7 +313,7 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     }
 
     // Sorting permutes the energies along with the states
-    auto sorter = basis->get_sorter({SorterType::QUANTUM_NUMBER_M});
+    auto sorter = basis->get_sorter({StateLabel::QUANTUM_NUMBER_M});
     auto sorted = basis->get_sorted_copy(sorter);
     DOCTEST_CHECK(sorted->has_energy());
     DOCTEST_CHECK_FALSE(sorted->is_sorted_by_energy());
@@ -319,6 +321,10 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
         DOCTEST_CHECK(sorted->get_energy(static_cast<size_t>(i)) ==
                       basis->get_energy(static_cast<size_t>(sorter.indices()[i])));
     }
+
+    // Sorting by the energy restores the order of the energies
+    auto resorted = sorted->get_sorted_copy(sorted->get_sorter_by_energy());
+    DOCTEST_CHECK(resorted->is_sorted_by_energy());
 
     // A modified copy of a basis has the explicitly specified energies
     std::vector<double> energies(basis->get_number_of_states());
@@ -342,6 +348,7 @@ DOCTEST_TEST_CASE("energies of the states of a basis") {
     DOCTEST_CHECK_THROWS_AS(copied->get_energy(0), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->has_energy());
     DOCTEST_CHECK_FALSE(copied->is_sorted_by_energy());
+    DOCTEST_CHECK_THROWS_AS(copied->get_sorter_by_energy(), std::invalid_argument);
     DOCTEST_CHECK_FALSE(copied->get_state(0)->has_energy());
 
     // Energies that are given must be finite and smaller than the maximum value
@@ -365,7 +372,7 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
 
     auto with_m = [&](double first_m) {
         auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
-        quantum_numbers_of_states.at("m")[0] = first_m;
+        quantum_numbers_of_states.at(StateLabel::QUANTUM_NUMBER_M)[0] = first_m;
         return basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
                                         std::move(quantum_numbers_of_states));
     };
@@ -386,7 +393,7 @@ DOCTEST_TEST_CASE("quantum numbers of the states of a basis are (half-)integers"
 
     // A quantum number must be given for all states
     auto quantum_numbers_of_states = basis->get_quantum_numbers_of_states();
-    quantum_numbers_of_states.at("m").pop_back();
+    quantum_numbers_of_states.at(StateLabel::QUANTUM_NUMBER_M).pop_back();
     DOCTEST_CHECK_THROWS_AS(basis->get_modified_copy(basis->get_coefficients(), std::nullopt,
                                                      std::move(quantum_numbers_of_states)),
                             std::invalid_argument);

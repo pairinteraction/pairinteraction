@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
+from pairinteraction._backend import StateLabel
 from pairinteraction.units import ureg
 
 if TYPE_CHECKING:
@@ -146,7 +147,9 @@ def test_neutral_pair_unaffected(pi_module: PairinteractionModule) -> None:
     # For a distance vector along z, the Hamiltonian must be block-diagonal with respect to the quantum number m
     system_pair = pi_module.SystemPair(basis_pair).set_interaction_order(3).set_distance(3, unit="micrometer")
     basis_cpp = system_pair._cpp.get_basis()
-    m = np.array([basis_cpp.get_quantum_number("m", i) for i in range(basis_cpp.get_number_of_states())])
+    m = np.array(
+        [basis_cpp.get_quantum_number(StateLabel.QUANTUM_NUMBER_M, i) for i in range(basis_cpp.get_number_of_states())]
+    )
     assert len(np.unique(m)) > 1
     hamiltonian = system_pair.get_hamiltonian(unit="GHz").toarray()
     assert np.all(hamiltonian[m[:, None] != m[None, :]] == 0)

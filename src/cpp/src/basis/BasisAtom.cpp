@@ -8,20 +8,11 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 
 #include <cassert>
-#include <map>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
 
 namespace pairinteraction {
-template <typename Scalar>
-// NOLINTNEXTLINE(cert-err58-cpp)
-const std::map<SorterType, std::string> BasisAtom<Scalar>::sorter_type_to_quantum_number_name{
-    {SorterType::QUANTUM_NUMBER_F, "f"},
-    {SorterType::QUANTUM_NUMBER_M, "m"},
-    {SorterType::PARITY, "parity"},
-};
-
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,
                              std::shared_ptr<const map_size_t> ket_id_to_ket_index,
