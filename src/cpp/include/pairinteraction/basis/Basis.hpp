@@ -110,6 +110,9 @@ protected:
         quantum_numbers_t quantum_numbers_of_states;
     };
     static StatesData get_canonical_states(const ketvec_t &kets);
+    StatesData get_merged_states(const Derived &other, const std::vector<size_t> &ket_indices1,
+                                 const std::vector<size_t> &ket_indices2,
+                                 size_t number_of_kets) const;
 
     // The kets are immutable and thus shared between copies of the basis that differ in the states
     std::shared_ptr<const ketvec_t> kets;

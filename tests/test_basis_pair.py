@@ -10,6 +10,7 @@ import pytest
 from pairinteraction import BasisAtom, BasisPair
 from pairinteraction.ket.ket_pair import is_ket_pair_like
 from pairinteraction.state.state_pair import is_state_pair_like
+from scipy.sparse import csr_matrix
 
 if TYPE_CHECKING:
     from pairinteraction import KetAtom, SystemAtom
@@ -286,14 +287,45 @@ def test_merge_pair_basis(pi_module: PairinteractionModule, system_atom: SystemA
         basis1 = pi_module.BasisPair.from_kets(ket_atoms1, system_atoms, number_of_kets=20)
         basis2 = pi_module.BasisPair.from_kets(ket_atoms2, system_atoms, number_of_kets=10)
 
+    # bases without common kets
+    assert not set(basis1.kets) & set(basis2.kets)
     merged = basis1.merge(basis2)
-
     assert set(merged.kets) == set(basis1.kets) | set(basis2.kets)
-    assert merged.number_of_states > max(basis1.number_of_states, basis2.number_of_states)
-    np.testing.assert_allclose(merged.get_coefficients().toarray(), np.eye(merged.number_of_kets))
+    assert merged.number_of_kets == basis1.number_of_kets + basis2.number_of_kets
+    assert merged.number_of_states == basis1.number_of_states + basis2.number_of_states
+    # the states of the first basis come first, followed by the states of the second basis
+    ket_index_of_states = merged.get_coefficients().tocsc().indices
+    assert [merged.kets[i] for i in ket_index_of_states] == basis1.kets + basis2.kets
 
-    merged_with_self = basis1.merge(basis1)
-    assert merged_with_self.kets == basis1.kets
-
-    # merging is symmetric, i.e. the ket order does not depend on the argument order
+    # merging is symmetric in the kets, i.e. the ket order does not depend on the argument order
     assert basis2.merge(basis1).kets == merged.kets
+
+    # bases with common kets but orthogonal states, i.e. two sets of eigenstates of the same system
+    system = pi_module.SystemPair(basis1).set_distance(5, unit="micrometer").diagonalize()
+    eigenbasis = system.get_eigenbasis()
+    coefficients = eigenbasis.get_coefficients()
+    number_of_states_lower = eigenbasis.number_of_states // 2
+    lower, upper = (
+        eigenbasis._from_cpp_object(
+            eigenbasis._cpp.get_modified_copy(coefficients[:, columns], None, {}),
+            *eigenbasis._from_cpp_object_additional_args(),
+        )
+        for columns in (slice(None, number_of_states_lower), slice(number_of_states_lower, None))
+    )
+    merged = lower.merge(upper)
+    assert merged.kets == eigenbasis.kets
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), coefficients.toarray())
+
+    # bases with common states, which are contained only once
+    merged = lower.merge(eigenbasis)
+    assert merged.kets == eigenbasis.kets
+    np.testing.assert_allclose(merged.get_coefficients().toarray(), coefficients.toarray(), atol=1e-12)
+
+    # bases whose states are neither orthogonal nor equal
+    superposition = np.zeros((basis1.number_of_kets, 1))
+    superposition[:2] = 1 / np.sqrt(2)
+    superposition_basis = basis1._from_cpp_object(
+        basis1._cpp.get_modified_copy(csr_matrix(superposition), None, {}), *basis1._from_cpp_object_additional_args()
+    )
+    with pytest.raises(ValueError, match="orthogonal"):
+        superposition_basis.merge(basis1)

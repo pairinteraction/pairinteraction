@@ -89,12 +89,8 @@ BasisPair<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
             "Both pair bases must be constructed from the same pair of SystemAtom instances, "
             "and these instances must not have been changed in between.");
     }
-    if (!this->is_canonical() || !other->is_canonical()) {
-        throw std::invalid_argument(
-            "Cannot merge non-canonical bases (i.e., bases with non-identity coefficients). "
-            "Canonicalize the bases first.");
-    }
 
+    // The kets are sorted by the indices of the atomic states they are composed of
     std::map<std::vector<size_t>, std::shared_ptr<const ket_t>> ket_by_state_indices;
     for (const auto &basis : {this, other.get()}) {
         for (const auto &[state_indices, ket_index] : *basis->state_indices_to_ket_index) {
@@ -139,9 +135,15 @@ BasisPair<Scalar>::merge(const std::shared_ptr<const Type> &other) const {
         }
     }
 
-    // The merged basis is canonical, i.e., the i-th state is the i-th ket
-    auto [coefficients, energy_of_states, quantum_numbers_of_states] =
-        this->get_canonical_states(*merged_kets);
+    auto get_ket_indices = [&](const Type &basis) {
+        std::vector<size_t> ket_indices(basis.get_number_of_kets());
+        for (const auto &[state_indices, ket_index] : *basis.state_indices_to_ket_index) {
+            ket_indices[ket_index] = merged_state_indices->at(state_indices);
+        }
+        return ket_indices;
+    };
+    auto [coefficients, energy_of_states, quantum_numbers_of_states] = this->get_merged_states(
+        *other, get_ket_indices(*this), get_ket_indices(*other), merged_kets->size());
     return std::make_shared<const Type>(Private(), std::move(merged_kets), std::move(merged_ranges),
                                         std::move(merged_state_indices), basis1, basis2,
                                         std::move(coefficients), std::move(energy_of_states),

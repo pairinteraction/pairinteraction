@@ -157,11 +157,13 @@ class BasisBase(ABC, Generic[KetType, StateType]):
         return self._cpp.is_canonical()
 
     def merge(self: Self, other: Self) -> Self:
-        """Return a canonical basis containing the kets from both bases.
+        """Return a basis containing the states from both bases.
 
+        Each state of the other basis must be orthogonal to the states of this basis or equal to one of them.
+        The merged basis contains the states of this basis first, followed by the states of the other basis
+        that are not already contained in this basis. Its kets are the kets of both bases, each ket only once.
         The bases must be compatible, i.e. they must share the same species, database, ...
-        For BasisPair they also must share the same underlying atomic basis.
-        Both bases must be canonical (i.e. have identity coefficients).
+        For BasisPair, both bases must also share the same underlying atomic bases.
         """
         if type(self) is not type(other):
             raise TypeError(

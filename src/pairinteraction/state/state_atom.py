@@ -147,8 +147,10 @@ class StateAtom(StateBase[KetAtom]):
         if type(self) is not type(other):
             raise TypeError(f"Cannot add/subtract {type(self)} and {type(other)}.")
 
-        # merge the (canonical) bases and re-express the coefficients in the merged basis;
-        merged_cpp = self._cpp.get_canonicalized_copy().merge(other._cpp.get_canonicalized_copy())
+        # merge the canonical bases and re-express the coefficients in the merged basis
+        merged_cpp = (
+            self._cpp.get_canonicalized_copy().merge(other._cpp.get_canonicalized_copy()).get_canonicalized_copy()
+        )
         cpp_op = get_cpp_operator_type("identity")
         coeffs1 = self._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
         coeffs2 = other._cpp.get_matrix_elements(merged_cpp, cpp_op, 0)
