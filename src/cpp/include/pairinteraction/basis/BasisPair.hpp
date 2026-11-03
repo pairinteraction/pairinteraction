@@ -64,7 +64,7 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    static constexpr std::array<StateLabel, 4> quantum_number_labels{
+    static constexpr std::array<StateLabel, 4> allowed_state_labels{
         StateLabel::QUANTUM_NUMBER_M, StateLabel::PRODUCT_OF_PARITIES,
         StateLabel::PARITY_UNDER_INVERSION, StateLabel::PARITY_UNDER_PERMUTATION};
 

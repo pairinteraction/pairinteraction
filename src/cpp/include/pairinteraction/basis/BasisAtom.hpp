@@ -56,7 +56,7 @@ public:
     using energies_t = typename Basis<Type>::energies_t;
     using map_size_t = std::unordered_map<size_t, size_t>;
 
-    static constexpr std::array<StateLabel, 3> quantum_number_labels{
+    static constexpr std::array<StateLabel, 3> allowed_state_labels{
         StateLabel::QUANTUM_NUMBER_F, StateLabel::QUANTUM_NUMBER_M, StateLabel::PARITY};
 
     BasisAtom(Private /*unused*/, std::shared_ptr<const ketvec_t> kets,

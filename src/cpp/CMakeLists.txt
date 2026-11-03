@@ -39,7 +39,7 @@ add_library(
   ./include/pairinteraction/utils/eigen_compat.hpp
   ./include/pairinteraction/utils/operator.hpp
   ./include/pairinteraction/utils/hash.hpp
-  ./include/pairinteraction/utils/IndicesOfBlocks.hpp
+  ./include/pairinteraction/utils/IndicesOfBlock.hpp
   ./include/pairinteraction/utils/ket_id.hpp
   ./include/pairinteraction/utils/maths.hpp
   ./include/pairinteraction/utils/paths.hpp
@@ -84,7 +84,6 @@ add_library(
   ./src/system/SystemPair.test.cpp
   ./src/tools/setup.cpp
   ./src/tools/run_unit_tests.cpp
-  ./src/utils/IndicesOfBlocks.cpp
   ./src/utils/TaskControl.cpp
   ./src/utils/spherical.cpp
   ./src/utils/spherical.test.cpp

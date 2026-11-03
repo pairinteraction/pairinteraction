@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pairinteraction/enums/StateLabel.hpp"
-#include "pairinteraction/utils/IndicesOfBlocks.hpp"
+#include "pairinteraction/utils/IndicesOfBlock.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -32,7 +32,7 @@ namespace pairinteraction {
  * each state is assigned a value, or it is not assigned to any state. Likewise, the energy is
  * either well-defined for all states or for none of them.
  * By which quantum numbers the states can be labeled and sorted is defined by the derived class,
- * which has to provide a static quantum_number_labels member that lists them.
+ * which has to provide a static allowed_state_labels member that lists them.
  * Using CRPT, it is a base class for specific basis implementations. Its
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
@@ -52,6 +52,8 @@ public:
     using energies_t = std::optional<std::vector<real_t>>;
 
     Basis() = delete;
+
+    static void check_state_label(StateLabel label);
 
     bool has_quantum_number(StateLabel label) const;
     bool has_energy() const;
@@ -87,13 +89,6 @@ public:
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> get_sorter_by_energy() const;
     std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const;
-
-    void perform_blocks_checks(const std::set<StateLabel> &unique_labels) const;
-    void get_sorter_without_checks(
-        const std::vector<StateLabel> &labels,
-        Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const;
-    void get_indices_of_blocks_without_checks(const std::set<StateLabel> &unique_labels,
-                                              IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<const Derived> get_canonicalized_copy() const;
     bool is_canonical() const;

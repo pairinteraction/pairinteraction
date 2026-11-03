@@ -15,7 +15,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstdint>
 #include <limits>
 #include <map>
 #include <set>
@@ -26,58 +25,6 @@ namespace pairinteraction {
 
 template <typename Scalar>
 class BasisAtom;
-
-namespace {
-// The states can only be labeled by quantum numbers by which they can be sorted
-template <typename Derived>
-void check_quantum_number(StateLabel label) {
-    if (std::ranges::find(Derived::quantum_number_labels, label) ==
-        Derived::quantum_number_labels.end()) {
-        throw std::invalid_argument("The states cannot be labeled by the quantum number " +
-                                    std::string(get_state_label_name(label)) + ".");
-    }
-}
-} // namespace
-
-template <typename Derived>
-void Basis<Derived>::perform_blocks_checks(const std::set<StateLabel> &unique_labels) const {
-    // Check if the states are labeled by the requested labels
-    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
-    quantum_numbers_of_labels.reserve(unique_labels.size());
-    for (const auto &label : unique_labels) {
-        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
-    }
-
-    // Check if the states are sorted by the requested labels, i.e., if states that share the same
-    // labels are contiguous. Otherwise, states belonging to the same block would be scattered over
-    // several blocks and couplings between them would be lost.
-    // The quantum numbers are (half-)integers, thus doubling them yields an exact integer
-    using label_t = std::vector<int64_t>;
-    auto label_of = [&](Eigen::Index i) {
-        label_t label;
-        label.reserve(quantum_numbers_of_labels.size());
-        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            label.push_back(std::llround(2 * (*quantum_numbers)[i]));
-        }
-        return label;
-    };
-
-    // Collect the labels of the contiguous blocks of states
-    std::vector<label_t> labels_of_blocks;
-    for (Eigen::Index i = 0; i < coefficients.cols(); ++i) {
-        label_t label = label_of(i);
-        if (labels_of_blocks.empty() || labels_of_blocks.back() != label) {
-            labels_of_blocks.push_back(label);
-        }
-    }
-
-    // If the states are sorted, no two blocks share the same labels
-    std::sort(labels_of_blocks.begin(), labels_of_blocks.end());
-    if (std::adjacent_find(labels_of_blocks.begin(), labels_of_blocks.end()) !=
-        labels_of_blocks.end()) {
-        throw std::invalid_argument("The states are not sorted by the requested labels.");
-    }
-}
 
 template <typename Derived>
 Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
@@ -90,6 +37,16 @@ Basis<Derived>::Basis(std::shared_ptr<const ketvec_t> kets,
         throw std::invalid_argument("The basis must contain at least one element.");
     }
     check_states();
+}
+
+// The states can only be labeled by labels by which they can be sorted
+template <typename Derived>
+void Basis<Derived>::check_state_label(StateLabel label) {
+    if (std::ranges::find(Derived::allowed_state_labels, label) ==
+        Derived::allowed_state_labels.end()) {
+        throw std::invalid_argument("The states cannot be labeled by " +
+                                    std::string(get_state_label_name(label)) + ".");
+    }
 }
 
 template <typename Derived>
@@ -120,15 +77,15 @@ void Basis<Derived>::check_states() const {
 
     // A quantum number is either given for all states or not well-defined for the basis
     for (const auto &[label, quantum_numbers] : quantum_numbers_of_states) {
-        check_quantum_number<Derived>(label);
+        check_state_label(label);
         std::string name(get_state_label_name(label));
         if (quantum_numbers.size() != num_states) {
             throw std::invalid_argument("The number of values of the quantum number " + name +
                                         " must match the number of states.");
         }
 
-        // The quantum numbers are (half-)integers, so that doubling them yields the exact integers
-        // by which the states are sorted and block-diagonalized
+        // The quantum numbers are exact (half-)integers, so that the states can be sorted and
+        // block-diagonalized by comparing their quantum numbers exactly
         for (real_t quantum_number : quantum_numbers) {
             real_t doubled = 2 * quantum_number;
             if (!is_valid_value(quantum_number) || !std::isfinite(doubled) ||
@@ -151,7 +108,7 @@ typename Basis<Derived>::StatesData Basis<Derived>::get_canonical_states(const k
 
     // Assign each state the quantum numbers of the ket it is equal to. A quantum number is only
     // assigned if all kets have it.
-    for (StateLabel label : Derived::quantum_number_labels) {
+    for (StateLabel label : Derived::allowed_state_labels) {
         std::string name(get_state_label_name(label));
         if (!std::ranges::all_of(
                 kets, [&name](const auto &ket) { return ket->has_quantum_number(name); })) {
@@ -203,7 +160,7 @@ Basis<Derived>::get_quantum_numbers_of_states(StateLabel label) const {
     // A quantum number by which the states are not labeled is not well-defined
     auto it = quantum_numbers_of_states.find(label);
     if (it == quantum_numbers_of_states.end()) {
-        check_quantum_number<Derived>(label);
+        check_state_label(label);
         throw std::invalid_argument("The states do not have a well-defined quantum number " +
                                     std::string(get_state_label_name(label)) + ".");
     }
@@ -307,11 +264,29 @@ size_t Basis<Derived>::get_number_of_kets() const {
 template <typename Derived>
 Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
 Basis<Derived>::get_sorter(const std::vector<StateLabel> &labels) const {
-    // Initialize the sorter
+    // Get the quantum numbers by which the states are sorted, the first label being the primary
+    // criterion
+    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
+    quantum_numbers_of_labels.reserve(labels.size());
+    for (const auto &label : labels) {
+        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
+    }
+
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter(coefficients.cols());
     sorter.setIdentity();
 
-    get_sorter_without_checks(labels, sorter);
+    // Sort the states lexicographically by the quantum numbers of the labels. The quantum numbers
+    // are exact (half-)integers, thus they can be compared exactly.
+    set_task_status("Sorting basis states...");
+    int *perm_begin = sorter.indices().data();
+    std::stable_sort(perm_begin, perm_begin + sorter.size(), [&](int a, int b) {
+        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
+                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
+            }
+        }
+        return false; // Elements are equal
+    });
 
     return sorter;
 }
@@ -342,71 +317,45 @@ Basis<Derived>::get_sorter_by_energy() const {
 template <typename Derived>
 std::vector<IndicesOfBlock>
 Basis<Derived>::get_indices_of_blocks(const std::set<StateLabel> &unique_labels) const {
-    perform_blocks_checks(unique_labels);
-
-    // Get the blocks
-    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(coefficients.cols())});
-    get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
-
-    return blocks_creator.create();
-}
-
-template <typename Derived>
-void Basis<Derived>::get_sorter_without_checks(
-    const std::vector<StateLabel> &labels,
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) const {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    if (coefficients.cols() == 0) {
-        return;
-    }
-
-    std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
-    quantum_numbers_of_labels.reserve(labels.size());
-    for (const auto &label : labels) {
-        quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
-    }
-
-    int *perm_begin = sorter.indices().data();
-    int *perm_end = perm_begin + coefficients.cols();
-
-    // Sort the vector based on the requested labels
-    set_task_status("Sorting basis states...");
-    std::stable_sort(perm_begin, perm_end, [&](int a, int b) {
-        for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if (std::abs((*quantum_numbers)[a] - (*quantum_numbers)[b]) > numerical_precision) {
-                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
-            }
-        }
-        return false; // Elements are equal
-    });
-}
-
-template <typename Derived>
-void Basis<Derived>::get_indices_of_blocks_without_checks(
-    const std::set<StateLabel> &unique_labels, IndicesOfBlocksCreator &blocks_creator) const {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    if (coefficients.cols() == 0) {
-        return;
-    }
-
+    // Get the quantum numbers by which the states are grouped into blocks. They are exact
+    // (half-)integers, thus they can be compared exactly.
     std::vector<const std::vector<real_t> *> quantum_numbers_of_labels;
     quantum_numbers_of_labels.reserve(unique_labels.size());
     for (const auto &label : unique_labels) {
         quantum_numbers_of_labels.push_back(&get_quantum_numbers_of_states(label));
     }
-
-    // A new block starts whenever a state differs from its predecessor in one of the labels
-    set_task_status("Identifying basis blocks...");
-    for (int i = 1; i < coefficients.cols(); ++i) {
+    auto have_same_labels = [&](size_t a, size_t b) {
+        return std::ranges::all_of(quantum_numbers_of_labels, [&](const auto *quantum_numbers) {
+            return (*quantum_numbers)[a] == (*quantum_numbers)[b];
+        });
+    };
+    auto has_smaller_labels = [&](size_t a, size_t b) {
         for (const auto *quantum_numbers : quantum_numbers_of_labels) {
-            if (std::abs((*quantum_numbers)[i] - (*quantum_numbers)[i - 1]) > numerical_precision) {
-                blocks_creator.add(i);
-                break;
+            if ((*quantum_numbers)[a] != (*quantum_numbers)[b]) {
+                return (*quantum_numbers)[a] < (*quantum_numbers)[b];
             }
         }
+        return false;
+    };
+
+    // A block is a contiguous range of states that share the same labels. If the states are sorted
+    // by the labels, no two blocks share the same labels. Otherwise, states that belong to the same
+    // block would be scattered over several blocks and couplings between them would be lost.
+    set_task_status("Identifying basis blocks...");
+    std::vector<IndicesOfBlock> blocks;
+    std::set<size_t, decltype(has_smaller_labels)> starts_of_blocks(has_smaller_labels);
+    for (size_t i = 0; i < get_number_of_states(); ++i) {
+        if (i == 0 || !have_same_labels(i - 1, i)) {
+            if (!starts_of_blocks.insert(i).second) {
+                throw std::invalid_argument("The states are not sorted by the requested labels.");
+            }
+            blocks.emplace_back(i, i + 1);
+        } else {
+            blocks.back().end = i + 1;
+        }
     }
+
+    return blocks;
 }
 
 template <typename Derived>
